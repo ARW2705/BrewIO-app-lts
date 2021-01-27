@@ -1,0 +1,44 @@
+<app-header title="Select Image"
+            [overrideBackButton]="onBackClick">
+</app-header>
+
+<ion-content>
+
+  <ion-grid>
+
+    <ion-row>
+
+      <ion-col>
+
+        <ion-button (click)="openGallery()">
+          Open Gallery
+        </ion-button>
+
+      </ion-col>
+
+    </ion-row>
+
+    <ion-row *ngIf="image">
+
+      <ion-img  [src]="image.url"
+                alt="Selected image">
+      </ion-img>
+
+    </ion-row>
+
+    <ion-row>
+
+      <ion-col>
+
+        <ion-button (click)="submitPhoto()"
+                    [disabled]="!image">
+          Submit Photo
+        </ion-button>
+
+      </ion-col>
+
+    </ion-row>
+
+  </ion-grid>
+
+</ion-content>

@@ -1,0 +1,69 @@
+.base {
+  /* Display */
+  width: 100%;
+
+  /* Children */
+  circle {
+    /* Color */
+    fill: var(--ion-color-medium-tint);
+  }
+
+  text {
+    /* Color */
+    fill: var(--ion-color-light);
+
+    /* Text */
+    font-size: 60px;
+  }
+}
+
+.date-button-container {
+  /* Display */
+  display: flex;
+  width: 100%;
+  min-height: 30px;
+  padding: 0;
+  border: none;
+
+  /* Color */
+  background: transparent;
+
+  /* Text */
+  text-decoration: none;
+}
+
+.month {
+  circle {
+    /* Color */
+    fill:  var(--ion-color-light);
+  }
+
+  text {
+    /* Color */
+    fill: var(--ion-color-dark);
+  }
+}
+
+.projected {
+  circle {
+    /* Color */
+    fill: var(--ion-color-tertiary);
+  }
+
+  text {
+    /* Color */
+    fill: var(--ion-color-dark);
+  }
+}
+
+.start {
+  circle {
+    /* Color */
+    fill: var(--ion-color-secondary);
+  }
+
+  text {
+    /* Color */
+    fill: var(--ion-color-dark);
+  }
+}

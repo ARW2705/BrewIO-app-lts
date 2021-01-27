@@ -1,0 +1,88 @@
+<ion-header>
+
+  <ion-grid>
+
+    <ion-row class="ion-justify-content-between ion-nowrap">
+
+      <!-- Back button -->
+      <ion-col  *ngIf="overrideBackButton || rootURL"
+
+                class="ion-no-padding ion-align-self-center back-button-container">
+
+        <ion-button (click)="goBack()"
+                    class="back-button">
+
+          <ion-icon name="chevron-back-outline"
+                    color="primary">
+          </ion-icon>
+
+        </ion-button>
+
+      </ion-col>
+
+
+      <!-- Header title -->
+      <ion-col
+                class="ion-no-padding ion-align-self-center header-title">
+
+        <ion-title color="light">
+          {{ title }}
+        </ion-title>
+
+      </ion-col>
+
+
+      <!-- User name when logged in -->
+      <ion-col  *ngIf="user && user.username"
+
+                class="ion-no-padding ion-align-self-center login-header-text">
+
+        <p>Logged in as...</p>
+
+        <p>{{ user.username }}</p>
+
+      </ion-col>
+
+
+      <!-- Log In Button or User name -->
+      <ion-col  *ngIf="!isLoggedIn"
+
+                class="ion-no-padding ion-align-self-center login-button">
+
+        <!-- Log In button -->
+        <ion-button *ngIf="!isLoggedIn"
+                    (click)="openLoginSignup()"
+                    >
+
+          <ion-icon name="log-in-outline"
+                    >
+          </ion-icon>
+
+        </ion-button>
+
+        <!-- Show username when logged in -->
+        <!-- <ion-row *ngIf="user && user.username">
+
+          <ion-col  size="12"
+                    class="login-header-text">
+            Logged in as...
+          </ion-col>
+
+          <ion-col  size="12"
+                    class="login-header-text">
+
+            <span>
+              {{ user.username }}
+            </span>
+
+          </ion-col>
+
+        </ion-row> -->
+
+      </ion-col>
+
+    </ion-row>
+
+  </ion-grid>
+
+</ion-header>

@@ -1,0 +1,162 @@
+<app-header title="Measurements"
+            [overrideBackButton]="onBackClick">
+</app-header>
+
+<ion-content class="sub-page">
+
+  <ion-grid *ngIf="measurementsForm"
+            class="ion-no-padding">
+
+    <ion-row  id="heading"
+              class="ion-justify-content-center">
+
+      <ng-container *ngIf="areAllRequired">
+
+        <ion-col size="12">
+          Confirm Measurements
+        </ion-col>
+
+        <ion-col size="12">
+          For Submission
+        </ion-col>
+
+      </ng-container>
+
+      <ng-container *ngIf="!areAllRequired">
+
+        <ion-col size="12">
+          Update Measurements
+        </ion-col>
+
+      </ng-container>
+
+    </ion-row>
+
+    <ion-row>
+
+      <form [formGroup]="measurementsForm">
+
+        <!-- Original Gravity Input -->
+        <ion-item>
+
+          <ion-label position="floating">
+            Original Gravity ({{ units.density.shortName }})
+          </ion-label>
+
+          <ion-input  formControlName="originalGravity"
+                      type="number"
+                      autocomplete="off">
+          </ion-input>
+
+        </ion-item>
+
+        <!-- Error messages -->
+        <div class="form-error-container">
+
+          <form-error *ngIf="
+            measurementsForm.controls['originalGravity'].touched
+            && measurementsForm.controls['originalGravity'].errors
+          "
+                      formName="measurements"
+                      controlName="originalGravity"
+                      [controlErrors]="measurementsForm.controls['originalGravity'].errors">
+          </form-error>
+
+        </div>
+
+
+        <!-- Final Gravity Input -->
+        <ion-item>
+
+          <ion-label position="floating">
+            Final Gravity ({{ units.density.shortName }})
+          </ion-label>
+
+          <ion-input  formControlName="finalGravity"
+                      type="number"
+                      autocomplete="off">
+          </ion-input>
+
+        </ion-item>
+
+        <!-- Error messages -->
+        <div class="form-error-container">
+
+          <form-error *ngIf="
+            measurementsForm.controls['finalGravity'].touched
+            && measurementsForm.controls['finalGravity'].errors
+          "
+                      formName="measurements"
+                      controlName="finalGravity"
+                      [controlErrors]="measurementsForm.controls['finalGravity'].errors">
+          </form-error>
+
+        </div>
+
+
+        <!-- Batch Volume Input -->
+        <ion-item>
+
+          <ion-label position="floating">
+            Batch Volume ({{ units.volumeLarge.shortName }})
+          </ion-label>
+
+          <ion-input  formControlName="batchVolume"
+                      type="number"
+                      autocomplete="off">
+          </ion-input>
+
+        </ion-item>
+
+        <!-- Error messages -->
+        <div class="form-error-container">
+
+          <form-error *ngIf="
+            measurementsForm.controls['batchVolume'].touched
+            && measurementsForm.controls['batchVolume'].errors
+          "
+                      formName="measurements"
+                      controlName="batchVolume"
+                      [controlErrors]="measurementsForm.controls['batchVolume'].errors">
+          </form-error>
+
+        </div>
+
+
+        <ion-grid>
+
+          <ion-row>
+
+            <ion-col *ngIf="!areAllRequired">
+              <!-- Form cancel button -->
+              <ion-button color="primary"
+                          (click)="dismiss()"
+                          class="form-button">
+                Cancel
+              </ion-button>
+
+            </ion-col>
+
+            <!-- Form submit button -->
+            <ion-col>
+
+              <ion-button color="primary"
+                          (click)="onSubmit()"
+                          class="form-button"
+                          [disabled]="!measurementsForm.valid">
+                {{ areAllRequired ? 'Submit To Inventory': 'Submit' }}
+              </ion-button>
+
+            </ion-col>
+
+          </ion-row>
+
+        </ion-grid>
+
+      </form>
+
+    </ion-row>
+
+  </ion-grid>
+
+</ion-content>

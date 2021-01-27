@@ -1,0 +1,23 @@
+#message {
+  /* Text */
+  font-size: 1.5em;
+  text-align: center;
+}
+
+#subMessage {
+  /* Display */
+  margin-top: 10px;
+
+  /* Color */
+  color: var(--ion-color-danger);
+
+  /* Text */
+  text-align: center;
+  font-weight: bold;
+}
+
+.fixed-content,
+.scroll-content {
+  /* Display */
+  margin-top: 0;
+}

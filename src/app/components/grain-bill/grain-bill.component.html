@@ -1,0 +1,90 @@
+<div id="container">
+
+  <ion-label class="recipe-group-label">
+    Grain Bill
+  </ion-label>
+
+  <ion-list lines="none"
+            class="ion-no-padding list-border">
+
+    <ion-item *ngFor="let grains of grainBill; last as isLast"
+              class="item-buttons">
+
+      <!-- Selected grains item -->
+      <ion-grid class="ion-no-padding">
+
+        <!-- Open ingredient form modal in edit mode -->
+        <button (click)="openIngredientFormModal(grains)"
+                [ngClass]="{
+                  'item-button': true,
+                  'border-bottom-medium': !isLast
+                }">
+
+          <ion-row>
+
+            <!-- Pencil icon -->
+            <ion-col  size="2"
+                      class="ion-align-self-center">
+
+              <ion-icon color="primary"
+                        name="create-outline">
+              </ion-icon>
+
+            </ion-col>
+
+            <ion-col  size="10"
+                      class="ingredient-text-container">
+
+              <ion-row>
+
+                <!-- Grain name -->
+                <ion-col  size="8"
+                          class="col-left">
+                  {{ grains.grainType.name }}
+                </ion-col>
+
+                <!-- Grain selected quantity -->
+                <ion-col  size="4"
+                          class="col-right">
+                  {{ grains.quantity | unitConversion:'weightLarge':true }}
+                </ion-col>
+
+              </ion-row>
+
+              <ion-row>
+
+                <!-- Calculated gravity points by grain type and quantity -->
+                <ion-col class="col-left">
+                  {{ grains.grainType.gravity | unitConversion:'density':true }}
+                </ion-col>
+
+                <!-- Grain type lovibond rating -->
+                <ion-col>
+                  {{ grains.grainType.lovibond }}°L
+                </ion-col>
+
+                <!-- Selected grain milling setting -->
+                <ion-col *ngIf="grains.mill">
+                  {{ grains.mill }}"
+                </ion-col>
+
+                <!-- Calculated gravity percentage of whole for given item -->
+                <ion-col class="col-right">
+                  {{ grains | ratio:'quantity':grainBill:refreshPipes }}
+                </ion-col>
+
+              </ion-row>
+
+            </ion-col>
+
+          </ion-row>
+
+        </button>
+
+      </ion-grid>
+
+    </ion-item>
+
+  </ion-list>
+
+</div>

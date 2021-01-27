@@ -1,0 +1,89 @@
+@import "../../../global.scss";
+
+#user-router-nav {
+  /* Display */
+  margin: 15px 0;
+
+  /* Text */
+  text-align: center;
+}
+
+.content {
+  /* Display */
+  margin-top: 56px;
+}
+
+.dropdown-button {
+  /* Children */
+  & .item-inner {
+    /* Display */
+    padding: 0 !important;
+  }
+
+  > .item-inner > .input-wrapper > .label {
+    /* Display */
+    margin-right: 0 !important;
+    margin-bottom: 0 !important;
+
+    /* Children */
+    > .expand-header {
+      /* Display */
+      margin-bottom: 3%;
+
+      /* Children */
+      > h2 {
+        /* Display */
+        margin: 0;
+
+        /* Text */
+        font-size: 1.4em;
+      }
+    }
+  }
+}
+
+.expand-hint {
+  /* Display */
+  border-radius: 15px;
+
+  /* Color */
+  background-color: map-get($colors, primary);
+
+  /* Children */
+  ion-icon {
+    /* Display */
+    margin-top: -1.5%;
+    margin-bottom: -2%;
+
+    /* Color */
+    color: map-get($colors, gray-scale-2);
+  }
+}
+
+.item-md {
+  /* Display */
+  padding-right: 16px;
+}
+
+.section-row {
+  /* Display */
+  margin: 5% 0;
+}
+
+.login-signup-container {
+  text-align: center;
+}
+
+ion-item {
+  margin: 10px 0;
+  font-size: 1.35rem;
+  --border-color: var(--ion-color-primary);
+  --padding-start: 24px;
+  --padding-end: 6px;
+  --min-height: 52px;
+}
+
+ion-list {
+  /* Display */
+  margin-bottom: 60px !important;
+}

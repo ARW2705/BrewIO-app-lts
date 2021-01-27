@@ -1,0 +1,29 @@
+.image-input {
+  /* Display */
+  height: auto;
+}
+
+.item {
+  /* Display */
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.form-error-container {
+  /* Display */
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+
+ion-item {
+  /* Display */
+  --padding-start: 0;
+  --inner-padding-start: 0;
+  --padding-end: 0;
+  --inner-padding-end: 0;
+  --highlight-color-valid: var(--ion-color-primary);
+  --highlight-color-invalid: transparent;
+  --highlight-color-focused: transparent;
+  --border-color: var(--ion-color-light);
+}

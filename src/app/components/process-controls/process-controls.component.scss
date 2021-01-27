@@ -1,0 +1,36 @@
+#process-button-container {
+  /* Display */
+  width: 100%;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  border-top: 1px solid var(--ion-color-light);
+  z-index: 10;
+
+  /* Color */
+  background: var(--ion-color-dark-tint);
+}
+
+#step-control-buttons {
+  /* Display */
+  z-index: 10;
+
+  /* Color */
+  background: var(--ion-color-dark-tint);
+
+  /* Children */
+  ion-col {
+    /* Display */
+    flex-grow: 0;
+  }
+
+  ion-icon {
+    /* Text */
+    font-size: 2em;
+  }
+}
+
+.nav-process-button {
+  /* Color */
+  color: var(--ion-color-dark);
+}

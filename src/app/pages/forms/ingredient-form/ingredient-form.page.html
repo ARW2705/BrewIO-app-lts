@@ -1,0 +1,456 @@
+<app-header [title]="title"
+            [overrideBackButton]="onBackClick">
+</app-header>
+
+<ion-content class="sub-page">
+
+  <ng-container *ngIf="ingredientForm">
+
+    <form [formGroup]="ingredientForm">
+
+      <!-- Ingredient Type Choice Select -->
+      <ng-container *ngIf="ingredientLibrary">
+
+        <!-- Select an Ingredient -->
+        <ion-item>
+
+          <ion-label position="floating">
+            Select {{ ingredientType | titlecase }}
+          </ion-label>
+
+          <ion-select formControlName="type"
+                      okText="Okay"
+                      cancelText="Dismiss"
+                      (ionCancel)="onIngredientSelect()"
+                      (ionChange)="onIngredientSelect()"
+                      [compareWith]="compareWithFn"
+                      [interfaceOptions]="selectOptions">
+
+            <ion-select-option  *ngFor="let ingredient of ingredientLibrary"
+                                [value]="ingredient">
+              {{ ingredient.name }}
+            </ion-select-option>
+
+          </ion-select>
+
+        </ion-item>
+
+        <!-- Error messages -->
+        <div class="form-error-container">
+
+          <form-error *ngIf="selectTouched && ingredientForm.controls['type'].errors"
+                      formName="ingredient"
+                      controlName="type"
+                      [controlErrors]="ingredientForm.controls['type'].errors">
+          </form-error>
+
+        </div>
+
+      </ng-container>
+
+
+      <!-- GRAIN BILL SPECIFIC -->
+      <ng-container *ngIf="ingredientType === 'grains'">
+
+        <!-- Grain Bulk Quantity -->
+        <ion-item>
+
+          <ion-label position="floating">
+            Quantity ({{ units !== null ? units.weightLarge.shortName: '' }})
+          </ion-label>
+
+          <ion-input  formControlName="quantity"
+                      type="number"
+                      autocomplete="off">
+          </ion-input>
+
+        </ion-item>
+
+        <!-- Error messages -->
+        <div class="form-error-container">
+
+          <form-error *ngIf="
+            ingredientForm.controls['quantity'].touched
+            && ingredientForm.controls['quantity'].errors
+          "
+                      formName="ingredient"
+                      controlName="quantity"
+                      [controlErrors]="ingredientForm.controls['quantity'].errors">
+          </form-error>
+
+        </div>
+
+        <ng-container *ngIf="hasSubQuantity">
+
+          <!-- Grain Fine Quantity -->
+          <ion-item>
+
+            <ion-label position="floating">
+              Quantity ({{ units !== null ? units.weightSmall.shortName: '' }})
+            </ion-label>
+
+            <ion-input  formControlName="subQuantity"
+                        type="number"
+                        autocomplete="off">
+            </ion-input>
+
+          </ion-item>
+
+          <!-- Error messages -->
+          <div class="form-error-container">
+
+            <form-error *ngIf="
+              ingredientForm.controls['subQuantity'].touched
+              && ingredientForm.controls['subQuantity'].errors
+            "
+                        formName="ingredient"
+                        controlName="subQuantity"
+                        [controlErrors]="ingredientForm.controls['subQuantity'].errors">
+            </form-error>
+
+          </div>
+
+        </ng-container>
+
+        <!-- Grain Mill Setting -->
+        <ion-item>
+
+          <ion-label position="floating">
+            Mill Setting
+          </ion-label>
+
+          <ion-input  formControlName="mill"
+                      type="number"
+                      autocomplete="off">
+          </ion-input>
+
+        </ion-item>
+
+      </ng-container>
+
+
+      <!-- HOPS SCHEDULE SPECIFIC -->
+      <ng-container *ngIf="ingredientType === 'hops'">
+
+        <!-- Hops Quantity -->
+        <ion-item>
+
+          <ion-label position="floating">
+            Quantity ({{ units !== null ? units.weightSmall.shortName: '' }})
+          </ion-label>
+
+          <ion-input  formControlName="subQuantity"
+                      type="number"
+                      autocomplete="off">
+          </ion-input>
+
+        </ion-item>
+
+        <!-- Error messages -->
+        <div class="form-error-container">
+
+          <form-error *ngIf="
+            ingredientForm.controls['subQuantity'].touched
+            && ingredientForm.controls['subQuantity'].errors
+          "
+                      formName="ingredient"
+                      controlName="subQuantity"
+                      [controlErrors]="ingredientForm.controls['subQuantity'].errors">
+          </form-error>
+
+        </div>
+
+        <!-- Hops Addition Time -->
+        <ion-item>
+
+          <ion-label  position="floating">
+            Boil time (minutes)
+          </ion-label>
+
+          <ion-input  formControlName="duration"
+                      type="number"
+                      autocomplete="off">
+          </ion-input>
+
+        </ion-item>
+
+        <!-- Error messages -->
+        <div class="form-error-container">
+
+          <form-error *ngIf="
+            ingredientForm.controls['duration'].touched
+            && ingredientForm.controls['duration'].errors
+          "
+                      formName="ingredient"
+                      controlName="duration"
+                      [controlErrors]="ingredientForm.controls['duration'].errors">
+          </form-error>
+
+        </div>
+
+        <!-- Select for Dry Hopping -->
+        <ion-item>
+
+          <ion-label>
+            Dry Hop
+          </ion-label>
+
+          <ion-toggle formControlName="dryHop"
+                      (ionChange)="onDryHopChange($event)">
+          </ion-toggle>
+
+        </ion-item>
+
+      </ng-container>
+
+      <!-- YEAST BATCH SPECIFIC -->
+      <ng-container *ngIf="ingredientType === 'yeast'">
+
+        <!-- Yeast Quantity -->
+        <ion-item>
+
+          <ion-label position="floating">
+            Quantity (packs/vials)
+          </ion-label>
+
+          <ion-input  formControlName="quantity"
+                      type="number"
+                      autocomplete="off">
+          </ion-input>
+
+        </ion-item>
+
+        <!-- Error messages -->
+        <div class="form-error-container">
+
+          <form-error *ngIf="
+            ingredientForm.controls['quantity'].touched
+            && ingredientForm.controls['quantity'].errors
+          "
+                      formName="ingredient"
+                      controlName="quantity"
+                      [controlErrors]="ingredientForm.controls['quantity'].errors">
+          </form-error>
+
+        </div>
+
+        <ion-item>
+
+          <ion-label>
+            Starter
+          </ion-label>
+
+          <ion-toggle formControlName="requiresStarter"></ion-toggle>
+
+        </ion-item>
+
+      </ng-container>
+
+      <!-- OTHER INGREDIENTS -->
+      <ng-container *ngIf="ingredientType === 'otherIngredients'">
+
+        <!-- Ingredient Name -->
+        <ion-item>
+
+          <ion-label position="floating">
+            Name
+          </ion-label>
+
+          <ion-input  formControlName="name"
+                      type="text"
+                      autocomplete="off"
+                      autocorrect="off"
+                      autocapitalize="off"
+                      spellcheck="false">
+          </ion-input>
+
+        </ion-item>
+
+        <!-- Error messages -->
+        <div class="form-error-container">
+
+          <form-error *ngIf="
+            ingredientForm.controls['name'].touched
+            && ingredientForm.controls['name'].errors
+          "
+                      formName="ingredient"
+                      controlName="name"
+                      [controlErrors]="ingredientForm.controls['name'].errors">
+          </form-error>
+
+        </div>
+
+        <!-- Ingredient Type -->
+        <ion-item>
+
+          <ion-label position="floating">
+            Type
+          </ion-label>
+
+          <ion-input  formControlName="type"
+                      type="text"
+                      autocomplete="off"
+                      autocorrect="off"
+                      autocapitalize="off"
+                      spellcheck="false">
+          </ion-input>
+
+        </ion-item>
+
+        <!-- Error messages -->
+        <div class="form-error-container">
+
+          <form-error *ngIf="
+            ingredientForm.controls['type'].touched
+            && ingredientForm.controls['type'].errors
+          "
+                      formName="ingredient"
+                      controlName="type"
+                      [controlErrors]="ingredientForm.controls['type'].errors">
+          </form-error>
+
+        </div>
+
+        <!-- Ingredient Quantity -->
+        <ion-item>
+
+          <ion-label position="floating">
+            Quantity
+          </ion-label>
+
+          <ion-input  formControlName="quantity"
+                      type="number"
+                      autocomplete="off">
+          </ion-input>
+
+        </ion-item>
+
+        <!-- Error messages -->
+        <div class="form-error-container">
+
+          <form-error *ngIf="
+            ingredientForm.controls['quantity'].touched
+            && ingredientForm.controls['quantity'].errors
+          "
+                      formName="ingredient"
+                      controlName="quantity"
+                      [controlErrors]="ingredientForm.controls['quantity'].errors">
+          </form-error>
+
+        </div>
+
+        <!-- Ingredient Unit Type -->
+        <ion-item>
+
+          <ion-label position="floating">
+            Units
+          </ion-label>
+
+          <ion-input  formControlName="units"
+                      type="text"
+                      autocomplete="off"
+                      autocorrect="off"
+                      autocapitalize="off"
+                      spellcheck="false">
+          </ion-input>
+
+        </ion-item>
+
+        <!-- Error messages -->
+        <div class="form-error-container">
+
+          <form-error *ngIf="
+            ingredientForm.controls['units'].touched
+            && ingredientForm.controls['units'].errors
+          "
+                      formName="ingredient"
+                      controlName="units"
+                      [controlErrors]="ingredientForm.controls['units'].errors">
+          </form-error>
+
+        </div>
+
+        <!-- Ingredient Description -->
+        <ion-item>
+
+          <ion-label position="floating">
+            Description
+          </ion-label>
+
+          <ion-textarea formControlName="description"
+                        rows="3"
+                        autocomplete="off"
+                        autocorrect="off"
+                        autocapitalize="off"
+                        spellcheck="false">
+          </ion-textarea>
+
+        </ion-item>
+
+        <!-- Error messages -->
+        <div class="form-error-container">
+
+          <form-error *ngIf="
+            ingredientForm.controls['description'].touched
+            && ingredientForm.controls['description'].errors
+          "
+                      formName="ingredient"
+                      controlName="description"
+                      [controlErrors]="ingredientForm.controls['description'].errors">
+          </form-error>
+
+        </div>
+
+      </ng-container>
+
+      <!-- Button container -->
+      <ion-grid>
+
+        <ion-row>
+          <!-- Form cancel button -->
+          <ion-col>
+
+            <ion-button color="primary"
+                        (click)="dismiss()"
+                        class="form-button">
+              Cancel
+            </ion-button>
+
+          </ion-col>
+
+          <!-- Form submit button -->
+          <ion-col>
+
+            <ion-button (click)="onSubmit()"
+                        color="primary"
+                        class="form-button"
+                        [disabled]="!ingredientForm.valid">
+              Submit
+            </ion-button>
+
+          </ion-col>
+
+        </ion-row>
+
+        <!-- Form remove button -->
+        <ion-row *ngIf="formType === 'update'">
+
+          <ion-col>
+
+            <ion-button color="danger"
+                        (click)="onDeletion()"
+                        class="form-button">
+              Delete
+            </ion-button>
+
+          </ion-col>
+
+        </ion-row>
+
+      </ion-grid>
+
+    </form>
+
+  </ng-container>
+
+</ion-content>

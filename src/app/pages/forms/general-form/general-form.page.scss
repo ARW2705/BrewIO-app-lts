@@ -1,0 +1,19 @@
+.item {
+  /* Display */
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+ion-item {
+  --inner-padding-start: 0;
+  --padding-start: 0;
+  --highlight-color-valid: var(--ion-color-primary);
+  --highlight-color-invalid: transparent;
+  --highlight-color-focused: transparent;
+  --border-color: var(--ion-color-light);
+}
+
+.form-error-container {
+  padding-left: 16px;
+  padding-right: 16px;
+}

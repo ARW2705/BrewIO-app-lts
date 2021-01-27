@@ -1,0 +1,58 @@
+<app-header [title]="title + ' Confirmation'"
+            [overrideBackButton]="onBackClick">
+</app-header>
+
+<ion-content>
+
+  <ion-grid>
+
+    <ion-row>
+
+      <ion-col  size="12"
+                id="message">
+
+        <span>{{ message }}</span>
+
+      </ion-col>
+
+    </ion-row>
+
+    <ion-row>
+
+      <!-- Cancel button -->
+      <ion-col size="6">
+
+        <ion-button color="primary"
+                    (click)="dismiss()"
+                    class="form-button">
+          Cancel
+        </ion-button>
+
+      </ion-col>
+
+      <!-- Confirmation button -->
+      <ion-col size="6">
+
+        <ion-button color="danger"
+                    (click)="confirm()"
+                    class="form-button">
+          Confirm
+        </ion-button>
+
+      </ion-col>
+
+    </ion-row>
+
+    <ion-row  *ngIf="subMessage"
+              class="ion-justify-content-end">
+
+      <ion-col  size="6"
+                id="subMessage">
+        {{ subMessage }}
+      </ion-col>
+
+    </ion-row>
+
+  </ion-grid>
+
+</ion-content>

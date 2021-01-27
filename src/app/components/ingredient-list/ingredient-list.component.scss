@@ -1,0 +1,108 @@
+.card-header {
+  /* Display */
+  --padding-start: auto;
+  --inner-padding-start: auto;
+
+  /* Children */
+  ion-label {
+    /* Display */
+    display: flex;
+    justify-content: center;
+  }
+
+  ion-label {
+    ion-icon {
+      /* Text */
+      font-size: 2rem;
+    }
+  }
+
+  ion-label {
+    span {
+      /* Text */
+      font-size: 1.7rem;
+    }
+  }
+}
+
+.ingredient-row {
+  /* Display */
+  margin-top: 5px;
+
+  /* Text */
+  font-size: 1.2rem;
+  text-align: left;
+
+  &:not(:last-child) {
+    /* Display */
+    border-bottom: 2px solid var(--ion-color-light-shade);
+  }
+
+  /* Children */
+  ion-col:not(:first-child) {
+    /* Text */
+    text-align: right;
+  }
+
+  ion-row {
+    /* Display */
+    border-top: 1px solid var(--ion-color-light);
+  }
+}
+
+
+ion-card {
+  /* Display */
+  margin-bottom: 1px;
+  border: 1px solid var(--ion-color-primary);
+  border-radius: 10px;
+  background: #5a5a5a;
+  -webkit-box-shadow: inset 0 0 40px 20px #4a4a4a;
+  box-shadow: inset 0 0 40px 20px #4a4a4a;
+}
+
+ion-col {
+  /* Color */
+  color: var(--ion-color-light);
+}
+
+ion-item {
+  /* Color */
+  color: var(--ion-color-light);
+  background-color: transparent;
+
+  /* Children */
+  &:not(:last-child) {
+    /* Display */
+    border-bottom: 1px solid var(--ion-color-light-shade);
+  }
+}
+
+ion-item-divider {
+  /* Display */
+  --padding-start: 0;
+  border-bottom: 2px solid var(--ion-color-secondary-tint);
+
+  /* Color */
+  --color: var(--ion-color-secondary-tint);
+  --background: transparent;
+
+  > span {
+    /* Display */
+    margin: 0 auto;
+
+    /* Text */
+    font-size: 1.5rem;
+  }
+}
+
+ion-item-group {
+  /* Display */
+  margin: 5px 0;
+}
+
+ion-list {
+  /* Display */
+  padding: 0;
+  background: transparent;
+}

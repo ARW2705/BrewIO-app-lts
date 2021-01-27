@@ -1,0 +1,107 @@
+<app-header title="Log In"
+            [rootURL]="rootURL">
+</app-header>
+
+<ion-content class="sub-page">
+
+  <ng-container *ngIf="loginForm">
+
+    <form [formGroup]="loginForm">
+
+      <!-- Username Input -->
+      <ion-item>
+
+        <ion-label position="floating">
+          Username
+        </ion-label>
+
+        <ion-input  formControlName="username"
+                    type="text"
+                    autocomplete="off"
+                    autocorrect="off"
+                    autocapitalize="off"
+                    spellcheck="false">
+        </ion-input>
+
+      </ion-item>
+
+      <!-- Password Input -->
+      <ion-item>
+
+        <ion-label position="floating">
+          Password
+        </ion-label>
+
+        <ion-input  formControlName="password"
+                    type="{{ showPassword ? 'text': 'password' }}"
+                    autocomplete="off"
+                    autocorrect="off"
+                    autocapitalize="off"
+                    spellcheck="false">
+        </ion-input>
+
+      </ion-item>
+
+      <!-- Toggle display password in plain text -->
+      <ion-item>
+
+        <ion-label>
+          Show Password
+        </ion-label>
+
+        <ion-checkbox (ionChange)="togglePasswordVisible()"></ion-checkbox>
+
+      </ion-item>
+
+      <!-- Set to remember user in storage -->
+      <ion-item>
+
+        <ion-label>
+          Remember Me
+        </ion-label>
+
+        <ion-checkbox formControlName="remember"></ion-checkbox>
+
+      </ion-item>
+
+    </form>
+
+    <!-- Form Buttons -->
+    <ion-grid>
+
+      <ion-row>
+
+        <!-- Form cancel button -->
+        <ion-col>
+
+          <ion-button color="primary"
+                      (click)="dismiss()"
+                      class="form-button">
+            Cancel
+          </ion-button>
+
+        </ion-col>
+
+        <!-- Log in submit button -->
+        <ion-col>
+
+          <ion-button color="primary"
+                      (click)="onSubmit()"
+                      class="form-button"
+                      [disabled]="!loginForm.valid">
+            Log In
+          </ion-button>
+
+        </ion-col>
+
+      </ion-row>
+
+    </ion-grid>
+
+  </ng-container>
+
+  <ng-container *ngIf="!loginForm">
+    Login Form Failed
+  </ng-container>
+
+</ion-content>

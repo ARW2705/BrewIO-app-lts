@@ -8,27 +8,45 @@ const routes: Routes = [
     component: TabsPage,
     children: [
       {
-        path: 'tab1',
-        loadChildren: () => import('../tab1/tab1.module').then(m => m.Tab1PageModule)
+        path: 'home',
+        loadChildren: () => import('../pages/home/home.module')
+          .then((m) => m.HomePageModule)
       },
       {
-        path: 'tab2',
-        loadChildren: () => import('../tab2/tab2.module').then(m => m.Tab2PageModule)
+        path: 'process',
+        loadChildren: () => import('../pages/process/process.module')
+          .then((m) => m.ProcessPageModule)
       },
       {
-        path: 'tab3',
-        loadChildren: () => import('../tab3/tab3.module').then(m => m.Tab3PageModule)
+        path: 'recipe',
+        loadChildren: () => import('../pages/recipe/recipe.module')
+          .then((m) => m.RecipePageModule)
+      },
+      {
+        path: 'recipe/:masterId',
+        loadChildren: () => import('../pages/recipe-detail/recipe-detail.module')
+          .then((m) => m.RecipeDetailPageModule)
+      },
+      {
+        path: 'extras',
+        loadChildren: () => import('../pages/extras/extras.module')
+          .then((m) => m.ExtrasPageModule)
+      },
+      {
+        path: 'recipe-form',
+        loadChildren: () => import('../pages/forms/recipe-form/recipe-form.module')
+          .then((m) => m.RecipeFormPageModule)
       },
       {
         path: '',
-        redirectTo: '/tabs/tab1',
+        redirectTo: '/tabs/home',
         pathMatch: 'full'
       }
     ]
   },
   {
     path: '',
-    redirectTo: '/tabs/tab1',
+    redirectTo: '/tabs/home',
     pathMatch: 'full'
   }
 ];

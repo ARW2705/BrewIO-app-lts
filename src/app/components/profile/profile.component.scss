@@ -1,0 +1,42 @@
+#form {
+  /* Display */
+  width: 100%;
+  padding: 5px 0;
+}
+
+.profile-field-button {
+  /* Display */
+  width: 100%;
+
+  /* Color */
+  background: transparent;
+  color: var(--ion-color-light);
+
+  /* Text */
+  font-size: 1.2rem;
+  text-align: left;
+
+  /* Children */
+  > span {
+    /* Display */
+    padding-left: 4px;
+
+    /* Text */
+    font-size: 1.35rem;
+  }
+}
+
+.user-button-container {
+  /* Display */
+  display: flex;
+  justify-content: center;
+}
+
+ion-item {
+  /* Display */
+  --padding-start: 0;
+  --padding-end: 0;
+  --inner-padding-start: 0;
+  --inner-padding-end: 0;
+  border-bottom: 1px solid var(--ion-color-light);
+}

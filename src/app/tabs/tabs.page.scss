@@ -1,1 +1,19 @@
+ion-label {
+  font-size: 1rem;
+}
 
+ion-tab-bar {
+  --background: var(--ion-color-dark);
+  --border: none;
+}
+
+ion-tab-button {
+  --background: var(--ion-color-light-shade);
+  --background-focused: var(--ion-color-primary);
+  --color: var(--ion-color-medium);
+  --color-selected: var(--ion-color-dark);
+}
+
+ion-tab-button[aria-selected="true"] {
+  --background: var(--ion-color-primary);
+}

@@ -1,0 +1,64 @@
+.description {
+  p {
+    /* Display */
+    margin: 10px 0;
+
+    /* Text */
+    font-size: 1.2rem;
+    text-align: center;
+  }
+}
+
+.timer-button {
+  /* Display */
+  width: 100%;
+  margin: 0;
+  min-height: 48px;
+
+  /* Color */
+  color: var(--ion-color-dark-tint);
+
+  /* Text */
+  font-size: 1.3rem;
+}
+
+.timer-container {
+  /* Display */
+  border: 2px solid var(--ion-color-primary);
+  border-radius: 15px;
+  margin: 2% 0;
+  padding: 0 1%;
+}
+
+.timer-individual-controls {
+  /* Display */
+  z-index: 1 !important;
+  width: 100%;
+  margin-top: 5px;
+  height: auto;
+  overflow: hidden;
+
+  /* Children */
+  ion-row {
+    /* Display */
+    padding: 5px;
+  }
+}
+
+.timer-row {
+  /* Display */
+  width: 100%;
+
+  /* Children */
+  > ion-col {
+    /* Display */
+    z-index: 2;
+
+    /* Children */
+    > h2 {
+      /* Text */
+      font-size: 2em;
+      text-align: center;
+    }
+  }
+}

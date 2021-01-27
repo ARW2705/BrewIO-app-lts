@@ -1,0 +1,34 @@
+<div id="manual-container">
+
+  <ion-grid>
+
+    <ion-row class="manual-preview">
+
+      <!-- Step name -->
+      <ion-col size="12">
+
+        <h2>
+          {{ stepData.name }}
+        </h2>
+
+      </ion-col>
+
+      <!-- Step description -->
+      <ion-col  size="12"
+                class="preview-info-container">
+
+        <p>
+          Description: {{ stepData.description }}
+        </p>
+
+        <p *ngIf="stepData.expectedDuration">
+          Expected Duration: {{ stepData.expectedDuration }}
+        </p>
+
+      </ion-col>
+
+    </ion-row>
+
+  </ion-grid>
+
+</div>

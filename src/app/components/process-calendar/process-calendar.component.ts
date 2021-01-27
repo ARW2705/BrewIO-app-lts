@@ -1,0 +1,112 @@
+/* Module imports */
+import { Component, Input, OnChanges, ViewChild } from '@angular/core';
+
+/* Interface imports */
+import { Alert } from '../../shared/interfaces/alert';
+import { Process } from '../../shared/interfaces/process';
+
+/* Utility imports */
+import { getId } from '../../shared/utility-functions/id-helpers';
+
+/* Component imports */
+import { CalendarComponent } from '../calendar/calendar.component';
+
+/* Service imports */
+import { EventService } from '../../services/event/event.service';
+
+
+@Component({
+  selector: 'process-calendar',
+  templateUrl: './process-calendar.component.html',
+  styleUrls: ['./process-calendar.component.scss']
+})
+export class ProcessCalendarComponent implements OnChanges {
+  @Input() alerts: Alert[];
+  @Input() isPreview: boolean;
+  @Input() stepData: Process;
+  @ViewChild('calendar') calendarRef: CalendarComponent;
+  closestAlert: Alert = null;
+  currentStepCalendarData: object = {};
+  showDescription: boolean = false;
+
+  constructor(public event: EventService) { }
+
+  ngOnChanges() {
+    console.log('process calendar changes');
+    this.currentStepCalendarData = {
+      _id: getId(this.stepData),
+      duration: this.stepData.duration,
+      title: this.stepData.name,
+      description: this.stepData.description
+    };
+    this.closestAlert = this.getClosestAlertByGroup();
+  }
+
+  /**
+   * Publish event to revert calendar to date selection view
+   *
+   * @params: none
+   * @return: none
+   */
+  changeDate(): void {
+    this.event.emit('change-date');
+  }
+
+  /**
+   * Get alert for a particular step that is closest to the present datetime
+   *
+   * @params: none
+   *
+   * @return: alert that is closest to the current datetime
+   */
+  getClosestAlertByGroup(): Alert {
+    if (!this.alerts.length) {
+      return null;
+    }
+
+    return this.alerts.reduce(
+      (acc: Alert, curr: Alert): Alert => {
+        const accDiff: number
+          = new Date(acc.datetime).getTime() - new Date().getTime();
+
+        const currDiff: number
+          = new Date(curr.datetime).getTime() - new Date().getTime();
+
+        const isCurrCloser: boolean
+          = Math.abs(currDiff) < Math.abs(accDiff) && currDiff > 0;
+
+        return isCurrCloser ? curr : acc;
+      }
+    );
+  }
+
+  /**
+   * Set the start of a calendar step and update server
+   *
+   * @params: none
+   *
+   * @return: object containing update and step id
+   */
+  startCalendar(): object {
+    const calendarValues: object = this.calendarRef.getFinal();
+    const update: object = {
+      startDatetime: calendarValues['startDatetime'],
+      alerts: calendarValues['alerts']
+    };
+    return {
+      id: getId(calendarValues),
+      update: update
+    };
+  }
+
+  /**
+   * Show or hide the current step description
+   *
+   * @params: none
+   * @return: none
+   */
+  toggleShowDescription(): void {
+    this.showDescription = !this.showDescription;
+  }
+
+}

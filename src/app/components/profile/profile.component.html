@@ -1,0 +1,124 @@
+<ion-grid *ngIf="user"
+          class="ion-no-padding container">
+
+  <ng-container *ngIf="isLoggedIn && userForm">
+
+    <!-- User profile form -->
+    <ion-row>
+
+      <form [formGroup]="userForm"
+            id="form">
+
+        <!-- Email field (not form) -->
+        <ion-item *ngIf="editing !== 'email'">
+
+          <!-- Toggle editing mode for email -->
+          <button (click)="changeEdit('email', undefined)"
+                  class="profile-field-button">
+
+            Email: <span>{{ userForm.value.email || 'NONE' }}</span>
+
+          </button>
+
+        </ion-item>
+
+        <!-- Email field (form) -->
+        <ion-item *ngIf="editing === 'email'">
+
+          <ion-label position="floating">
+            Email
+          </ion-label>
+
+          <ion-input  #email
+                      formControlName="email"
+                      (keyup.enter)="changeEdit('email', email)"
+                      (ionBlur)="changeEdit('email', email)"
+                      autocapitalize="off"
+                      type="text">
+          </ion-input>
+
+        </ion-item>
+
+        <!-- First name field (not form) -->
+        <ion-item *ngIf="editing !== 'firstname'">
+
+          <!-- Toggle editing mode for first name -->
+          <button (click)="changeEdit('firstname', undefined)"
+                  class="profile-field-button">
+
+            First name: <span>{{ userForm.value.firstname }}</span>
+
+          </button>
+
+        </ion-item>
+
+        <!-- First name field (form) -->
+        <ion-item *ngIf="editing === 'firstname'">
+
+          <ion-label position="floating">
+            First name
+          </ion-label>
+
+          <ion-input  #firstname
+                      formControlName="firstname"
+                      (keyup.enter)="changeEdit('firstname', firstname)"
+                      (ionBlur)="changeEdit('firstname', firstname)"
+                      autocapitalize="off"
+                      type="text">
+          </ion-input>
+
+        </ion-item>
+
+        <!-- Last name field (not form) -->
+        <ion-item *ngIf="editing !== 'lastname'">
+
+          <!-- Toggle editing mode for last name -->
+          <button (click)="changeEdit('lastname', undefined)"
+                  class="profile-field-button">
+
+            Last name: <span>{{ userForm.value.lastname }}</span>
+
+          </button>
+
+        </ion-item>
+
+        <!-- Last name field (form) -->
+        <ion-item *ngIf="editing === 'lastname'">
+
+          <ion-label position="floating">
+            Last name
+          </ion-label>
+
+          <ion-input  #lastname
+                      formControlName="lastname"
+                      (keyup.enter)="changeEdit('lastname', lastname)"
+                      (ionBlur)="changeEdit('lastname', lastname)"
+                      autocapitalize="off"
+                      type="text">
+          </ion-input>
+
+        </ion-item>
+
+      </form>
+
+    </ion-row>
+
+    <!-- Submit changes to user profile -->
+    <ion-row>
+
+      <ion-col class="user-button-container">
+
+        <!-- Button is disabled if data has not been changed -->
+        <ion-button color="primary"
+                    (click)="onUpdate()"
+                    [disabled]="!userForm.valid">
+          Update profile
+        </ion-button>
+
+      </ion-col>
+
+    </ion-row>
+
+  </ng-container>
+
+</ion-grid>

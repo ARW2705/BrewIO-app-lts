@@ -1,0 +1,36 @@
+<ion-list lines="none"
+          class="ion-no-padding list-border">
+
+  <!-- Current process step list -->
+  <ion-reorder-group  disabled="false"
+                      (ionItemReorder)="onReorder($event)">
+
+    <ion-item *ngFor="let step of schedule; index as i, last as isLast"
+              [ngClass]="{
+                'process-item': true,
+                'border-bottom-medium': !isLast
+              }">
+
+      <ion-label class="process-item-label">
+
+        <!-- Open process modal form to edit step -->
+        <button (click)="openProcessModal('update', step, i)">
+
+          <ion-icon color="primary"
+                    [name]="processIcons[step.type]">
+          </ion-icon>
+
+        </button>
+
+        <!-- Step name is not clickable -->
+        {{ step.name }}
+
+      </ion-label>
+
+      <ion-reorder slot="end"></ion-reorder>
+
+    </ion-item>
+
+  </ion-reorder-group>
+
+</ion-list>

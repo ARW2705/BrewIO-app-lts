@@ -1,0 +1,101 @@
+<div id="container">
+
+  <ion-label class="recipe-group-label">
+    Hops Schedule
+  </ion-label>
+
+  <ion-list lines="none"
+            class="ion-no-padding list-border">
+
+    <ion-item *ngFor="let hops of hopsSchedule; last as isLast"
+              class="item-buttons">
+
+      <!-- Selected hops item -->
+      <ion-grid class="ion-no-padding">
+
+        <!-- Open ingredient form modal in edit mode -->
+        <button (click)="openIngredientFormModal(hops)"
+                [ngClass]="{
+                  'item-button': true,
+                  'border-bottom-medium': !isLast
+                }">
+
+          <ion-row>
+
+            <!-- Pencil icon -->
+            <ion-col  size="2"
+                      class="ion-align-self-center">
+
+              <ion-icon color="primary"
+                        name="create-outline">
+              </ion-icon>
+
+            </ion-col>
+
+            <ion-col  size="10"
+                      class="ingredient-text-container">
+
+              <ion-row>
+
+                <!-- Hops name -->
+                <ion-col  size="8"
+                          class="col-left">
+                  {{ hops.hopsType.name }}
+                </ion-col>
+
+                <!-- Selected hops quantity -->
+                <ion-col  size="4"
+                          class="col-right">
+                  {{ hops.quantity | unitConversion:'weightSmall':true }}
+                </ion-col>
+
+              </ion-row>
+
+              <ion-row *ngIf="!hops.dryHop">
+
+                <!-- Calculated alpha acid by hops type -->
+                <ion-col class="col-left">
+                  {{ hops.hopsType.alphaAcid }}% AA
+                </ion-col>
+
+                <!-- Calculated IBU by alpha acid and boil duration -->
+                <ion-col>
+                  {{ hops | calculate:'ibu':variant:refreshPipes }}
+                </ion-col>
+
+                <!-- Display hops addition duration or 'Dry Hop' -->
+                <ion-col class="col-right">
+                  {{ hops.duration + 'min' }}
+                </ion-col>
+
+              </ion-row>
+
+              <ion-row *ngIf="hops.dryHop">
+
+                <ion-col class="col-left">
+                  0% AA
+                </ion-col>
+
+                <ion-col>
+                  0 IBU
+                </ion-col>
+
+                <ion-col class="col-right">
+                  Dry Hop
+                </ion-col>
+
+              </ion-row>
+
+            </ion-col>
+
+          </ion-row>
+
+        </button>
+
+      </ion-grid>
+
+    </ion-item>
+
+  </ion-list>
+
+</div>

@@ -1,5 +1,7 @@
 {
   "name": "brewIO",
-  "integrations": {},
+  "integrations": {
+    "cordova": {}
+  },
   "type": "angular"
 }

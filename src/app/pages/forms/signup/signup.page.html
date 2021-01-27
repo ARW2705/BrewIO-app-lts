@@ -1,0 +1,248 @@
+<app-header title="Sign Up"
+            [rootURL]="rootURL">
+</app-header>
+
+<ion-content class="sub-page">
+
+  <ng-container *ngIf="signupForm">
+
+    <form [formGroup]="signupForm">
+
+      <!-- Username input -->
+      <ion-item>
+
+        <ion-label position="floating">
+          Username
+        </ion-label>
+
+        <ion-input  formControlName="username"
+                    type="text"
+                    autocomplete="off"
+                    autocorrect="off"
+                    autocapitalize="off"
+                    spellcheck="false">
+        </ion-input>
+
+      </ion-item>
+
+      <!-- Username error message -->
+      <div class="form-error-container">
+
+        <form-error *ngIf="
+          signupForm.controls['username'].touched
+          && signupForm.controls['username'].errors
+        "
+                    formName="signup"
+                    controlName="username"
+                    [controlErrors]="signupForm.controls['username'].errors">
+        </form-error>
+
+      </div>
+
+
+      <!-- Password input -->
+      <ion-item>
+
+        <ion-label position="floating">
+          Password
+        </ion-label>
+
+        <ion-input  formControlName="password"
+                    [type]="showPassword ? 'text': 'password'"
+                    autocomplete="off"
+                    autocorrect="off"
+                    autocapitalize="off"
+                    spellcheck="false">
+        </ion-input>
+
+      </ion-item>
+
+      <!-- Password error message -->
+      <div class="form-error-container">
+
+        <form-error *ngIf="
+          signupForm.controls['password'].touched
+          && signupForm.controls['password'].errors
+        "
+                    formName="signup"
+                    controlName="password"
+                    [controlErrors]="signupForm.controls['password'].errors">
+        </form-error>
+
+      </div>
+
+
+      <!-- Password confirmation input -->
+      <ion-item>
+
+        <ion-label position="floating">
+          Confirm Password
+        </ion-label>
+
+        <ion-input  formControlName="passwordConfirmation"
+                    [type]="showPassword ? 'text': 'password'"
+                    autocomplete="off"
+                    autocorrect="off"
+                    autocapitalize="off"
+                    spellcheck="false">
+        </ion-input>
+
+      </ion-item>
+
+      <!-- Password confirmation error message -->
+      <div class="form-error-container">
+
+        <form-error *ngIf="
+          signupForm.controls['passwordConfirmation'].touched
+          && signupForm.controls['passwordConfirmation'].errors
+        "
+                    formName="signup"
+                    controlName="passwordConfirmation"
+                    [controlErrors]="signupForm.controls['passwordConfirmation'].errors">
+        </form-error>
+
+      </div>
+
+
+      <!-- Checkbox to toggle showing password as plain text or hidden -->
+      <ion-item class="item-checkbox">
+
+        <ion-label>
+          Show Password
+        </ion-label>
+
+        <ion-checkbox (ionChange)="togglePasswordVisible()"></ion-checkbox>
+
+      </ion-item>
+
+      <!-- Email input -->
+      <ion-item>
+
+        <ion-label>
+          Email
+        </ion-label>
+
+        <ion-input  formControlName="email"
+                    type="text"
+                    autocomplete="off"
+                    autocorrect="off"
+                    autocapitalize="off"
+                    spellcheck="false">
+        </ion-input>
+
+      </ion-item>
+
+      <!-- Email error message -->
+      <div class="form-error-container">
+
+        <form-error *ngIf="
+          signupForm.controls['email'].touched
+          && signupForm.controls['email'].errors
+        "
+                    formName="signup"
+                    controlName="email"
+                    [controlErrors]="signupForm.controls['email'].errors">
+        </form-error>
+
+      </div>
+
+
+      <!-- First name input -->
+      <ion-item>
+
+        <ion-label>
+          First Name
+        </ion-label>
+
+        <ion-input  formControlName="firstname"
+                    type="text"
+                    autocomplete="off"
+                    autocorrect="off"
+                    autocapitalize="off"
+                    spellcheck="false">
+        </ion-input>
+
+      </ion-item>
+
+      <!-- First name error message -->
+      <div class="form-error-container">
+
+        <form-error *ngIf="
+          signupForm.controls['firstname'].touched
+          && signupForm.controls['firstname'].errors
+        "
+                    formName="signup"
+                    controlName="firstname"
+                    [controlErrors]="signupForm.controls['firstname'].errors">
+        </form-error>
+
+      </div>
+
+
+      <!-- Last name input -->
+      <ion-item>
+
+        <ion-label>
+          Last Name
+        </ion-label>
+
+        <ion-input  formControlName="lastname"
+                    type="text"
+                    autocomplete="off"
+                    autocorrect="off"
+                    autocapitalize="off"
+                    spellcheck="false">
+        </ion-input>
+
+      </ion-item>
+
+      <!-- Last name error message -->
+      <div class="form-error-container">
+
+        <form-error *ngIf="
+          signupForm.controls['lastname'].touched
+          && signupForm.controls['lastname'].errors
+        "
+                    formName="signup"
+                    controlName="lastname"
+                    [controlErrors]="signupForm.controls['lastname'].errors">
+        </form-error>
+
+      </div>
+
+    </form>
+
+    <ion-grid>
+
+      <ion-row>
+
+        <!-- Form cancel button -->
+        <ion-col>
+
+          <ion-button color="primary"
+                      class="form-button"
+                      (click)="dismiss()">
+            Cancel
+          </ion-button>
+
+        </ion-col>
+
+        <!-- Form submit button -->
+        <ion-col>
+
+          <ion-button color="primary"
+                      class="form-button"
+                      (click)="onSubmit()"
+                      [disabled]="!signupForm.valid">
+            Sign Up
+          </ion-button>
+
+        </ion-col>
+
+      </ion-row>
+
+    </ion-grid>
+
+  </ng-container>
+
+</ion-content>

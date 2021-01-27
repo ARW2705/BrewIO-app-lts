@@ -1,0 +1,431 @@
+<app-header title="General Details"
+            [overrideBackButton]="onBackClick">
+</app-header>
+
+<ion-content class="sub-page">
+
+  <ng-container *ngIf="generalForm">
+
+    <form [formGroup]="generalForm">
+
+      <!-- Recipe Master Name Input -->
+      <ng-container *ngIf="formType === 'master'">
+
+        <ion-item>
+
+          <ion-label position="floating">
+            Enter Recipe Name
+          </ion-label>
+
+          <ion-input  formControlName="name"
+                      type="text"
+                      autocomplete="off"
+                      autocorrect="off"
+                      autocapitalize="off"
+                      spellcheck="false">
+          </ion-input>
+
+        </ion-item>
+
+        <!-- Error messages -->
+        <div class="form-error-container">
+
+          <form-error *ngIf="
+            generalForm.controls['name'].touched
+            && generalForm.controls['name'].errors
+          "
+                      formName="general"
+                      controlName="name"
+                      [controlErrors]="generalForm.controls['name'].errors">
+          </form-error>
+
+        </div>
+
+      </ng-container>
+
+
+      <!-- Recipe Variant Name Input -->
+      <ng-container *ngIf="formType === 'variant'">
+
+        <ion-item>
+
+          <ion-label position="floating">
+            Enter Batch Variant Name
+          </ion-label>
+
+          <ion-input  formControlName="variantName"
+                      type="text"
+                      autocomplete="off"
+                      autocorrect="off"
+                      autocapitalize="off"
+                      spellcheck="false">
+          </ion-input>
+
+        </ion-item>
+
+        <!-- Error messages -->
+        <div class="form-error-container">
+
+          <form-error *ngIf="
+            generalForm.controls['variantName'].touched
+            && generalForm.controls['variantName'].errors
+          "
+                      formName="general"
+                      controlName="variantName"
+                      [controlErrors]="generalForm.controls['variantName'].errors">
+          </form-error>
+
+        </div>
+
+      </ng-container>
+
+
+      <!-- Style Select -->
+      <ng-container *ngIf="formType === 'master'">
+
+        <ion-item>
+
+          <ion-label position="floating">
+            Select Style
+          </ion-label>
+
+          <ion-select formControlName="style"
+                      okText="Okay"
+                      cancelText="Dismiss"
+                      (ionCancel)="onStyleSelect()"
+                      (ionChange)="onStyleSelect()"
+                      [compareWith]="compareWithFn"
+                      [interfaceOptions]="selectOptions"
+                      #styleSelect>
+
+            <ion-select-option  *ngFor="let style of styles"
+                                [value]="style">
+              {{ style.name }}
+            </ion-select-option>
+
+          </ion-select>
+
+        </ion-item>
+
+        <!-- Error messages -->
+        <div class="form-error-container">
+
+          <form-error *ngIf="styleTouched && generalForm.controls['style'].errors"
+                      formName="general"
+                      controlName="style"
+                      [controlErrors]="generalForm.controls['style'].errors">
+          </form-error>
+
+        </div>
+
+      </ng-container>
+
+
+      <!-- Brewing Type Select -->
+      <ng-container *ngIf="!(formType === 'master' && docMethod === 'update')">
+
+        <ion-item>
+
+          <ion-label position="floating">
+            Brewing Type
+          </ion-label>
+
+          <ion-select formControlName="brewingType"
+                      okText="Okay"
+                      cancelText="Dismiss"
+                      (ionCancel)="onBrewingSelect()"
+                      (ionChange)="onBrewingSelect()"
+                      [interfaceOptions]="selectOptions">
+
+            <ion-select-option value="extract">
+              Extract
+            </ion-select-option>
+
+            <ion-select-option value="biab">
+              Brew in a Bag
+            </ion-select-option>
+
+            <ion-select-option value="allgrain">
+              All Grain
+            </ion-select-option>
+
+          </ion-select>
+
+        </ion-item>
+
+        <!-- Error messages -->
+        <div class="form-error-container">
+
+          <form-error *ngIf="brewingTouched && generalForm.controls['brewingType'].errors"
+                      formName="general"
+                      controlName="brewingType"
+                      [controlErrors]="generalForm.controls['brewingType'].errors">
+          </form-error>
+
+        </div>
+
+      </ng-container>
+
+
+      <!-- Efficiency Input -->
+      <ng-container *ngIf="!(formType === 'master' && docMethod === 'update')">
+
+        <ion-item>
+
+          <ion-label position="floating">
+            Efficiency (%)
+          </ion-label>
+
+          <ion-input  formControlName="efficiency"
+                      type="number"
+                      autocomplete="off">
+          </ion-input>
+
+        </ion-item>
+
+        <!-- Error messages -->
+        <div class="form-error-container">
+
+          <form-error *ngIf="
+            generalForm.controls['efficiency'].touched
+            && generalForm.controls['efficiency'].errors
+          "
+                      formName="general"
+                      controlName="efficiency"
+                      [controlErrors]="generalForm.controls['efficiency'].errors">
+          </form-error>
+
+        </div>
+
+      </ng-container>
+
+
+      <!-- Mash Time Duration Input -->
+      <ng-container *ngIf="!(formType === 'master' && docMethod === 'update')">
+
+        <ion-item>
+
+          <ion-label position="floating">
+            Mash Duration (Minutes)
+          </ion-label>
+
+          <ion-input  formControlName="mashDuration"
+                      type="number"
+                      autocomplete="off">
+          </ion-input>
+
+        </ion-item>
+
+        <!-- Error messages -->
+        <div class="form-error-container">
+
+          <form-error *ngIf="
+            generalForm.controls['mashDuration'].touched
+            && generalForm.controls['mashDuration'].errors
+          "
+                      formName="general"
+                      controlName="mashDuration"
+                      [controlErrors]="generalForm.controls['mashDuration'].errors">
+          </form-error>
+
+        </div>
+
+      </ng-container>
+
+
+      <!-- Boil Time Duration Input -->
+      <ng-container *ngIf="!(formType === 'master' && docMethod === 'update')">
+
+        <ion-item>
+
+          <ion-label position="floating">
+            Boil Duration (Minutes)
+          </ion-label>
+
+          <ion-input  formControlName="boilDuration"
+                      type="number"
+                      autocomplete="off">
+          </ion-input>
+
+        </ion-item>
+
+        <!-- Error messages -->
+        <div class="form-error-container">
+
+          <form-error *ngIf="
+            generalForm.controls['boilDuration'].touched
+            && generalForm.controls['boilDuration'].errors
+          "
+                      formName="general"
+                      controlName="boilDuration"
+                      [controlErrors]="generalForm.controls['boilDuration'].errors">
+          </form-error>
+
+        </div>
+
+      </ng-container>
+
+
+      <!-- Batch Volume Input -->
+      <ng-container *ngIf="!(formType === 'master' && docMethod === 'update')">
+
+        <ion-item>
+
+          <ion-label position="floating">
+            Batch Volume ({{ units !== null ? units.volumeLarge.longName: 'gallon' }}s)
+          </ion-label>
+
+          <ion-input  formControlName="batchVolume"
+                      type="number"
+                      autocomplete="off">
+          </ion-input>
+
+        </ion-item>
+
+        <!-- Error messages -->
+        <div class="form-error-container">
+
+          <form-error *ngIf="
+            generalForm.controls['batchVolume'].touched
+            && generalForm.controls['batchVolume'].errors
+          "
+                      formName="general"
+                      controlName="batchVolume"
+                      [controlErrors]="generalForm.controls['batchVolume'].errors">
+          </form-error>
+
+        </div>
+
+      </ng-container>
+
+
+      <!-- Mash Volume Input -->
+      <ng-container *ngIf="!(formType === 'master' && docMethod === 'update')">
+
+        <ion-item>
+
+          <ion-label position="floating">
+            Mash Volume ({{ units !== null ? units.volumeLarge.longName: 'gallon' }}s)
+          </ion-label>
+
+          <ion-input  formControlName="mashVolume"
+                      type="number"
+                      autocomplete="off">
+          </ion-input>
+
+        </ion-item>
+
+        <!-- Error messages -->
+        <div class="form-error-container">
+
+          <form-error *ngIf="
+            generalForm.controls['mashVolume'].touched
+            && generalForm.controls['mashVolume'].errors
+          "
+                      formName="general"
+                      controlName="mashVolume"
+                      [controlErrors]="generalForm.controls['mashVolume'].errors">
+          </form-error>
+
+        </div>
+
+      </ng-container>
+
+
+      <!-- Boil Volume Input -->
+      <ng-container *ngIf="!(formType === 'master' && docMethod === 'update')">
+
+        <ion-item>
+
+          <ion-label position="floating">
+            Boil Volume ({{ units !== null ? units.volumeLarge.longName: 'gallon' }}s)
+          </ion-label>
+
+          <ion-input  formControlName="boilVolume"
+                      type="number"
+                      autocomplete="off">
+          </ion-input>
+
+        </ion-item>
+
+        <!-- Error messages -->
+        <div class="form-error-container">
+
+          <form-error *ngIf="
+            generalForm.controls['boilVolume'].touched
+            && generalForm.controls['boilVolume'].errors
+          "
+                      formName="general"
+                      controlName="boilVolume"
+                      [controlErrors]="generalForm.controls['boilVolume'].errors">
+          </form-error>
+
+        </div>
+
+      </ng-container>
+
+
+      <ng-container *ngIf="formType === 'variant'">
+        <!-- Toggle recipe variant as favorite -->
+        <ion-item>
+
+          <ion-label>
+            Set as favorite
+          </ion-label>
+
+          <ion-toggle formControlName="isFavorite"
+                      color="primary">
+          </ion-toggle>
+
+        </ion-item>
+
+        <!-- Toggle recipe variant to use as recipe master -->
+        <ion-item>
+
+          <ion-label>
+            Set as recipe master
+          </ion-label>
+
+          <ion-toggle formControlName="isMaster"
+                      color="primary">
+          </ion-toggle>
+
+        </ion-item>
+
+      </ng-container>
+
+      <ion-grid>
+
+        <ion-row>
+
+          <ion-col>
+            <!-- Form cancel button -->
+            <ion-button color="primary"
+                        (click)="dismiss()"
+                        class="form-button">
+              Cancel
+            </ion-button>
+
+          </ion-col>
+
+          <!-- Form submit button -->
+          <ion-col>
+
+            <ion-button color="primary"
+                        (click)="onSubmit()"
+                        class="form-button"
+                        [disabled]="!generalForm.valid">
+              Submit
+            </ion-button>
+
+          </ion-col>
+
+        </ion-row>
+
+      </ion-grid>
+
+    </form>
+
+  </ng-container>
+
+</ion-content>

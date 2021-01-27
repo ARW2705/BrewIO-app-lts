@@ -1,0 +1,71 @@
+<app-header [title]="title"
+            [overrideBackButton]="onBackClick">
+</app-header>
+
+<ion-content>
+
+  <!-- Extras List -->
+  <div #listContainer>
+
+    <ion-list *ngIf="title === 'More Options'">
+
+      <ion-item *ngFor="let extra of extras; index as i"
+                button
+                (click)="displayComponent(i)">
+
+        <ion-label>
+
+          <ion-icon color="primary"
+                    item-start
+                    [name]="extra.icon">
+          </ion-icon>
+
+          {{ extra.title | titlecase }}
+
+        </ion-label>
+
+      </ion-item>
+
+    </ion-list>
+
+  </div>
+  <!-- End Extras List -->
+
+
+  <!-- Active Batches Component -->
+  <div #activeBatchesContainer>
+    <active-batches *ngIf="title === 'Active Batches'"
+                    rootURL="tabs/extras">
+    </active-batches>
+  </div>
+
+
+  <!-- Inventory Component -->
+  <div #inventoryContainer>
+    <inventory  *ngIf="title === 'Inventory'"
+                [optionalData]="optionalInventoryData">
+    </inventory>
+  </div>
+
+
+  <!-- Preferences Component -->
+  <div #preferencesContainer>
+    <preferences *ngIf="title === 'Preferences'"></preferences>
+  </div>
+
+
+  <!-- User Container -->
+  <div #userContainer>
+    <user *ngIf="title === 'User'"></user>
+  </div>
+
+
+  <!-- About Container -->
+  <div #aboutContainer>
+    <about *ngIf="title === 'About'"></about>
+  </div>
+
+  <!-- For testing purposes only -->
+  <!-- <button (click)="toggleConnection()">Connection</button> -->
+
+</ion-content>

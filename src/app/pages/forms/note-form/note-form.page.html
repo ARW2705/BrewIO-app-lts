@@ -1,0 +1,77 @@
+<app-header [title]="title"
+            [overrideBackButton]="onBackClick">
+</app-header>
+
+<ion-content class="sub-page">
+
+  <ion-grid *ngIf="note">
+
+    <!-- Form text area -->
+    <ion-row id="form-container">
+
+      <form>
+
+        <ion-textarea [formControl]="note"
+                      id="textarea"
+                      rows="7"
+                      autocomplete="off"
+                      autocorrect="off"
+                      autocapitalize="off"
+                      spellcheck="false">
+        </ion-textarea>
+
+      </form>
+
+      <ng-container *ngIf="note !== null && note.errors">
+
+        <div class="form-error">
+          Please limit notes to 120 characters
+        </div>
+
+      </ng-container>
+
+    </ion-row>
+
+    <ion-row>
+
+      <!-- Form cancel button -->
+      <ion-col>
+
+        <ion-button color="primary"
+                    (click)="dismiss()"
+                    class="form-button">
+          Cancel
+        </ion-button>
+
+      </ion-col>
+
+      <!-- Form submit button -->
+      <ion-col>
+
+        <ion-button color="primary"
+                    (click)="onSubmit()"
+                    class="form-button">
+          Submit
+        </ion-button>
+
+      </ion-col>
+
+    </ion-row>
+
+    <ion-row *ngIf="formMethod === 'update'">
+
+      <ion-col>
+
+        <ion-button color="danger"
+                    (click)="onDelete()"
+                    class="form-button">
+          Delete
+        </ion-button>
+
+      </ion-col>
+
+    </ion-row>
+
+  </ion-grid>
+
+</ion-content>

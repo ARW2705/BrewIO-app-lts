@@ -1,0 +1,73 @@
+<div id="container">
+
+  <ion-label class="recipe-group-label">
+    Other Ingredients
+  </ion-label>
+
+  <ion-list lines="none"
+            class="ion-no-padding list-border">
+
+    <ion-item *ngFor="let other of otherIngredients; last as isLast"
+              class="item-buttons">
+
+      <!-- Other ingredient item -->
+      <ion-grid class="ion-no-padding">
+
+        <!-- Open ingredient form modal in edit mode -->
+        <button (click)="openIngredientFormModal(other)"
+                [ngClass]="{
+                  'item-button': true,
+                  'border-bottom-medium': !isLast
+                }">
+
+          <ion-row>
+
+            <!-- Pencil icon -->
+            <ion-col  size="2"
+                      class="ion-align-self-center">
+
+              <ion-icon color="primary"
+                        name="create-outline">
+              </ion-icon>
+
+            </ion-col>
+
+            <ion-col  size="10"
+                      class="ingredient-text-container">
+
+              <ion-row>
+
+                <!-- Other ingredient's name -->
+                <ion-col class="col-left">
+                  {{ other.name }}
+                </ion-col>
+
+                <!-- Quantity and units of ingredient -->
+                <ion-col class="col-right">
+                  {{ other.quantity }} {{ other.units }}
+                </ion-col>
+
+              </ion-row>
+
+              <ion-row>
+
+                <!-- Description of ingredient -->
+                <ion-col class="other-ingredient-description">
+                  {{ other.type | titlecase }}: {{ other.description }}
+                </ion-col>
+
+              </ion-row>
+
+            </ion-col>
+
+          </ion-row>
+
+        </button>
+
+      </ion-grid>
+
+    </ion-item>
+
+  </ion-list>
+
+</div>

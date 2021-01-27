@@ -1,0 +1,120 @@
+#description-container {
+  /* Display */
+  width: 100%;
+  margin: 0 5px 5px;
+  padding: 0 16px;
+  border: 1px solid var(--ion-color-secondary);
+  border-radius: 5px;
+}
+
+.alert-datetime {
+  /* Display */
+  width: 100%;
+
+  /* Text */
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.alert-description {
+  /* Color */
+  color: var(--ion-color-light);
+
+  /* Text */
+  white-space: normal;
+  text-align: center;
+}
+
+.alert-list {
+  .item-inner {
+    /* Display */
+    border: none;
+  }
+
+  h3 {
+    /* Display */
+    margin-top: 0;
+
+    /* Text */
+    text-align: center;
+  }
+}
+
+.calendar-description {
+  /* Text */
+  text-align: center;
+}
+
+.calendar-preview {
+  /* Display */
+  width: 100%;
+
+  /* Children */
+  .preview-info-container {
+    /* Display */
+    width: 100%;
+    padding: 0 16px;
+    border: 1px solid var(--ion-color-secondary);
+    border-radius: 5px;
+  }
+
+  h2 {
+    /* Display */
+    width: 100%;
+    border-bottom: 1px solid var(--ion-color-light);
+    text-align: center;
+  }
+
+  p {
+    /* Display */
+    width: 100%;
+    border: 0;
+  }
+}
+
+.calendar-preview,
+.calendar-view {
+  &ion-col:first-child {
+    /* Display */
+    padding-top: 5px;
+  }
+}
+
+.change-button {
+  /* Display */
+  display: block;
+  margin: 0.6rem auto;
+}
+
+.expand-button {
+  /* Display */
+  width: 100%;
+  background: transparent;
+
+  /* Color */
+  color: var(--ion-color-light);
+
+  /* Text */
+  text-align: center;
+  font-size: 2em;
+
+  /* Children */
+  h2 {
+    /* Display */
+    margin: 0;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+.next-datetime {
+  /* Color */
+  color: var(--ion-color-warning);
+}
+
+
+calendar {
+  /* Display */
+  width: 100%;
+  margin: 0 0 60px;
+}

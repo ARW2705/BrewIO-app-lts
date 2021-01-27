@@ -1,0 +1,59 @@
+<app-header [title]="title"
+            [rootURL]="rootURL">
+</app-header>
+
+<ion-content>
+
+  <ion-spinner *ngIf="!selectedBatch"></ion-spinner>
+
+  <ion-grid *ngIf="selectedBatch">
+
+    <!-- Manual Step View -->
+    <ion-row *ngIf="stepType === 'manual'">
+
+      <process-manual [stepData]="stepData"
+                      class="sub-component">
+      </process-manual>
+
+    </ion-row>
+    <!-- End Manual Step View -->
+
+
+    <!-- Timer Step View -->
+    <ion-row *ngIf="stepType === 'timer'">
+
+      <process-timer  [batchId]="selectedBatch.cid"
+                      [isPreview]="selectedBatch.process.currentStep !== viewStepIndex"
+                      [stepData]="stepData"
+                      class="sub-component">
+      </process-timer>
+
+    </ion-row>
+    <!-- End Timer Step View -->
+
+
+    <!-- Calendar Step View -->
+    <ion-row *ngIf="stepType === 'calendar'">
+
+      <process-calendar #calendar
+                        [alerts]="alerts"
+                        [isPreview]="selectedBatch.process.currentStep !== viewStepIndex"
+                        [stepData]="stepData"
+                        class="sub-component">
+      </process-calendar>
+
+    </ion-row>
+    <!-- End Calendar Step View -->
+
+  </ion-grid>
+
+</ion-content>
+
+<process-controls *ngIf="selectedBatch"
+                  [onControlAction]="onControlAction"
+                  [atViewStart]="atViewStart"
+                  [atViewEnd]="atViewEnd"
+                  [onCurrentStep]="selectedBatch.process.currentStep === viewStepIndex"
+                  [isCalendarStep]="stepData && stepData.type === 'calendar'"
+                  [isCalendarInProgress]="isCalendarInProgress">
+</process-controls>

@@ -1,0 +1,213 @@
+<div>
+
+  <!-- Form generation error notification -->
+  <div *ngIf="preferencesForm === null">
+    Form Load Error
+  </div>
+
+  <!-- Preferences form -->
+  <ng-container *ngIf="preferencesForm !== null">
+
+    <form [formGroup]="preferencesForm"
+          id="preference-form">
+
+      <!-- Preferred Overall Unit System -->
+      <ion-item>
+
+        <ion-label position="floating">
+          Preferred Unit System
+        </ion-label>
+
+        <ion-select formControlName="preferredUnitSystem"
+                    okText="Okay"
+                    cancelText="Dismiss"
+                    (ionChange)="onSystemChange($event)"
+                    [interfaceOptions]="selectOptions">
+
+          <ion-select-option value="metric">
+            Metric
+          </ion-select-option>
+
+          <ion-select-option value="englishStandard">
+            English Standard
+          </ion-select-option>
+
+          <ion-select-option value="none">
+            Other / Mixed
+          </ion-select-option>
+
+        </ion-select>
+
+      </ion-item>
+      <!-- End Preferred Overall Unit System -->
+
+
+      <!-- Wort density select -->
+      <ion-item>
+
+        <ion-label position="floating">
+          Density
+        </ion-label>
+
+        <ion-select formControlName="density"
+                    okText="Okay"
+                    cancelText="Dismiss"
+                    [interfaceOptions]="selectOptions">
+
+          <ion-select-option value="specificGravity">
+            Specific Gravity
+          </ion-select-option>
+
+          <ion-select-option value="brix">
+            Brix
+          </ion-select-option>
+
+          <ion-select-option value="plato">
+            Plato
+          </ion-select-option>
+
+        </ion-select>
+
+      </ion-item>
+      <!-- End Wort density select -->
+
+
+      <!-- Small scale weight -->
+      <ion-item>
+
+        <ion-label class="preference-toggle">
+
+          <span>
+            Weight (small)
+          </span>
+
+          <span>
+            {{ displayUnits['weightSmall'] | titlecase }}
+          </span>
+
+        </ion-label>
+
+        <ion-toggle formControlName="weightSmall"
+                    color="primary"
+                    (ionChange)="onToggle('weightSmall', $event)">
+        </ion-toggle>
+
+      </ion-item>
+      <!-- End Small scale weight -->
+
+
+      <!-- Large scale weight -->
+      <ion-item>
+
+        <ion-label class="preference-toggle">
+
+          <span>
+            Weight (large)
+          </span>
+
+          <span>
+            {{ displayUnits['weightLarge'] | titlecase }}
+          </span>
+
+        </ion-label>
+
+        <ion-toggle formControlName="weightLarge"
+                    color="primary"
+                    (ionChange)="onToggle('weightLarge', $event)">
+        </ion-toggle>
+
+      </ion-item>
+      <!-- End Large scale weight -->
+
+
+      <!-- Small scale volume -->
+      <ion-item>
+
+        <ion-label class="preference-toggle">
+
+          <span>
+            Volume (small)
+          </span>
+
+          <span>
+            {{ displayUnits['volumeSmall'] | titlecase }}
+          </span>
+
+        </ion-label>
+
+        <ion-toggle formControlName="volumeSmall"
+                    color="primary"
+                    (ionChange)="onToggle('volumeSmall', $event)">
+        </ion-toggle>
+
+      </ion-item>
+      <!-- End Small scale volume -->
+
+
+      <!-- Large scale volume -->
+      <ion-item>
+
+        <ion-label class="preference-toggle">
+
+          <span>
+            Volume (large)
+          </span>
+
+          <span>
+            {{ displayUnits['volumeLarge'] | titlecase }}
+          </span>
+
+        </ion-label>
+
+        <ion-toggle formControlName="volumeLarge"
+                    color="primary"
+                    (ionChange)="onToggle('volumeLarge', $event)">
+        </ion-toggle>
+
+      </ion-item>
+      <!-- End Large scale volume -->
+
+
+      <!-- Temperature selection -->
+      <ion-item>
+
+        <ion-label class="preference-toggle">
+
+          <span>
+            Temperature
+          </span>
+
+          <span>
+            {{ displayUnits['temperature'] | titlecase }}
+          </span>
+
+        </ion-label>
+
+        <ion-toggle formControlName="temperature"
+                    color="primary"
+                    (ionChange)="onToggle('temperature', $event)">
+        </ion-toggle>
+
+      </ion-item>
+      <!-- End Temperature selection -->
+
+    </form>
+
+    <!-- Submit update button -->
+    <ion-grid>
+
+      <ion-row class="ion-justify-content-center">
+
+        <ion-button color="primary"
+                    (click)="onSubmit()"
+                    class="form-button">
+          Update
+        </ion-button>
+
+      </ion-row>
+
+    </ion-grid>
+
+  </ng-container>
+
+</div>

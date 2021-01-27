@@ -1,0 +1,75 @@
+<div id="calculated-values">
+
+  <ion-grid>
+
+    <!-- Original Gravity -->
+    <ion-row>
+
+      <!-- Calculated original gravity -->
+      <ion-col  size="7"
+                class="col-left">
+        Original Gravity {{ variant.originalGravity | unitConversion:'density':true }}
+      </ion-col>
+
+      <!-- Style specified original gravity -->
+      <ion-col  size="5"
+                class="col-right">
+        {{ style.originalGravity[0] | unitConversion:'density' }} - {{ style.originalGravity[1] | unitConversion:'density' }}
+      </ion-col>
+
+    </ion-row>
+
+    <!-- Final Gravity -->
+    <ion-row>
+
+      <!-- Calculated final gravity -->
+      <ion-col  size="7"
+                class="col-left">
+        Final Gravity {{ variant.finalGravity | unitConversion:'density':true }}
+      </ion-col>
+
+      <!-- Style specified final gravity -->
+      <ion-col  size="5"
+                class="col-right">
+        {{ style.finalGravity[0] | unitConversion:'density' }} - {{ style.finalGravity[1] | unitConversion:'density' }}
+      </ion-col>
+
+    </ion-row>
+
+    <!-- International Bittering Units -->
+    <ion-row>
+
+      <!-- Calculated IBU -->
+      <ion-col  size="7"
+                class="col-left">
+        IBU {{ variant.IBU | truncate:1 }}
+      </ion-col>
+
+      <!-- Style specified IBU -->
+      <ion-col  size="5"
+                class="col-right">
+        {{ style._id !== '-1' ? style.IBU[0]: '--' }} - {{ style._id !== '-1' ? style.IBU[1]: '--' }}
+      </ion-col>
+
+    </ion-row>
+
+    <!-- Standard Research Method -->
+    <ion-row>
+
+      <!-- Calculated SRM -->
+      <ion-col  size="7"
+                class="col-left">
+        SRM {{ variant.SRM | truncate:1 }}
+      </ion-col>
+
+      <!-- Style specified SRM -->
+      <ion-col  size="5"
+                class="col-right">
+        {{ style._id !== '-1' ? style.SRM[0]: '--' }} - {{ style._id !== '-1' ? style.SRM[1]: '--' }}
+      </ion-col>
+
+    </ion-row>
+
+  </ion-grid>
+
+</div>

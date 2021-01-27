@@ -1,0 +1,75 @@
+#form-container {
+  /* Display */
+  margin: 10px 16px;
+  border-radius: 15px;
+}
+
+#generalInfoModalButton {
+  /* Display */
+  width: 100%;
+  border-radius: 10px;
+  box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.6);
+  -webkit-box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.6);
+
+  /* Color */
+  background-color: var(--ion-color-primary);
+
+  /* Children */
+  ion-row:first-child {
+    ion-col:first-child {
+      /* Text */
+      font-size: 1.5rem;
+    }
+  }
+
+  ion-row:last-child {
+    /* Display */
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+}
+
+#values-header {
+  /* Display */
+  border-bottom: 1px solid var(--ion-color-light);
+}
+
+
+.border-bottom-light {
+  /* Display */
+  border-bottom: 2px solid var(--ion-color-light-shade);
+}
+
+.border-bottom-medium {
+  /* Display */
+  border-bottom: 2px solid var(--ion-color-medium);
+}
+
+.col-header {
+  /* Text */
+  font-size: 1.35rem;
+}
+
+.form-button {
+  /* Display */
+  width: 100%;
+  margin: 10px 0;
+}
+
+
+ion-grid {
+  /* Display */
+  background: var(--ion-color-medium-shade);
+  -webkit-box-shadew: inset 0 0 40px 20px #4a4a4a;
+  box-shadow: inset 0 0 40px 20px #4a4a4a;
+}
+
+ion-icon {
+  /* Text */
+  font-size: 2.5em;
+}
+
+ion-reorder {
+  /* Display */
+  margin-right: 16px;
+}

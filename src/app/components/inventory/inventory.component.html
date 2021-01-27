@@ -1,0 +1,365 @@
+<ion-grid>
+
+  <!-- Loading Spinner -->
+  <ion-row  *ngIf="displayList === null"
+            class="no-items">
+
+    Loading Inventory
+
+    <ion-spinner></ion-spinner>
+
+  </ion-row>
+
+  <!-- Open Inventory form for third party items -->
+  <ion-row *ngIf="displayList">
+
+    <ion-button color="primary"
+                (click)="openInventoryFormModal({})"
+                class="form-button">
+      ADD CUSTOM ITEM
+    </ion-button>
+
+  </ion-row>
+
+  <!-- Empty Inventory Notification -->
+  <ion-row  *ngIf="displayList && !displayList.length"
+            class="ion-justify-content-center no-items">
+    No Items in Inventory
+  </ion-row>
+
+  <!-- If list is loaded and has items -->
+  <ng-container *ngIf="displayList !== null && displayList.length">
+
+    <!-- Sorting and filtering inputs -->
+    <ion-row>
+
+      <ion-list id="search-option-list">
+
+        <!-- Sorting Selection -->
+        <ion-item>
+
+          <ion-label>
+            Sort
+          </ion-label>
+
+          <ion-select value="alphabetical"
+                      okText="Okay"
+                      cancelText="Dismiss"
+                      (ionChange)="onSortChange($event)"
+                      [interfaceOptions]="selectOptions">
+
+            <ion-select-option value="alphabetical">
+              Alphabetical
+            </ion-select-option>
+
+            <ion-select-option value="remaining">
+              Remaining
+            </ion-select-option>
+
+            <ion-select-option value="source">
+              Source
+            </ion-select-option>
+
+          </ion-select>
+
+        </ion-item>
+
+        <!-- Order Selection -->
+        <ion-item>
+
+          <ion-label>
+            Order
+          </ion-label>
+
+          <ion-select (ionChange)="onDirectionChange($event)"
+                      [value]="true"
+                      [interfaceOptions]="selectOptions">
+
+            <ion-select-option [value]="true">
+              Ascending
+            </ion-select-option>
+
+            <ion-select-option [value]="false">
+              Descending
+            </ion-select-option>
+
+          </ion-select>
+
+        </ion-item>
+
+      </ion-list>
+
+    </ion-row>
+    <!-- End Sorting and Filtering Inputs -->
+
+
+    <!-- Inventory list -->
+    <ion-row>
+
+      <ion-col size="12">
+
+        <ion-list #slidingItemsList
+                  id="inventory-list">
+
+          <ng-container *ngFor="let item of displayList; index as i">
+
+            <!-- Slide left to quick decrement count and right for edit button -->
+            <ion-item-sliding [ngClass]="{
+                                'inventory-item': true,
+                                'source-self': item.sourceType === 'self',
+                                'source-other': item.sourceType === 'otherUser',
+                                'source-third': item.sourceType === 'thirdParty'
+                              }">
+
+              <!-- Open inventory form to edit item -->
+              <ion-item-options side="start">
+
+                <ion-item-option  color="secondary"
+                                  (click)="openInventoryFormModal({item: item})">
+                  <ion-icon name="menu"></ion-icon>
+                  Edit
+                </ion-item-option>
+
+              </ion-item-options>
+
+              <ion-item lines="none"
+                        (click)="expandItem(i)"
+                        class="expand-button">
+
+                <ion-label>
+                  {{ item.itemName | titlecase }}{{ item.optionalItemData.itemSubname ? ' | ' + item.optionalItemData.itemSubname : ''}}
+                </ion-label>
+
+              </ion-item>
+
+              <!-- Decrement item count -->
+              <ion-item-options side="end">
+
+                <ion-item-option  color="primary"
+                                  (click)="decrementCount(item)">
+
+                  <ion-icon name="beer"></ion-icon>
+
+                  Enjoy
+
+                </ion-item-option>
+
+              </ion-item-options>
+
+            </ion-item-sliding>
+
+            <!-- Inventory list -->
+            <accordion  [expanded]="itemIndex === i"
+                        [id]="'scroll-landmark-' + i">
+
+              <ion-card class="inventory-card">
+
+                <ion-card-header>
+                  {{ item.itemStyleName }}
+                </ion-card-header>
+
+                <ion-card-content>
+
+                  <ion-grid class="ion-no-padding">
+
+                    <ion-row class="item-details">
+
+                      <ion-col  size="7"
+                                class="ion-no-padding">
+
+                        <ion-row>
+
+                          <!-- Left column field names -->
+                          <ion-col class="col-left ion-no-padding">
+
+                            <ion-row>
+                              Stock
+                            </ion-row>
+
+                            <ion-row>
+                              Type
+                            </ion-row>
+
+                            <ion-row>
+                              ABV
+                            </ion-row>
+
+                            <ion-row *ngIf="item.optionalItemData.itemIBU">
+                              IBU
+                            </ion-row>
+
+                            <ion-row *ngIf="item.optionalItemData.itemSRM">
+                              SRM
+                            </ion-row>
+
+                            <ion-row>
+                              Added
+                            </ion-row>
+
+                          </ion-col>
+
+                          <!-- Right column field values -->
+                          <ion-col class="col-right ion-no-padding">
+
+                            <ion-row [ngStyle]="{ color: item.optionalItemData.remainingColor || '#f4f4f4' }">
+                              {{ item | formatStock:'quantity':refreshPipes }}
+                            </ion-row>
+
+                            <ion-row>
+                              {{ item | formatStock:'type' }}
+                            </ion-row>
+
+                            <ion-row [ngClass]="{
+                              'abv-low': item.itemABV < 5,
+                              'abv-mid': item.itemABV >= 5 && item.itemABV < 7,
+                              'abv-high': item.itemABV >= 7 && item.itemABV < 10,
+                              'abv-ultra': item.itemABV >= 10
+                            }">
+                              {{ item.itemABV | truncate:1 }}%
+                            </ion-row>
+
+                            <ion-row  *ngIf="item.optionalItemData.itemIBU"
+                                      [ngClass]="{
+                                        'ibu-low': item.optionalItemData.itemIBU < 20,
+                                        'ibu-mid': item.optionalItemData.itemIBU >= 20 && item.optionalItemData.itemIBU < 60,
+                                        'ibu-high': item.optionalItemData.itemIBU >= 60 && item.optionalItemData.itemIBU < 100,
+                                        'ibu-ultra': item.optionalItemData.itemIBU >= 100
+                                      }">
+                              {{ item.optionalItemData.itemIBU | round }}
+                            </ion-row>
+
+                            <ion-row *ngIf="item.optionalItemData.itemSRM">
+
+                              <span class="srm-text">
+                                {{ item.optionalItemData.itemSRM | round }}
+                              </span>
+
+                              <ion-icon name="pint"
+                                        [ngStyle]="{ color: item.optionalItemData.srmColor || '#f4f4f4' }"
+                                        class="pint-icon">
+                              </ion-icon>
+
+                            </ion-row>
+
+                            <ion-row>
+                              {{ item.createdAt | date:'MMM/yy' }}
+                            </ion-row>
+
+                          </ion-col>
+
+                        </ion-row>
+
+                      </ion-col>
+
+
+                      <ion-col  size="5"
+                                class="ion-no-padding">
+
+                        <!-- Item label image -->
+                        <ion-row id="label-image-container">
+
+                          <ng-container *ngIf="item.optionalItemData.itemLabelImage">
+
+                            <ion-img  (ionError)="onImageError('item', item, $event)"
+                                      [src]="item.optionalItemData.itemLabelImage.url"
+                                      alt="label art">
+                            </ion-img>
+
+                          </ng-container>
+
+                          <ng-container *ngIf="!item.optionalItemData.itemLabelImage">
+
+                            <ion-img  [src]="missingImageURL"
+                                      alt="missing label art icon">
+                            </ion-img>
+
+                          </ng-container>
+
+                        </ion-row>
+
+                        <!-- Item supplier info -->
+                        <ion-row>
+
+                          <ion-col class="ion-align-self-center">
+
+                            <a  *ngIf="item.supplierURL !== undefined"
+                                [href]="item.supplierURL"
+                                target="blank">
+                              {{ item.supplierName }}
+                            </a>
+
+                            <ng-container *ngIf="item.supplierURL === undefined">
+                              {{ item.supplierName }}
+                            </ng-container>
+
+                          </ion-col>
+
+                          <!-- Item supplier image -->
+                          <ion-col>
+
+                            <ng-container *ngIf="item.optionalItemData.supplierLabelImage">
+
+                              <ion-img  (ionError)="onImageError('supplier', item, $event)"
+                                        [src]="item.optionalItemData.supplierLabelImage.url"
+                                        alt="label art">
+                              </ion-img>
+
+                            </ng-container>
+
+                            <ng-container *ngIf="!item.optionalItemData.supplierLabelImage">
+
+                              <ion-img  [src]="missingImageURL"
+                                        alt="missing label art icon">
+                              </ion-img>
+
+                            </ng-container>
+
+                          </ion-col>
+
+                        </ion-row>
+
+                      </ion-col>
+
+                    </ion-row>
+
+                    <!-- Item description -->
+                    <ion-row  *ngIf="item.description.length"
+                              class="item-description">
+
+                      <ion-col size="12">
+
+                        <ion-label>
+                          Description
+                        </ion-label>
+
+                      </ion-col>
+
+                      <ion-col size="12">
+
+                        <p>
+                          {{ item.description }}
+                        </p>
+
+                      </ion-col>
+
+                    </ion-row>
+
+                  </ion-grid>
+
+                </ion-card-content>
+
+              </ion-card>
+
+            </accordion>
+
+          </ng-container>
+
+        </ion-list>
+
+      </ion-col>
+
+    </ion-row>
+
+  </ng-container>
+
+</ion-grid>
