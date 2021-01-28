@@ -32,22 +32,26 @@ export class AppComponent {
     public recipeService: RecipeService,
     public userService: UserService
   ) {
-    this.initializeApp();
     this.libraryService.fetchAllLibraries();
     this.userService.loadUserFromStorage();
+    this.initializeApp();
   }
 
   /**
    * Listen for platform ready event; dismiss splash screen when ready
+   * Note - calling splashscreen hide on platform ready causes white screen after
+   * platform ready is emitted, but before displaying home component; currently
+   * found a workaround to call hide after all background methods are finish;
+   * investigating alternatives
    *
    * @params: none
    * @return: none
    */
   initializeApp(): void {
     this.platform.ready().then(() => {
-      console.log('APP READY');
+      console.log('APP READY...6');
       this.statusBar.styleDefault();
-      this.splashScreen.hide();
+      // this.splashScreen.hide();
     });
   }
 

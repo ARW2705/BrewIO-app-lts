@@ -1,8 +1,9 @@
 /* Module imports */
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { BehaviorSubject, Observable, forkJoin, throwError, combineLatest, of, concat } from 'rxjs';
-import { catchError, defaultIfEmpty, first, map, mergeMap } from 'rxjs/operators';
+import { catchError, defaultIfEmpty, finalize, first, map, mergeMap } from 'rxjs/operators';
 
 /* Constant imports */
 import { API_VERSION } from '../../shared/constants/api-version';
@@ -61,6 +62,7 @@ export class InventoryService {
     public processHttpError: HttpErrorService,
     public processService: ProcessService,
     public recipeService: RecipeService,
+    public splashScreen: SplashScreen,
     public storageService: StorageService,
     public syncService: SyncService,
     public toastService: ToastService,
@@ -271,6 +273,7 @@ export class InventoryService {
    */
   initializeInventory(): void {
     this.storageService.getInventory()
+      .pipe(finalize((): void => this.splashScreen.hide()))
       .subscribe(
         (inventory: InventoryItem[]): void => {
           const list$: BehaviorSubject<InventoryItem[]> = this.getInventoryList();
