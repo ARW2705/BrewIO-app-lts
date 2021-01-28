@@ -11,31 +11,21 @@ import { ModalController } from '@ionic/angular';
 export class ConfirmationPage {
   @Input() message: string = '';
   @Input() subMessage: string = null;
-  @Input() title: string = '';
   onBackClick: () => void;
 
   constructor(public modalCtrl: ModalController) {
-    this.onBackClick = this.dismiss.bind(this);
+    this.onBackClick = this.submit.bind(this, false);
   }
 
   /**
-   * Confirm by calling modal controller dismiss with true
+   * Confirm by calling modal controller dismiss
    *
-   * @params: none
+   * @params: confirm - true if confirmed, false to cancel
+   *
    * @return: none
    */
-  confirm(): void {
-    this.modalCtrl.dismiss(true);
-  }
-
-  /**
-   * Cancel confirmation by calling modal controller dismiss with false
-   *
-   * @params: none
-   * @return: none
-   */
-  dismiss(): void {
-    this.modalCtrl.dismiss(false);
+  submit(confirm: boolean): void {
+    this.modalCtrl.dismiss(confirm);
   }
 
 }

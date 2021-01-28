@@ -1,4 +1,4 @@
-<app-header [title]="title + ' Confirmation'"
+<app-header title="Confirmation"
             [overrideBackButton]="onBackClick">
 </app-header>
 
@@ -23,7 +23,7 @@
       <ion-col size="6">
 
         <ion-button color="primary"
-                    (click)="dismiss()"
+                    (click)="submit(false)"
                     class="form-button">
           Cancel
         </ion-button>
@@ -34,7 +34,7 @@
       <ion-col size="6">
 
         <ion-button color="danger"
-                    (click)="confirm()"
+                    (click)="submit(true)"
                     class="form-button">
           Confirm
         </ion-button>

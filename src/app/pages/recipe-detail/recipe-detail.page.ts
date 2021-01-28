@@ -184,7 +184,6 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
     const modal: HTMLIonModalElement = await this.modalCtrl.create({
       component: ConfirmationPage,
       componentProps: {
-        title: 'Variant',
         message: `Confirm deletion of "${this.displayVariantList[index].variantName}"`,
         subMessage: 'This action cannot be reversed'
       }

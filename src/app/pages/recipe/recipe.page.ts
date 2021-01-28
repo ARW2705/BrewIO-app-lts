@@ -210,7 +210,6 @@ export class RecipePage implements OnInit, OnDestroy {
     const modal: HTMLIonModalElement = await this.modalCtrl.create({
       component: ConfirmationPage,
       componentProps: {
-        title: 'Recipe',
         message: `Confirm deletion of "${this.masterList[index].name}" and its variants`,
         subMessage: 'This action cannot be reversed'
       }
