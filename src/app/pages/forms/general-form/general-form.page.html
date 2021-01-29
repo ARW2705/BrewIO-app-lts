@@ -6,6 +6,10 @@
 
   <ng-container *ngIf="generalForm">
 
+    <p class="form-info required">
+      Required fields
+    </p>
+
     <form [formGroup]="generalForm">
 
       <!-- Recipe Master Name Input -->
@@ -13,7 +17,8 @@
 
         <ion-item>
 
-          <ion-label position="floating">
+          <ion-label  class="required"
+                      position="floating">
             Enter Recipe Name
           </ion-label>
 
@@ -22,6 +27,7 @@
                       autocomplete="off"
                       autocorrect="off"
                       autocapitalize="off"
+                      required="true"
                       spellcheck="false">
           </ion-input>
 
@@ -49,7 +55,8 @@
 
         <ion-item>
 
-          <ion-label position="floating">
+          <ion-label  class="required"
+                      position="floating">
             Enter Batch Variant Name
           </ion-label>
 
@@ -58,6 +65,7 @@
                       autocomplete="off"
                       autocorrect="off"
                       autocapitalize="off"
+                      required="true"
                       spellcheck="false">
           </ion-input>
 
@@ -85,13 +93,15 @@
 
         <ion-item>
 
-          <ion-label position="floating">
+          <ion-label  class="required"
+                      position="floating">
             Select Style
           </ion-label>
 
           <ion-select formControlName="style"
                       okText="Okay"
                       cancelText="Dismiss"
+                      required="true"
                       (ionCancel)="onStyleSelect()"
                       (ionChange)="onStyleSelect()"
                       [compareWith]="compareWithFn"
@@ -126,13 +136,15 @@
 
         <ion-item>
 
-          <ion-label position="floating">
+          <ion-label  class="required"
+                      position="floating">
             Brewing Type
           </ion-label>
 
           <ion-select formControlName="brewingType"
                       okText="Okay"
                       cancelText="Dismiss"
+                      required="true"
                       (ionCancel)="onBrewingSelect()"
                       (ionChange)="onBrewingSelect()"
                       [interfaceOptions]="selectOptions">
@@ -172,13 +184,15 @@
 
         <ion-item>
 
-          <ion-label position="floating">
+          <ion-label  class="required"
+                      position="floating">
             Efficiency (%)
           </ion-label>
 
           <ion-input  formControlName="efficiency"
                       type="number"
-                      autocomplete="off">
+                      autocomplete="off"
+                      required="true">
           </ion-input>
 
         </ion-item>
@@ -205,13 +219,15 @@
 
         <ion-item>
 
-          <ion-label position="floating">
-            Mash Duration (Minutes)
+          <ion-label  class="required"
+                      position="floating">
+            Mash Duration (minutes)
           </ion-label>
 
           <ion-input  formControlName="mashDuration"
                       type="number"
-                      autocomplete="off">
+                      autocomplete="off"
+                      required="true">
           </ion-input>
 
         </ion-item>
@@ -238,13 +254,15 @@
 
         <ion-item>
 
-          <ion-label position="floating">
-            Boil Duration (Minutes)
+          <ion-label  class="required"
+                      position="floating">
+            Boil Duration (minutes)
           </ion-label>
 
           <ion-input  formControlName="boilDuration"
                       type="number"
-                      autocomplete="off">
+                      autocomplete="off"
+                      required="true">
           </ion-input>
 
         </ion-item>
@@ -271,13 +289,15 @@
 
         <ion-item>
 
-          <ion-label position="floating">
+          <ion-label  class="required"
+                      position="floating">
             Batch Volume ({{ units !== null ? units.volumeLarge.longName: 'gallon' }}s)
           </ion-label>
 
           <ion-input  formControlName="batchVolume"
                       type="number"
-                      autocomplete="off">
+                      autocomplete="off"
+                      required="true">
           </ion-input>
 
         </ion-item>
@@ -304,13 +324,15 @@
 
         <ion-item>
 
-          <ion-label position="floating">
+          <ion-label  class="required"
+                      position="floating">
             Mash Volume ({{ units !== null ? units.volumeLarge.longName: 'gallon' }}s)
           </ion-label>
 
           <ion-input  formControlName="mashVolume"
                       type="number"
-                      autocomplete="off">
+                      autocomplete="off"
+                      required="true">
           </ion-input>
 
         </ion-item>
@@ -337,13 +359,15 @@
 
         <ion-item>
 
-          <ion-label position="floating">
+          <ion-label  class="required"
+                      position="floating">
             Boil Volume ({{ units !== null ? units.volumeLarge.longName: 'gallon' }}s)
           </ion-label>
 
           <ion-input  formControlName="boilVolume"
                       type="number"
-                      autocomplete="off">
+                      autocomplete="off"
+                      required="true">
           </ion-input>
 
         </ion-item>

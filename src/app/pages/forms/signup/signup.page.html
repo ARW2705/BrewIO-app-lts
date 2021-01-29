@@ -6,12 +6,17 @@
 
   <ng-container *ngIf="signupForm">
 
+    <p class="form-info required">
+      Required fields
+    </p>
+
     <form [formGroup]="signupForm">
 
       <!-- Username input -->
       <ion-item>
 
-        <ion-label position="floating">
+        <ion-label  class="required"
+                    position="floating">
           Username
         </ion-label>
 
@@ -20,6 +25,7 @@
                     autocomplete="off"
                     autocorrect="off"
                     autocapitalize="off"
+                    required="true"
                     spellcheck="false">
         </ion-input>
 
@@ -43,7 +49,8 @@
       <!-- Password input -->
       <ion-item>
 
-        <ion-label position="floating">
+        <ion-label  class="required"
+                    position="floating">
           Password
         </ion-label>
 
@@ -52,6 +59,7 @@
                     autocomplete="off"
                     autocorrect="off"
                     autocapitalize="off"
+                    required="true"
                     spellcheck="false">
         </ion-input>
 
@@ -75,7 +83,8 @@
       <!-- Password confirmation input -->
       <ion-item>
 
-        <ion-label position="floating">
+        <ion-label  class="required"
+                    position="floating">
           Confirm Password
         </ion-label>
 
@@ -84,6 +93,7 @@
                     autocomplete="off"
                     autocorrect="off"
                     autocapitalize="off"
+                    required="true"
                     spellcheck="false">
         </ion-input>
 
@@ -118,7 +128,7 @@
       <!-- Email input -->
       <ion-item>
 
-        <ion-label>
+        <ion-label class="required">
           Email
         </ion-label>
 
@@ -127,6 +137,7 @@
                     autocomplete="off"
                     autocorrect="off"
                     autocapitalize="off"
+                    required="true"
                     spellcheck="false">
         </ion-input>
 

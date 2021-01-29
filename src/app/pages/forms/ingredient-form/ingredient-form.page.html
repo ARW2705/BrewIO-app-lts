@@ -6,6 +6,10 @@
 
   <ng-container *ngIf="ingredientForm">
 
+    <p class="form-info required">
+      Required fields
+    </p>
+
     <form [formGroup]="ingredientForm">
 
       <!-- Ingredient Type Choice Select -->
@@ -14,13 +18,15 @@
         <!-- Select an Ingredient -->
         <ion-item>
 
-          <ion-label position="floating">
+          <ion-label  class="required"
+                      position="floating">
             Select {{ ingredientType | titlecase }}
           </ion-label>
 
           <ion-select formControlName="type"
                       okText="Okay"
                       cancelText="Dismiss"
+                      required="true"
                       (ionCancel)="onIngredientSelect()"
                       (ionChange)="onIngredientSelect()"
                       [compareWith]="compareWithFn"
@@ -55,13 +61,15 @@
         <!-- Grain Bulk Quantity -->
         <ion-item>
 
-          <ion-label position="floating">
+          <ion-label  class="required"
+                      position="floating">
             Quantity ({{ units !== null ? units.weightLarge.shortName: '' }})
           </ion-label>
 
           <ion-input  formControlName="quantity"
                       type="number"
-                      autocomplete="off">
+                      autocomplete="off"
+                      required="true">
           </ion-input>
 
         </ion-item>
@@ -85,13 +93,15 @@
           <!-- Grain Fine Quantity -->
           <ion-item>
 
-            <ion-label position="floating">
+            <ion-label  class="required"
+                        position="floating">
               Quantity ({{ units !== null ? units.weightSmall.shortName: '' }})
             </ion-label>
 
             <ion-input  formControlName="subQuantity"
                         type="number"
-                        autocomplete="off">
+                        autocomplete="off"
+                        required="true">
             </ion-input>
 
           </ion-item>
@@ -135,13 +145,15 @@
         <!-- Hops Quantity -->
         <ion-item>
 
-          <ion-label position="floating">
+          <ion-label  class="required"
+                      position="floating">
             Quantity ({{ units !== null ? units.weightSmall.shortName: '' }})
           </ion-label>
 
           <ion-input  formControlName="subQuantity"
                       type="number"
-                      autocomplete="off">
+                      autocomplete="off"
+                      required="true">
           </ion-input>
 
         </ion-item>
@@ -163,13 +175,15 @@
         <!-- Hops Addition Time -->
         <ion-item>
 
-          <ion-label  position="floating">
+          <ion-label  class="required"
+                      position="floating">
             Boil time (minutes)
           </ion-label>
 
           <ion-input  formControlName="duration"
                       type="number"
-                      autocomplete="off">
+                      autocomplete="off"
+                      required="true">
           </ion-input>
 
         </ion-item>
@@ -209,13 +223,15 @@
         <!-- Yeast Quantity -->
         <ion-item>
 
-          <ion-label position="floating">
+          <ion-label  class="required"
+                      position="floating">
             Quantity (packs/vials)
           </ion-label>
 
           <ion-input  formControlName="quantity"
                       type="number"
-                      autocomplete="off">
+                      autocomplete="off"
+                      required="true">
           </ion-input>
 
         </ion-item>
@@ -252,7 +268,8 @@
         <!-- Ingredient Name -->
         <ion-item>
 
-          <ion-label position="floating">
+          <ion-label  class="required"
+                      position="floating">
             Name
           </ion-label>
 
@@ -261,6 +278,7 @@
                       autocomplete="off"
                       autocorrect="off"
                       autocapitalize="off"
+                      required="true"
                       spellcheck="false">
           </ion-input>
 
@@ -283,7 +301,8 @@
         <!-- Ingredient Type -->
         <ion-item>
 
-          <ion-label position="floating">
+          <ion-label  class="required"
+                      position="floating">
             Type
           </ion-label>
 
@@ -292,6 +311,7 @@
                       autocomplete="off"
                       autocorrect="off"
                       autocapitalize="off"
+                      required="true"
                       spellcheck="false">
           </ion-input>
 
@@ -314,13 +334,15 @@
         <!-- Ingredient Quantity -->
         <ion-item>
 
-          <ion-label position="floating">
+          <ion-label  class="required"
+                      position="floating">
             Quantity
           </ion-label>
 
           <ion-input  formControlName="quantity"
                       type="number"
-                      autocomplete="off">
+                      autocomplete="off"
+                      required="true">
           </ion-input>
 
         </ion-item>
@@ -342,7 +364,8 @@
         <!-- Ingredient Unit Type -->
         <ion-item>
 
-          <ion-label position="floating">
+          <ion-label  class="required"
+                      position="floating">
             Units
           </ion-label>
 
@@ -351,6 +374,7 @@
                       autocomplete="off"
                       autocorrect="off"
                       autocapitalize="off"
+                      required="true"
                       spellcheck="false">
           </ion-input>
 
@@ -373,7 +397,8 @@
         <!-- Ingredient Description -->
         <ion-item>
 
-          <ion-label position="floating">
+          <ion-label  class="required"
+                      position="floating">
             Description
           </ion-label>
 
@@ -382,6 +407,7 @@
                         autocomplete="off"
                         autocorrect="off"
                         autocapitalize="off"
+                        required="true"
                         spellcheck="false">
           </ion-textarea>
 

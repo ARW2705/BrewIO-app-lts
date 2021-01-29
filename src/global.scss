@@ -165,12 +165,29 @@ $colors: (
   text-transform: none;
 }
 
+.form-info {
+  /* Display */
+  margin: 16px 0 8px;
+  padding-left: 16px;
+
+  /* Text */
+  font-style: italic;
+}
+
 .no-item {
   /* Display */
   margin: 10px;
 
   /* Text */
   font-size: 2rem;
+}
+
+.required:after {
+  /* Display */
+  content: "*";
+
+  /* Color */
+  color: var(--ion-color-danger);
 }
 
 .select-popover {

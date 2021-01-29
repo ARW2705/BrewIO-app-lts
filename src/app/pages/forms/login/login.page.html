@@ -6,12 +6,17 @@
 
   <ng-container *ngIf="loginForm">
 
+    <p class="form-info required">
+      Required fields
+    </p>
+
     <form [formGroup]="loginForm">
 
       <!-- Username Input -->
       <ion-item>
 
-        <ion-label position="floating">
+        <ion-label  class="required"
+                    position="floating">
           Username
         </ion-label>
 
@@ -20,6 +25,7 @@
                     autocomplete="off"
                     autocorrect="off"
                     autocapitalize="off"
+                    required="true"
                     spellcheck="false">
         </ion-input>
 
@@ -28,7 +34,8 @@
       <!-- Password Input -->
       <ion-item>
 
-        <ion-label position="floating">
+        <ion-label  class="required"
+                    position="floating">
           Password
         </ion-label>
 
@@ -37,6 +44,7 @@
                     autocomplete="off"
                     autocorrect="off"
                     autocapitalize="off"
+                    required="true"
                     spellcheck="false">
         </ion-input>
 

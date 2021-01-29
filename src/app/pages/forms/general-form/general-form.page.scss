@@ -1,3 +1,18 @@
+#form-info {
+  /* Display */
+  margin: 16px 0 8px;
+  padding-left: 16px;
+
+  /* Text */
+  font-style: italic;
+}
+
+.form-error-container {
+  /* Display */
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
 .item {
   /* Display */
   padding-left: 16px;
@@ -5,15 +20,13 @@
 }
 
 ion-item {
+  /* Display */
   --inner-padding-start: 0;
   --padding-start: 0;
+
+  /* Color */
   --highlight-color-valid: var(--ion-color-primary);
   --highlight-color-invalid: transparent;
   --highlight-color-focused: transparent;
   --border-color: var(--ion-color-light);
-}
-
-.form-error-container {
-  padding-left: 16px;
-  padding-right: 16px;
 }

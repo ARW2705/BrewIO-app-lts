@@ -20,14 +20,12 @@
   margin-bottom: 0;
 }
 
-
-
-
-
-
 ion-item {
+  /* Display */
   --padding-start: 0;
   --inner-padding-start: 0;
+
+  /* Color */
   --highlight-color-valid: var(--ion-color-primary);
   --highlight-color-invalid: transparent;
   --highlight-color-focused: transparent;

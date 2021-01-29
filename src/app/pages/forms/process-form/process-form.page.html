@@ -6,12 +6,17 @@
 
   <ng-container *ngIf="processForm">
 
+    <p class="form-info required">
+      Required fields
+    </p>
+
     <form [formGroup]="processForm">
 
       <!-- Step name input -->
       <ion-item>
 
-        <ion-label position="floating">
+        <ion-label  class="required"
+                    position="floating">
           Name
         </ion-label>
 
@@ -20,6 +25,7 @@
                     autocomplete="off"
                     autocorrect="off"
                     autocapitalize="off"
+                    required="true"
                     spellcheck="false">
         </ion-input>
 
@@ -60,13 +66,15 @@
 
         <ion-item>
 
-          <ion-label position="floating">
+          <ion-label  class="required"
+                      position="floating">
             Duration {{ processType === 'timer' ? '(Minutes)': '(Days)' }}
           </ion-label>
 
           <ion-input  formControlName="duration"
                       type="number"
-                      autocomplete="off">
+                      autocomplete="off"
+                      required="true">
           </ion-input>
 
         </ion-item>
