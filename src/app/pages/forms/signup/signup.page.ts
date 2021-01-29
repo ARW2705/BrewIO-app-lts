@@ -72,16 +72,16 @@ export class SignupPage implements OnInit, OnDestroy {
       password: [
         '',
         [
-          Validators.minLength(8),
-          Validators.maxLength(20),
+          Validators.minLength(12),
+          Validators.maxLength(30),
           Validators.required,
           this.formValidator.passwordPattern()
         ]
       ],
       passwordConfirmation: ['', [Validators.required]],
       email: ['', [Validators.email, Validators.required]],
-      firstname: ['', [Validators.maxLength(25)]],
-      lastname: ['', [Validators.maxLength(25)]]
+      firstname: ['', [Validators.maxLength(50)]],
+      lastname: ['', [Validators.maxLength(50)]]
     }, {
       validator: this.formValidator.passwordMatch()
     });
