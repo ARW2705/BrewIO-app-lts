@@ -24,13 +24,17 @@
 }
 
 .back-button-container {
+  /* Display */
   flex: 0;
 }
 
 .login-button {
+  /* Display */
   flex: 0;
 
+  /* Children */
   ion-icon {
+    /* Text */
     font-size: 2.5rem;
   }
 }

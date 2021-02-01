@@ -23,9 +23,9 @@ import { UserService } from '../../services/user/user.service';
   styleUrls: ['./header.component.scss']
 })
 export class HeaderComponent implements OnInit, OnDestroy {
-  @Input() title: string;
   @Input() overrideBackButton?: () => void;
   @Input() rootURL?: string;
+  @Input() title: string;
   destroy$: Subject<boolean> = new Subject<boolean>();
   isLoggedIn: boolean = false;
   user: User = null;
@@ -89,8 +89,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
   /***** End Modals *** */
 
 
+  /***** Button Hanlders *****/
+
   /**
-   * Header back button. Navigate to given root URL
+   * Handle header back button. Navigate to given root URL
    * or use override function if present
    *
    * @params: none
@@ -102,16 +104,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
     } else if (this.rootURL) {
       this.router.navigate([this.rootURL]);
     }
-  }
-
-  /**
-   * Call user service log out
-   *
-   * @params: none
-   * @return: none
-   */
-  logout(): void {
-    this.userService.logOut();
   }
 
   /**
@@ -139,5 +131,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       ]
     );
   }
+
+  /***** End Button Hanlders *****/
 
 }
