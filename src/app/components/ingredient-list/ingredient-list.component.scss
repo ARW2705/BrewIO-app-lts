@@ -8,16 +8,13 @@
     /* Display */
     display: flex;
     justify-content: center;
-  }
 
-  ion-label {
+    /* Children */
     ion-icon {
       /* Text */
       font-size: 2rem;
     }
-  }
 
-  ion-label {
     span {
       /* Text */
       font-size: 1.7rem;
@@ -46,6 +43,7 @@
 
   ion-row {
     /* Display */
+    width: 100%;
     border-top: 1px solid var(--ion-color-light);
   }
 }
