@@ -14,21 +14,19 @@ export class DateButtonComponent implements OnChanges {
   @Input() isMonth: boolean;
   svgClass: string = 'base';
 
-
   constructor() { }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes) {
-      this.svgClass = 'base';
+      let _svgClass: string = 'base';
       if (changes.isStart && changes.isStart.currentValue) {
-        this.svgClass += ' start';
+        _svgClass += ' start';
       } else if (changes.isProjected && changes.isProjected.currentValue) {
-        this.svgClass += ' projected';
-      } else if (
-        (changes.isMonth && changes.isMonth.currentValue) || this.isMonth
-      ) {
-        this.svgClass += ' month';
+        _svgClass += ' projected';
+      } else if ((changes.isMonth && changes.isMonth.currentValue) || this.isMonth) {
+        _svgClass += ' month';
       }
+      this.svgClass = _svgClass;
     }
   }
 
