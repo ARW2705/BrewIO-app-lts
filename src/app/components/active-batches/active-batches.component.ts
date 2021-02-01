@@ -1,7 +1,7 @@
 /* Module imports */
 import { Component, OnDestroy, Input, OnInit, ViewChildren } from '@angular/core';
 import { IonList } from '@ionic/angular';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -10,11 +10,10 @@ import { Batch } from '../../shared/interfaces/batch';
 
 /* Utility function imports */
 import { getId } from '../../shared/utility-functions/id-helpers';
-import { getArrayFromObservables } from '../../shared/utility-functions/observable-helpers';
+import { getArrayFromSubjects } from '../../shared/utility-functions/observable-helpers';
 
 /* Service imports */
 import { ProcessService } from '../../services/process/process.service';
-import { RecipeService } from '../../services/recipe/recipe.service';
 import { ToastService } from '../../services/toast/toast.service';
 
 
@@ -30,10 +29,8 @@ export class ActiveBatchesComponent implements OnInit, OnDestroy {
   destroy$: Subject<boolean> = new Subject<boolean>();
 
   constructor(
-    public route: ActivatedRoute,
     public router: Router,
     public processService: ProcessService,
-    public recipeService: RecipeService,
     public toastService: ToastService
   ) { }
 
@@ -46,7 +43,7 @@ export class ActiveBatchesComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(
         (activeBatchesList$: BehaviorSubject<Batch>[]): void => {
-          this.activeBatchesList = getArrayFromObservables(activeBatchesList$);
+          this.activeBatchesList = getArrayFromSubjects<Batch>(activeBatchesList$);
         },
         (error: string): void => {
           console.log('Batch list error', error);
