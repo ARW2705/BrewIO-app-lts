@@ -9,6 +9,7 @@ import { getId } from '../../shared/utility-functions/id-helpers';
 import { Alert } from '../../shared/interfaces/alert';
 import { CalendarDate } from '../../shared/interfaces/calendar-date';
 
+
 @Component({
   selector: 'calendar',
   templateUrl: './calendar.component.html',
@@ -57,9 +58,9 @@ export class CalendarComponent implements OnInit, OnChanges {
 
   /**
    * Mark calendar date as a projected date and add to projected dates array;
-   * Projected dates cannot be the start date
+   * Projected dates cannot be the start date or before current date
    *
-   * @params: date - a calendar date to use as projected
+   * @params: date - a calendar date to use as projected date
    *
    * @return: none
    */
@@ -77,13 +78,12 @@ export class CalendarComponent implements OnInit, OnChanges {
    *
    * @return: none
    */
-  changeMonthYear(
-    direction: string,
-    timeframe: moment.unitOfTime.DurationConstructor
-  ): void {
-    this.displayDate =  direction === 'next'
-      ? moment(this.displayDate).add(1, timeframe)
-      : moment(this.displayDate).subtract(1, timeframe);
+  changeMonthYear(direction: string, timeframe: string): void {
+    this.displayDate = direction === 'next'
+      ? moment(this.displayDate)
+        .add(1, <moment.unitOfTime.DurationConstructor>timeframe)
+      : moment(this.displayDate)
+        .subtract(1, <moment.unitOfTime.DurationConstructor>timeframe);
     this.populateCalendar();
     this.updateView();
   }
@@ -110,7 +110,7 @@ export class CalendarComponent implements OnInit, OnChanges {
 
     const populatedCalendar: CalendarDate[] = [];
 
-    for (let i = start; i < start + 42; i++) {
+    for (let i: number = start; i < start + 42; i++) {
       const _date: moment.Moment = moment(firstOfGrid).date(i);
       populatedCalendar.push({
         isToday: this.isToday(_date),
@@ -119,6 +119,7 @@ export class CalendarComponent implements OnInit, OnChanges {
         mDate: _date
       });
     }
+
     return populatedCalendar;
   }
 
@@ -129,7 +130,7 @@ export class CalendarComponent implements OnInit, OnChanges {
    *
    * @return: object with step id, start datetime, and any alerts
    */
-  getFinal(): object {
+  getFinal(): { _id: string, startDatetime: string, alerts: Alert[] } {
     return {
       _id: getId(this.stepData),
       startDatetime: this.startDate.mDate.toISOString(),
@@ -145,8 +146,8 @@ export class CalendarComponent implements OnInit, OnChanges {
   }
 
   /**
-   * Initialize calendar with two dates preselected - today's date, and the
-   * end date per the step's duration field
+   * Initialize calendar with two dates preselected - today's date,
+   * and the end date based on the step's duration field
    *
    * @params: none
    * @return: none
@@ -174,7 +175,7 @@ export class CalendarComponent implements OnInit, OnChanges {
   }
 
   /**
-   * Check if given date and current date are the same month
+   * Check if given date and current date have the same month and year
    *
    * @params: date - datetime to compare
    *
@@ -222,7 +223,7 @@ export class CalendarComponent implements OnInit, OnChanges {
   }
 
   /**
-   * Assemble 6 x 7 calendar for display
+   * Assemble 6 x 7 calendar display
    *
    * @params: none
    * @return: none
@@ -230,14 +231,14 @@ export class CalendarComponent implements OnInit, OnChanges {
   populateCalendar(): void {
     const dates: CalendarDate[] = this.fillDates(this.displayDate);
     const month: CalendarDate[][] = [];
-    for (let i = 0; i < 6; i++) {
-      month.push(dates.slice(i * 7, i * 7 + 7));
+    for (let i = 0; i < 42; i += 7) {
+      month.push(dates.slice(i, i + 7));
     }
     this.month = month;
   }
 
   /**
-   * Reset projectedDates array and re-populate
+   * Clear projectedDates array and re-populate with date from stepData duration
    *
    * @params: none
    * @return: none
@@ -261,15 +262,12 @@ export class CalendarComponent implements OnInit, OnChanges {
    * @return: none
    */
   selectStartDate(date: CalendarDate): void {
-    console.log('select start', date);
-    if (moment(date.mDate).isBefore(this.currentDate, 'day')) {
-      return;
+    if (!moment(date.mDate).isBefore(this.currentDate, 'day')) {
+      this.startDate = date;
+
+      this.resetProjectedDates();
+      this.updateView();
     }
-
-    this.startDate = date;
-
-    this.resetProjectedDates();
-    this.updateView();
   }
 
   /**
@@ -284,38 +282,36 @@ export class CalendarComponent implements OnInit, OnChanges {
   }
 
   /**
-   * Toggle the selected state of date in projectedDates array
-   * May not be a past date
+   * Toggle the selected state of projected date; if date in projectedDates
+   * array, remove it; otherwise add date to array; date may not be the same
+   * or before start date
    *
    * @params: date - datetime to toggle state
    *
    * @return: none
    */
   toggleProjectedDate(date: CalendarDate): void {
-    if (date.mDate.isSameOrBefore(this.startDate.mDate, 'day')) {
-      return;
-    }
+    if (!date.mDate.isSameOrBefore(this.startDate.mDate, 'day')) {
+      const index: number = this.projectedDates
+        .findIndex((pDate: CalendarDate): boolean => {
+          return moment(pDate.mDate).isSame(date.mDate);
+        });
 
-    const index: number = this.projectedDates
-      .findIndex((pDate: CalendarDate) => {
-        return moment(pDate.mDate).isSame(date.mDate);
-      });
-
-    if (index === -1) {
-      // add date
-      date.isProjected = true;
-      date.isStart = false;
-      this.projectedDates.push(date);
-    } else {
-      // remove date
-      date.isProjected = false;
-      this.projectedDates.splice(index, 1);
+      if (index === -1) {
+        // add date
+        date.isProjected = true;
+        date.isStart = false;
+        this.projectedDates.push(date);
+      } else {
+        // remove date
+        date.isProjected = false;
+        this.projectedDates.splice(index, 1);
+      }
     }
   }
 
   /**
-   * Update calendar view data with new start/projected date information
-   * Assign start and projected date booleans
+   * Update calendar view data and assign start/projected date states
    *
    * @params: none
    * @return: none
