@@ -11,9 +11,9 @@ import { RecipeVariant } from '../../shared/interfaces/recipe-variant';
   styleUrls: ['./hops-schedule.component.scss'],
 })
 export class HopsScheduleComponent implements OnChanges {
-  @Input() variant: RecipeVariant;
   @Input() onRecipeAction: (actionName: string, options?: any[]) => void;
   @Input() refreshPipes: boolean;
+  @Input() variant: RecipeVariant;
   hopsSchedule: HopsSchedule[] = [];
 
   constructor() { }
