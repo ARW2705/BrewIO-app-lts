@@ -52,7 +52,9 @@ export class UserService {
     public preferenceService: PreferencesService,
     public httpError: HttpErrorService,
     public storageService: StorageService
-  ) { console.log('user service'); }
+  ) {
+    console.log('user service');
+  }
 
   /**
    * Request server check json web token validity
