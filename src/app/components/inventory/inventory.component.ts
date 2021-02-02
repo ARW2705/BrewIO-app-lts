@@ -26,6 +26,7 @@ import { InventoryFormPage } from '../../pages/forms/inventory-form/inventory-fo
 
 /* Service imports */
 import { EventService } from '../../services/event/event.service';
+import { ImageService } from '../../services/image/image.service';
 import { InventoryService } from '../../services/inventory/inventory.service';
 import { ProcessService } from '../../services/process/process.service';
 import { ToastService } from '../../services/toast/toast.service';
@@ -54,6 +55,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy {
 
   constructor(
     public event: EventService,
+    public imageService: ImageService,
     public inventoryService: InventoryService,
     public modalCtrl: ModalController,
     public processService: ProcessService,
@@ -86,7 +88,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy {
   /***** Display *****/
 
   /**
-   * Set expanded item index or -1 if selecting expanded items.
+   * Set expanded item index, or -1 if selecting expanded items.
    * Scroll to top of item if expanding
    *
    * @params: index - list index to expand or collapse
@@ -123,12 +125,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy {
    */
   onImageError(imageType: string, item: InventoryItem, event?: any): void {
     console.log('image error', imageType, item, event);
-    const label: Image = item.optionalItemData[imageType];
-    if (label.url === label.localURL) {
-      label.url = label.serverFilename;
-    } else {
-      label.url = this._defaultImage.filePath;
-    }
+    this.imageService.handleImageError(item.optionalItemData[imageType]);
   }
 
   /**
@@ -175,7 +172,8 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   /**
-   * Decrement the item count by 1
+   * Decrement the item count by 1; display confirmation message
+   * with new remaining total
    *
    * @params: item - the item instance to lower its count
    *
@@ -246,25 +244,8 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy {
           this.displayList = inventoryList;
           this.displayList
             .forEach((item: InventoryItem): void => {
-              const itemLabelImage: Image = item.optionalItemData.itemLabelImage;
-
-              if (itemLabelImage && itemLabelImage.localURL) {
-                itemLabelImage.url = itemLabelImage.localURL;
-              }
-
-              if (!itemLabelImage || !itemLabelImage.url) {
-                itemLabelImage.url = MISSING_IMAGE_URL;
-              }
-
-              const supplierLabelImage: Image = item.optionalItemData.supplierLabelImage;
-
-              if (supplierLabelImage && supplierLabelImage.localURL) {
-                supplierLabelImage.url = supplierLabelImage.localURL;
-              }
-
-              if (!supplierLabelImage || !supplierLabelImage.url) {
-                supplierLabelImage.url = MISSING_IMAGE_URL;
-              }
+              this.imageService.setInitialURL(item.optionalItemData.itemLabelImage);
+              this.imageService.setInitialURL(item.optionalItemData.supplierLabelImage);
             });
           this.resetDisplayList();
         },
