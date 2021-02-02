@@ -69,10 +69,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
         })
       )
       .subscribe(
-        (): void => {
-          console.log('init');
-          this.initForm();
-        },
+        (): void => this.initForm(),
         (error: string): void => {
           console.log('Error loading user preferences', error);
           this.toastService.presentErrorToast(error);
@@ -104,24 +101,25 @@ export class PreferencesComponent implements OnInit, OnDestroy {
       system: formValues['preferredUnitSystem'],
 
       weightSmall: formValues['weightSmall']
-        ? this.defaultEnglish['weightSmall']
-        : this.defaultMetric['weightSmall'],
+        ? this.defaultEnglish.weightSmall
+        : this.defaultMetric.weightSmall,
 
       weightLarge: formValues['weightLarge']
-        ? this.defaultEnglish['weightLarge']
-        : this.defaultMetric['weightLarge'],
+        ? this.defaultEnglish.weightLarge
+        : this.defaultMetric.weightLarge,
 
       volumeSmall: formValues['volumeSmall']
-        ? this.defaultEnglish['volumeSmall']
-        : this.defaultMetric['volumeSmall'],
+        ? this.defaultEnglish.volumeSmall
+        : this.defaultMetric.volumeSmall,
 
       volumeLarge: formValues['volumeLarge']
-        ? this.defaultEnglish['volumeLarge']
-        : this.defaultMetric['volumeLarge'],
+        ? this.defaultEnglish.volumeLarge
+        : this.defaultMetric.volumeLarge,
 
       temperature: formValues['temperature']
-        ? this.defaultEnglish['temperature']
-        : this.defaultMetric['temperature'],
+        ? this.defaultEnglish.temperature
+        : this.defaultMetric.temperature,
+
       density: null
     };
 
@@ -185,8 +183,8 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Set the appropriate density value for a selected unit by given density
-   * unit name
+   * Set the appropriate density value for a
+   * selected unit by given density unit name
    *
    * @params: units - the SelectedUnits to update
    * @params: density - the density unit name
@@ -225,7 +223,8 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Set ion-toggles to respective unit system
+   * Set ion-toggles to respective unit system;
+   * true for english, false for metric
    *
    * @params: event - ion-select change event
    *
@@ -270,8 +269,8 @@ export class PreferencesComponent implements OnInit, OnDestroy {
    * @return: none
    */
   setSystem(): void {
-    let hasStandard = false;
-    let hasMetric = false;
+    let hasStandard: boolean = false;
+    let hasMetric: boolean = false;
 
     for (const key in this.displayUnits) {
       if (this.preferencesForm.controls[key].value) {
