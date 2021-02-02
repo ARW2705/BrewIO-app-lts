@@ -4,16 +4,17 @@
   margin: 0 10px;
 
   /* Children */
-  > ion-item > ion-label {
-    /* Text */
-    font-size: 1.3rem;
-  }
-
-  > ion-item {
+  ion-item {
     /* Display */
     border-bottom: 1px solid var(--ion-color-primary);
     --padding-end: 0;
     --inner-padding-end: 0;
+
+    /* Children */
+    ion-label {
+      /* Text */
+      font-size: 1.3rem;
+    }
   }
 }
 
@@ -82,15 +83,17 @@
   color: var(--ion-color-light);
 
   /* Children */
-  > ion-col > p {
-    /* Display */
-    padding: 5px;
-    margin-top: 5px;
-    border: 1px solid var(--ion-color-light);
-    border-radius: 3px;
+  ion-col {
+    p {
+      /* Display */
+      padding: 5px;
+      margin-top: 5px;
+      border: 1px solid var(--ion-color-light);
+      border-radius: 3px;
 
-    /* Text */
-    font-size: 1.3rem;
+      /* Text */
+      font-size: 1.3rem;
+    }
   }
 }
 
