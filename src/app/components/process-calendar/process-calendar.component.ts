@@ -60,24 +60,22 @@ export class ProcessCalendarComponent implements OnChanges {
    * @return: alert that is closest to the current datetime
    */
   getClosestAlertByGroup(): Alert {
-    if (!this.alerts.length) {
-      return null;
+    if (this.alerts.length) {
+      return this.alerts.reduce(
+        (acc: Alert, curr: Alert): Alert => {
+          const now: number = new Date().getTime();
+          const accDiff: number = new Date(acc.datetime).getTime() - now;
+          const currDiff: number = new Date(curr.datetime).getTime() - now;
+
+          const isCurrCloser: boolean
+            = Math.abs(currDiff) < Math.abs(accDiff) && currDiff > 0;
+
+          return isCurrCloser ? curr : acc;
+        }
+      );
     }
 
-    return this.alerts.reduce(
-      (acc: Alert, curr: Alert): Alert => {
-        const accDiff: number
-          = new Date(acc.datetime).getTime() - new Date().getTime();
-
-        const currDiff: number
-          = new Date(curr.datetime).getTime() - new Date().getTime();
-
-        const isCurrCloser: boolean
-          = Math.abs(currDiff) < Math.abs(accDiff) && currDiff > 0;
-
-        return isCurrCloser ? curr : acc;
-      }
-    );
+    return null;
   }
 
   /**
@@ -88,13 +86,16 @@ export class ProcessCalendarComponent implements OnChanges {
    * @return: object containing update and step id
    */
   startCalendar(): object {
-    const calendarValues: object = this.calendarRef.getFinal();
+    const calendarValues: { _id: string, startDatetime: string, alerts: Alert[] }
+      = this.calendarRef.getFinal();
+
     const update: object = {
-      startDatetime: calendarValues['startDatetime'],
-      alerts: calendarValues['alerts']
+      startDatetime: calendarValues.startDatetime,
+      alerts: calendarValues.alerts
     };
+
     return {
-      id: getId(calendarValues),
+      id: calendarValues._id,
       update: update
     };
   }
