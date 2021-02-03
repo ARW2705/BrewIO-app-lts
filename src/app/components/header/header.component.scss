@@ -28,11 +28,21 @@
   flex: 0;
 }
 
+.header-title {
+  /* Display */
+  overflow: hidden;
+}
+
 .login-button {
   /* Display */
   flex: 0;
 
   /* Children */
+  ion-button {
+    /* Text */
+    font-size: 0.1rem;
+  }
+
   ion-icon {
     /* Text */
     font-size: 2.5rem;
@@ -82,7 +92,7 @@ ion-row {
 
 ion-title {
   /* Display */
-  padding: 0 0 0 3%;
+  padding: 0;
 
   /* Text */
   font-size: 7.5vw;

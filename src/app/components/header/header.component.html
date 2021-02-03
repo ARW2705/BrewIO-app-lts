@@ -6,7 +6,7 @@
 
       <!-- Back button -->
       <ion-col  *ngIf="overrideBackButton || rootURL"
-
+                size="1"
                 class="ion-no-padding ion-align-self-center back-button-container">
 
         <ion-button (click)="goBack()"
@@ -33,6 +33,7 @@
 
       <!-- User name when logged in -->
       <ion-col  *ngIf="user && user.username"
+                size="4"
                 class="ion-no-padding ion-align-self-center login-header-text">
 
         <p>Logged in as...</p>
@@ -44,6 +45,7 @@
 
       <!-- Log In Button or User name -->
       <ion-col  *ngIf="!isLoggedIn"
+                size="2"
                 class="ion-no-padding ion-align-self-center login-button">
 
         <!-- Log In button -->
