@@ -65,33 +65,7 @@ export class UnauthorizedInterceptor implements HttpInterceptor {
       .pipe(
         tap(
           (): void => {},
-          (error): void => {
-            const userService: UserService = this.injector.get(UserService);
-            if (error instanceof HttpErrorResponse && error.status === 401) {
-              if (userService.isLoggedIn()) {
-                this.toastService.presentToast(
-                  'Not Authorized. Please log in',
-                  3000,
-                  'bottom',
-                  'toast-error'
-                );
-              } else {
-                this.toastService.presentToast(
-                  'Authorization Error',
-                  3000,
-                  'bottom',
-                  'toast-error'
-                );
-              }
-            } else {
-              this.toastService.presentToast(
-                `An unexpected error occured: <${(<HttpErrorResponse>error).status}> ${(<HttpErrorResponse>error).statusText}`,
-                3000,
-                'bottom',
-                'toast-error'
-              );
-            }
-          }
+          (error): void => console.log('Error intercept', error)
         )
       );
   }
