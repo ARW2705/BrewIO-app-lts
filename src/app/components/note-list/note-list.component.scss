@@ -34,8 +34,12 @@
 }
 
 .note-text {
+  /* Display */
+  margin: 0;
+
   /* Text */
   text-align: left;
+  overflow-wrap: anywhere;
   font-size: 1.3rem;
 }
 
