@@ -68,6 +68,12 @@
     font-size: 4.5vw;
     text-align: center;
   }
+
+  p:nth-child(2) {
+    /* Text */
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 
