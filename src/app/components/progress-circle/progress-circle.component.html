@@ -36,6 +36,13 @@
       {{ settings.text.content }}
     </text>
 
+    <path *ngIf="showButton"
+          [attr.d]="chevronPath"
+          [attr.stroke-width]="settings.circle.strokeWidth / 2"
+          stroke="var(--ion-color-primary)"
+          stroke-linecap="round"
+          fill="transparent"/>
+
   </svg>
 
 </div>

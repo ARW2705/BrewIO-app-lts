@@ -11,6 +11,8 @@ import { ProgressCircleSettings } from '../../shared/interfaces/progress-circle'
 })
 export class ProgressCircleComponent {
   @Input() settings: ProgressCircleSettings;
+  @Input() showButton: boolean;
+  @Input() chevronPath: string;
 
   constructor() { }
 

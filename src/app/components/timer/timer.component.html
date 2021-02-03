@@ -29,14 +29,18 @@
     <ion-row class="timer-row ion-align-items-center">
 
       <!-- Timer Progress Circle Component -->
-      <ion-col *ngIf="timer.settings">
+      <ion-col  *ngIf="timer.settings"
+                size="12">
 
         <progress-circle  (click)="toggleTimerControls()"
-                          [settings]="timer.settings">
+                          [settings]="timer.settings"
+                          [showButton]="isConcurrent"
+                          [chevronPath]="chevronPath">
         </progress-circle>
 
       </ion-col>
       <!-- End Timer Progress Circle Component -->
+
 
       <ng-container *ngIf="isConcurrent">
 

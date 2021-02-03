@@ -1,5 +1,5 @@
 /* Module imports */
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 
 /* Interface imports */
 import { Timer } from '../../shared/interfaces/timer';
@@ -16,13 +16,18 @@ import { expandUpDown } from '../../animations/expand';
     expandUpDown()
   ]
 })
-export class TimerComponent {
+export class TimerComponent implements OnInit {
   @Input() isConcurrent: boolean = false;
   @Input() onTimerAction: (actionName: string, timer: Timer) => void;
   @Input() timer = null;
   @Input() showDescription: boolean = false;
+  chevronPath: string = '';
 
   constructor() { }
+
+  ngOnInit() {
+    this.setChevron();
+  }
 
   /**
    * Add a minute to the timer
@@ -65,6 +70,25 @@ export class TimerComponent {
   }
 
   /**
+   * Set button icon path up or down
+   *
+   * @params: none
+   * @return: none
+   */
+  setChevron(): void {
+    const isUp: boolean = this.timer.show;
+    const xMid: number = this.timer.settings.width / 2;
+    const xOffset: number = xMid * 0.2;
+    const yEnd: number = this.timer.settings.height * 0.75;
+    const yOffset: number = yEnd * 0.1;
+    this.chevronPath = `
+      M${xMid - xOffset} ${yEnd + (isUp ? yOffset : 0)}
+      L${xMid} ${yEnd + (isUp ? 0 : yOffset)}
+       ${xMid + xOffset} ${yEnd + (isUp ? yOffset : 0)}
+    `;
+  }
+
+  /**
    * Show or hide individual timer controls
    *
    * @params: timer - a timer type process step instance
@@ -80,6 +104,7 @@ export class TimerComponent {
         speed: 250
       }
     };
+    this.setChevron();
   }
 
 }
