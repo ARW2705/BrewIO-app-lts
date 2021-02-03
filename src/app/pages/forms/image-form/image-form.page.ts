@@ -67,7 +67,7 @@ export class ImageFormPage implements OnInit {
    * @params: none
    * @return: none
    */
-  submitPhoto(): void {
+  selectPhoto(): void {
     this.modalCtrl.dismiss(this.image);
   }
 

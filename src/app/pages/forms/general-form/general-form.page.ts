@@ -84,7 +84,7 @@ export class GeneralFormPage implements OnInit {
       this.formType === 'master' ? 'name' : 'variantName',
       new FormControl(
         '',
-        [Validators.minLength(2), Validators.maxLength(30), Validators.required]
+        [Validators.minLength(2), Validators.maxLength(50), Validators.required]
       )
     );
   }
@@ -149,11 +149,11 @@ export class GeneralFormPage implements OnInit {
       style:        ['',   [Validators.required]],
       brewingType:  ['',   [Validators.required]],
       efficiency:   [70,   [Validators.required, Validators.min(0), Validators.max(100)]],
-      mashDuration: [60,   [Validators.required, Validators.min(0)]],
-      boilDuration: [60,   [Validators.required, Validators.min(0)]],
-      batchVolume:  [null, [Validators.required, Validators.min(0)]],
-      boilVolume:   [null, [Validators.required, Validators.min(0)]],
-      mashVolume:   [null, [Validators.required, Validators.min(0)]],
+      mashDuration: [60,   [Validators.required, Validators.min(0), Validators.max(1440)]],
+      boilDuration: [60,   [Validators.required, Validators.min(0), Validators.max(1440)]],
+      batchVolume:  [null, [Validators.required, Validators.min(0), Validators.max(1000)]],
+      boilVolume:   [null, [Validators.required, Validators.min(0), Validators.max(1000)]],
+      mashVolume:   [null, [Validators.required, Validators.min(0), Validators.max(1000)]],
       isFavorite:   false,
       isMaster:     false
     });

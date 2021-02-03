@@ -3,12 +3,12 @@ export const FORM_ERROR_MESSAGES: object = {
     name: {
       required: 'Please enter a recipe master name',
       minlength: 'Name must be at least two characters long',
-      maxlength: 'Name must be less than 30 characters long'
+      maxlength: 'Name must be less than 50 characters long'
     },
     variantName: {
       required: 'Please enter a recipe variant name',
       minlength: 'Name must be at least two characters long',
-      maxlength: 'Name must be less than 30 characters long'
+      maxlength: 'Name must be less than 50 characters long'
     },
     style: {
       required: 'Please select a style'
@@ -24,22 +24,27 @@ export const FORM_ERROR_MESSAGES: object = {
     mashDuration: {
       required: 'Please enter a mash duration',
       min: 'Please enter a non-negative number',
+      max: 'Duration must be less than one day'
     },
     boilDuration: {
       required: 'Please enter a boil duration',
       min: 'Please enter a non-negative number',
+      max: 'Duration must be less than one day'
     },
     batchVolume: {
       required: 'Please enter a batch volume',
       min: 'Please enter a non-negative number',
+      max: 'Volume must be below 1000'
     },
     boilVolume: {
       required: 'Please enter a boil volume',
       min: 'Please enter a non-negative number',
+      max: 'Volume must be below 1000'
     },
     mashVolume: {
       required: 'Please enter a mash volume',
       min: 'Please enter a non-negative number',
+      max: 'Volume must be below 1000'
     }
   },
   ingredient: {
@@ -64,17 +69,17 @@ export const FORM_ERROR_MESSAGES: object = {
     name: {
       required: 'Please enter an ingredient name',
       minlength: 'Please enter a name with two or more characters',
-      maxlength: 'Please enter a name with no more than 20 characters'
+      maxlength: 'Please enter a name with no more than 50 characters'
     },
     description: {
       required: 'Please enter an ingredient description',
       minlength: 'Please enter a description with two or more characters',
-      maxlength: 'Please enter a description with no more than 120 characters'
+      maxlength: 'Please enter a description with no more than 500 characters'
     },
     units: {
       required: 'Please enter an ingredient units',
       minlength: 'Please enter a units with at least one characters',
-      maxlength: 'Please enter a units with no more than 20 characters'
+      maxlength: 'Please enter a units with no more than 50 characters'
     }
   },
   inventory: {
@@ -94,7 +99,7 @@ export const FORM_ERROR_MESSAGES: object = {
     itemName: {
       required: 'Please enter an inventory item name',
       minlength: 'Please enter an inventory item name with two or more characters',
-      maxlength: 'Please enter an inventory item name with no more than 20 characters'
+      maxlength: 'Please enter an inventory item name with no more than 50 characters'
     },
     itemStyleId: {
       required: 'Please select a style'
@@ -112,7 +117,7 @@ export const FORM_ERROR_MESSAGES: object = {
     },
     itemSubname: {
       minlength: 'Please enter an inventory item sub name with two or more characters',
-      maxlength: 'Please enter an inventory item sub name with no more than 20 characters'
+      maxlength: 'Please enter an inventory item sub name with no more than 50 characters'
     },
     itemIBU: {
       min: 'Please enter a non-negative IBU'
@@ -125,10 +130,10 @@ export const FORM_ERROR_MESSAGES: object = {
     name: {
       required: 'Please enter a step name',
       minlength: 'Please enter a step name with two or more characters',
-      maxlength: 'Please enter a step name with no more than 25 characters'
+      maxlength: 'Please enter a step name with no more than 50 characters'
     },
     description: {
-      maxlength: 'Please enter a description with no more than 240 characters'
+      maxlength: 'Please enter a description with no more than 500 characters'
     },
     duration: {
       required: 'Please enter a duration timeframe',
@@ -157,8 +162,8 @@ export const FORM_ERROR_MESSAGES: object = {
     },
     password: {
       required: 'Password is required',
-      minlength: 'Password must be at least 8 characters',
-      maxlength: 'Password is limited to 20 characters',
+      minlength: 'Password must be at least 12 characters',
+      maxlength: 'Password is limited to 30 characters',
       passwordInvalid: 'Password must contain at least one lowercase letter, one uppercase letter, and one number'
     },
     passwordConfirmation: {
@@ -170,10 +175,10 @@ export const FORM_ERROR_MESSAGES: object = {
       email: 'Email address is invalid'
     },
     firstname: {
-      maxlength: 'First name is limited to 25 characters'
+      maxlength: 'First name is limited to 50 characters'
     },
     lastname: {
-      maxlength: 'Last name is limited to 25 characters'
+      maxlength: 'Last name is limited to 50 characters'
     }
   }
 };

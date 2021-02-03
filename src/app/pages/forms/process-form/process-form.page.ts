@@ -97,7 +97,7 @@ export class ProcessFormPage implements OnInit {
         '',
         [Validators.minLength(2), Validators.maxLength(50), Validators.required]
       ],
-      description: ['', [Validators.maxLength(240)]]
+      description: ['', [Validators.maxLength(500)]]
     });
 
     this.addFormSpecificControls();

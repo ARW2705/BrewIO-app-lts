@@ -3,7 +3,6 @@ import { Component, OnInit, Input } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { FormGroup, FormBuilder, FormControl, Validators } from '@angular/forms';
 import { Observable, forkJoin, from, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
 
 /* Contants imports */
 import { OPTIONAL_INVENTORY_DATA_KEYS } from '../../../shared/constants/optional-inventory-data-keys';
@@ -74,7 +73,9 @@ export class InventoryFormPage implements OnInit {
     public recipeService: RecipeService,
     public toastService: ToastService,
     public userService: UserService
-  ) { }
+  ) {
+    console.log(this.itemLabelImage);
+  }
 
   /***** Lifecycle Hooks *****/
 
@@ -97,6 +98,7 @@ export class InventoryFormPage implements OnInit {
           : this.dismiss.bind(this);
         this.styles = styles;
         this.author = author;
+        console.log(this.itemLabelImage);
         this.initForm();
       },
       (error: string): void => {
@@ -155,14 +157,14 @@ export class InventoryFormPage implements OnInit {
       // Populate form with given item values as an update
       this.item = item;
       title = 'Update Item';
-      this.itemLabelImage = item.optionalItemData.itemLabelImage;
-      this.supplierLabelImage = item.optionalItemData.supplierLabelImage;
+      this.itemLabelImage = item.optionalItemData.itemLabelImage || this._defaultImage;
+      this.supplierLabelImage = item.optionalItemData.supplierLabelImage || this._defaultImage;
       this.initFormWithItem();
     } else if (batch) {
       // Populate form fields for initial new item with a batch as a base
       this.batch = batch;
-      this.supplierLabelImage = this.author.breweryLabelImage;
-      this.itemLabelImage = this.batch.contextInfo.recipeImage;
+      this.supplierLabelImage = this.author.breweryLabelImage || this._defaultImage;
+      this.itemLabelImage = this.batch.contextInfo.recipeImage || this._defaultImage;
       this.initFormWithBatch();
     } else {
       // Populate form fields for new item with no previous references
@@ -237,7 +239,7 @@ export class InventoryFormPage implements OnInit {
    */
   initFormWithBatch(): void {
     this.inventoryForm = this.formBuilder.group({
-      description: ['', [Validators.maxLength(120)]],
+      description: ['', [Validators.maxLength(500)]],
       initialQuantity: ['', [Validators.required]],
       stockType: ['', [Validators.required]]
     });
@@ -251,22 +253,22 @@ export class InventoryFormPage implements OnInit {
    */
   initFormGeneric(): void {
     this.inventoryForm = this.formBuilder.group({
-      description: ['', [Validators.maxLength(120)]],
+      description: ['', [Validators.maxLength(500)]],
       initialQuantity: [null, [Validators.required, Validators.min(1)]],
       itemABV: [null, [Validators.required, Validators.min(0)]],
       itemIBU: null,
       itemName: [
         '',
-        [Validators.required, Validators.minLength(2), Validators.maxLength(25)]
+        [Validators.required, Validators.minLength(2), Validators.maxLength(50)]
       ],
       itemSRM: null,
       itemStyleId: [null, [Validators.required]],
-      itemSubname: ['', [Validators.minLength(2), Validators.maxLength(25)]],
+      itemSubname: ['', [Validators.minLength(2), Validators.maxLength(50)]],
       sourceType: ['', [Validators.required]],
       stockType: ['', [Validators.required]],
       supplierName: [
         '',
-        [Validators.required, Validators.minLength(2), Validators.maxLength(25)]
+        [Validators.required, Validators.minLength(2), Validators.maxLength(50)]
       ],
       supplierURL: ''
     });
@@ -281,7 +283,7 @@ export class InventoryFormPage implements OnInit {
   initFormWithItem(): void {
     this.inventoryForm = this.formBuilder.group({
       currentQuantity: [this.item.currentQuantity, [Validators.required]],
-      description: [this.item.description, [Validators.maxLength(120)]],
+      description: [this.item.description, [Validators.maxLength(500)]],
       initialQuantity: [
         this.item.initialQuantity,
         [Validators.required, Validators.min(1)]
@@ -289,7 +291,7 @@ export class InventoryFormPage implements OnInit {
       itemABV: [this.item.itemABV, [Validators.required, Validators.min(0)]],
       itemName: [
         this.item.itemName,
-        [Validators.required, Validators.minLength(2), Validators.maxLength(20)]
+        [Validators.required, Validators.minLength(2), Validators.maxLength(50)]
       ],
       itemStyleId: [null, [Validators.required]],
       sourceType: [this.item.sourceType, [Validators.required]],

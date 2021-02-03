@@ -189,6 +189,7 @@ export class ProcessMeasurementsFormPage implements OnInit, OnDestroy {
    * @return: none
    */
   initForm(): void {
+    // TODO: validator to check that final gravity is not more than original gravity
     console.log('init form', this.batch);
     const annotations: BatchAnnotations = this.batch.annotations;
     const targetValues: PrimaryValues = annotations.targetValues;

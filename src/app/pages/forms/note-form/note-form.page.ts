@@ -28,7 +28,7 @@ export class NoteFormPage implements OnInit {
 
   ngOnInit() {
     this.title = `${toTitleCase(this.noteType)} Note`;
-    this.note = new FormControl(this.toUpdate, [Validators.maxLength(120)]);
+    this.note = new FormControl(this.toUpdate, [Validators.maxLength(500)]);
   }
 
   /***** End Lifecycle Hooks *****/

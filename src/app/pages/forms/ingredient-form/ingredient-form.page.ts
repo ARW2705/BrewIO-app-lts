@@ -341,7 +341,7 @@ export class IngredientFormPage implements OnInit {
           '',
           [
             Validators.minLength(2),
-            Validators.maxLength(20),
+            Validators.maxLength(50),
             Validators.required
           ]
         )
@@ -353,7 +353,7 @@ export class IngredientFormPage implements OnInit {
           '',
           [
             Validators.minLength(2),
-            Validators.maxLength(120),
+            Validators.maxLength(500),
             Validators.required
           ]
         )
@@ -365,7 +365,7 @@ export class IngredientFormPage implements OnInit {
           '',
           [
             Validators.minLength(1),
-            Validators.maxLength(10),
+            Validators.maxLength(20),
             Validators.required
           ]
         )
