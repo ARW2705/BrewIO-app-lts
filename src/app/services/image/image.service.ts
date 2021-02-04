@@ -13,7 +13,11 @@ import { catchError, map, mergeMap } from 'rxjs/operators';
 /* Constant imports */
 import { BASE_URL } from '../../shared/constants/base-url';
 import { API_VERSION } from '../../shared/constants/api-version';
+import { IMAGE_FILE_EXTENSION } from '../../shared/constants/image-extension';
 import { IMAGE_SIZE_LIMIT } from '../../shared/constants/image-size-limit';
+
+/* Default imports */
+import { defaultImage } from '../../shared/defaults/default-image';
 
 /* Interface imports */
 import { Image } from '../../shared/interfaces/image';
@@ -28,6 +32,7 @@ import { StorageService } from '../storage/storage.service';
   providedIn: 'root'
 })
 export class ImageService {
+  _defaultImage: Image = defaultImage();
   images: Image[] = [];
 
   constructor(
@@ -79,7 +84,7 @@ export class ImageService {
     const cid: string = this.clientIdService.getNewId();
 
     return from(
-      this.file.copyFile(path, fileName, this.file.cacheDirectory, cid + '.jpg')
+      this.file.copyFile(path, fileName, this.file.cacheDirectory, cid + IMAGE_FILE_EXTENSION)
     )
     .pipe(
       mergeMap((entry: Entry): Observable<[Entry, Metadata]> => {
@@ -99,7 +104,6 @@ export class ImageService {
       })
     );
   }
-
 
   /**
    * Delete an image at the given file path
@@ -216,7 +220,7 @@ export class ImageService {
           image.url = image.localURL;
         }),
         mergeMap((): Observable<string> => {
-          const tempPath: string = `${this.file.cacheDirectory}/${image.cid}.jpg`;
+          const tempPath: string = `${this.file.cacheDirectory}/${image.cid}${IMAGE_FILE_EXTENSION}`;
           return this.deleteLocalImage(tempPath);
         }),
         mergeMap((): Observable<string> => {
@@ -327,7 +331,7 @@ export class ImageService {
   postImage<T>(formData: FormData, route: string): Observable<T> {
     return this.http.post<T>(`${BASE_URL}/${API_VERSION}/images/${route}`, formData)
       .pipe(
-          catchError((error: HttpErrorResponse): Observable<never> => {
+        catchError((error: HttpErrorResponse): Observable<never> => {
           return this.processHttpError.handleError(error);
         })
       );
@@ -360,7 +364,7 @@ export class ImageService {
             formData.append(
               imageData[index].name,
               imageBlob,
-              `${imageData[index].image.cid}.jpg`
+              `${imageData[index].image.cid}${IMAGE_FILE_EXTENSION}`
             );
           });
 
@@ -373,6 +377,33 @@ export class ImageService {
 
 
   /***** Other Methods *****/
+
+  /**
+   * Get complete server url for image filename
+   *
+   * @params: filename - string of server filename
+   *
+   * @return: complete url for image on server
+   */
+  getServerURL(filename: string): string {
+    return `${BASE_URL}/${API_VERSION}/images/${filename}${IMAGE_FILE_EXTENSION}`;
+  }
+
+  /**
+   * Handle image display error; attempt to change url to other sources or
+   * assign to default image if no other option
+   *
+   * @params: image - the erroring image
+   *
+   * @return: none
+   */
+  handleImageError(image: Image): void {
+    if (image.url === image.localURL) {
+      image.url = this.getServerURL(image.serverFilename);
+    } else {
+      image.url = this._defaultImage.filePath;
+    }
+  }
 
   /**
    * Check if image has a filepath to the temporary directory
@@ -405,6 +436,26 @@ export class ImageService {
           console.log(`${error}: awaiting data from server`);
         }
       );
+  }
+
+  /**
+   * Set the display url of an image with the following priority ->
+   * localURL -> serverURL -> not-foundURL
+   *
+   * @params: image - image to modify
+   *
+   * @return: none
+   */
+  setInitialURL(image: Image): void {
+    if (image) {
+      if (image.localURL) {
+        image.url = image.localURL;
+      } else if (image.serverFilename) {
+        image.url = this.getServerURL(image.serverFilename);
+      } else {
+        image.url = this._defaultImage.localURL;
+      }
+    }
   }
 
   /***** End Other Methods *****/
