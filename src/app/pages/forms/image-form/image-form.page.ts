@@ -1,6 +1,6 @@
 /* Module imports */
 import { Component, Input, OnInit, ChangeDetectorRef } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { ModalController, LoadingController } from '@ionic/angular';
 
 /* Interface imports */
 import { Image } from '../../../shared/interfaces/image';
@@ -22,6 +22,7 @@ export class ImageFormPage implements OnInit {
   constructor(
     public cdRef: ChangeDetectorRef,
     public imageService: ImageService,
+    public loadingCtrl: LoadingController,
     public modalCtrl: ModalController
   ) {
     this.onBackClick = this.dismiss.bind(this);
@@ -49,12 +50,20 @@ export class ImageFormPage implements OnInit {
    * @params: none
    * @return: none
    */
-  openGallery(): void {
+  async openGallery(): Promise<void> {
+    const loading: HTMLIonLoadingElement = await this.loadingCtrl.create({
+      cssClass: 'loading-custom',
+      spinner: 'lines'
+    });
+
+    await loading.present();
+
     this.imageService.importImage()
       .subscribe(
         (imageData: Image): void => {
           console.log('got image', imageData);
           this.image = imageData;
+          loading.dismiss();
           this.cdRef.detectChanges();
         },
         (error: string): void => console.log('gallery error', error)
