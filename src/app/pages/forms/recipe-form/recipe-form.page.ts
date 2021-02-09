@@ -257,7 +257,6 @@ export class RecipeFormPage implements OnInit, OnDestroy {
     return (data: object): void => {
       const _data: object = data['data'];
       if (_data) {
-        console.log('gen form submitted', _data);
         this.isGeneralFormComplete = true;
         this.updateDisplay(_data);
         this.updateRecipeValues();
@@ -359,7 +358,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
       if (_data) {
         this.updateIngredientList(_data, type, toUpdate, _data['delete']);
         this.updateRecipeValues();
-        if (_data['hopsType']) {
+        if (type === 'hops') {
           this.autoSetHopsAdditions();
         }
       }
@@ -631,8 +630,10 @@ export class RecipeFormPage implements OnInit, OnDestroy {
           return !process.name.match(/^(Add).*(hops)$/);
         });
 
+      const newBoilIndex: number = this.getProcessIndex('name', 'Boil');
+
       const preAdditionSchedule: Process[] = this.variant.processSchedule
-        .splice(0, boilIndex + 1);
+        .splice(0, newBoilIndex);
 
       const hopsProcesses: Process[] = this.generateHopsProcesses();
 
@@ -641,7 +642,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
         .concat(this.variant.processSchedule);
 
       // set boil step timer as concurrent is timers were added
-      this.variant.processSchedule[boilIndex].concurrent
+      this.variant.processSchedule[newBoilIndex + hopsProcesses.length].concurrent
         = !!hopsProcesses.length;
     }
   }
@@ -762,7 +763,6 @@ export class RecipeFormPage implements OnInit, OnDestroy {
    * @return: none
    */
   initCreateMasterForm(): void {
-    console.log('init create master');
     this.submitSuccessMessage = 'New Recipe Created';
     const _defaultRecipeMaster: RecipeMaster = defaultRecipeMaster();
     this.isGeneralFormComplete = false;
@@ -781,7 +781,6 @@ export class RecipeFormPage implements OnInit, OnDestroy {
    * @return: none
    */
   initCreateVariantForm(recipeMaster: RecipeMaster): void {
-    console.log('init create variant');
     this.submitSuccessMessage = 'New Variant Created';
     this.isGeneralFormComplete = false;
     this.title = 'Add Variant';
@@ -803,7 +802,6 @@ export class RecipeFormPage implements OnInit, OnDestroy {
    * @return: none
    */
   initUpdateMasterForm(recipeMaster: RecipeMaster): void {
-    console.log('init update master');
     this.submitSuccessMessage = 'Recipe Update Successful';
     this.isGeneralFormComplete = true;
     this.title = 'Update Recipe';
@@ -826,7 +824,6 @@ export class RecipeFormPage implements OnInit, OnDestroy {
     recipeMaster: RecipeMaster,
     recipeVariant: RecipeVariant
   ): void {
-    console.log('init update variant');
     this.submitSuccessMessage = 'Variant Update Successful';
     this.isGeneralFormComplete = true;
     this.title = 'Update Variant';
@@ -842,7 +839,6 @@ export class RecipeFormPage implements OnInit, OnDestroy {
    * @return: none
    */
   onSubmit(): void {
-    console.log('submitting recipe form');
     const isCreation: boolean = this.docMethod === 'create';
     const isMaster: boolean = this.formType === 'master';
 
