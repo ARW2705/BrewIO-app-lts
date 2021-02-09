@@ -6,8 +6,20 @@
 
     <ion-col size="12">
 
-      <h2>
-        {{ timer.timer.name }}
+      <!-- <h2>
+        {{ timer.timer.name }}<span *ngIf="timer.timeRemaining < 1">: Finished</span>
+      </h2> -->
+
+      <!-- <h2 *ngIf="timer.timeRemaining > 0">{{ timer.timer.name }}</h2> -->
+
+      <h2 [ngClass]="{ 'timer-expired': timer.timeRemaining < 1 }">
+
+        <span *ngIf="timer.timeRemaining < 1">Finished: </span>
+
+        <span>{{ timer.timer.name }}</span>
+
+        <!-- <span *ngIf="timer.timeRemaining < 1">: Finished</span> -->
+
       </h2>
 
     </ion-col>
@@ -26,7 +38,8 @@
   <!-- End Active Step View Timer Data -->
   <div>
 
-    <ion-row class="timer-row ion-align-items-center">
+    <ion-row  *ngIf="timer.timeRemaining > 0"
+              class="timer-row ion-align-items-center">
 
       <!-- Timer Progress Circle Component -->
       <ion-col  *ngIf="timer.settings"

@@ -19,7 +19,7 @@ import { expandUpDown } from '../../animations/expand';
 export class TimerComponent implements OnInit {
   @Input() isConcurrent: boolean = false;
   @Input() onTimerAction: (actionName: string, timer: Timer) => void;
-  @Input() timer = null;
+  @Input() timer: Timer = null;
   @Input() showDescription: boolean = false;
   chevronPath: string = '';
 

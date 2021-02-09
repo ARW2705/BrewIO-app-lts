@@ -30,6 +30,24 @@
   padding: 0 1%;
 }
 
+.timer-expired {
+  /* Display */
+  margin: 10px 0;
+
+  /* Children */
+  span:first-child {
+    /* Text */
+    white-space: pre;
+  }
+
+  span:nth-child(2) {
+    /* Text */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
 .timer-individual-controls {
   /* Display */
   z-index: 1 !important;
@@ -50,12 +68,16 @@
   width: 100%;
 
   /* Children */
-  > ion-col {
+  ion-col {
     /* Display */
     z-index: 2;
 
     /* Children */
-    > h2 {
+    h2 {
+      /* Display */
+      display: flex;
+      justify-content: center;
+
       /* Text */
       font-size: 2em;
       text-align: center;
