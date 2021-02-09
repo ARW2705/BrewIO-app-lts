@@ -347,10 +347,7 @@ export class ProcessService {
             return throwError('Unable to generate new batch: missing recipe');
           }
 
-          if (
-            this.connectionService.isConnected()
-            && this.userService.isLoggedIn()
-          ) {
+          if (this.connectionService.isConnected() && this.userService.isLoggedIn()) {
             return this.http
               .post<Batch>(
                 `${BASE_URL}/${API_VERSION}/process/user/${newBatch.owner}/master/${newBatch.recipeMasterId}/variant/${newBatch.recipeVariantId}`,
