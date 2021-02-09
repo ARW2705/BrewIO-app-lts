@@ -1,5 +1,4 @@
 /* Module imports */
-import { BackgroundMode } from '@ionic-native/background-mode/ngx';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { Platform } from '@ionic/angular';
@@ -15,7 +14,9 @@ import { clone } from '../../shared/utility-functions/clone';
 import { hasId } from '../../shared/utility-functions/id-helpers';
 
 /* Service imports */
+import { BackgroundModeService } from '../background-mode/background-mode.service';
 import { ClientIdService } from '../client-id/client-id.service';
+import { LocalNotificationService } from '../local-notification/local-notification.service';
 
 
 @Injectable({
@@ -23,6 +24,7 @@ import { ClientIdService } from '../client-id/client-id.service';
 })
 export class TimerService {
   batchTimers: BatchTimer[] = [];
+  hasActiveTimer: boolean = false;
   timing: any = null;
 
   circumference: number;
@@ -42,31 +44,15 @@ export class TimerService {
   timerFontFamily: string = 'Arial';
 
   constructor(
-    public backgroundMode: BackgroundMode,
+    public backgroundModeService: BackgroundModeService,
     public clientIdService: ClientIdService,
+    public notificationService: LocalNotificationService,
     public platform: Platform
   ) {
-    this.init();
-  }
-
-  init(): void {
-    if (this.platform.is('cordova')) {
-      this.backgroundMode.on('activate')
-        .subscribe((): void => {
-          this.backgroundMode.disableWebViewOptimizations();
-        });
-      this.backgroundMode.enable();
-      this.backgroundMode.overrideBackButton();
-      this.backgroundMode.setDefaults({
-        hidden: true,
-        silent: true,
-        color: '40e0cf'
-      });
-    }
-    this.timing = setInterval(() => {
+    this.timing = setInterval((): void => {
       this.tick();
     }, 1000);
-    this.setupInitialSettings();
+    this.initializeSettings();
   }
 
   /**
@@ -78,7 +64,6 @@ export class TimerService {
    */
   addBatchTimer(batch: Batch): void {
     if (this.getBatchTimerById(batch.cid) === undefined) {
-
       const timers: BehaviorSubject<Timer>[] = [];
       let concurrentIndex: number = 0;
       for (let i = 0; i < batch.process.schedule.length; i++) {
@@ -214,6 +199,31 @@ export class TimerService {
   }
 
   /**
+   * Get step duration to be used in description display
+   *
+   * @params: duration - stored duration in minutes
+   *
+   * @return: datetime string hh:mm
+   */
+  getFormattedDurationString(duration: number): string {
+    let result: string = 'Duration: ';
+
+    // Get hours
+    if (duration > 59) {
+      const hours = Math.floor(duration / 60);
+      result += `${hours} hour${hours > 1 ? 's' : ''}`;
+      duration = duration % 60;
+      result += (duration) ? ' ' : '';
+    }
+
+    // Get minutes
+    if (duration) {
+      result += `${duration} minute${duration > 1 ? 's' : ''}`;
+    }
+    return result;
+  }
+
+  /**
    * Get timer progress circle settings
    *
    * @params: process - Process to help create settings
@@ -294,6 +304,28 @@ export class TimerService {
   }
 
   /**
+   * Generate initial base settings for timers
+   *
+   * @params: none
+   * @return: none
+   */
+  initializeSettings(): void {
+    const width: number = Math.round(this.platform.width() * 2 / 3);
+    const strokeWidth: number = 8;
+    const radius: number = (width / 2) - (strokeWidth * 2);
+    const circumference: number = radius * 2 * Math.PI;
+
+    this.circumference = circumference;
+    this.timerHeight = width;
+    this.timerWidth = width;
+    this.timerStrokeWidth = strokeWidth;
+    this.timerRadius = radius;
+    this.timerOriginX = width / 2;
+    this.timerOriginY = width / 2;
+    this.timerDY = `${this.timerWidth / 800}em`;
+  }
+
+  /**
    * Remove a BatchTimer from list
    *
    * @params: batchId - batch id associated with BatchTimer
@@ -365,6 +397,7 @@ export class TimerService {
         timer.isRunning = false;
         // TODO activate alarm
         console.log('timer expired alarm');
+        this.notificationService.setLocalNotification(`${timer.timer.name} complete!`);
       } else if (timer.timer.splitInterval > 1) {
         const interval: number = timer.timer.duration
           * 60
@@ -373,56 +406,10 @@ export class TimerService {
         if (timer.timeRemaining % interval === 0) {
           // TODO activate interval alarm
           console.log('interval alarm');
+          this.notificationService.setLocalNotification(`${timer.timer.name} interval complete!`);
         }
       }
     }
-  }
-
-  /**
-   * Get step duration to be used in description display
-   *
-   * @params: duration - stored duration in minutes
-   *
-   * @return: datetime string hh:mm
-   */
-  getFormattedDurationString(duration: number): string {
-    let result: string = 'Duration: ';
-
-    // Get hours
-    if (duration > 59) {
-      const hours = Math.floor(duration / 60);
-      result += `${hours} hour${hours > 1 ? 's' : ''}`;
-      duration = duration % 60;
-      result += (duration) ? ' ' : '';
-    }
-
-    // Get minutes
-    if (duration) {
-      result += `${duration} minute${duration > 1 ? 's' : ''}`;
-    }
-    return result;
-  }
-
-  /**
-   * Generate initial base settings for timers
-   *
-   * @params: none
-   * @return: none
-   */
-  setupInitialSettings(): void {
-    const width: number = Math.round(this.platform.width() * 2 / 3);
-    const strokeWidth: number = 8;
-    const radius: number = (width / 2) - (strokeWidth * 2);
-    const circumference: number = radius * 2 * Math.PI;
-
-    this.circumference = circumference;
-    this.timerHeight = width;
-    this.timerWidth = width;
-    this.timerStrokeWidth = strokeWidth;
-    this.timerRadius = radius;
-    this.timerOriginX = width / 2;
-    this.timerOriginY = width / 2;
-    this.timerDY = `${this.timerWidth / 800}em`;
   }
 
   /**
@@ -482,6 +469,8 @@ export class TimerService {
    * @return: none
    */
   tick(): void {
+    let hasActiveTimer: boolean = false;
+
     this.batchTimers.forEach((batchTimer: BatchTimer): void => {
       batchTimer.timers.forEach((timer$: BehaviorSubject<Timer>): void => {
         const timer: Timer = timer$.value;
@@ -489,6 +478,8 @@ export class TimerService {
         if (timer.isRunning) {
           if (timer.timeRemaining > 0) {
             timer.timeRemaining--;
+            hasActiveTimer = true;
+            this.backgroundModeService.enableBackgroundMode();
           } else {
             timer.isRunning = false;
           }
@@ -498,6 +489,8 @@ export class TimerService {
         timer$.next(timer);
       });
     });
+
+    this.hasActiveTimer = hasActiveTimer;
     this.updateNotifications();
   }
 
@@ -508,45 +501,43 @@ export class TimerService {
    * @return: none
    */
   updateNotifications(): void {
-    // if (this.platform.is('cordova') && this.backgroundMode.isActive()) {
-    //   const timers: Timer[] = this.batchTimers.flatMap(
-    //     (batchTimer: BatchTimer): Timer[] => {
-    //       const _timers: Timer[] = [];
-    //
-    //       batchTimer.timers
-    //         .forEach((timer$: BehaviorSubject<Timer>): void => {
-    //           if (timer$.value.isRunning) {
-    //             _timers.push(timer$.value);
-    //           }
-    //         });
-    //
-    //       return _timers;
-    //     }
-    //   );
-    //
-    //   if (timers.length) {
-    //     let nearest: Timer = timers[0];
-    //
-    //     if (timers.length > 1) {
-    //       nearest = timers.reduce(
-    //         (acc: Timer, curr: Timer): Timer => {
-    //           return acc.timeRemaining < curr.timeRemaining
-    //             ? acc
-    //             : curr;
-    //           }
-    //       );
-    //     }
-    //
-    //     this.backgroundMode.configure({
-    //       title: `${nearest.timer.name}: ${nearest.settings.text.content}`,
-    //       text: `${timers.length} timer${timers.length > 2 ? 's': ''} running`,
-    //       icon: 'ic_launcher',
-    //       hidden: true,
-    //       silent: false,
-    //       color: '40e0cf'
-    //     });
-    //   }
-    // }
+    if (this.platform.is('cordova') && this.backgroundModeService.isActive()) {
+      if (this.hasActiveTimer) {
+        const timers: Timer[] = this.batchTimers.flatMap(
+          (batchTimer: BatchTimer): Timer[] => {
+            const _timers: Timer[] = [];
+
+            batchTimer.timers
+              .forEach((timer$: BehaviorSubject<Timer>): void => {
+                if (timer$.value.isRunning) {
+                  _timers.push(timer$.value);
+                }
+              });
+
+            return _timers;
+          }
+        );
+
+        if (timers.length) {
+          let nearest: Timer = timers[0];
+
+          if (timers.length > 1) {
+            nearest = timers.reduce(
+              (acc: Timer, curr: Timer): Timer => {
+                return acc.timeRemaining < curr.timeRemaining ? acc : curr;
+              }
+            );
+          }
+
+          this.backgroundModeService.setNotification(
+            `${nearest.timer.name}: ${nearest.settings.text.content}`,
+            `${timers.length} timer${timers.length > 2 ? 's' : ''} running`
+          );
+        }
+      } else {
+        this.backgroundModeService.disableBackgroundMode();
+      }
+    }
   }
 
 }
