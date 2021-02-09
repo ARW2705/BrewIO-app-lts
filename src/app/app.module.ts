@@ -14,6 +14,7 @@ import { Camera } from '@ionic-native/camera/ngx';
 import { File } from '@ionic-native/file/ngx';
 import { FilePath } from '@ionic-native/file-path/ngx';
 import { WebView } from '@ionic-native/ionic-webview/ngx';
+import { LocalNotifications } from '@ionic-native/local-notifications/ngx';
 import { Network } from '@ionic-native/network/ngx';
 import { Crop } from '@ionic-native/crop/ngx';
 import { ImageResizer } from '@ionic-native/image-resizer/ngx';
@@ -27,6 +28,7 @@ import { PipesModule } from './pipes/pipes.module';
 import { ActionSheetService } from './services/action-sheet/action-sheet.service';
 import { AnimationsService } from './services/animations/animations.service';
 import { AuthorizedInterceptor, UnauthorizedInterceptor } from './services/interceptor/interceptor.service';
+import { BackgroundModeService } from './services/background-mode/background-mode.service';
 import { CalculationsService } from './services/calculations/calculations.service';
 import { ClientIdService } from './services/client-id/client-id.service';
 import { ConnectionService } from './services/connection/connection.service';
@@ -34,6 +36,7 @@ import { EventService } from './services/event/event.service';
 import { FormValidationService } from './services/form-validation/form-validation.service';
 import { InventoryService } from './services/inventory/inventory.service';
 import { LibraryService } from './services/library/library.service';
+import { LocalNotificationService } from './services/local-notification/local-notification.service';
 import { PreferencesService } from './services/preferences/preferences.service';
 import { HttpErrorService } from './services/http-error/http-error.service';
 import { ProcessService } from './services/process/process.service';
@@ -67,6 +70,7 @@ import { UserService } from './services/user/user.service';
     File,
     FilePath,
     ImageResizer,
+    LocalNotifications,
     StatusBar,
     SplashScreen,
     BackgroundMode,
@@ -75,6 +79,7 @@ import { UserService } from './services/user/user.service';
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     ActionSheetService,
     AnimationsService,
+    BackgroundModeService,
     CalculationsService,
     ClientIdService,
     ConnectionService,
@@ -82,6 +87,7 @@ import { UserService } from './services/user/user.service';
     FormValidationService,
     InventoryService,
     LibraryService,
+    LocalNotificationService,
     PreferencesService,
     HttpErrorService,
     ProcessService,

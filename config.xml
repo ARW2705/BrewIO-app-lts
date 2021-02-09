@@ -28,6 +28,10 @@
         <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application" xmlns:android="http://schemas.android.com/apk/res/android">
             <application android:networkSecurityConfig="@xml/network_security_config" />
         </edit-config>
+        <config-file parent="/manifest" target="AndroidManifest.xml" xmlns:android="http://schemas.android.com/apk/res/android">
+            <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+            <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+        </config-file>
         <resource-file src="resources/android/xml/network_security_config.xml" target="app/src/main/res/xml/network_security_config.xml" />
         <allow-intent href="market:*" />
         <icon density="ldpi" src="resources/android/icon/drawable-ldpi-icon.png" />
@@ -122,5 +126,6 @@
     <plugin name="cordova-plugin-crop" spec="^0.4.0" />
     <plugin name="info.protonet.imageresizer" spec="^0.1.1" />
     <plugin name="cordova-plugin-splashscreen" spec="^5.0.4" />
-    <engine name="android" spec="7.1.4" />
+    <plugin name="cordova-plugin-local-notification" spec="^0.9.0-beta.2" />
+    <engine name="android" spec="^7.1.4" />
 </widget>
