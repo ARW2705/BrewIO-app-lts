@@ -24,7 +24,6 @@ import { LocalNotificationService } from '../local-notification/local-notificati
 })
 export class TimerService {
   batchTimers: BatchTimer[] = [];
-  hasActiveTimer: boolean = false;
   timing: any = null;
 
   circumference: number;
@@ -68,29 +67,9 @@ export class TimerService {
       let concurrentIndex: number = 0;
       for (let i = 0; i < batch.process.schedule.length; i++) {
         if (batch.process.schedule[i].type === 'timer') {
-          const timeRemaining: number = batch.process.schedule[i].duration * 60; // change duration from minutes to seconds
+          timers.push(this.generateNewTimerSubject(batch, i, concurrentIndex));
 
-          const newTimer$: BehaviorSubject<Timer> = new BehaviorSubject<Timer>({
-            cid: this.clientIdService.getNewId(),
-            first: batch.process.schedule[i - concurrentIndex].cid,
-            timer: clone(batch.process.schedule[i]),
-            timeRemaining: timeRemaining,
-            show: false,
-            expansion : {
-              value: 'collapsed',
-              params: {
-                height: 0,
-                speed: 250
-              }
-            },
-            isRunning: false,
-            settings: this.getSettings(batch.process.schedule[i])
-          });
-          timers.push(newTimer$);
-
-          if (i < batch.process.schedule.length - 1
-            && batch.process.schedule[i].concurrent
-            && batch.process.schedule[i + 1].concurrent) {
+          if (this.isConcurrent(batch, i)) {
             concurrentIndex++;
           } else {
             concurrentIndex = 0;
@@ -168,6 +147,40 @@ export class TimerService {
   }
 
   /**
+   * Generate a new timer based on batch data
+   *
+   * @params: batch - the batch that contains required data
+   * @params: processIndex - the process schedule index with time data
+   * @params: concurrentOffset - offset index from processIndex to first concurrent timer
+   *
+   * @return: BehaviorSubject of new timer
+   */
+  generateNewTimerSubject(
+    batch: Batch,
+    processIndex: number,
+    concurrentOffset: number
+  ): BehaviorSubject<Timer> {
+    const newTimer$: BehaviorSubject<Timer> = new BehaviorSubject<Timer>({
+      cid: this.clientIdService.getNewId(),
+      first: batch.process.schedule[processIndex - concurrentOffset].cid,
+      timer: clone(batch.process.schedule[processIndex]),
+      timeRemaining: batch.process.schedule[processIndex].duration * 60,
+      show: false,
+      expansion : {
+        value: 'collapsed',
+        params: {
+          height: 0,
+          speed: 250
+        }
+      },
+      isRunning: false,
+      settings: this.getSettings(batch.process.schedule[processIndex])
+    });
+
+    return newTimer$;
+  }
+
+  /**
    * Get a batch timer by its id
    *
    * @params: batchId - batch id associated with batch timer
@@ -177,7 +190,7 @@ export class TimerService {
    */
   getBatchTimerById(batchId: string): BatchTimer {
     return this.batchTimers
-    .find((batchTimer: BatchTimer): boolean => batchTimer.batchId === batchId);
+      .find((batchTimer: BatchTimer): boolean => batchTimer.batchId === batchId);
   }
 
   /**
@@ -326,6 +339,22 @@ export class TimerService {
   }
 
   /**
+   * Check if adjacent timer steps are concurrent
+   *
+   * @params: batch - batch that contains the process schedule to check
+   * @params: index - index of step to check
+   *
+   * @return: true if given step index and the next step are both concurrent
+   */
+  isConcurrent(batch: Batch, index: number): boolean {
+    return (
+      index < batch.process.schedule.length - 1
+      && batch.process.schedule[index].concurrent
+      && batch.process.schedule[index + 1].concurrent
+    );
+  }
+
+  /**
    * Remove a BatchTimer from list
    *
    * @params: batchId - batch id associated with BatchTimer
@@ -395,8 +424,6 @@ export class TimerService {
     if (timer.isRunning) {
       if (timer.timeRemaining < 1) {
         timer.isRunning = false;
-        // TODO activate alarm
-        console.log('timer expired alarm');
         this.notificationService.setLocalNotification(`${timer.timer.name} complete!`);
       } else if (timer.timer.splitInterval > 1) {
         const interval: number = timer.timer.duration
@@ -404,8 +431,6 @@ export class TimerService {
           / timer.timer.splitInterval;
 
         if (timer.timeRemaining % interval === 0) {
-          // TODO activate interval alarm
-          console.log('interval alarm');
           this.notificationService.setLocalNotification(`${timer.timer.name} interval complete!`);
         }
       }
@@ -469,7 +494,7 @@ export class TimerService {
    * @return: none
    */
   tick(): void {
-    let hasActiveTimer: boolean = false;
+    const runningTimers: Timer[] = [];
 
     this.batchTimers.forEach((batchTimer: BatchTimer): void => {
       batchTimer.timers.forEach((timer$: BehaviorSubject<Timer>): void => {
@@ -478,7 +503,6 @@ export class TimerService {
         if (timer.isRunning) {
           if (timer.timeRemaining > 0) {
             timer.timeRemaining--;
-            hasActiveTimer = true;
             this.backgroundModeService.enableBackgroundMode();
           } else {
             timer.isRunning = false;
@@ -487,53 +511,39 @@ export class TimerService {
 
         this.setProgress(timer);
         timer$.next(timer);
+        if (timer.isRunning) {
+          runningTimers.push(timer);
+        }
       });
     });
 
-    this.hasActiveTimer = hasActiveTimer;
-    this.updateNotifications();
+    this.updateNotifications(runningTimers);
   }
 
   /**
    * Update notifications timer
    *
-   * @params: none
+   * @params: timers - array of all running timers
+   *
    * @return: none
    */
-  updateNotifications(): void {
+  updateNotifications(timers: Timer[]): void {
     if (this.platform.is('cordova') && this.backgroundModeService.isActive()) {
-      if (this.hasActiveTimer) {
-        const timers: Timer[] = this.batchTimers.flatMap(
-          (batchTimer: BatchTimer): Timer[] => {
-            const _timers: Timer[] = [];
+      if (timers.length) {
+        let nearest: Timer = timers[0];
 
-            batchTimer.timers
-              .forEach((timer$: BehaviorSubject<Timer>): void => {
-                if (timer$.value.isRunning) {
-                  _timers.push(timer$.value);
-                }
-              });
-
-            return _timers;
-          }
-        );
-
-        if (timers.length) {
-          let nearest: Timer = timers[0];
-
-          if (timers.length > 1) {
-            nearest = timers.reduce(
-              (acc: Timer, curr: Timer): Timer => {
-                return acc.timeRemaining < curr.timeRemaining ? acc : curr;
-              }
-            );
-          }
-
-          this.backgroundModeService.setNotification(
-            `${nearest.timer.name}: ${nearest.settings.text.content}`,
-            `${timers.length} timer${timers.length > 2 ? 's' : ''} running`
+        if (timers.length > 1) {
+          nearest = timers.reduce(
+            (acc: Timer, curr: Timer): Timer => {
+              return acc.timeRemaining < curr.timeRemaining ? acc : curr;
+            }
           );
         }
+
+        this.backgroundModeService.setNotification(
+          `${nearest.timer.name}: ${nearest.settings.text.content}`,
+          `${timers.length} timer${timers.length > 2 ? 's' : ''} running`
+        );
       } else {
         this.backgroundModeService.disableBackgroundMode();
       }
