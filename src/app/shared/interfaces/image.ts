@@ -8,12 +8,13 @@ export interface Image {
 }
 
 export interface PendingImageFlag {
-  itemLabelImage: {
-    hasPending: boolean;
-    hasTemp: boolean;
-  };
-  supplierLabelImage: {
-    hasPending: boolean;
-    hasTemp: boolean;
-  };
+  name: string;
+  hasPending: boolean;
+  hasTemp: boolean;
+}
+
+export interface ImageRequestMetadata {
+  name: string;
+  blob: Blob;
+  filename: string;
 }
