@@ -8,7 +8,7 @@ import { WebView } from '@ionic-native/ionic-webview/ngx';
 import { Crop } from '@ionic-native/crop/ngx';
 import { ImageResizer, ImageResizerOptions } from '@ionic-native/image-resizer/ngx';
 import { Observable, Observer, forkJoin, from, of, throwError } from 'rxjs';
-import { catchError, map, mergeMap } from 'rxjs/operators';
+import { catchError, defaultIfEmpty, map, mergeMap } from 'rxjs/operators';
 
 /* Constant imports */
 import { BASE_URL } from '../../shared/constants/base-url';
@@ -20,7 +20,7 @@ import { IMAGE_SIZE_LIMIT } from '../../shared/constants/image-size-limit';
 import { defaultImage } from '../../shared/defaults/default-image';
 
 /* Interface imports */
-import { Image } from '../../shared/interfaces/image';
+import { Image, ImageRequestMetadata } from '../../shared/interfaces/image';
 
 /* Service imports */
 import { ClientIdService } from '../client-id/client-id.service';
@@ -114,7 +114,6 @@ export class ImageService {
    * does not throw an error, rather just passes on the message
    */
   deleteLocalImage(filePath: string): Observable<string> {
-    console.log('deleting image file', filePath);
     if (!filePath) {
       return throwError(`Deletion error: invalid file path: ${filePath}`);
     }
@@ -247,7 +246,6 @@ export class ImageService {
     const reader$: Observable<string | ArrayBuffer> = new Observable(
       (observer: Observer<string | ArrayBuffer>): void => {
         reader.onload = (): void => {
-          console.log('file', file);
           observer.next(reader.result);
           observer.complete();
         };
@@ -328,14 +326,14 @@ export class ImageService {
    *
    * @return: observable of server response
    */
-  postImage<T>(formData: FormData, route: string): Observable<T> {
-    return this.http.post<T>(`${BASE_URL}/${API_VERSION}/images/${route}`, formData)
-      .pipe(
-        catchError((error: HttpErrorResponse): Observable<never> => {
-          return this.processHttpError.handleError(error);
-        })
-      );
-  }
+  // postImage<T>(formData: FormData, route: string): Observable<T> {
+  //   return this.http.post<T>(`${BASE_URL}/${API_VERSION}/images/${route}`, formData)
+  //     .pipe(
+  //       catchError((error: HttpErrorResponse): Observable<never> => {
+  //         return this.processHttpError.handleError(error);
+  //       })
+  //     );
+  // }
 
   /**
    * Upload an array of images
@@ -346,29 +344,55 @@ export class ImageService {
    *
    * @return: observable of server response
    */
-  uploadImages<T>(
-    imageData: { image: Image, name: string }[],
-    route: string
-  ): Observable<T> {
+  // uploadImages<T>(
+  //   imageData: { image: Image, name: string }[],
+  //   route: string
+  // ): Observable<T> {
+  //   const files: Observable<string | ArrayBuffer>[] = imageData
+  //     .map((_imageData: { image: Image, name: string }): Observable<string | ArrayBuffer> => {
+  //       if (!this.isTempImage(_imageData.image)) {
+  //         return this.getLocalFile(_imageData.image.filePath);
+  //       }
+  //     });
+  //
+  //   return forkJoin(files)
+  //     .pipe(
+  //       mergeMap((buffers: ArrayBuffer[]): Observable<T> => {
+  //         const formData: FormData = new FormData();
+  //         buffers.forEach((buffer: ArrayBuffer, index: number): void => {
+  //           const imageBlob: Blob = new Blob([buffer], { type: 'image/jpeg' });
+  //           formData.append(
+  //             imageData[index].name,
+  //             imageBlob,
+  //             `${imageData[index].image.cid}${IMAGE_FILE_EXTENSION}`
+  //           );
+  //         });
+  //
+  //         return this.postImage<T>(formData, route);
+  //       })
+  //     );
+  // }
+
+  blobbifyImages(imageData: { image: Image, name: string }[]): Observable<ImageRequestMetadata[]> {
     const files: Observable<string | ArrayBuffer>[] = imageData
       .map((_imageData: { image: Image, name: string }): Observable<string | ArrayBuffer> => {
-        return this.getLocalFile(_imageData.image.filePath);
+        if (!this.isTempImage(_imageData.image)) {
+          return this.getLocalFile(_imageData.image.filePath);
+        }
       });
 
     return forkJoin(files)
       .pipe(
-        mergeMap((buffers: ArrayBuffer[]): Observable<T> => {
-          const formData: FormData = new FormData();
-          buffers.forEach((buffer: ArrayBuffer, index: number): void => {
-            const imageBlob: Blob = new Blob([buffer], { type: 'image/jpeg' });
-            formData.append(
-              imageData[index].name,
-              imageBlob,
-              `${imageData[index].image.cid}${IMAGE_FILE_EXTENSION}`
-            );
-          });
-
-          return this.postImage<T>(formData, route);
+        defaultIfEmpty([]),
+        map((buffers: ArrayBuffer[]): ImageRequestMetadata[] => {
+          return buffers
+            .map((buffer: ArrayBuffer, index: number): ImageRequestMetadata => {
+              return {
+                name: imageData[index].name,
+                blob: new Blob([buffer], { type: 'image/jpeg' }),
+                filename: `${imageData[index].image.cid}${IMAGE_FILE_EXTENSION}`
+              };
+            });
         })
       );
   }

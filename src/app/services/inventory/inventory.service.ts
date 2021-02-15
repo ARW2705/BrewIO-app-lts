@@ -21,7 +21,7 @@ import { defaultImage } from '../../shared/defaults/default-image';
 /* Interface imports*/
 import { Author } from '../../shared/interfaces/author';
 import { Batch, BatchContext } from '../../shared/interfaces/batch';
-import { Image, PendingImageFlag } from '../../shared/interfaces/image';
+import { Image, ImageRequestMetadata, PendingImageFlag } from '../../shared/interfaces/image';
 import { InventoryItem } from '../../shared/interfaces/inventory-item';
 import { PrimaryValues } from '../../shared/interfaces/primary-values';
 import { RecipeMaster } from '../../shared/interfaces/recipe-master';
@@ -97,22 +97,9 @@ export class InventoryService {
       optionalItemData: {}
     };
 
-    const pendingImages: PendingImageFlag = this.mapOptionalData(newItem, newItemValues);
+    const pendingImages: PendingImageFlag[] = this.mapOptionalData(newItem, newItemValues);
 
-    // Move images from temporary storage to persistent storage (will also resize)
-    const storeImages: Observable<Image>[] = [];
-    if (pendingImages.itemLabelImage.hasTemp) {
-      console.log('add item label store');
-      storeImages.push(
-        this.imageService.storeFileToLocalDir(newItem.optionalItemData.itemLabelImage)
-      );
-    }
-    if (pendingImages.supplierLabelImage.hasTemp) {
-      console.log('add supplier label store');
-      storeImages.push(
-        this.imageService.storeFileToLocalDir(newItem.optionalItemData.supplierLabelImage)
-      );
-    }
+    const storeImages: Observable<Image>[] = this.composeImageStoreRequests(newItem, pendingImages);
 
     return forkJoin(storeImages)
       .pipe(
@@ -144,6 +131,42 @@ export class InventoryService {
     list$.next(list);
     this.updateInventoryStorage();
     return of(true);
+  }
+
+  /**
+   * Compose image function calls to persistently store image
+   * If a persistent image is to be overridden, provide new path
+   *
+   * @params: item - item that contains the image(s)
+   * @params: pendingImages - array of flags detailing what images should be uploaded
+   * @params: overridePaths - new file path for overriding persistent image
+   *
+   * @return: array of persisten image observables
+   */
+  composeImageStoreRequests(
+    item: InventoryItem,
+    pendingImages: PendingImageFlag[],
+    overridePaths: { name: string, path: string }[] = []
+  ): Observable<Image>[] {
+    const storeImages: Observable<Image>[] = [];
+
+    pendingImages.forEach((pending: PendingImageFlag): void => {
+      if (pending.hasTemp) {
+        const overridePath: { name: string, path: string } = overridePaths
+          .find((pathData: { name: string, path: string}): boolean => {
+            return pathData.name === pending.name;
+          });
+        const replacedPath: string = overridePath ? overridePath.path : null;
+        storeImages.push(
+          this.imageService.storeFileToLocalDir(
+            item.optionalItemData[pending.name],
+            replacedPath
+          )
+        );
+      }
+    });
+
+    return storeImages;
   }
 
   /**
@@ -313,33 +336,35 @@ export class InventoryService {
    *
    * @return: object with pending image metadata
    */
-  mapOptionalData(item: InventoryItem, optionalData: object): PendingImageFlag {
-    const pendingImages: PendingImageFlag = {
-      itemLabelImage: {
+  mapOptionalData(item: InventoryItem, optionalData: object): PendingImageFlag[] {
+    const pendingImages: PendingImageFlag[] = [
+      {
+        name: 'itemLabelImage',
         hasPending: this.hasPendingImage(
           item.optionalItemData,
           optionalData,
           'itemLabelImage'
         ),
-        hasTemp: this.imageService.isTempImage(
-          optionalData['itemLabelImage']
-        )
+        hasTemp: this.imageService.isTempImage(optionalData['itemLabelImage'])
       },
-      supplierLabelImage: {
+      {
+        name: 'supplierLabelImage',
         hasPending: this.hasPendingImage(
           item.optionalItemData,
           optionalData,
           'supplierLabelImage'
         ),
-        hasTemp: this.imageService.isTempImage(
-          optionalData['supplierLabelImage']
-        )
+        hasTemp: this.imageService.isTempImage(optionalData['supplierLabelImage'])
       }
-    };
+    ];
 
     for (const key in optionalData) {
       if (this.hasMappableKey(key, optionalData)) {
-        if (item.optionalItemData[key] && optionalData[key] && typeof optionalData[key] === 'object') {
+        if (
+          item.optionalItemData[key]
+          && optionalData[key]
+          && typeof optionalData[key] === 'object'
+        ) {
           for (const innerKey in optionalData[key]) {
             if (optionalData[key].hasOwnProperty(innerKey)) {
               item.optionalItemData[key][innerKey] = optionalData[key][innerKey];
@@ -395,30 +420,28 @@ export class InventoryService {
       }
     }
 
-    const pendingImages: PendingImageFlag = this.mapOptionalData(toUpdate, update);
+    const pendingImages: PendingImageFlag[] = this.mapOptionalData(toUpdate, update);
 
-    const storeImages: Observable<Image>[] = [];
-    if (pendingImages.itemLabelImage.hasTemp) {
-      storeImages.push(
-        this.imageService.storeFileToLocalDir(
-          toUpdate.optionalItemData.itemLabelImage,
-          previousItemImagePath
-        )
-      );
-    }
-    if (pendingImages.supplierLabelImage.hasTemp) {
-      storeImages.push(
-        this.imageService.storeFileToLocalDir(
-          toUpdate.optionalItemData.supplierLabelImage,
-          previousSupplierImagePath
-        )
-      );
-    }
+    const storeImages: Observable<Image>[] = this.composeImageStoreRequests(
+      toUpdate,
+      pendingImages,
+      [
+        {
+          name: 'itemLabelImage',
+          path: previousItemImagePath
+        },
+        {
+          name: 'suppilerLabelImage',
+          path: previousSupplierImagePath
+        }
+      ]
+    );
 
     return forkJoin(storeImages)
       .pipe(
         defaultIfEmpty(null),
         mergeMap((): Observable<InventoryItem> => {
+          console.log('finished image store');
           if (this.connectionService.isConnected() && this.userService.isLoggedIn()) {
             this.patchInBackground(toUpdate, pendingImages);
           } else {
@@ -474,6 +497,30 @@ export class InventoryService {
   /***** Server Background Updates *****/
 
   /**
+   * Set up image upload request data
+   *
+   * @params: item - parent item to images
+   * @params: pendingImages - contains flags to determine if image should be uploaded
+   *
+   * @return: array of objects with image and its formdata name
+   */
+  composeImageUploadRequests(
+    item: InventoryItem,
+    pendingImages: PendingImageFlag[]
+  ): { image: Image, name: string }[] {
+    const imageRequests: { image: Image, name: string }[] = [];
+    pendingImages.forEach((pending: PendingImageFlag): void => {
+      if (item.optionalItemData[pending.name] && pending.hasPending) {
+        imageRequests.push({
+          image: item.optionalItemData[pending.name],
+          name: pending.name
+        });
+      }
+    });
+    return imageRequests;
+  }
+
+  /**
    * Update server on item deletion
    *
    * @params: itemId - item doc id to delete
@@ -495,6 +542,32 @@ export class InventoryService {
   }
 
   /**
+   * Update in memory item with update from server
+   *
+   * @params: itemResponse - server response with item
+   *
+   * @return: none
+   */
+  handleBackgroundUpdateResponse(itemResponse: InventoryItem): Observable<never> {
+    console.log('got background response', itemResponse);
+    const itemList$: BehaviorSubject<InventoryItem[]> = this.getInventoryList();
+    const itemList: InventoryItem[] = itemList$.value;
+    const updateIndex: number = itemList
+      .findIndex((item: InventoryItem): boolean => {
+        return hasId(item, itemResponse.cid);
+      });
+
+    if (updateIndex === -1) {
+      // TODO offer option to add instead
+      return throwError('Inventory item is missing and cannot be updated');
+    } else {
+      itemList[updateIndex] = itemResponse;
+    }
+
+    itemList$.next(itemList);
+  }
+
+  /**
    * Update server on item update
    *
    * @params: updatedItem - updated item to apply to server doc
@@ -503,30 +576,41 @@ export class InventoryService {
    *
    * @return: none
    */
-  patchInBackground(updatedItem: InventoryItem, pendingImages: PendingImageFlag): void {
+  patchInBackground(updatedItem: InventoryItem, pendingImages: PendingImageFlag[]): void {
     console.log('patching in background');
-    this.http.patch<InventoryItem>(
-      `${BASE_URL}/${API_VERSION}/inventory/${updatedItem._id}`,
-      updatedItem
-    )
-    .pipe(
-      mergeMap((responseItem: InventoryItem): Observable<InventoryItem> => {
-        return this.uploadImages(responseItem, pendingImages);
-      }),
-      mergeMap((postUploadItem: InventoryItem): Observable<boolean> => {
-        return this.updateServerSpecificProperties(postUploadItem);
-      }),
-      catchError((error: HttpErrorResponse): Observable<never> => {
-        return this.processHttpError.handleError(error);
-      })
-    )
-    .subscribe(
-      (): void => console.log('Inventory: background patch request successful'),
-      (error: string): void => {
-        console.log('Inventory: background patch request error', error);
-        this.toastService.presentErrorToast('Inventory item failed to update to server');
-      }
-    );
+
+    const formData: FormData = new FormData();
+    formData.append('inventoryItem', JSON.stringify(updatedItem));
+
+    const imageRequests: { image: Image, name: string }[]
+      = this.composeImageUploadRequests(updatedItem, pendingImages);
+
+    this.imageService.blobbifyImages(imageRequests)
+      .pipe(
+        mergeMap((imageData: ImageRequestMetadata[]): Observable<InventoryItem> => {
+          imageData.forEach((imageDatum: ImageRequestMetadata): void => {
+            formData.append(imageDatum.name, imageDatum.blob, imageDatum.filename);
+          });
+
+          return this.http.patch<InventoryItem>(
+            `${BASE_URL}/${API_VERSION}/inventory/${updatedItem._id}`,
+            formData
+          );
+        }),
+        map((itemResponse: InventoryItem) => {
+          return this.handleBackgroundUpdateResponse(itemResponse);
+        }),
+        catchError((error: HttpErrorResponse): Observable<never> => {
+          return this.processHttpError.handleError(error);
+        })
+      )
+      .subscribe(
+        (): void => console.log('Inventory: background patch request successful'),
+        (error: string): void => {
+          console.log('Inventory: background patch request error', error);
+          this.toastService.presentErrorToast('Inventory item failed to save to server');
+        }
+      );
   }
 
   /**
@@ -538,15 +622,30 @@ export class InventoryService {
    *
    * @return: none
    */
-  postInBackground(newItem: InventoryItem, pendingImages: PendingImageFlag): void {
+  postInBackground(newItem: InventoryItem, pendingImages: PendingImageFlag[]): void {
     console.log('posting in background');
-    this.http.post<InventoryItem>(`${BASE_URL}/${API_VERSION}/inventory`, newItem)
+
+    const formData: FormData = new FormData();
+    formData.append('inventoryItem', JSON.stringify(newItem));
+
+    const imageRequests: { image: Image, name: string }[]
+      = this.composeImageUploadRequests(newItem, pendingImages);
+
+    this.imageService.blobbifyImages(imageRequests)
       .pipe(
-        mergeMap((responseItem: InventoryItem): Observable<InventoryItem> => {
-          return this.uploadImages(responseItem, pendingImages);
+        mergeMap((imageData: ImageRequestMetadata[]): Observable<InventoryItem> => {
+          console.log('images ready for post');
+          imageData.forEach((imageDatum: ImageRequestMetadata): void => {
+            formData.append(imageDatum.name, imageDatum.blob, imageDatum.filename);
+          });
+
+          return this.http.post<InventoryItem>(
+            `${BASE_URL}/${API_VERSION}/inventory`,
+            formData
+          );
         }),
-        mergeMap((updatedResponseItem: InventoryItem): Observable<boolean> => {
-          return this.updateServerSpecificProperties(updatedResponseItem);
+        map((itemResponse: InventoryItem): Observable<never> => {
+          return this.handleBackgroundUpdateResponse(itemResponse);
         }),
         catchError((error: HttpErrorResponse): Observable<never> => {
           return this.processHttpError.handleError(error);
@@ -559,73 +658,6 @@ export class InventoryService {
           this.toastService.presentErrorToast('Inventory item failed to save to server');
         }
       );
-  }
-
-  /**
-   * Update item in list with data returned from server that is not modified
-   * by the client
-   *
-   * @params: item - item doc from server response
-   *
-   * @return: observable with error message on error
-   */
-  updateServerSpecificProperties(item: InventoryItem): Observable<boolean> {
-    try {
-      const itemList$: BehaviorSubject<InventoryItem[]> = this.getInventoryList();
-      const itemList: InventoryItem[] = itemList$.value;
-      const toUpdate: InventoryItem = itemList
-        .find((_item: InventoryItem): boolean => hasId(_item, item.cid));
-
-      toUpdate._id = item._id;
-      toUpdate.updatedAt = item.updatedAt;
-      toUpdate.optionalItemData.itemLabelImage.serverFilename
-        = item.optionalItemData.itemLabelImage.serverFilename;
-      toUpdate.optionalItemData.supplierLabelImage.serverFilename
-        = item.optionalItemData.supplierLabelImage.serverFilename;
-
-      itemList$.next(itemList);
-      return of(true);
-    } catch (error) {
-      console.log('Error updating item from server response', error);
-      return throwError('Error updating item from server');
-    }
-  }
-
-  /**
-   * Upload item images to server
-   *
-   * @params: item - item to source images from
-   * @params: pendingImages - object containing image metadata for conversion,
-   * storage, and/or upload
-   *
-   * @return: observable of item returned from server with updated image fields
-   */
-  uploadImages(item: InventoryItem, pendingImages: PendingImageFlag): Observable<InventoryItem> {
-    const imageRequests: { image: Image, name: string }[] = [];
-
-    if (pendingImages.itemLabelImage.hasPending) {
-      imageRequests.push({
-        image: item.optionalItemData.itemLabelImage,
-        name: 'itemLabelImage'
-      });
-    }
-
-    if (pendingImages.supplierLabelImage.hasPending) {
-      imageRequests.push({
-        image: item.optionalItemData.supplierLabelImage,
-        name: 'supplierLabelImage'
-      });
-    }
-
-    if (imageRequests.length) {
-      return this.imageService.uploadImages<InventoryItem>(
-        imageRequests,
-        `inventory/${getId(item)}`
-      )
-      .pipe(catchError(() => of(item)));
-    }
-
-    return of(item);
   }
 
   /***** End Server Background Updates *****/
