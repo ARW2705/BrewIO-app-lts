@@ -1,6 +1,7 @@
 /* Module imports */
 import { Component, Input, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ModalController, LoadingController } from '@ionic/angular';
+import { finalize } from 'rxjs/operators';
 
 /* Interface imports */
 import { Image } from '../../../shared/interfaces/image';
@@ -59,11 +60,11 @@ export class ImageFormPage implements OnInit {
     await loading.present();
 
     this.imageService.importImage()
+      .pipe(finalize(() => loading.dismiss()))
       .subscribe(
         (imageData: Image): void => {
           console.log('got image', imageData);
           this.image = imageData;
-          loading.dismiss();
           this.cdRef.detectChanges();
         },
         (error: string): void => console.log('gallery error', error)
