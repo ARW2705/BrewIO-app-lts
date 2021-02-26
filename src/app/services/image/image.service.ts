@@ -1,6 +1,6 @@
 /* Module imports */
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
 import { File, FileEntry, Entry, IFile, FileError, Metadata } from '@ionic-native/file/ngx';
 import { FilePath } from '@ionic-native/file-path/ngx';
@@ -8,7 +8,7 @@ import { WebView } from '@ionic-native/ionic-webview/ngx';
 import { Crop } from '@ionic-native/crop/ngx';
 import { ImageResizer, ImageResizerOptions } from '@ionic-native/image-resizer/ngx';
 import { Observable, Observer, forkJoin, from, of, throwError } from 'rxjs';
-import { catchError, defaultIfEmpty, map, mergeMap } from 'rxjs/operators';
+import { defaultIfEmpty, map, mergeMap } from 'rxjs/operators';
 
 /* Constant imports */
 import { BASE_URL } from '../../shared/constants/base-url';
@@ -20,7 +20,7 @@ import { IMAGE_SIZE_LIMIT } from '../../shared/constants/image-size-limit';
 import { defaultImage } from '../../shared/defaults/default-image';
 
 /* Interface imports */
-import { Image, ImageRequestMetadata } from '../../shared/interfaces/image';
+import { Image, ImageRequestFormData, ImageRequestMetadata, PendingImageFlag } from '../../shared/interfaces/image';
 
 /* Service imports */
 import { ClientIdService } from '../client-id/client-id.service';
@@ -114,6 +114,7 @@ export class ImageService {
    * does not throw an error, rather just passes on the message
    */
   deleteLocalImage(filePath: string): Observable<string> {
+    console.log('deleting image', filePath);
     if (!filePath) {
       return throwError(`Deletion error: invalid file path: ${filePath}`);
     }
@@ -211,18 +212,22 @@ export class ImageService {
       return of(image);
     }
 
+    console.log('storing image...');
     return this.resizeImage(image)
       .pipe(
         map((resizedImagePath: string): void => {
           image.filePath = resizedImagePath;
           image.localURL = this.webview.convertFileSrc(resizedImagePath);
           image.url = image.localURL;
+          console.log('resizing', resizedImagePath, image.localURL);
         }),
         mergeMap((): Observable<string> => {
           const tempPath: string = `${this.file.cacheDirectory}/${image.cid}${IMAGE_FILE_EXTENSION}`;
+          console.log('moving to persistent from', tempPath);
           return this.deleteLocalImage(tempPath);
         }),
         mergeMap((): Observable<string> => {
+          console.log('deleting old file', replaceImagePath);
           return !!replaceImagePath ? this.deleteLocalImage(replaceImagePath) : of(null);
         }),
         map((): Image => image)
@@ -319,67 +324,20 @@ export class ImageService {
   /***** Server Upload Methods *** */
 
   /**
-   * HTTP post image to server
+   * Prepare images to be uploaded to server
    *
-   * @params: formData - form data with image file
-   * @params: route - the route extension for the request
+   * @params: imageData - initial image request data
    *
-   * @return: observable of server response
+   * @return: observable of image request metadata
    */
-  // postImage<T>(formData: FormData, route: string): Observable<T> {
-  //   return this.http.post<T>(`${BASE_URL}/${API_VERSION}/images/${route}`, formData)
-  //     .pipe(
-  //       catchError((error: HttpErrorResponse): Observable<never> => {
-  //         return this.processHttpError.handleError(error);
-  //       })
-  //     );
-  // }
+  blobbifyImages(imageData: ImageRequestFormData[]): Observable<ImageRequestMetadata[]> {
+    const files: Observable<string | ArrayBuffer>[] = [];
 
-  /**
-   * Upload an array of images
-   *
-   * @params: imageData - array of objects containing
-   * the image and name of image type
-   * @params: route - the route extension for the request
-   *
-   * @return: observable of server response
-   */
-  // uploadImages<T>(
-  //   imageData: { image: Image, name: string }[],
-  //   route: string
-  // ): Observable<T> {
-  //   const files: Observable<string | ArrayBuffer>[] = imageData
-  //     .map((_imageData: { image: Image, name: string }): Observable<string | ArrayBuffer> => {
-  //       if (!this.isTempImage(_imageData.image)) {
-  //         return this.getLocalFile(_imageData.image.filePath);
-  //       }
-  //     });
-  //
-  //   return forkJoin(files)
-  //     .pipe(
-  //       mergeMap((buffers: ArrayBuffer[]): Observable<T> => {
-  //         const formData: FormData = new FormData();
-  //         buffers.forEach((buffer: ArrayBuffer, index: number): void => {
-  //           const imageBlob: Blob = new Blob([buffer], { type: 'image/jpeg' });
-  //           formData.append(
-  //             imageData[index].name,
-  //             imageBlob,
-  //             `${imageData[index].image.cid}${IMAGE_FILE_EXTENSION}`
-  //           );
-  //         });
-  //
-  //         return this.postImage<T>(formData, route);
-  //       })
-  //     );
-  // }
-
-  blobbifyImages(imageData: { image: Image, name: string }[]): Observable<ImageRequestMetadata[]> {
-    const files: Observable<string | ArrayBuffer>[] = imageData
-      .map((_imageData: { image: Image, name: string }): Observable<string | ArrayBuffer> => {
-        if (!this.isTempImage(_imageData.image)) {
-          return this.getLocalFile(_imageData.image.filePath);
-        }
-      });
+    for (const imageDatum of imageData) {
+      if (!this.isTempImage(imageDatum.image)) {
+        files.push(this.getLocalFile(imageDatum.image.filePath));
+      }
+    }
 
     return forkJoin(files)
       .pipe(
@@ -395,6 +353,41 @@ export class ImageService {
             });
         })
       );
+  }
+
+  /**
+   * Compose image storage request if given image should be stored
+   *
+   * @params: image - the image data on which to base request
+   * @params: pendingImages - array of image upload flags
+   * @params: [overridePaths] - array of image file paths that will be overwritten
+   *
+   * @return: observable of stored images
+   */
+  composeImageStoreRequest(
+    image: Image,
+    pendingImages: PendingImageFlag[],
+    overridePaths: { name: string, path: string }[] = []
+  ): Observable<Image>[] {
+    const storeImages: Observable<Image>[] = [];
+
+    pendingImages.forEach((pending: PendingImageFlag): void => {
+      if (pending.hasTemp) {
+        const overridePath: { name: string, path: string } = overridePaths
+          .find((pathData: { name: string, path: string }): boolean => {
+            return pathData.name === pending.name;
+          });
+        const replacedPath: string = overridePath ? overridePath.path : null;
+        storeImages.push(
+          this.storeFileToLocalDir(
+            image[pending.name],
+            replacedPath
+          )
+        );
+      }
+    });
+
+    return storeImages;
   }
 
   /***** End Server Upload Methods *** */
@@ -483,5 +476,30 @@ export class ImageService {
   }
 
   /***** End Other Methods *****/
+
+  hasDefaultImage(image: Image): boolean {
+    return image.cid === this._defaultImage.cid;
+  }
+
+  /**
+   * Check if new image should be uploaded to server
+   * Images should be uploaded if they do not match the default image and if
+   * image is a new compared to current image
+   *
+   * @params: currentData - the current doc that is pending addition or update
+   * @params: newData - object containing new doc optional data
+   * @params: imageKey - the particular image name to check
+   *
+   * @return: true if image should be uploaded to server
+   */
+  hasPendingImage(currentData: object, newData: object, imageKey: string): boolean {
+    const hasNonDefaultImage: boolean = newData[imageKey] && newData[imageKey]['cid'] !== this._defaultImage['cid'];
+    const hasDifferentNewImage: boolean = !!currentData[imageKey] && currentData[imageKey]['cid'] !== newData[imageKey]['cid'];
+
+    return (
+      (!currentData[imageKey] && hasNonDefaultImage)
+      || (currentData[imageKey] && hasNonDefaultImage && hasDifferentNewImage)
+    );
+  }
 
 }
