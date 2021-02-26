@@ -718,13 +718,6 @@ export class InventoryService {
           const batch$: BehaviorSubject<Batch> = this.processService
             .getBatchById(item.optionalItemData.batchId);
 
-          // if (batch$ === undefined || hasDefaultIdType(batch$.value._id)) {
-          //   errors.push(
-          //     this.syncService.constructSyncError('Sync error: Cannot get inventory batch\'s id')
-          //   );
-          //   return;
-          // }
-          // item.optionalItemData.batchId = batch$.value._id;
           if (batch$ !== undefined && !hasDefaultIdType(batch$.value._id)) {
             item.optionalItemData.batchId = batch$.value._id;
           }
