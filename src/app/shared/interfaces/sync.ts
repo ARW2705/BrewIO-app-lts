@@ -1,13 +1,21 @@
-import { Batch } from './batch';
-import { InventoryItem } from './inventory-item';
-import { RecipeMaster } from './recipe-master';
-import { User } from './user';
+import { Observable } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 
-export interface Syncable { } // Batch | InventoryItem | RecipeMaster | User
-
-export interface SyncData {
+export interface SyncData<T> {
   isDeleted: boolean;
-  data: Syncable;
+  data: T;
+}
+
+/**
+ * Error Codes:
+ *
+ * -1 - not defined at this time
+ *
+ * 1 - server response error
+ */
+export interface SyncError {
+  errCode: number;
+  message: string;
 }
 
 /**
@@ -49,9 +57,12 @@ export interface SyncMetadata {
   docType: string; // 'recipe', 'batch', or 'user'
 }
 
-export interface SyncableResponse extends Batch, InventoryItem, RecipeMaster, User { }
+export interface SyncRequests<T> {
+  syncRequests: Observable<HttpErrorResponse | T | SyncData<T>>[];
+  syncErrors: SyncError[];
+}
 
-export interface SyncResponse {
-  successes: RecipeMaster[] | Batch[] | User[] | InventoryItem[];
-  errors: string[];
+export interface SyncResponse<T> {
+  successes: T[] | SyncData<T>;
+  errors: SyncError[];
 }
