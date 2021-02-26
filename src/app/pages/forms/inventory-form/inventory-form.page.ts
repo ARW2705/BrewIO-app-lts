@@ -73,9 +73,7 @@ export class InventoryFormPage implements OnInit {
     public recipeService: RecipeService,
     public toastService: ToastService,
     public userService: UserService
-  ) {
-    console.log(this.itemLabelImage);
-  }
+  ) { }
 
   /***** Lifecycle Hooks *****/
 
@@ -98,7 +96,6 @@ export class InventoryFormPage implements OnInit {
           : this.dismiss.bind(this);
         this.styles = styles;
         this.author = author;
-        console.log(this.itemLabelImage);
         this.initForm();
       },
       (error: string): void => {
