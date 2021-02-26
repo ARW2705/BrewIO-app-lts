@@ -21,12 +21,12 @@ import { defaultImage } from '../../shared/defaults/default-image';
 /* Interface imports*/
 import { Author } from '../../shared/interfaces/author';
 import { Batch, BatchContext } from '../../shared/interfaces/batch';
-import { Image, ImageRequestMetadata, PendingImageFlag } from '../../shared/interfaces/image';
+import { Image, ImageRequestFormData, ImageRequestMetadata, PendingImageFlag } from '../../shared/interfaces/image';
 import { InventoryItem } from '../../shared/interfaces/inventory-item';
 import { PrimaryValues } from '../../shared/interfaces/primary-values';
 import { RecipeMaster } from '../../shared/interfaces/recipe-master';
 import { Style } from '../../shared/interfaces/library';
-import { SyncData, SyncMetadata, SyncResponse } from '../../shared/interfaces/sync';
+import { SyncData, SyncError, SyncMetadata, SyncRequests, SyncResponse } from '../../shared/interfaces/sync';
 
 /* Service imports */
 import { ClientIdService } from '../client-id/client-id.service';
@@ -50,7 +50,7 @@ export class InventoryService {
   inventory$: BehaviorSubject<InventoryItem[]>
     = new BehaviorSubject<InventoryItem[]>([]);
   syncBaseRoute: string = 'inventory';
-  syncErrors: string[] = [];
+  syncErrors: SyncError[] = [];
 
   constructor(
     public http: HttpClient,
@@ -153,7 +153,7 @@ export class InventoryService {
     pendingImages.forEach((pending: PendingImageFlag): void => {
       if (pending.hasTemp) {
         const overridePath: { name: string, path: string } = overridePaths
-          .find((pathData: { name: string, path: string}): boolean => {
+          .find((pathData: { name: string, path: string }): boolean => {
             return pathData.name === pending.name;
           });
         const replacedPath: string = overridePath ? overridePath.path : null;
@@ -263,29 +263,6 @@ export class InventoryService {
   }
 
   /**
-   * Check if new image should be uploaded to server
-   * Images should be uploaded if they do not match the default image and if
-   * image is a new compared to current image
-   *
-   * @params: currentItemData - the current item that is pending addition or update
-   * @params: newItemData - object containing new item optional data
-   * @params: imageKey - the particular image to check, either 'itemLabelImage'
-   * or 'supplierLabelImage'
-   *
-   * @return: true if image should be uploaded to server
-   */
-  hasPendingImage(currentItemData: object, newItemData: object, imageKey: string): boolean {
-    const _defaultImage: Image = defaultImage();
-    const hasNonDefaultImage: boolean = newItemData[imageKey] && newItemData[imageKey]['cid'] !== _defaultImage['cid'];
-    const hasDifferentNewImage: boolean = !!currentItemData[imageKey] && currentItemData[imageKey]['cid'] !== newItemData[imageKey]['cid'];
-
-    return (
-      (!currentItemData[imageKey] && hasNonDefaultImage)
-      || (currentItemData[imageKey] && hasNonDefaultImage && hasDifferentNewImage)
-    );
-  }
-
-  /**
    * Get the inventory from storage and server
    * Note - call splashscreen hide method on get inventory finalize to avoid
    * white screen between loading splash screen and app ready;
@@ -295,6 +272,7 @@ export class InventoryService {
    * @return: none
    */
   initializeInventory(): void {
+    console.log('init inventory');
     this.storageService.getInventory()
       .pipe(finalize((): void => this.splashScreen.hide()))
       .subscribe(
@@ -340,7 +318,7 @@ export class InventoryService {
     const pendingImages: PendingImageFlag[] = [
       {
         name: 'itemLabelImage',
-        hasPending: this.hasPendingImage(
+        hasPending: this.imageService.hasPendingImage(
           item.optionalItemData,
           optionalData,
           'itemLabelImage'
@@ -349,7 +327,7 @@ export class InventoryService {
       },
       {
         name: 'supplierLabelImage',
-        hasPending: this.hasPendingImage(
+        hasPending: this.imageService.hasPendingImage(
           item.optionalItemData,
           optionalData,
           'supplierLabelImage'
@@ -441,7 +419,6 @@ export class InventoryService {
       .pipe(
         defaultIfEmpty(null),
         mergeMap((): Observable<InventoryItem> => {
-          console.log('finished image store');
           if (this.connectionService.isConnected() && this.userService.isLoggedIn()) {
             this.patchInBackground(toUpdate, pendingImages);
           } else {
@@ -507,8 +484,8 @@ export class InventoryService {
   composeImageUploadRequests(
     item: InventoryItem,
     pendingImages: PendingImageFlag[]
-  ): { image: Image, name: string }[] {
-    const imageRequests: { image: Image, name: string }[] = [];
+  ): ImageRequestFormData[] {
+    const imageRequests: ImageRequestFormData[] = [];
     pendingImages.forEach((pending: PendingImageFlag): void => {
       if (item.optionalItemData[pending.name] && pending.hasPending) {
         imageRequests.push({
@@ -582,7 +559,7 @@ export class InventoryService {
     const formData: FormData = new FormData();
     formData.append('inventoryItem', JSON.stringify(updatedItem));
 
-    const imageRequests: { image: Image, name: string }[]
+    const imageRequests: ImageRequestFormData[]
       = this.composeImageUploadRequests(updatedItem, pendingImages);
 
     this.imageService.blobbifyImages(imageRequests)
@@ -628,13 +605,12 @@ export class InventoryService {
     const formData: FormData = new FormData();
     formData.append('inventoryItem', JSON.stringify(newItem));
 
-    const imageRequests: { image: Image, name: string }[]
+    const imageRequests: ImageRequestFormData[]
       = this.composeImageUploadRequests(newItem, pendingImages);
 
     this.imageService.blobbifyImages(imageRequests)
       .pipe(
         mergeMap((imageData: ImageRequestMetadata[]): Observable<InventoryItem> => {
-          console.log('images ready for post');
           imageData.forEach((imageDatum: ImageRequestMetadata): void => {
             formData.append(imageDatum.name, imageDatum.blob, imageDatum.filename);
           });
@@ -713,38 +689,68 @@ export class InventoryService {
    *
    * @return: observable of inventory item, syncable data, or http error
    */
-  generateSyncRequest(syncFlag: SyncMetadata): Observable<HttpErrorResponse | InventoryItem | SyncData> {
-    const item: InventoryItem = this.getItemById(syncFlag.docId);
+  generateSyncRequests(): SyncRequests<InventoryItem> {
+    const errors: SyncError[] = [];
+    const requests: Observable<HttpErrorResponse | InventoryItem | SyncData<InventoryItem>>[] = [];
 
-    if (item === undefined && syncFlag.method !== 'delete') {
-      return throwError(`Sync error: Item with id '${syncFlag.docId}' not found`);
-    } else if (syncFlag.method === 'delete') {
-      return this.syncService.deleteSync(`${this.syncBaseRoute}/${syncFlag.docId}`);
-    }
+    this.syncService.getSyncFlagsByType('inventory')
+      .forEach((syncFlag: SyncMetadata): void => {
+        const item: InventoryItem = this.getItemById(syncFlag.docId);
+        console.log('inv sync flag', syncFlag, item);
+        if (item === undefined && syncFlag.method !== 'delete') {
+          errors.push(
+            this.syncService.constructSyncError(
+              `Sync error: Item with id '${syncFlag.docId}' not found`
+            )
+          );
+          return;
+        } else if (syncFlag.method === 'delete') {
+          requests.push(
+            this.syncService.deleteSync<InventoryItem>(`${this.syncBaseRoute}/${syncFlag.docId}`)
+          );
+          return;
+        }
 
-    if (
-      item.optionalItemData.batchId !== undefined
-      && hasDefaultIdType(item.optionalItemData.batchId)
-    ) {
-      const batch$: BehaviorSubject<Batch> = this.processService
-        .getBatchById(item.optionalItemData.batchId);
+        if (
+          item.optionalItemData.batchId !== undefined
+          && hasDefaultIdType(item.optionalItemData.batchId)
+        ) {
+          const batch$: BehaviorSubject<Batch> = this.processService
+            .getBatchById(item.optionalItemData.batchId);
 
-      if (batch$ === undefined || hasDefaultIdType(batch$.value._id)) {
-        return throwError('Sync error: Cannot get inventory batch\'s id');
-      }
-      item.optionalItemData.batchId = batch$.value._id;
-    }
+          // if (batch$ === undefined || hasDefaultIdType(batch$.value._id)) {
+          //   errors.push(
+          //     this.syncService.constructSyncError('Sync error: Cannot get inventory batch\'s id')
+          //   );
+          //   return;
+          // }
+          // item.optionalItemData.batchId = batch$.value._id;
+          if (batch$ !== undefined && !hasDefaultIdType(batch$.value._id)) {
+            item.optionalItemData.batchId = batch$.value._id;
+          }
+        }
 
-    if (syncFlag.method === 'update' && isMissingServerId(item._id)) {
-      return throwError(`Item with id: ${item.cid} is missing its server id`);
-    } else if (syncFlag.method === 'create') {
-      item['forSync'] = true;
-      return this.syncService.postSync(this.syncBaseRoute, item);
-    } else if (syncFlag.method === 'update' && !isMissingServerId(item._id)) {
-      return this.syncService.patchSync(`${this.syncBaseRoute}/${item._id}`, item);
-    } else {
-      return throwError(`Sync error: Unknown sync flag method '${syncFlag.method}'`);
-    }
+        if (syncFlag.method === 'update' && isMissingServerId(item._id)) {
+          errors.push(
+            this.syncService.constructSyncError(`Item with id: ${item.cid} is missing its server id`)
+          );
+        } else if (syncFlag.method === 'create') {
+          item['forSync'] = true;
+          requests.push(this.syncService.postSync<InventoryItem>(this.syncBaseRoute, item, 'inventoryItem'));
+        } else if (syncFlag.method === 'update' && !isMissingServerId(item._id)) {
+          requests.push(this.syncService.patchSync<InventoryItem>(`${this.syncBaseRoute}/${item._id}`, item, 'inventoryItem'));
+        } else {
+          errors.push(
+            this.syncService.constructSyncError(
+              `Sync error: Unknown sync flag method '${syncFlag.method}'`
+            )
+          );
+        }
+      });
+
+    console.log('requests', requests.length);
+
+    return { syncRequests: requests, syncErrors: errors };
   }
 
   /**
@@ -755,11 +761,11 @@ export class InventoryService {
    *
    * @return: none
    */
-  processSyncSuccess(syncData: (InventoryItem | SyncData)[]): void {
+  processSyncSuccess(syncData: (InventoryItem | SyncData<InventoryItem>)[]): void {
     const list$: BehaviorSubject<InventoryItem[]> = this.getInventoryList();
     const list: InventoryItem[] = list$.value;
 
-    syncData.forEach((_syncData: InventoryItem | SyncData): void => {
+    syncData.forEach((_syncData: InventoryItem | SyncData<InventoryItem>): void => {
       if (_syncData['isDeleted'] === undefined) {
         const itemIndex: number = list
           .findIndex((item: InventoryItem): boolean => {
@@ -767,7 +773,10 @@ export class InventoryService {
           });
 
         if (itemIndex === -1) {
-          this.syncErrors.push(`Inventory item with id: ${(<InventoryItem>_syncData).cid} not found`);
+          this.syncErrors.push({
+            errCode: -1,
+            message: `Inventory item with id: ${(<InventoryItem>_syncData).cid} not found`
+          });
         } else {
           list[itemIndex] = <InventoryItem>_syncData;
         }
@@ -792,25 +801,22 @@ export class InventoryService {
       return of(false);
     }
 
-    const requests: (
-      Observable<HttpErrorResponse | InventoryItem | SyncData>
-    )[] = [];
+    const syncRequests: SyncRequests<InventoryItem> = this.generateSyncRequests();
+    const errors: SyncError[] = syncRequests.syncErrors;
+    const requests: Observable<HttpErrorResponse | InventoryItem | SyncData<InventoryItem>>[]
+      = syncRequests.syncRequests;
 
-    this.syncService.getSyncFlagsByType('inventory')
-      .forEach((syncFlag: SyncMetadata): void => {
-        requests.push(this.generateSyncRequest(syncFlag));
-      });
+    console.log('inventory sync on connection', onLogin, requests.length);
 
     return this.syncService.sync('inventory', requests)
       .pipe(
-        map((responses: SyncResponse): boolean => {
+        map((responses: SyncResponse<InventoryItem>): boolean => {
           if (!onLogin) {
-            this.processSyncSuccess(
-              <(InventoryItem | SyncData)[]>responses.successes
-            );
+            this.processSyncSuccess(<(InventoryItem | SyncData<InventoryItem>)[]>responses.successes);
             this.updateInventoryStorage();
           }
-          this.syncErrors = responses.errors;
+          this.syncErrors = responses.errors.concat(errors);
+          console.log('inventory sync complete', this.syncErrors);
           return true;
         })
       );
@@ -856,12 +862,12 @@ export class InventoryService {
         }
 
         payload['forSync'] = true;
-        return this.syncService.postSync(`${this.syncBaseRoute}`, payload);
+        return this.syncService.postSync<InventoryItem>(`${this.syncBaseRoute}`, payload, 'inventoryItem');
       });
 
     this.syncService.sync('inventory', requests)
-      .subscribe((responses: SyncResponse): void => {
-        this.processSyncSuccess(<(InventoryItem | SyncData)[]>responses.successes);
+      .subscribe((responses: SyncResponse<InventoryItem>): void => {
+        this.processSyncSuccess(<(InventoryItem | SyncData<InventoryItem>)[]>responses.successes);
         this.syncErrors = responses.errors;
         this.updateInventoryStorage();
       });
