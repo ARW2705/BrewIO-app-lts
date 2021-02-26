@@ -33,6 +33,7 @@
       "kebab-case"
     ],
     "eofline": true,
+    "forin": { "severity": "warning" },
     "import-blacklist": [
       true,
       "rxjs/Rx"
@@ -49,10 +50,13 @@
     ],
     "jsdoc-format": { "severity": "warning" },
     "max-classes-per-file": false,
-    "max-line-length": [
-      true,
-      140
-    ],
+    "max-line-length": {
+      "options": [
+        true,
+        140
+      ],
+      "severity": "warning"
+    },
     "member-access": false,
     "member-ordering": [
       false,
