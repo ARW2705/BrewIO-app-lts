@@ -278,6 +278,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
   getGeneralFormModalUpdateData(): object {
     if (this.isGeneralFormComplete || this.formType !== 'master') {
       return {
+        labelImage: this.master.labelImage,
         style: this.master.style,
         brewingType: this.variant.brewingType,
         mashDuration: this.variant.mashDuration,
@@ -473,11 +474,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
    *
    * @return: none
    */
-  async openProcessModal(
-    type: string,
-    toUpdate?: Process,
-    index?: number
-  ): Promise<void> {
+  async openProcessModal(type: string, toUpdate?: Process, index?: number): Promise<void> {
     const modal: HTMLIonModalElement = await this.modalCtrl.create({
       component: ProcessFormPage,
       componentProps: this.getProcessFormModalOptions(type, toUpdate)
@@ -621,19 +618,19 @@ export class RecipeFormPage implements OnInit, OnDestroy {
    * @return: none
    */
   autoSetHopsAdditions(): void {
-    const boilIndex: number = this.getProcessIndex('name', 'Boil');
+    const currentBoilIndex: number = this.getProcessIndex('name', 'Boil');
 
-    if (boilIndex !== -1) {
+    if (currentBoilIndex !== -1) {
       // remove existing hops timers
       this.variant.processSchedule = this.variant.processSchedule
         .filter((process: Process): boolean => {
           return !process.name.match(/^(Add).*(hops)$/);
         });
 
-      const newBoilIndex: number = this.getProcessIndex('name', 'Boil');
+      const updatedBoilIndex: number = this.getProcessIndex('name', 'Boil');
 
       const preAdditionSchedule: Process[] = this.variant.processSchedule
-        .splice(0, newBoilIndex);
+        .splice(0, updatedBoilIndex);
 
       const hopsProcesses: Process[] = this.generateHopsProcesses();
 
@@ -642,8 +639,8 @@ export class RecipeFormPage implements OnInit, OnDestroy {
         .concat(this.variant.processSchedule);
 
       // set boil step timer as concurrent is timers were added
-      this.variant.processSchedule[newBoilIndex + hopsProcesses.length].concurrent
-        = !!hopsProcesses.length;
+      const finalBoilIndex: number = updatedBoilIndex + hopsProcesses.length;
+      this.variant.processSchedule[finalBoilIndex].concurrent = !!hopsProcesses.length;
     }
   }
 
@@ -699,9 +696,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
   generateHopsProcesses(): Process[] {
     return this.variant.hops
       .filter((hops: HopsSchedule): boolean => !hops.dryHop)
-      .sort((h1: HopsSchedule, h2: HopsSchedule): number => {
-        return h2.duration - h1.duration;
-      })
+      .sort((h1: HopsSchedule, h2: HopsSchedule): number => h2.duration - h1.duration)
       .map((hopsAddition: HopsSchedule): Process => {
         return {
           cid: this.clientIdService.getNewId(),
@@ -738,6 +733,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
             style: this.master.style,
             notes: this.master.notes,
             isPublic: this.master.isPublic,
+            labelImage: this.master.labelImage
           },
           variant: this.variant
         };
@@ -746,7 +742,8 @@ export class RecipeFormPage implements OnInit, OnDestroy {
           name: this.master.name,
           style: this.master.style,
           notes: this.master.notes,
-          isPublic: this.master.isPublic
+          isPublic: this.master.isPublic,
+          labelImage: this.master.labelImage
         };
       }
     } else {
@@ -820,10 +817,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
    *
    * @return: none
    */
-  initUpdateVariantForm(
-    recipeMaster: RecipeMaster,
-    recipeVariant: RecipeVariant
-  ): void {
+  initUpdateVariantForm(recipeMaster: RecipeMaster, recipeVariant: RecipeVariant): void {
     this.submitSuccessMessage = 'Variant Update Successful';
     this.isGeneralFormComplete = true;
     this.title = 'Update Variant';
@@ -914,10 +908,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
    * @return: observable of updated recipe master
    */
   submitRecipeMasterPatch(): Observable<RecipeMaster> {
-    return this.recipeService.patchRecipeMasterById(
-      getId(this.master),
-      this.constructPayload()
-    );
+    return this.recipeService.patchRecipeMasterById(getId(this.master), this.constructPayload());
   }
 
   /**
@@ -1020,15 +1011,14 @@ export class RecipeFormPage implements OnInit, OnDestroy {
    * @return: none
    */
   sortGrains(): void {
-    this.variant.grains.sort(
-      (g1: GrainBill, g2: GrainBill): number => {
+    this.variant.grains
+      .sort((g1: GrainBill, g2: GrainBill): number => {
         const difference: number = g2.quantity - g1.quantity;
         if (!difference) {
           return g2.grainType.name < g1.grainType.name ? 1 : -1;
         }
         return difference;
-      }
-    );
+      });
   }
 
   /**
@@ -1046,9 +1036,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
     this.variant.hops
       .sort((h1: HopsSchedule, h2: HopsSchedule): number => {
         if (h1.dryHop && h2.dryHop) {
-          return this.shouldSwapByName(h1.hopsType.name, h2.hopsType.name)
-            ? 1
-            : -1;
+          return this.shouldSwapByName(h1.hopsType.name, h2.hopsType.name) ? 1 : -1;
         } else if (h1.dryHop && !h2.dryHop) {
           return 1;
         } else if (!h1.dryHop && h2.dryHop) {
@@ -1060,9 +1048,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
           } else if (difference < 0) {
             return -1;
           } else {
-            return this.shouldSwapByName(h1.hopsType.name, h2.hopsType.name)
-              ? 1
-              : -1;
+            return this.shouldSwapByName(h1.hopsType.name, h2.hopsType.name) ? 1 : -1;
           }
         }
       });
@@ -1203,7 +1189,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
   updateDisplay(data: object): void {
     for (const key in data) {
       if (data.hasOwnProperty(key)) {
-        if (this.master.hasOwnProperty(key)) {
+        if (this.master.hasOwnProperty(key) || key === 'labelImage') {
           this.master[key] = data[key];
         }
         if (this.variant.hasOwnProperty(key)) {
