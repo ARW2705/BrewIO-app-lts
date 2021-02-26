@@ -18,3 +18,8 @@ export interface ImageRequestMetadata {
   blob: Blob;
   filename: string;
 }
+
+export interface ImageRequestFormData {
+  name: string;
+  image: Image;
+}
