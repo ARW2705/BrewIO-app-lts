@@ -3,18 +3,27 @@ import { Component, OnInit, Input, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ModalController, IonSelect } from '@ionic/angular';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { from } from 'rxjs';
 
 /* Utility imports */
 import { roundToDecimalPlace } from '../../../shared/utility-functions/utilities';
 import { compareWith } from '../../../shared/utility-functions/utilities';
 
+/* Default imports */
+import { defaultImage } from '../../../shared/defaults/default-image';
+
 /* Interface imports */
+import { Image } from '../../../shared/interfaces/image';
 import { SelectedUnits } from '../../../shared/interfaces/units';
 import { Style } from '../../../shared/interfaces/library';
+
+/* Page imports */
+import { ImageFormPage } from '../image-form/image-form.page';
 
 /* Service imports */
 import { CalculationsService } from '../../../services/calculations/calculations.service';
 import { PreferencesService } from '../../../services/preferences/preferences.service';
+import { ToastService } from '../../../services/toast/toast.service';
 
 
 @Component({
@@ -43,7 +52,9 @@ export class GeneralFormPage implements OnInit {
     'boilVolume',
     'mashVolume',
   ];
+  defaultImage: Image = defaultImage();
   generalForm: FormGroup = null;
+  labelImage: Image = this.defaultImage;
   onBackClick: () => void;
   selectOptions: object = { cssClass: 'select-popover' };
   styleSelection: Style;
@@ -56,7 +67,8 @@ export class GeneralFormPage implements OnInit {
     public route: ActivatedRoute,
     public modalCtrl: ModalController,
     public calculator: CalculationsService,
-    public preferenceService: PreferencesService
+    public preferenceService: PreferencesService,
+    public toastService: ToastService
   ) {
     this.onBackClick = this.dismiss.bind(this);
   }
@@ -112,6 +124,7 @@ export class GeneralFormPage implements OnInit {
         }
       }
     }
+    formValues['labelImage'] = this.labelImage;
     return formValues;
   }
 
@@ -130,12 +143,15 @@ export class GeneralFormPage implements OnInit {
    *
    * @params: valueName - the value name to check
    *
-   * @return: true if docMethod is not create and the valueName is not
-   * 'isFavorite' or 'isMaster'
+   * @return: true if value should be mapped to form
    */
   hasMappableValue(valueName: string): boolean {
-    return this.docMethod !== 'create'
-      || (valueName !== 'isFavorite' && valueName !== 'isMaster');
+    return (
+      this.docMethod !== 'create' || this.formType === 'variant'
+    )
+    && valueName !== 'labelImage'
+    && valueName !== 'isFavorite'
+    && valueName !== 'isMaster';
   }
 
   /**
@@ -185,7 +201,36 @@ export class GeneralFormPage implements OnInit {
         }
       }
       this.styleSelection = this.data['style'];
+      this.labelImage = this.data['labelImage'] || this.defaultImage;
     }
+  }
+
+  async openImageModal(): Promise<void> {
+    const modal: HTMLIonModalElement = await this.modalCtrl.create({
+      component: ImageFormPage,
+      componentProps: { image: this.labelImage }
+    });
+
+    from(modal.onDidDismiss())
+      .subscribe(
+        (data: object): void => {
+          const _data: Image = data['data'];
+          if (_data) {
+            let previousServerFilename: string;
+            if (this.labelImage && this.labelImage.serverFilename) {
+              previousServerFilename = this.labelImage.serverFilename;
+            }
+            this.labelImage = _data;
+            this.labelImage.serverFilename = previousServerFilename;
+          }
+        },
+        (error: string): void => {
+          console.log('modal dismiss error', error);
+          this.toastService.presentErrorToast('Error selecting image');
+        }
+      );
+
+    await modal.present();
   }
 
   /**

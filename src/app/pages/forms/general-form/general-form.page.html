@@ -57,7 +57,7 @@
 
           <ion-label  class="required"
                       position="floating">
-            Enter Batch Variant Name
+            Enter Variant Name
           </ion-label>
 
           <ion-input  formControlName="variantName"
@@ -86,6 +86,28 @@
         </div>
 
       </ng-container>
+
+
+      <!-- Label image -->
+      <ion-item *ngIf="formType === 'master'"
+                class="form-input">
+
+        <ion-label>
+          Label Image
+        </ion-label>
+
+        <ion-button (click)="openImageModal()"
+                    class="image-input">
+
+          <ion-avatar>
+
+            <img [src]="labelImage.url"/>
+
+          </ion-avatar>
+
+        </ion-button>
+
+      </ion-item>
 
 
       <!-- Style Select -->
