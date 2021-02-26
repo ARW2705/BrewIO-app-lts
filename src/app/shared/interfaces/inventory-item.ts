@@ -1,7 +1,6 @@
 import { Image } from './image';
-import { Syncable } from './sync';
 
-export interface InventoryItem extends Syncable {
+export interface InventoryItem {
   _id?: string;
   createdAt?: string;
   updatedAt?: string;

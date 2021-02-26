@@ -1,8 +1,7 @@
 import { Image } from './image';
 import { SelectedUnits } from './units';
-import { Syncable } from './sync';
 
-export interface User extends Syncable {
+export interface User {
   _id?: string;
   cid: string;
   createdAt?: string;

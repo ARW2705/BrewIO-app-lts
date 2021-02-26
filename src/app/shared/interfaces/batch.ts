@@ -2,13 +2,12 @@ import { Process } from './process';
 import { Alert } from './alert';
 import { Image } from './image';
 import { PrimaryValues } from './primary-values';
-import { Syncable } from './sync';
 import { GrainBill } from './grain-bill';
 import { HopsSchedule } from './hops-schedule';
 import { YeastBatch } from './yeast-batch';
 import { OtherIngredients } from './other-ingredients';
 
-export interface Batch extends Syncable {
+export interface Batch {
   _id?: string;
   createdAt?: string;
   updatedAt?: string;

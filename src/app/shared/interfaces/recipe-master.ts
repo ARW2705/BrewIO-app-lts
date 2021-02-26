@@ -1,9 +1,8 @@
 import { Image } from './image';
 import { RecipeVariant } from './recipe-variant';
 import { Style } from './library';
-import { Syncable } from './sync';
 
-export interface RecipeMaster extends Syncable {
+export interface RecipeMaster {
   _id?: string;
   createdAt?: string;
   updatedAt?: string;
