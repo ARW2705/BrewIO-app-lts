@@ -205,55 +205,7 @@ export class ProcessService {
     }
 
     return of(updatedBatch);
-
-    // if (this.connectionService.isConnected() && this.userService.isLoggedIn()) {
-    //   console.log('batch patch request', updatedBatch);
-    //   if (isMissingServerId(updatedBatch._id)) {
-    //     return throwError('Batch missing server id');
-    //   }
-    //
-    //   return this.http.patch<Batch>(
-    //     `${BASE_URL}/${API_VERSION}/process/batch/${updatedBatch._id}`,
-    //     updatedBatch
-    //   )
-    //   .pipe(catchError((error: HttpErrorResponse): Observable<never> => {
-    //     return this.httpError.handleError(error);
-    //   }));
-    // } else {
-    //   this.addSyncFlag('update', getId(updatedBatch));
-    //   return of(updatedBatch);
-    // }
   }
-  // patchBatch(updatedBatch: Batch): Observable<Batch> {
-  //   const batch$: BehaviorSubject<Batch>
-  //     = this.getBatchById(getId(updatedBatch));
-  //
-  //   if (batch$ === undefined) {
-  //     return throwError(`Update batch error: batch with id ${getId(updatedBatch)} not found`);
-  //   }
-  //
-  //   batch$.next(updatedBatch);
-  //   this.refreshBatchList(true);
-  //   this.updateBatchStorage(true);
-  //
-  //   if (this.connectionService.isConnected() && this.userService.isLoggedIn()) {
-  //     console.log('batch patch request', updatedBatch);
-  //     if (isMissingServerId(updatedBatch._id)) {
-  //       return throwError('Batch missing server id');
-  //     }
-  //
-  //     return this.http.patch<Batch>(
-  //       `${BASE_URL}/${API_VERSION}/process/batch/${updatedBatch._id}`,
-  //       updatedBatch
-  //     )
-  //     .pipe(catchError((error: HttpErrorResponse): Observable<never> => {
-  //       return this.httpError.handleError(error);
-  //     }));
-  //   } else {
-  //     this.addSyncFlag('update', getId(updatedBatch));
-  //     return of(updatedBatch);
-  //   }
-  // }
 
   /**
    * Patch a batch's measured values in annotations
@@ -360,92 +312,6 @@ export class ProcessService {
   }
 
   /**
-   * Check if able to send an http request
-   *
-   * @params: [ids] - optional array of ids to check
-   *
-   * @return: true if ids are valid, device is connected to network, and user logged in
-   */
-  canSendRequest(ids?: string[]): boolean {
-    console.log('checking ids', ids);
-    let idsOk: boolean = !ids;
-    if (ids && ids.length) {
-      idsOk = ids.every((id: string): boolean => id && !hasDefaultIdType(id));
-    }
-
-    console.log(this.connectionService.isConnected() && this.userService.isLoggedIn() && idsOk);
-
-    return this.connectionService.isConnected() && this.userService.isLoggedIn() && idsOk;
-  }
-
-  patchInBackground(updatedBatch: Batch): void {
-    this.http.patch<Batch>(
-      `${BASE_URL}/${API_VERSION}/process/batch/${updatedBatch._id}`,
-      updatedBatch
-    )
-    .pipe(
-      map((batchResponse: Batch): void => {
-        console.log('response', batchResponse);
-        this.updateBatch(batchResponse);
-      }),
-      catchError((error: HttpErrorResponse): Observable<never> => {
-        return this.httpError.handleError(error);
-      })
-    )
-    .subscribe(
-      (): void => console.log('Batch successfully updated'),
-      (error: string): void => {
-        console.log('start batch error', error);
-        this.toastService.presentErrorToast('Batch failed to save to server');
-      }
-    );
-  }
-
-  startInBackground(newBatch: Batch): void {
-    console.log('starting batch in background');
-    this.http.post<Batch>(
-      `${BASE_URL}/${API_VERSION}/process/user/${newBatch.owner}/master/${newBatch.recipeMasterId}/variant/${newBatch.recipeVariantId}`,
-      newBatch
-    )
-    .pipe(
-      map((batchResponse: Batch): void => {
-        console.log('response', batchResponse);
-        this.updateBatch(batchResponse);
-      }),
-      catchError((error: HttpErrorResponse): Observable<never> => {
-        return this.httpError.handleError(error);
-      })
-    )
-    .subscribe(
-      (): void => console.log('New batch successfully started'),
-      (error: string): void => {
-        console.log('start batch error', error);
-        this.toastService.presentErrorToast('Batch failed to save to server');
-      }
-    );
-  }
-
-  emitBatchListUpdate(isActive: boolean): void {
-    const batchList$: BehaviorSubject<BehaviorSubject<Batch>[]> = this.getBatchList(isActive);
-    batchList$.next(batchList$.value);
-  }
-
-  updateBatch(batchUpdate: Batch): void {
-    const batch$: BehaviorSubject<Batch> = this.getBatchById(batchUpdate.cid);
-    const batch: Batch = batch$.value;
-
-    for (const key in batchUpdate) {
-      if (batchUpdate.hasOwnProperty(key)) {
-        batch[key] = batchUpdate[key];
-      }
-    }
-
-    batch$.next(batch);
-    this.emitBatchListUpdate(true);
-    this.updateBatchStorage(true);
-  }
-
-  /**
    * Start a new batch process and add new batch to active list; update database
    * if connected and logged in else set flag for sync; user and recipe must
    * have server id to update database
@@ -477,38 +343,75 @@ export class ProcessService {
           return this.addBatchToActiveList(newBatch);
         })
       );
-
-    // return this.generateBatchFromRecipe(userId, recipeMasterId, recipeVariantId)
-    //   .pipe(
-    //     mergeMap((newBatch: Batch) => {
-    //       if (newBatch === undefined) {
-    //         return throwError('Unable to generate new batch: missing recipe');
-    //       }
-    //
-    //       if (this.connectionService.isConnected() && this.userService.isLoggedIn()) {
-    //         return this.http
-    //           .post<Batch>(
-    //             `${BASE_URL}/${API_VERSION}/process/user/${newBatch.owner}/master/${newBatch.recipeMasterId}/variant/${newBatch.recipeVariantId}`,
-    //             newBatch
-    //           )
-    //           .pipe(
-    //             mergeMap((batchResponse: Batch): Observable<Batch> => {
-    //               console.log('response', batchResponse);
-    //               return this.addBatchToActiveList(batchResponse);
-    //             }),
-    //             catchError((error: HttpErrorResponse): Observable<never> => {
-    //               return this.httpError.handleError(error);
-    //             })
-    //           );
-    //       }
-    //
-    //       this.addSyncFlag('create', newBatch.cid);
-    //       return this.addBatchToActiveList(newBatch);
-    //     })
-    //   );
   }
 
   /***** End API access methods *****/
+
+
+  /***** Background Server Updates *****/
+
+  /**
+   * Update server with updated batch in background
+   *
+   * @params: updatedBatch - the updated batch
+   *
+   * @return: none
+   */
+  patchInBackground(updatedBatch: Batch): void {
+    this.http.patch<Batch>(
+      `${BASE_URL}/${API_VERSION}/process/batch/${updatedBatch._id}`,
+      updatedBatch
+    )
+    .pipe(
+      map((batchResponse: Batch): void => {
+        console.log('response', batchResponse);
+        this.updateBatch(batchResponse);
+      }),
+      catchError((error: HttpErrorResponse): Observable<never> => {
+        return this.httpError.handleError(error);
+      })
+    )
+    .subscribe(
+      (): void => console.log('Batch successfully updated'),
+      (error: string): void => {
+        console.log('start batch error', error);
+        this.toastService.presentErrorToast('Batch failed to save to server');
+      }
+    );
+  }
+
+  /**
+   * Update server with new batch in background
+   *
+   * @params: newBatch - the new Batch
+   *
+   * @return: none
+   */
+  startInBackground(newBatch: Batch): void {
+    console.log('starting batch in background');
+    this.http.post<Batch>(
+      `${BASE_URL}/${API_VERSION}/process/user/${newBatch.owner}/master/${newBatch.recipeMasterId}/variant/${newBatch.recipeVariantId}`,
+      newBatch
+    )
+    .pipe(
+      map((batchResponse: Batch): void => {
+        console.log('response', batchResponse);
+        this.updateBatch(batchResponse);
+      }),
+      catchError((error: HttpErrorResponse): Observable<never> => {
+        return this.httpError.handleError(error);
+      })
+    )
+    .subscribe(
+      (): void => console.log('New batch successfully started'),
+      (error: string): void => {
+        console.log('start batch error', error);
+        this.toastService.presentErrorToast('Batch failed to save to server');
+      }
+    );
+  }
+
+  /***** End Background Server Updates *****/
 
 
   /***** Sync methods *****/
@@ -826,6 +729,25 @@ export class ProcessService {
   }
 
   /**
+   * Check if able to send an http request
+   *
+   * @params: [ids] - optional array of ids to check
+   *
+   * @return: true if ids are valid, device is connected to network, and user logged in
+   */
+  canSendRequest(ids?: string[]): boolean {
+    console.log('checking ids', ids);
+    let idsOk: boolean = !ids;
+    if (ids && ids.length) {
+      idsOk = ids.every((id: string): boolean => id && !hasDefaultIdType(id));
+    }
+
+    console.log(this.connectionService.isConnected() && this.userService.isLoggedIn() && idsOk);
+
+    return this.connectionService.isConnected() && this.userService.isLoggedIn() && idsOk;
+  }
+
+  /**
    * Clear active or archive list
    *
    * @params: isActive - true for active batch list, false for archive batch list
@@ -853,6 +775,18 @@ export class ProcessService {
   clearAllBatchLists(): void {
     this.clearBatchList(true);
     this.clearBatchList(false);
+  }
+
+  /**
+   * Emit a batch list change
+   *
+   * @params: isActive - true if active batch list should be updated; false for archive
+   *
+   * @return: none
+   */
+  emitBatchListUpdate(isActive: boolean): void {
+    const batchList$: BehaviorSubject<BehaviorSubject<Batch>[]> = this.getBatchList(isActive);
+    batchList$.next(batchList$.value);
   }
 
   /**
@@ -1067,6 +1001,28 @@ export class ProcessService {
     this.updateBatchStorage(isActive);
 
     return of(null);
+  }
+
+  /**
+   * Update a batch in active batch list
+   *
+   * @params: batchUpdate - the updated batch values to apply
+   *
+   * @return: none
+   */
+  updateBatch(batchUpdate: Batch): void {
+    const batch$: BehaviorSubject<Batch> = this.getBatchById(batchUpdate.cid);
+    const batch: Batch = batch$.value;
+
+    for (const key in batchUpdate) {
+      if (batchUpdate.hasOwnProperty(key)) {
+        batch[key] = batchUpdate[key];
+      }
+    }
+
+    batch$.next(batch);
+    this.emitBatchListUpdate(true);
+    this.updateBatchStorage(true);
   }
 
   /***** End utility methods *****/
