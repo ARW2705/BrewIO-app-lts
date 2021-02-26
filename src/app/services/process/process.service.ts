@@ -14,7 +14,7 @@ import { PrimaryValues } from '../../shared/interfaces/primary-values';
 import { Process } from '../../shared/interfaces/process';
 import { RecipeMaster } from '../../shared/interfaces/recipe-master';
 import { RecipeVariant } from '../../shared/interfaces/recipe-variant';
-import { SyncData, SyncMetadata, SyncResponse } from '../../shared/interfaces/sync';
+import { SyncData, SyncError, SyncMetadata, SyncResponse } from '../../shared/interfaces/sync';
 
 /* Utility function imports */
 import { getArrayFromObservables } from '../../shared/utility-functions/observable-helpers';
@@ -30,6 +30,7 @@ import { HttpErrorService } from '../http-error/http-error.service';
 import { RecipeService } from '../recipe/recipe.service';
 import { StorageService } from '../storage/storage.service';
 import { SyncService } from '../sync/sync.service';
+import { ToastService } from '../toast/toast.service';
 import { UserService } from '../user/user.service';
 
 
@@ -38,12 +39,12 @@ import { UserService } from '../user/user.service';
 })
 export class ProcessService {
   syncBaseRoute: string = 'process/batch';
-  syncErrors: string[] = [];
+  syncErrors: SyncError[] = [];
   activeBatchList$: BehaviorSubject<BehaviorSubject<Batch>[]>
     = new BehaviorSubject<BehaviorSubject<Batch>[]>([]);
   archiveBatchList$: BehaviorSubject<BehaviorSubject<Batch>[]>
     = new BehaviorSubject<BehaviorSubject<Batch>[]>([]);
-    syncArchiveRoute: string = `${this.syncBaseRoute}/archive`;
+  syncArchiveRoute: string = `${this.syncBaseRoute}/archive`;
 
   constructor(
     public http: HttpClient,
@@ -55,6 +56,7 @@ export class ProcessService {
     public recipeService: RecipeService,
     public storageService: StorageService,
     public syncService: SyncService,
+    public toastService: ToastService,
     public userService: UserService,
   ) {
     this.event.register('init-batches')
@@ -111,17 +113,14 @@ export class ProcessService {
    * @return: observable success requires no additional actions,
    *   using for error handling
    */
-  fetchBatches(): Observable<boolean> {
+  initFromServer(): Observable<boolean> {
     return this.http
-      .get<{activeBatches: Batch[], archiveBatches: Batch[]}>(
+      .get<{ activeBatches: Batch[], archiveBatches: Batch[] }>(
         `${BASE_URL}/${API_VERSION}/process/batch`
       )
       .pipe(
         map(
-          (batchListResponse: {
-            activeBatches: Batch[],
-            archiveBatches: Batch[]
-          }) => {
+          (batchListResponse: { activeBatches: Batch[], archiveBatches: Batch[] }) => {
             console.log('batches from server', batchListResponse);
 
             this.mapBatchArrayToSubjectArray(
@@ -159,17 +158,16 @@ export class ProcessService {
    * @return: none
    */
   initializeBatchLists(): void {
-    this.loadBatchesFromStorage();
+    this.initFromStorage();
 
     if (this.connectionService.isConnected() && this.userService.isLoggedIn()) {
       concat(
         this.syncOnConnection(true),
-        this.fetchBatches()
+        this.initFromServer()
       )
+      .pipe(finalize(() => this.event.emit('init-inventory')))
       .subscribe(
-        (): void => {
-          this.event.emit('init-inventory');
-        },
+        (): void => {},
         (error: string): void => {
           // TODO error feedback
           console.log(`Batch init error: ${error}`);
@@ -190,8 +188,7 @@ export class ProcessService {
    * @return: Observable of updated batch
    */
   patchBatch(updatedBatch: Batch): Observable<Batch> {
-    const batch$: BehaviorSubject<Batch>
-      = this.getBatchById(getId(updatedBatch));
+    const batch$: BehaviorSubject<Batch> = this.getBatchById(getId(updatedBatch));
 
     if (batch$ === undefined) {
       return throwError(`Update batch error: batch with id ${getId(updatedBatch)} not found`);
@@ -201,24 +198,62 @@ export class ProcessService {
     this.refreshBatchList(true);
     this.updateBatchStorage(true);
 
-    if (this.connectionService.isConnected() && this.userService.isLoggedIn()) {
-      console.log('batch patch request', updatedBatch);
-      if (isMissingServerId(updatedBatch._id)) {
-        return throwError('Batch missing server id');
-      }
-
-      return this.http.patch<Batch>(
-        `${BASE_URL}/${API_VERSION}/process/batch/${updatedBatch._id}`,
-        updatedBatch
-      )
-      .pipe(catchError((error: HttpErrorResponse): Observable<never> => {
-        return this.httpError.handleError(error);
-      }));
+    if (this.canSendRequest([updatedBatch._id])) {
+      this.patchInBackground(updatedBatch);
     } else {
       this.addSyncFlag('update', getId(updatedBatch));
-      return of(updatedBatch);
     }
+
+    return of(updatedBatch);
+
+    // if (this.connectionService.isConnected() && this.userService.isLoggedIn()) {
+    //   console.log('batch patch request', updatedBatch);
+    //   if (isMissingServerId(updatedBatch._id)) {
+    //     return throwError('Batch missing server id');
+    //   }
+    //
+    //   return this.http.patch<Batch>(
+    //     `${BASE_URL}/${API_VERSION}/process/batch/${updatedBatch._id}`,
+    //     updatedBatch
+    //   )
+    //   .pipe(catchError((error: HttpErrorResponse): Observable<never> => {
+    //     return this.httpError.handleError(error);
+    //   }));
+    // } else {
+    //   this.addSyncFlag('update', getId(updatedBatch));
+    //   return of(updatedBatch);
+    // }
   }
+  // patchBatch(updatedBatch: Batch): Observable<Batch> {
+  //   const batch$: BehaviorSubject<Batch>
+  //     = this.getBatchById(getId(updatedBatch));
+  //
+  //   if (batch$ === undefined) {
+  //     return throwError(`Update batch error: batch with id ${getId(updatedBatch)} not found`);
+  //   }
+  //
+  //   batch$.next(updatedBatch);
+  //   this.refreshBatchList(true);
+  //   this.updateBatchStorage(true);
+  //
+  //   if (this.connectionService.isConnected() && this.userService.isLoggedIn()) {
+  //     console.log('batch patch request', updatedBatch);
+  //     if (isMissingServerId(updatedBatch._id)) {
+  //       return throwError('Batch missing server id');
+  //     }
+  //
+  //     return this.http.patch<Batch>(
+  //       `${BASE_URL}/${API_VERSION}/process/batch/${updatedBatch._id}`,
+  //       updatedBatch
+  //     )
+  //     .pipe(catchError((error: HttpErrorResponse): Observable<never> => {
+  //       return this.httpError.handleError(error);
+  //     }));
+  //   } else {
+  //     this.addSyncFlag('update', getId(updatedBatch));
+  //     return of(updatedBatch);
+  //   }
+  // }
 
   /**
    * Patch a batch's measured values in annotations
@@ -325,6 +360,92 @@ export class ProcessService {
   }
 
   /**
+   * Check if able to send an http request
+   *
+   * @params: [ids] - optional array of ids to check
+   *
+   * @return: true if ids are valid, device is connected to network, and user logged in
+   */
+  canSendRequest(ids?: string[]): boolean {
+    console.log('checking ids', ids);
+    let idsOk: boolean = !ids;
+    if (ids && ids.length) {
+      idsOk = ids.every((id: string): boolean => id && !hasDefaultIdType(id));
+    }
+
+    console.log(this.connectionService.isConnected() && this.userService.isLoggedIn() && idsOk);
+
+    return this.connectionService.isConnected() && this.userService.isLoggedIn() && idsOk;
+  }
+
+  patchInBackground(updatedBatch: Batch): void {
+    this.http.patch<Batch>(
+      `${BASE_URL}/${API_VERSION}/process/batch/${updatedBatch._id}`,
+      updatedBatch
+    )
+    .pipe(
+      map((batchResponse: Batch): void => {
+        console.log('response', batchResponse);
+        this.updateBatch(batchResponse);
+      }),
+      catchError((error: HttpErrorResponse): Observable<never> => {
+        return this.httpError.handleError(error);
+      })
+    )
+    .subscribe(
+      (): void => console.log('Batch successfully updated'),
+      (error: string): void => {
+        console.log('start batch error', error);
+        this.toastService.presentErrorToast('Batch failed to save to server');
+      }
+    );
+  }
+
+  startInBackground(newBatch: Batch): void {
+    console.log('starting batch in background');
+    this.http.post<Batch>(
+      `${BASE_URL}/${API_VERSION}/process/user/${newBatch.owner}/master/${newBatch.recipeMasterId}/variant/${newBatch.recipeVariantId}`,
+      newBatch
+    )
+    .pipe(
+      map((batchResponse: Batch): void => {
+        console.log('response', batchResponse);
+        this.updateBatch(batchResponse);
+      }),
+      catchError((error: HttpErrorResponse): Observable<never> => {
+        return this.httpError.handleError(error);
+      })
+    )
+    .subscribe(
+      (): void => console.log('New batch successfully started'),
+      (error: string): void => {
+        console.log('start batch error', error);
+        this.toastService.presentErrorToast('Batch failed to save to server');
+      }
+    );
+  }
+
+  emitBatchListUpdate(isActive: boolean): void {
+    const batchList$: BehaviorSubject<BehaviorSubject<Batch>[]> = this.getBatchList(isActive);
+    batchList$.next(batchList$.value);
+  }
+
+  updateBatch(batchUpdate: Batch): void {
+    const batch$: BehaviorSubject<Batch> = this.getBatchById(batchUpdate.cid);
+    const batch: Batch = batch$.value;
+
+    for (const key in batchUpdate) {
+      if (batchUpdate.hasOwnProperty(key)) {
+        batch[key] = batchUpdate[key];
+      }
+    }
+
+    batch$.next(batch);
+    this.emitBatchListUpdate(true);
+    this.updateBatchStorage(true);
+  }
+
+  /**
    * Start a new batch process and add new batch to active list; update database
    * if connected and logged in else set flag for sync; user and recipe must
    * have server id to update database
@@ -347,27 +468,44 @@ export class ProcessService {
             return throwError('Unable to generate new batch: missing recipe');
           }
 
-          if (this.connectionService.isConnected() && this.userService.isLoggedIn()) {
-            return this.http
-              .post<Batch>(
-                `${BASE_URL}/${API_VERSION}/process/user/${newBatch.owner}/master/${newBatch.recipeMasterId}/variant/${newBatch.recipeVariantId}`,
-                newBatch
-              )
-              .pipe(
-                mergeMap((batchResponse: Batch): Observable<Batch> => {
-                  console.log('response', batchResponse);
-                  return this.addBatchToActiveList(batchResponse);
-                }),
-                catchError((error: HttpErrorResponse): Observable<never> => {
-                  return this.httpError.handleError(error);
-                })
-              );
+          if (this.canSendRequest()) {
+            this.startInBackground(newBatch);
+          } else {
+            this.addSyncFlag('create', newBatch.cid);
           }
 
-          this.addSyncFlag('create', newBatch.cid);
           return this.addBatchToActiveList(newBatch);
         })
       );
+
+    // return this.generateBatchFromRecipe(userId, recipeMasterId, recipeVariantId)
+    //   .pipe(
+    //     mergeMap((newBatch: Batch) => {
+    //       if (newBatch === undefined) {
+    //         return throwError('Unable to generate new batch: missing recipe');
+    //       }
+    //
+    //       if (this.connectionService.isConnected() && this.userService.isLoggedIn()) {
+    //         return this.http
+    //           .post<Batch>(
+    //             `${BASE_URL}/${API_VERSION}/process/user/${newBatch.owner}/master/${newBatch.recipeMasterId}/variant/${newBatch.recipeVariantId}`,
+    //             newBatch
+    //           )
+    //           .pipe(
+    //             mergeMap((batchResponse: Batch): Observable<Batch> => {
+    //               console.log('response', batchResponse);
+    //               return this.addBatchToActiveList(batchResponse);
+    //             }),
+    //             catchError((error: HttpErrorResponse): Observable<never> => {
+    //               return this.httpError.handleError(error);
+    //             })
+    //           );
+    //       }
+    //
+    //       this.addSyncFlag('create', newBatch.cid);
+    //       return this.addBatchToActiveList(newBatch);
+    //     })
+    //   );
   }
 
   /***** End API access methods *****/
@@ -441,16 +579,17 @@ export class ProcessService {
    *
    * @return: none
    */
-  processSyncSuccess(syncData: (Batch | SyncData)[]): void {
-    syncData.forEach((_syncData: Batch | SyncData): void => {
+  processSyncSuccess(syncData: (Batch | SyncData<Batch>)[]): void {
+    syncData.forEach((_syncData: Batch | SyncData<Batch>): void => {
       if (_syncData['isDeleted'] === undefined) {
         const batch$: BehaviorSubject<Batch>
           = this.getBatchById((<Batch>_syncData).cid);
 
         if (batch$ === undefined) {
-          this.syncErrors.push(
-            `Sync error: batch with id: '${(<Batch>_syncData).cid}' not found`
-          );
+          this.syncErrors.push({
+            errCode: -1,
+            message: `Sync error: batch with id: '${(<Batch>_syncData).cid}' not found`
+          });
         } else {
           batch$.next(<Batch>_syncData);
         }
@@ -474,11 +613,12 @@ export class ProcessService {
       return of(false);
     }
 
+    const errors: SyncError[] = [];
     const requests
       : (Observable<
           HttpErrorResponse
           | Batch
-          | SyncData
+          | SyncData<Batch>
         >)[] = [];
 
     this.syncService.getSyncFlagsByType('batch')
@@ -486,15 +626,15 @@ export class ProcessService {
         const batch$: BehaviorSubject<Batch> = this.getBatchById(syncFlag.docId);
 
         if (batch$ === undefined && syncFlag.method !== 'delete') {
-          requests.push(
-            throwError(
+          errors.push(
+            this.syncService.constructSyncError(
               `Sync error: Batch with id '${syncFlag.docId}' not found`
             )
           );
           return;
         } else if (syncFlag.method === 'delete') {
           requests.push(
-            this.syncService.deleteSync(
+            this.syncService.deleteSync<Batch>(
               `${this.syncBaseRoute}/${syncFlag.docId}`
             )
           );
@@ -507,14 +647,9 @@ export class ProcessService {
           const recipeMaster$: BehaviorSubject<RecipeMaster>
             = this.recipeService.getRecipeMasterById(batch.recipeMasterId);
 
-          if (
-            recipeMaster$ === undefined
-            || hasDefaultIdType(recipeMaster$.value._id)
-          ) {
-            requests.push(
-              throwError(
-                'Sync error: Cannot get batch owner\'s id'
-              )
+          if (recipeMaster$ === undefined || hasDefaultIdType(recipeMaster$.value._id)) {
+            errors.push(
+              this.syncService.constructSyncError('Sync error: Cannot get batch owner\'s id')
             );
             return;
           }
@@ -522,32 +657,27 @@ export class ProcessService {
         }
 
         if (syncFlag.method === 'update' && isMissingServerId(batch._id)) {
-          requests.push(
-            throwError(
+          errors.push(
+            this.syncService.constructSyncError(
               `Sync error: batch with id: ${batch.cid} is missing its server id`
             )
           );
         } else if (syncFlag.method === 'create') {
           batch['forSync'] = true;
           requests.push(
-            this.syncService.postSync(
-              this.syncBaseRoute,
-              batch
-            )
+            this.syncService.postSync<Batch>(this.syncBaseRoute, batch, 'batch')
           );
-        } else if (
-          syncFlag.method === 'update'
-          && !isMissingServerId(batch._id)
-        ) {
+        } else if (syncFlag.method === 'update' && !isMissingServerId(batch._id)) {
           requests.push(
-            this.syncService.patchSync(
+            this.syncService.patchSync<Batch>(
               `${this.syncBaseRoute}/${batch._id}`,
-              batch
+              batch,
+              'batch'
             )
           );
         } else {
-          requests.push(
-            throwError(
+          errors.push(
+            this.syncService.constructSyncError(
               `Sync error: Unknown sync flag method '${syncFlag.method}'`
             )
           );
@@ -556,13 +686,13 @@ export class ProcessService {
 
     return this.syncService.sync('batch', requests)
       .pipe(
-        map((responses: SyncResponse): boolean => {
+        map((responses: SyncResponse<Batch>): boolean => {
           if (!onLogin) {
-            this.processSyncSuccess(<(Batch | SyncData)[]>(responses.successes));
+            this.processSyncSuccess(<(Batch | SyncData<Batch>)[]>(responses.successes));
             this.updateBatchStorage(true);
             this.updateBatchStorage(false);
           }
-          this.syncErrors = responses.errors;
+          this.syncErrors = responses.errors.concat(errors);
           return true;
         })
       );
@@ -594,7 +724,7 @@ export class ProcessService {
    */
   syncOnSignup(): void {
     console.log('batch on signup');
-    const requests: (Observable<HttpErrorResponse | Batch>)[] = [];
+    const requests: Observable<HttpErrorResponse | Batch>[] = [];
 
     const batchList: BehaviorSubject<Batch>[] = this.getAllBatchesList();
 
@@ -603,11 +733,7 @@ export class ProcessService {
         = this.recipeService.getRecipeMasterById(batch$.value.recipeMasterId);
 
       if (recipe$ === undefined || isMissingServerId(recipe$.value._id)) {
-        requests.push(
-          throwError(
-            `Recipe with id ${batch$.value.recipeMasterId} not found`
-          )
-        );
+        requests.push(throwError(`Recipe with id ${batch$.value.recipeMasterId} not found`));
         return;
       }
 
@@ -615,9 +741,10 @@ export class ProcessService {
       payload['recipeMasterId'] = recipe$.value._id;
       payload['forSync'] = true;
       requests.push(
-        this.syncService.postSync(
+        this.syncService.postSync<Batch>(
           this.syncBaseRoute,
-          payload
+          payload,
+          'batch'
         )
       );
     });
@@ -625,8 +752,8 @@ export class ProcessService {
     this.syncService.sync('batch', requests)
       .pipe(
         finalize(() => this.event.emit('sync-inventory-on-signup')),
-        map((responses: SyncResponse): boolean => {
-          this.processSyncSuccess(<(Batch | SyncData)[]>(responses.successes));
+        map((responses: SyncResponse<Batch>): boolean => {
+          this.processSyncSuccess(<(Batch | SyncData<Batch>)[]>(responses.successes));
           this.syncErrors = responses.errors;
           this.updateBatchStorage(true);
           return true;
@@ -746,7 +873,7 @@ export class ProcessService {
       .getRecipeMasterById(recipeMasterId);
 
     if (!recipeMaster$) {
-      return throwError('Missing recipe master');
+      return throwError('Missing recipe template');
     }
 
     return recipeMaster$
@@ -953,7 +1080,7 @@ export class ProcessService {
    * @params: none
    * @return: none
    */
-  loadBatchesFromStorage(): void {
+  initFromStorage(): void {
     // Get active batches from storage, do not overwrite if batches from server
     this.storageService.getBatches(true)
       .subscribe(
