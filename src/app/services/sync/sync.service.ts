@@ -9,7 +9,7 @@ import { BASE_URL } from '../../shared/constants/base-url';
 import { API_VERSION } from '../../shared/constants/api-version';
 
 /* Interface imports */
-import { Syncable, SyncableResponse, SyncData, SyncMetadata, SyncResponse } from '../../shared/interfaces/sync';
+import { SyncError, SyncData, SyncMetadata, SyncResponse } from '../../shared/interfaces/sync';
 
 /* Utility imports */
 import { hasDefaultIdType } from '../../shared/utility-functions/id-helpers';
@@ -22,6 +22,7 @@ import { StorageService } from '../storage/storage.service';
   providedIn: 'root'
 })
 export class SyncService {
+  docsRequiringFormData: string[] = ['recipeMaster', 'inventoryItem', 'user'];
   syncFlags: SyncMetadata[] = [];
   syncKey: string = 'sync';
 
@@ -48,6 +49,40 @@ export class SyncService {
   clearSyncData(): void {
     this.syncFlags = [];
     this.storageService.removeSyncFlags();
+  }
+
+  /**
+   * Clear all sync flags for a given doc type; update flag storage afterwards
+   *
+   * @params: docType - the doc type whose flags should be cleared
+   *
+   * @return: none
+   */
+  clearSyncFlagByType(docType: string): void {
+    this.syncFlags = this.syncFlags
+      .filter((syncFlag: SyncMetadata): boolean => {
+        return syncFlag.docType !== docType;
+      });
+    this.updateStorage();
+  }
+
+  /**
+   * Construct a new sync error object
+   *
+   * @params: message - the error message
+   * @params: errCode - error id code, defaults to -1
+   *
+   * Error Codes:
+   * -1 - Unknown
+   * 1 - Server error response
+   *
+   * @return: configured sync error
+   */
+  constructSyncError(message: string, errCode: number = -1): SyncError {
+    return {
+      errCode: errCode,
+      message: message
+    };
   }
 
   /**
@@ -96,7 +131,9 @@ export class SyncService {
    */
   addSyncFlag(metadata: SyncMetadata): void {
     if (metadata.method === 'create') {
-      this.syncFlags.push(metadata);
+      if (this.syncFlags.every((flag: SyncMetadata): boolean => flag.docId !== metadata.docId)) {
+        this.syncFlags.push(metadata);
+      }
     } else if (metadata.method === 'update') {
       const currentFlagIndex = this.syncFlags
         .findIndex((syncFlag: SyncMetadata): boolean => {
@@ -132,10 +169,10 @@ export class SyncService {
    *
    * @return: Observable of deletion flag on success or http error
    */
-  deleteSync(route: string): Observable<SyncData | HttpErrorResponse> {
+  deleteSync<T>(route: string): Observable<SyncData<T> | HttpErrorResponse> {
     return this.http.delete(`${BASE_URL}/${API_VERSION}/${route}`)
       .pipe(
-        map((response: Syncable): SyncData => {
+        map((response: T): SyncData<T> => {
           return {
             isDeleted: true,
             data: response
@@ -155,19 +192,28 @@ export class SyncService {
    *
    * @return: Observable of server response
    */
-  patchSync(
+  patchSync<T>(
     route: string,
-    data: Syncable
-  ): Observable<SyncableResponse | HttpErrorResponse> {
-    return this.http.patch<SyncableResponse>(
-      `${BASE_URL}/${API_VERSION}/${route}`,
-      data
-    )
-    .pipe(
-      catchError((error: HttpErrorResponse): Observable<HttpErrorResponse> => {
-        return of(error);
-      })
-    );
+    data: T,
+    docType: string
+  ): Observable<T | HttpErrorResponse> {
+    let patchRequest: Observable<T>;
+
+    if (this.docsRequiringFormData.some((required: string): boolean => required === docType)) {
+      const formData: FormData = new FormData();
+      formData.append(docType, JSON.stringify(data));
+
+      patchRequest = this.http.patch<T>(`${BASE_URL}/${API_VERSION}/${route}`, formData);
+    } else {
+      patchRequest = this.http.patch<T>(`${BASE_URL}/${API_VERSION}/${route}`, data);
+    }
+
+    return patchRequest
+      .pipe(
+        catchError((error: HttpErrorResponse): Observable<HttpErrorResponse> => {
+          return of(error);
+        })
+      );
   }
 
   /**
@@ -178,19 +224,24 @@ export class SyncService {
    *
    * @return: Observable of server response
    */
-  postSync(
-    route: string,
-    data: Syncable
-  ): Observable<SyncableResponse | HttpErrorResponse> {
-    return this.http.post<SyncableResponse>(
-      `${BASE_URL}/${API_VERSION}/${route}`,
-      data
-    )
-    .pipe(
-      catchError((error: HttpErrorResponse): Observable<HttpErrorResponse> => {
-        return of(error);
-      })
-    );
+  postSync<T>(route: string, data: T, docType: string): Observable<T | HttpErrorResponse> {
+    let postRequest: Observable<T>;
+
+    if (this.docsRequiringFormData.some((required: string): boolean => required === docType)) {
+      const formData: FormData = new FormData();
+      formData.append(docType, JSON.stringify(data));
+
+      postRequest = this.http.post<T>(`${BASE_URL}/${API_VERSION}/${route}`, formData);
+    } else {
+      postRequest = this.http.post<T>(`${BASE_URL}/${API_VERSION}/${route}`, data);
+    }
+
+    return postRequest
+      .pipe(
+        catchError((error: HttpErrorResponse): Observable<HttpErrorResponse> => {
+          return of(error);
+        })
+      );
   }
 
   /**
@@ -200,20 +251,18 @@ export class SyncService {
    *
    * @return: array of formatted error messages
    */
-  processSyncErrors(errorData: (HttpErrorResponse | Error)[]): string[] {
-    return errorData.map((error: HttpErrorResponse) => {
-      let errMsg: string;
+  processSyncErrors(errorData: (HttpErrorResponse | Error)[]): SyncError[] {
+    return errorData.map((error: HttpErrorResponse): SyncError => {
       if (error instanceof HttpErrorResponse) {
         const errStatus: number = error.status ? error.status : 503;
         const errText: string = error.status ? error.statusText : 'Service unavailable';
         const additionalText: string = error.error && error.error.name === 'ValidationError'
           ? `: ${error.error.message}`
           : '';
-        errMsg = `<${errStatus}> ${errText || ''}${additionalText}`;
+        return this.constructSyncError(`<${errStatus}> ${errText || ''}${additionalText}`, 1);
       } else {
-        errMsg = error['message'];
+        return this.constructSyncError(error['message']);
       }
-      return errMsg;
     });
   }
 
@@ -225,24 +274,17 @@ export class SyncService {
    *
    * @return: observable of sync responses
    */
-  sync(
-    docType: string,
-    requests: Observable<Syncable>[]
-  ): Observable<SyncResponse> {
-    console.log(`performing ${docType} sync requests`);
+  sync<T>(docType: string, requests: Observable<T>[]): Observable<SyncResponse<T>> {
+    console.log(`performing ${requests.length} ${docType} sync requests`);
     return forkJoin(requests)
       .pipe(
-        map((responses: SyncableResponse[]): SyncResponse => {
-          this.syncFlags = this.syncFlags
-            .filter((syncFlag: SyncMetadata): boolean => {
-              return syncFlag.docType !== docType;
-            });
-          this.updateStorage();
+        map((responses: (T | SyncData<T> | HttpErrorResponse)[]): SyncResponse<T> => {
+          this.clearSyncFlagByType(docType);
 
           const errors: (HttpErrorResponse | Error)[] = [];
-          const successes: SyncableResponse[] = [];
+          const successes: T[] = [];
 
-          responses.forEach((response: SyncableResponse) => {
+          responses.forEach((response: T | HttpErrorResponse): void => {
             if (response instanceof HttpErrorResponse || response instanceof Error) {
               errors.push(response);
             } else {
@@ -256,7 +298,7 @@ export class SyncService {
           };
         })
       );
-  }
+   }
 
   /**
    * Update stored sync flags
