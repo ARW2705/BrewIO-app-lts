@@ -5,6 +5,7 @@ import { Image } from '../interfaces/image';
 export const defaultImage: () => Image = () => {
   const def: Image = {
     cid: '0',
+    hasPending: false,
     localURL: MISSING_IMAGE_URL,
     url: MISSING_IMAGE_URL,
     serverFilename: 'missing'
