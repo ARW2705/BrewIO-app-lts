@@ -9,9 +9,9 @@ import { PipesModule } from '../../pipes/pipes.module';
 
 /* Component imports */
 import { AccordionComponentModule } from '../../components/accordion/accordion.module';
+import { ConfirmationComponentModule } from '../../components/confirmation/confirmation.module';
 import { HeaderComponentModule } from '../../components/header/header.module';
 import { IngredientListComponentModule } from '../../components/ingredient-list/ingredient-list.module';
-import { ConfirmationPageModule } from '../confirmation/confirmation.module';
 
 /* Page imports */
 import { RecipePage } from './recipe.page';
@@ -22,9 +22,9 @@ import { RecipePage } from './recipe.page';
     IonicModule,
     PipesModule,
     AccordionComponentModule,
+    ConfirmationComponentModule,
     HeaderComponentModule,
     IngredientListComponentModule,
-    ConfirmationPageModule,
     RouterModule.forChild([{path: '', component: RecipePage}])
   ],
   declarations: [

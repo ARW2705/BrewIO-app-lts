@@ -17,7 +17,8 @@ import { getId, hasId } from '../../shared/utility-functions/id-helpers';
 import { AccordionComponent } from '../../components/accordion/accordion.component';
 
 /* Page imports */
-import { ConfirmationPage } from '../confirmation/confirmation.page';
+import { ConfirmationComponent } from '../../components/confirmation/confirmation.component';
+// import { ConfirmationPage } from '../confirmation/confirmation.page';
 
 /* Service imports */
 import { RecipeService } from '../../services/recipe/recipe.service';
@@ -182,7 +183,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
    */
   async confirmDelete(index: number): Promise<void> {
     const modal: HTMLIonModalElement = await this.modalCtrl.create({
-      component: ConfirmationPage,
+      component: ConfirmationComponent,
       componentProps: {
         message: `Confirm deletion of "${this.displayVariantList[index].variantName}"`,
         subMessage: 'This action cannot be reversed'

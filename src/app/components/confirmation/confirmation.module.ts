@@ -2,10 +2,10 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { HeaderComponentModule } from '../../components/header/header.module';
+import { HeaderComponentModule } from '../header/header.module';
 
 /* Page imports */
-import { ConfirmationPage } from './confirmation.page';
+import { ConfirmationComponent } from './confirmation.component';
 
 @NgModule({
   imports: [
@@ -14,7 +14,10 @@ import { ConfirmationPage } from './confirmation.page';
     HeaderComponentModule
   ],
   declarations: [
-    ConfirmationPage
+    ConfirmationComponent
+  ],
+  exports: [
+    ConfirmationComponent
   ]
 })
-export class ConfirmationPageModule {}
+export class ConfirmationComponentModule {}

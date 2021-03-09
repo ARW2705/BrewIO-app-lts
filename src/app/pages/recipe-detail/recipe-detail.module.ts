@@ -7,13 +7,13 @@ import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
 import { AccordionComponentModule } from '../../components/accordion/accordion.module';
+import { ConfirmationComponentModule } from '../../components/confirmation/confirmation.module';
 import { HeaderComponentModule } from '../../components/header/header.module';
 import { IngredientListComponentModule } from '../../components/ingredient-list/ingredient-list.module';
 import { NoteListComponentModule } from '../../components/note-list/note-list.module';
 
 /* Page imports */
 import { RecipeDetailPage } from './recipe-detail.page';
-import { ConfirmationPageModule } from '../confirmation/confirmation.module';
 
 /* Pipe imports */
 import { PipesModule } from '../../pipes/pipes.module';
@@ -26,9 +26,9 @@ import { PipesModule } from '../../pipes/pipes.module';
     PipesModule,
     HeaderComponentModule,
     AccordionComponentModule,
+    ConfirmationComponentModule,
     IngredientListComponentModule,
     NoteListComponentModule,
-    ConfirmationPageModule,
     RouterModule.forChild([{path: '', component: RecipeDetailPage}])
   ],
   declarations: [
