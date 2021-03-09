@@ -1,12 +1,8 @@
 /* Module imports */
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, forkJoin, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
-
-/* Constants imports */
-import { BASE_URL } from '../../shared/constants/base-url';
-import { API_VERSION } from '../../shared/constants/api-version';
+import { Observable, forkJoin } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 /* Interface imports */
 import { SyncError, SyncData, SyncMetadata, SyncResponse } from '../../shared/interfaces/sync';
