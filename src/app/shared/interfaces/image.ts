@@ -2,15 +2,10 @@ export interface Image {
   cid: string;
   filePath?: string;
   fileSize?: number; // in bytes
+  hasPending: boolean;
   localURL?: string;
   serverFilename?: string;
   url: string;
-}
-
-export interface PendingImageFlag {
-  name: string;
-  hasPending: boolean;
-  hasTemp: boolean;
 }
 
 export interface ImageRequestMetadata {

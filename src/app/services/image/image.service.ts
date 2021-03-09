@@ -20,7 +20,7 @@ import { IMAGE_SIZE_LIMIT } from '../../shared/constants/image-size-limit';
 import { defaultImage } from '../../shared/defaults/default-image';
 
 /* Interface imports */
-import { Image, ImageRequestFormData, ImageRequestMetadata, PendingImageFlag } from '../../shared/interfaces/image';
+import { Image, ImageRequestFormData, ImageRequestMetadata } from '../../shared/interfaces/image';
 
 /* Service imports */
 import { ClientIdService } from '../client-id/client-id.service';
@@ -98,6 +98,7 @@ export class ImageService {
           cid: cid,
           filePath: filePath,
           fileSize: metadata.size,
+          hasPending: true,
           localURL: localURL,
           url: localURL
         };
@@ -364,31 +365,31 @@ export class ImageService {
    *
    * @return: observable of stored images
    */
-  composeImageStoreRequest(
-    image: Image,
-    pendingImages: PendingImageFlag[],
-    overridePaths: { name: string, path: string }[] = []
-  ): Observable<Image>[] {
-    const storeImages: Observable<Image>[] = [];
-
-    pendingImages.forEach((pending: PendingImageFlag): void => {
-      if (pending.hasTemp) {
-        const overridePath: { name: string, path: string } = overridePaths
-          .find((pathData: { name: string, path: string }): boolean => {
-            return pathData.name === pending.name;
-          });
-        const replacedPath: string = overridePath ? overridePath.path : null;
-        storeImages.push(
-          this.storeFileToLocalDir(
-            image[pending.name],
-            replacedPath
-          )
-        );
-      }
-    });
-
-    return storeImages;
-  }
+  // composeImageStoreRequest(
+  //   image: Image,
+  //   pendingImages: PendingImageFlag[],
+  //   overridePaths: { name: string, path: string }[] = []
+  // ): Observable<Image>[] {
+  //   const storeImages: Observable<Image>[] = [];
+  //
+  //   pendingImages.forEach((pending: PendingImageFlag): void => {
+  //     if (pending.hasTemp) {
+  //       const overridePath: { name: string, path: string } = overridePaths
+  //         .find((pathData: { name: string, path: string }): boolean => {
+  //           return pathData.name === pending.name;
+  //         });
+  //       const replacedPath: string = overridePath ? overridePath.path : null;
+  //       storeImages.push(
+  //         this.storeFileToLocalDir(
+  //           image[pending.name],
+  //           replacedPath
+  //         )
+  //       );
+  //     }
+  //   });
+  //
+  //   return storeImages;
+  // }
 
   /***** End Server Upload Methods *** */
 
