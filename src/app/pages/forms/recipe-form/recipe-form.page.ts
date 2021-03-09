@@ -276,7 +276,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
    * the general info; else null
    */
   getGeneralFormModalUpdateData(): object {
-    if (this.isGeneralFormComplete) {
+    if (this.isGeneralFormComplete || this.formType === 'variant') {
       return {
         labelImage: this.master.labelImage,
         style: this.master.style,
