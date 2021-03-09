@@ -157,8 +157,8 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy {
    *
    * @return: none
    */
-  addItem(itemFormValues: object): void {
-    this.inventoryService.addItem(itemFormValues)
+  createItem(itemFormValues: object): void {
+    this.inventoryService.createItem(itemFormValues)
       .pipe(take(1))
       .subscribe(
         (): void => {
@@ -181,7 +181,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy {
    */
   decrementCount(item: InventoryItem): void {
     // TODO open dec type form if not a bottle/can type
-    this.inventoryService.patchItem(
+    this.inventoryService.updateItem(
       item.cid,
       { currentQuantity: item.currentQuantity - 1 }
     )
@@ -214,8 +214,8 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy {
    *
    * @return: none
    */
-  generateItemFromBatch(batch: Batch, itemFormValues: object): void {
-    this.inventoryService.generateItemFromBatch(batch, itemFormValues)
+  createItemFromBatch(batch: Batch, itemFormValues: object): void {
+    this.inventoryService.createItemFromBatch(batch, itemFormValues)
       .pipe(take(1))
       .subscribe(
         (): void => {
@@ -264,8 +264,8 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy {
    *
    * @return: none
    */
-  patchItem(item: InventoryItem, itemFormValues: object): void {
-    this.inventoryService.patchItem(item.cid, itemFormValues)
+  updateItem(item: InventoryItem, itemFormValues: object): void {
+    this.inventoryService.updateItem(item.cid, itemFormValues)
       .pipe(take(1))
       .subscribe(
         (): void => {
@@ -327,11 +327,11 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy {
           const itemFormValues: object = data['data'];
           if (itemFormValues) {
             if (options.batch !== undefined) {
-              this.generateItemFromBatch(options.batch, itemFormValues);
+              this.createItemFromBatch(options.batch, itemFormValues);
             } else if (options.item !== undefined) {
-              this.patchItem(options.item, itemFormValues);
+              this.updateItem(options.item, itemFormValues);
             } else {
-              this.addItem(itemFormValues);
+              this.createItem(itemFormValues);
             }
           }
         },

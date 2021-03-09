@@ -3,7 +3,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { BehaviorSubject, Observable, forkJoin, throwError, combineLatest, of, concat } from 'rxjs';
-import { catchError, defaultIfEmpty, finalize, first, map, mergeMap } from 'rxjs/operators';
+import { catchError, defaultIfEmpty, finalize, map, mergeMap, take, tap } from 'rxjs/operators';
 
 /* Constant imports */
 import { API_VERSION } from '../../shared/constants/api-version';
@@ -21,7 +21,7 @@ import { defaultImage } from '../../shared/defaults/default-image';
 /* Interface imports*/
 import { Author } from '../../shared/interfaces/author';
 import { Batch, BatchContext } from '../../shared/interfaces/batch';
-import { Image, ImageRequestFormData, ImageRequestMetadata, PendingImageFlag } from '../../shared/interfaces/image';
+import { Image, ImageRequestFormData, ImageRequestMetadata } from '../../shared/interfaces/image';
 import { InventoryItem } from '../../shared/interfaces/inventory-item';
 import { PrimaryValues } from '../../shared/interfaces/primary-values';
 import { RecipeMaster } from '../../shared/interfaces/recipe-master';
@@ -47,8 +47,7 @@ import { UserService } from '../user/user.service';
   providedIn: 'root'
 })
 export class InventoryService {
-  inventory$: BehaviorSubject<InventoryItem[]>
-    = new BehaviorSubject<InventoryItem[]>([]);
+  inventory$: BehaviorSubject<InventoryItem[]> = new BehaviorSubject<InventoryItem[]>([]);
   syncBaseRoute: string = 'inventory';
   syncErrors: SyncError[] = [];
 
@@ -57,9 +56,9 @@ export class InventoryService {
     public clientIdService: ClientIdService,
     public connectionService: ConnectionService,
     public event: EventService,
+    public httpError: HttpErrorService,
     public imageService: ImageService,
     public libraryService: LibraryService,
-    public processHttpError: HttpErrorService,
     public processService: ProcessService,
     public recipeService: RecipeService,
     public splashScreen: SplashScreen,
@@ -71,51 +70,90 @@ export class InventoryService {
     this.registerEvents();
   }
 
-  /***** Inventory Actions *****/
+  /***** Initializations *****/
 
   /**
-   * Create a new inventory item
+   * Perform any pending sync operations then fetch inventory from server
    *
-   * @params: newItemValues - values to construct the new inventory item
-   *
-   * @return: observable of boolean on success
+   * @params: none
+   * @return: none
    */
-  addItem(newItemValues: object): Observable<boolean> {
-    const newItem: InventoryItem = {
-      cid: this.clientIdService.getNewId(),
-      createdAt: (new Date()).toISOString(),
-      supplierName: newItemValues['supplierName'],
-      stockType: newItemValues['stockType'],
-      initialQuantity: newItemValues['initialQuantity'],
-      currentQuantity: newItemValues['initialQuantity'],
-      description: newItemValues['description'],
-      itemName: newItemValues['itemName'],
-      itemStyleId: newItemValues['itemStyleId'],
-      itemStyleName: newItemValues['itemStyleName'],
-      itemABV: newItemValues['itemABV'],
-      sourceType: newItemValues['sourceType'],
-      optionalItemData: {}
-    };
+  initFromServer(): void {
+    concat(
+      this.syncOnConnection(true),
+      this.http.get<InventoryItem[]>(`${BASE_URL}/${API_VERSION}/inventory`)
+        .pipe(
+          tap((inventory: InventoryItem[]): void => {
+            console.log('inventory from server');
+            this.getInventoryList().next(inventory);
+            this.updateInventoryStorage();
+          }),
+          catchError((error: HttpErrorResponse): Observable<never> => {
+            return this.httpError.handleError(error);
+          })
+        )
+    )
+    .subscribe(
+      (): void => {}, // no further actions needed on success
+      (error: string): void => console.log(`Initialization error: ${error}`)
+    );
+  }
 
-    const pendingImages: PendingImageFlag[] = this.mapOptionalData(newItem, newItemValues);
-
-    const storeImages: Observable<Image>[] = this.composeImageStoreRequests(newItem, pendingImages);
-
-    return forkJoin(storeImages)
-      .pipe(
-        defaultIfEmpty(null),
-        mergeMap((): Observable<boolean> => {
-          console.log('finished image store');
-          if (this.connectionService.isConnected() && this.userService.isLoggedIn()) {
-            this.postInBackground(newItem, pendingImages);
-          } else {
-            this.addSyncFlag('create', getId(newItem));
+  /**
+   * Get inventory items from storage - use these items if there has not been a server response
+   * Note - call splashscreen hide method on get inventory finalize to avoid
+   * white screen between loading splash screen and app ready;
+   * investigating alternatives
+   *
+   * @params: none
+   * @return: none
+   */
+  initFromStorage(): void {
+    this.storageService.getInventory()
+      .pipe(finalize((): void => this.splashScreen.hide()))
+      .subscribe(
+        (inventory: InventoryItem[]): void => {
+          const list$: BehaviorSubject<InventoryItem[]> = this.getInventoryList();
+          if (list$.value.length === 0) {
+            list$.next(inventory);
           }
-
-          return this.addItemToList(newItem);
-        })
+        },
+        (error: string): void => console.log(`${error}: awaiting data from server`)
       );
   }
+
+  /**
+   * Get the inventory list
+   *
+   * @params: none
+   * @return: none
+   */
+  initializeInventory(): void {
+    console.log('init inventory');
+    this.initFromStorage();
+
+    if (this.canSendRequest()) {
+      this.initFromServer();
+    }
+  }
+
+  /**
+   * Set up to necessary events
+   *
+   * @params: none
+   * @return: none
+   */
+  registerEvents(): void {
+    this.event.register('init-inventory').subscribe((): void => this.initializeInventory());
+    this.event.register('clear-data').subscribe((): void => this.clearInventory());
+    this.event.register('sync-inventory-on-signup').subscribe((): void => this.syncOnSignup());
+    this.event.register('connected').subscribe((): void => this.syncOnReconnect());
+  }
+
+  /***** Initializations *****/
+
+
+  /***** Inventory Actions *****/
 
   /**
    * Add item to the inventory list
@@ -134,39 +172,54 @@ export class InventoryService {
   }
 
   /**
-   * Compose image function calls to persistently store image
-   * If a persistent image is to be overridden, provide new path
+   * Clear all inventory items
    *
-   * @params: item - item that contains the image(s)
-   * @params: pendingImages - array of flags detailing what images should be uploaded
-   * @params: overridePaths - new file path for overriding persistent image
-   *
-   * @return: array of persisten image observables
+   * @params: none
+   * @return: none
    */
-  composeImageStoreRequests(
-    item: InventoryItem,
-    pendingImages: PendingImageFlag[],
-    overridePaths: { name: string, path: string }[] = []
-  ): Observable<Image>[] {
-    const storeImages: Observable<Image>[] = [];
+  clearInventory(): void {
+    this.getInventoryList().next([]);
+    this.storageService.removeInventory();
+  }
 
-    pendingImages.forEach((pending: PendingImageFlag): void => {
-      if (pending.hasTemp) {
-        const overridePath: { name: string, path: string } = overridePaths
-          .find((pathData: { name: string, path: string }): boolean => {
-            return pathData.name === pending.name;
-          });
-        const replacedPath: string = overridePath ? overridePath.path : null;
-        storeImages.push(
-          this.imageService.storeFileToLocalDir(
-            item.optionalItemData[pending.name],
-            replacedPath
-          )
-        );
-      }
-    });
+  /**
+   * Create a new inventory item
+   *
+   * @params: newItemValues - values to construct the new inventory item
+   *
+   * @return: observable of boolean on success
+   */
+  createItem(newItemValues: object): Observable<boolean> {
+    const newItem: InventoryItem = {
+      cid: this.clientIdService.getNewId(),
+      createdAt: (new Date()).toISOString(),
+      supplierName: newItemValues['supplierName'],
+      stockType: newItemValues['stockType'],
+      initialQuantity: newItemValues['initialQuantity'],
+      currentQuantity: newItemValues['initialQuantity'],
+      description: newItemValues['description'],
+      itemName: newItemValues['itemName'],
+      itemStyleId: newItemValues['itemStyleId'],
+      itemStyleName: newItemValues['itemStyleName'],
+      itemABV: newItemValues['itemABV'],
+      sourceType: newItemValues['sourceType'],
+      optionalItemData: {}
+    };
 
-    return storeImages;
+    this.mapOptionalData(newItem, newItemValues);
+
+    return forkJoin(this.composeImageStoreRequests(newItem))
+      .pipe(
+        defaultIfEmpty(null),
+        mergeMap((): Observable<boolean> => this.addItemToList(newItem)),
+        tap((): void => {
+          if (this.canSendRequest()) {
+            this.requestInBackground('post', newItem);
+          } else {
+            this.addSyncFlag('create', getId(newItem));
+          }
+        })
+      );
   }
 
   /**
@@ -177,17 +230,15 @@ export class InventoryService {
    *
    * @return: observable of boolean on success
    */
-  generateItemFromBatch(
-    batch: Batch,
-    newItemValues: object
-  ): Observable<boolean> {
+  createItemFromBatch(batch: Batch, newItemValues: object): Observable<boolean> {
+    console.log('creating item from batch');
     return combineLatest(
       this.recipeService.getPublicAuthorByRecipeId(batch.recipeMasterId),
       this.recipeService.getRecipeMasterById(batch.recipeMasterId),
       this.libraryService.getStyleById(batch.annotations.styleId)
     )
     .pipe(
-      first(),
+      take(1),
       mergeMap(([_author, _recipeMaster, _style]: [Author, RecipeMaster, Style]): Observable<boolean> => {
         const author: Author = _author;
         const recipeMaster: RecipeMaster = _recipeMaster;
@@ -214,15 +265,15 @@ export class InventoryService {
           originalRecipeId: getId(recipeMaster),
           sourceType:
             batch.owner === 'offline' || batch.owner === recipeMaster.owner
-            ? 'self'
-            : 'other'
+              ? 'self'
+              : 'other'
         };
 
         if (batch.annotations.packagingDate !== undefined) {
           generatedItemValues['packagingDate'] = batch.annotations.packagingDate;
         }
 
-        return this.addItem(generatedItemValues);
+        return this.createItem(generatedItemValues);
       })
     );
   }
@@ -246,190 +297,7 @@ export class InventoryService {
    * @return: the InventoryItem or undefined if not found
    */
   getItemById(itemId: string): InventoryItem {
-    return this.getInventoryList().value
-      .find((item: InventoryItem): boolean => hasId(item, itemId));
-  }
-
-  /**
-   * Check if given key should be mapped to the optionalData object
-   *
-   * @params: key - key to check
-   * @params: optionalData - object to check
-   *
-   * @return: true if key should be mapped to given object
-   */
-  hasMappableKey(key: string, optionalData: object): boolean {
-    return OPTIONAL_INVENTORY_DATA_KEYS.includes(key) && optionalData.hasOwnProperty(key);
-  }
-
-  /**
-   * Get the inventory from storage and server
-   * Note - call splashscreen hide method on get inventory finalize to avoid
-   * white screen between loading splash screen and app ready;
-   * investigating alternatives
-   *
-   * @params: none
-   * @return: none
-   */
-  initializeInventory(): void {
-    console.log('init inventory');
-    this.storageService.getInventory()
-      .pipe(finalize((): void => this.splashScreen.hide()))
-      .subscribe(
-        (inventory: InventoryItem[]): void => {
-          const list$: BehaviorSubject<InventoryItem[]> = this.getInventoryList();
-          if (list$.value.length === 0 && inventory.length > 0) {
-            list$.next(inventory);
-          }
-        },
-        (error: string): void => console.log(`${error}: awaiting data from server`)
-      );
-    if (this.connectionService.isConnected() && this.userService.isLoggedIn()) {
-      concat(
-        this.syncOnConnection(true),
-        this.http.get<InventoryItem[]>(`${BASE_URL}/${API_VERSION}/inventory`)
-          .pipe(
-            map((inventory: InventoryItem[]): void => {
-              console.log('inventory from server');
-              this.getInventoryList().next(inventory);
-              this.updateInventoryStorage();
-            }),
-            catchError((error: HttpErrorResponse): Observable<never> => {
-              return this.processHttpError.handleError(error);
-            })
-          )
-      )
-      .subscribe(
-        (): void => {}, // no further actions needed on success
-        (error: string): void => console.log(`Initialization error: ${error}`)
-      );
-    }
-  }
-
-  /**
-   * Map any optional data to an item
-   *
-   * @params: item - the target item
-   * @params: optionalData - contains optional properties to copy
-   *
-   * @return: object with pending image metadata
-   */
-  mapOptionalData(item: InventoryItem, optionalData: object): PendingImageFlag[] {
-    const pendingImages: PendingImageFlag[] = [
-      {
-        name: 'itemLabelImage',
-        hasPending: this.imageService.hasPendingImage(
-          item.optionalItemData,
-          optionalData,
-          'itemLabelImage'
-        ),
-        hasTemp: this.imageService.isTempImage(optionalData['itemLabelImage'])
-      },
-      {
-        name: 'supplierLabelImage',
-        hasPending: this.imageService.hasPendingImage(
-          item.optionalItemData,
-          optionalData,
-          'supplierLabelImage'
-        ),
-        hasTemp: this.imageService.isTempImage(optionalData['supplierLabelImage'])
-      }
-    ];
-
-    for (const key in optionalData) {
-      if (this.hasMappableKey(key, optionalData)) {
-        if (
-          item.optionalItemData[key]
-          && optionalData[key]
-          && typeof optionalData[key] === 'object'
-        ) {
-          for (const innerKey in optionalData[key]) {
-            if (optionalData[key].hasOwnProperty(innerKey)) {
-              item.optionalItemData[key][innerKey] = optionalData[key][innerKey];
-            }
-          }
-        } else {
-          item.optionalItemData[key] = optionalData[key];
-        }
-      }
-    }
-
-    if (!item.optionalItemData.supplierLabelImage) {
-      item.optionalItemData.supplierLabelImage = defaultImage();
-    }
-    if (!item.optionalItemData.itemLabelImage) {
-      item.optionalItemData.itemLabelImage = defaultImage();
-    }
-
-    if (item.optionalItemData.itemSRM) {
-      item.optionalItemData.srmColor = this.getSRMColor(item);
-    }
-    if (item.initialQuantity && item.currentQuantity) {
-      item.optionalItemData.remainingColor = this.getRemainingColor(item);
-    }
-
-    return pendingImages;
-  }
-
-  /**
-   * Update an item
-   *
-   * @params: itemId - the item id to update
-   * @params: update - object with updated values
-   *
-   * @return: observable of updated item
-   */
-  patchItem(itemId: string, update: object): Observable<InventoryItem> {
-    if (update.hasOwnProperty('currentQuantity') && update['currentQuantity'] <= 0) {
-      return this.removeItem(itemId);
-    }
-
-    const list$: BehaviorSubject<InventoryItem[]> = this.getInventoryList();
-    const list: InventoryItem[] = list$.value;
-    const toUpdate: InventoryItem = list
-      .find((item: InventoryItem): boolean => hasId(item, itemId));
-
-    const previousItemImagePath: string = toUpdate.optionalItemData.itemLabelImage.filePath;
-    const previousSupplierImagePath: string = toUpdate.optionalItemData.supplierLabelImage.filePath;
-
-    for (const key in toUpdate) {
-      if (update.hasOwnProperty(key)) {
-        toUpdate[key] = update[key];
-      }
-    }
-
-    const pendingImages: PendingImageFlag[] = this.mapOptionalData(toUpdate, update);
-
-    const storeImages: Observable<Image>[] = this.composeImageStoreRequests(
-      toUpdate,
-      pendingImages,
-      [
-        {
-          name: 'itemLabelImage',
-          path: previousItemImagePath
-        },
-        {
-          name: 'suppilerLabelImage',
-          path: previousSupplierImagePath
-        }
-      ]
-    );
-
-    return forkJoin(storeImages)
-      .pipe(
-        defaultIfEmpty(null),
-        mergeMap((): Observable<InventoryItem> => {
-          if (this.connectionService.isConnected() && this.userService.isLoggedIn()) {
-            this.patchInBackground(toUpdate, pendingImages);
-          } else {
-            this.addSyncFlag('update', getId(toUpdate));
-          }
-
-          list$.next(list);
-          this.updateInventoryStorage();
-          return of(toUpdate);
-        })
-      );
+    return this.getInventoryList().value.find((item: InventoryItem): boolean => hasId(item, itemId));
   }
 
   /**
@@ -442,13 +310,27 @@ export class InventoryService {
   removeItem(itemId: string): Observable<InventoryItem> {
     const list$: BehaviorSubject<InventoryItem[]> = this.getInventoryList();
     const list: InventoryItem[] = list$.value;
-    const removeIndex: number = list
-      .findIndex((item: InventoryItem): boolean => hasId(item, itemId));
+    const removeIndex: number = list.findIndex((item: InventoryItem): boolean => hasId(item, itemId));
+    const toDelete: InventoryItem = list[removeIndex];
 
-    if (this.connectionService.isConnected() && this.userService.isLoggedIn()) {
-      this.deleteInBackground(list[removeIndex]._id);
+    // delete item label image file
+    const itemImage: Image = toDelete.optionalItemData.itemLabelImage;
+    if (itemImage && !this.imageService.hasDefaultImage(itemImage)) {
+      this.imageService.deleteLocalImage(itemImage.filePath)
+        .subscribe((errMsg: string) => console.log('image deleted', errMsg));
+    }
+
+    // delete supplier label image file
+    const supplierImage: Image = toDelete.optionalItemData.supplierLabelImage;
+    if (toDelete.optionalItemData && !this.imageService.hasDefaultImage(supplierImage)) {
+      this.imageService.deleteLocalImage(supplierImage.filePath)
+        .subscribe((errMsg: string) => console.log('image deleted', errMsg));
+    }
+
+    if (this.canSendRequest([getId(toDelete)])) {
+      this.requestInBackground('delete', toDelete);
     } else {
-      this.addSyncFlag('delete', getId(list[removeIndex]));
+      this.addSyncFlag('delete', getId(toDelete));
     }
 
     list.splice(removeIndex, 1);
@@ -458,14 +340,60 @@ export class InventoryService {
   }
 
   /**
-   * Clear all inventory items
+   * Update an item
    *
-   * @params: none
-   * @return: none
+   * @params: itemId - the item id to update
+   * @params: update - updated values to apply
+   *
+   * @return: observable of updated item
    */
-  clearInventory(): void {
-    this.getInventoryList().next([]);
-    this.storageService.removeInventory();
+  updateItem(itemId: string, update: object): Observable<InventoryItem> {
+    if (update.hasOwnProperty('currentQuantity') && update['currentQuantity'] <= 0) {
+      return this.removeItem(itemId);
+    }
+
+    const list$: BehaviorSubject<InventoryItem[]> = this.getInventoryList();
+    const list: InventoryItem[] = list$.value;
+    const toUpdate: InventoryItem = list.find((item: InventoryItem): boolean => hasId(item, itemId));
+
+    if (!toUpdate) {
+      return throwError('Item not found in list');
+    }
+
+    const previousItemImagePath: string = toUpdate.optionalItemData.itemLabelImage.filePath;
+    const previousSupplierImagePath: string = toUpdate.optionalItemData.supplierLabelImage.filePath;
+
+    for (const key in toUpdate) {
+      if (update.hasOwnProperty(key)) {
+        toUpdate[key] = update[key];
+      }
+    }
+
+    this.mapOptionalData(toUpdate, update);
+
+    const storeImages: Observable<Image>[] = this.composeImageStoreRequests(
+      toUpdate,
+      [
+        { name: 'itemLabelImage', path: previousItemImagePath },
+        { name: 'suppilerLabelImage', path: previousSupplierImagePath }
+      ]
+    );
+
+    return forkJoin(storeImages)
+      .pipe(
+        defaultIfEmpty(null),
+        mergeMap((): Observable<InventoryItem> => {
+          if (this.canSendRequest([getId(toUpdate)])) {
+            this.requestInBackground('patch', toUpdate);
+          } else {
+            this.addSyncFlag('update', getId(toUpdate));
+          }
+
+          list$.next(list);
+          this.updateInventoryStorage();
+          return of(toUpdate);
+        })
+      );
   }
 
   /***** End Inventory Actions *****/
@@ -477,56 +405,146 @@ export class InventoryService {
    * Set up image upload request data
    *
    * @params: item - parent item to images
-   * @params: pendingImages - contains flags to determine if image should be uploaded
    *
    * @return: array of objects with image and its formdata name
    */
-  composeImageUploadRequests(
-    item: InventoryItem,
-    pendingImages: PendingImageFlag[]
-  ): ImageRequestFormData[] {
+  composeImageUploadRequests(item: InventoryItem): ImageRequestFormData[] {
     const imageRequests: ImageRequestFormData[] = [];
-    pendingImages.forEach((pending: PendingImageFlag): void => {
-      if (item.optionalItemData[pending.name] && pending.hasPending) {
-        imageRequests.push({
-          image: item.optionalItemData[pending.name],
-          name: pending.name
-        });
-      }
-    });
+
+    let imageName = 'itemLabelImage';
+    let image = item.optionalItemData[imageName];
+
+    if (image && image.hasPending) {
+      imageRequests.push({ image: item.optionalItemData[imageName], name: imageName });
+    }
+
+    imageName = 'supplierLabelImage';
+    image = item.optionalItemData[imageName];
+
+    if (image && image.hasPending) {
+      imageRequests.push({ image: item.optionalItemData[imageName], name: imageName });
+    }
+
     return imageRequests;
   }
 
   /**
-   * Update server on item deletion
+   * Set up image storage function calls to persistently store image
+   * If an existing persistent image is to be overridden, provide new path
    *
-   * @params: itemId - item doc id to delete
+   * @params: item - item that contains the image(s)
+   * @params: overridePaths - new file path for overriding persistent image
    *
-   * @return: none
+   * @return: array of persistent image observables
    */
-  deleteInBackground(itemId: string): void {
-    this.http.delete<InventoryItem>(`${BASE_URL}/${API_VERSION}/inventory/${itemId}`)
-      .pipe(catchError((error: HttpErrorResponse): Observable<never> => {
-        return this.processHttpError.handleError(error);
-      }))
-      .subscribe(
-        (): void => console.log('Inventory: background delete request successful'),
-        (error: string): void => {
-          console.log('Inventory: background delete request error', error);
-          this.toastService.presentErrorToast(error);
+  composeImageStoreRequests(
+    item: InventoryItem,
+    overridePaths: { name: string, path: string }[] = []
+  ): Observable<Image>[] {
+    const storeImages: Observable<Image>[] = [];
+
+    let imageName: string = 'itemLabelImage';
+    let image: Image = item.optionalItemData[imageName];
+
+    if (image && image.hasPending) {
+      const replacementPath: string = this.getReplacementPath(imageName, overridePaths);
+      storeImages.push(this.imageService.storeFileToLocalDir(image, replacementPath));
+    }
+
+    imageName = 'supplierLabelImage';
+    image = item.optionalItemData[imageName];
+
+    if (image && image.hasPending) {
+      const replacementPath: string = this.getReplacementPath(imageName, overridePaths);
+      storeImages.push(this.imageService.storeFileToLocalDir(image, replacementPath));
+    }
+
+    return storeImages;
+  }
+
+  /**
+   * Configure a background request while defining which error handling method to use
+   *
+   * @params: syncMethod - the http method to apply
+   * @params: item - the InventoryItem to use in request
+   * @params: shouldResolveError - true if error should return the error response as an observable
+   * or false if error should be handled as an error
+   *
+   * @return: observable of InventoryItem or HttpErrorResponse
+   */
+  configureBackgroundRequest(
+    syncMethod: string,
+    shouldResolveError: boolean,
+    item: InventoryItem,
+    deletionId?: string
+  ): Observable<InventoryItem | HttpErrorResponse> {
+    return this.getBackgroundRequest(syncMethod, item, deletionId)
+      .pipe(catchError((error: HttpErrorResponse): Observable<HttpErrorResponse> => {
+        if (shouldResolveError) {
+          return of(error);
         }
+        return this.httpError.handleError(error);
+      }));
+  }
+
+  /**
+   * Construct a server request
+   *
+   * @params: syncMethod - the http method to call
+   * @params: item - item to use in request
+   * @params: [deletionId] - id to delete if item has already been deleted locally
+   *
+   * @return: observable of server request
+   */
+  getBackgroundRequest(
+    syncMethod: string,
+    item: InventoryItem,
+    deletionId?: string
+  ): Observable<InventoryItem> {
+    console.log('inv background req', syncMethod, item, deletionId);
+    let route: string = `${BASE_URL}/${API_VERSION}/inventory`;
+
+    if (syncMethod === 'delete') {
+      if (deletionId) {
+        route += `/${deletionId}`;
+      } else {
+        route += `/${item._id}`;
+      }
+      return this.http.delete<InventoryItem>(route);
+    }
+
+    const formData: FormData = new FormData();
+    formData.append('inventoryItem', JSON.stringify(item));
+
+    const imageRequests: ImageRequestFormData[] = this.composeImageUploadRequests(item);
+
+    return this.imageService.blobbifyImages(imageRequests)
+      .pipe(
+        mergeMap((imageData: ImageRequestMetadata[]): Observable<InventoryItem> => {
+          imageData.forEach((imageDatum: ImageRequestMetadata): void => {
+            formData.append(imageDatum.name, imageDatum.blob, imageDatum.filename);
+          });
+
+          if (syncMethod === 'post') {
+            return this.http.post<InventoryItem>(route, formData);
+          } else if (syncMethod === 'patch') {
+            route += `/${item._id}`;
+            return this.http.patch<InventoryItem>(route, formData);
+          } else {
+            return throwError('Invalid http method');
+          }
+        })
       );
   }
 
   /**
-   * Update in memory item with update from server
+   * Update in memory item with update response from server
    *
    * @params: itemResponse - server response with item
    *
    * @return: none
    */
-  handleBackgroundUpdateResponse(itemResponse: InventoryItem): Observable<never> {
-    console.log('got background response', itemResponse);
+  handleBackgroundUpdateResponse(itemResponse: InventoryItem, isDeletion: boolean): Observable<boolean> {
     const itemList$: BehaviorSubject<InventoryItem[]> = this.getInventoryList();
     const itemList: InventoryItem[] = itemList$.value;
     const updateIndex: number = itemList
@@ -534,103 +552,49 @@ export class InventoryService {
         return hasId(item, itemResponse.cid);
       });
 
-    if (updateIndex === -1) {
-      // TODO offer option to add instead
+    if (isDeletion && updateIndex === -1) {
+      return of(true);
+    } else if (updateIndex === -1) {
+      // TODO offer option to add instead?
       return throwError('Inventory item is missing and cannot be updated');
     } else {
       itemList[updateIndex] = itemResponse;
     }
 
     itemList$.next(itemList);
+    return of(true);
   }
 
   /**
-   * Update server on item update
+   * Send a server request in background
    *
-   * @params: updatedItem - updated item to apply to server doc
-   * @params: pendingImages - object containing image metadata for conversion,
-   * storage, and/or upload
-   *
-   * @return: none
-   */
-  patchInBackground(updatedItem: InventoryItem, pendingImages: PendingImageFlag[]): void {
-    console.log('patching in background');
-
-    const formData: FormData = new FormData();
-    formData.append('inventoryItem', JSON.stringify(updatedItem));
-
-    const imageRequests: ImageRequestFormData[]
-      = this.composeImageUploadRequests(updatedItem, pendingImages);
-
-    this.imageService.blobbifyImages(imageRequests)
-      .pipe(
-        mergeMap((imageData: ImageRequestMetadata[]): Observable<InventoryItem> => {
-          imageData.forEach((imageDatum: ImageRequestMetadata): void => {
-            formData.append(imageDatum.name, imageDatum.blob, imageDatum.filename);
-          });
-
-          return this.http.patch<InventoryItem>(
-            `${BASE_URL}/${API_VERSION}/inventory/${updatedItem._id}`,
-            formData
-          );
-        }),
-        map((itemResponse: InventoryItem) => {
-          return this.handleBackgroundUpdateResponse(itemResponse);
-        }),
-        catchError((error: HttpErrorResponse): Observable<never> => {
-          return this.processHttpError.handleError(error);
-        })
-      )
-      .subscribe(
-        (): void => console.log('Inventory: background patch request successful'),
-        (error: string): void => {
-          console.log('Inventory: background patch request error', error);
-          this.toastService.presentErrorToast('Inventory item failed to save to server');
-        }
-      );
-  }
-
-  /**
-   * Update server on new item
-   *
-   * @params: newItem - new item to add to server
-   * @params: pendingImages - object containing image metadata for conversion,
-   * storage, and/or upload
+   * @params: syncMethod - http request method
+   * @params: item - inventory item request body
    *
    * @return: none
    */
-  postInBackground(newItem: InventoryItem, pendingImages: PendingImageFlag[]): void {
-    console.log('posting in background');
+  requestInBackground(syncMethod: string, item: InventoryItem): void {
+    let syncRequest: Observable<InventoryItem>;
 
-    const formData: FormData = new FormData();
-    formData.append('inventoryItem', JSON.stringify(newItem));
+    if (syncMethod === 'post' || syncMethod === 'patch' || syncMethod === 'delete') {
+      syncRequest = this.getBackgroundRequest(syncMethod, item);
+    } else {
+      syncRequest = throwError('Unknown sync type');
+    }
 
-    const imageRequests: ImageRequestFormData[]
-      = this.composeImageUploadRequests(newItem, pendingImages);
-
-    this.imageService.blobbifyImages(imageRequests)
+    syncRequest
       .pipe(
-        mergeMap((imageData: ImageRequestMetadata[]): Observable<InventoryItem> => {
-          imageData.forEach((imageDatum: ImageRequestMetadata): void => {
-            formData.append(imageDatum.name, imageDatum.blob, imageDatum.filename);
-          });
-
-          return this.http.post<InventoryItem>(
-            `${BASE_URL}/${API_VERSION}/inventory`,
-            formData
-          );
-        }),
-        map((itemResponse: InventoryItem): Observable<never> => {
-          return this.handleBackgroundUpdateResponse(itemResponse);
+        mergeMap((itemResponse: InventoryItem): Observable<boolean> => {
+          return this.handleBackgroundUpdateResponse(itemResponse, syncMethod === 'delete');
         }),
         catchError((error: HttpErrorResponse): Observable<never> => {
-          return this.processHttpError.handleError(error);
+          return this.httpError.handleError(error);
         })
       )
       .subscribe(
-        (): void => console.log('Inventory: background post request successful'),
+        (): void => console.log(`Inventory: background ${syncMethod} request successful`),
         (error: string): void => {
-          console.log('Inventory: background post request error', error);
+          console.log(`Inventory: background ${syncMethod} request error`, error);
           this.toastService.presentErrorToast('Inventory item failed to save to server');
         }
       );
@@ -650,11 +614,13 @@ export class InventoryService {
    * @return: none
    */
   addSyncFlag(method: string, docId: string): void {
-    this.syncService.addSyncFlag({
+    const syncFlag: SyncMetadata = {
       method: method,
       docId: docId,
       docType: 'inventory'
-    });
+    };
+
+    this.syncService.addSyncFlag(syncFlag);
   }
 
   /**
@@ -663,7 +629,7 @@ export class InventoryService {
    * @params: none
    * @return: none
    */
-  dismissAllErrors(): void {
+  dismissAllSyncErrors(): void {
     this.syncErrors = [];
   }
 
@@ -674,7 +640,7 @@ export class InventoryService {
    *
    * @return: none
    */
-  dismissError(index: number): void {
+  dismissSyncError(index: number): void {
     if (index >= this.syncErrors.length || index < 0) {
       throw new Error('Invalid sync error index');
     }
@@ -685,9 +651,9 @@ export class InventoryService {
   /**
    * Generate a new sync request based on syncFlag and associated item
    *
-   * @params: syncFlag - sync metadata to derive the request from
+   * @params: none
    *
-   * @return: observable of inventory item, syncable data, or http error
+   * @return: observable of sync requests and any non-server errors
    */
   generateSyncRequests(): SyncRequests<InventoryItem> {
     const errors: SyncError[] = [];
@@ -696,25 +662,18 @@ export class InventoryService {
     this.syncService.getSyncFlagsByType('inventory')
       .forEach((syncFlag: SyncMetadata): void => {
         const item: InventoryItem = this.getItemById(syncFlag.docId);
-        console.log('inv sync flag', syncFlag, item);
+
         if (item === undefined && syncFlag.method !== 'delete') {
-          errors.push(
-            this.syncService.constructSyncError(
-              `Sync error: Item with id '${syncFlag.docId}' not found`
-            )
-          );
+          const errMsg: string = `Sync error: Item with id '${syncFlag.docId}' not found`;
+          errors.push(this.syncService.constructSyncError(errMsg));
           return;
         } else if (syncFlag.method === 'delete') {
-          requests.push(
-            this.syncService.deleteSync<InventoryItem>(`${this.syncBaseRoute}/${syncFlag.docId}`)
-          );
+          requests.push(this.configureBackgroundRequest('delete', true, null, syncFlag.docId));
           return;
         }
 
-        if (
-          item.optionalItemData.batchId !== undefined
-          && hasDefaultIdType(item.optionalItemData.batchId)
-        ) {
+        // TODO extract to its own method
+        if (item.optionalItemData.batchId !== undefined && hasDefaultIdType(item.optionalItemData.batchId)) {
           const batch$: BehaviorSubject<Batch> = this.processService
             .getBatchById(item.optionalItemData.batchId);
 
@@ -724,20 +683,16 @@ export class InventoryService {
         }
 
         if (syncFlag.method === 'update' && isMissingServerId(item._id)) {
-          errors.push(
-            this.syncService.constructSyncError(`Item with id: ${item.cid} is missing its server id`)
-          );
+          const errMsg: string = `Item with id: ${item.cid} is missing its server id`;
+          errors.push(this.syncService.constructSyncError(errMsg));
         } else if (syncFlag.method === 'create') {
           item['forSync'] = true;
-          requests.push(this.syncService.postSync<InventoryItem>(this.syncBaseRoute, item, 'inventoryItem'));
+          requests.push(this.configureBackgroundRequest('post', true, item));
         } else if (syncFlag.method === 'update' && !isMissingServerId(item._id)) {
-          requests.push(this.syncService.patchSync<InventoryItem>(`${this.syncBaseRoute}/${item._id}`, item, 'inventoryItem'));
+          requests.push(this.configureBackgroundRequest('patch', true, item));
         } else {
-          errors.push(
-            this.syncService.constructSyncError(
-              `Sync error: Unknown sync flag method '${syncFlag.method}'`
-            )
-          );
+          const errMsg: string = `Sync error: Unknown sync flag method '${syncFlag.method}'`;
+          errors.push(this.syncService.constructSyncError(errMsg));
         }
       });
 
@@ -747,7 +702,7 @@ export class InventoryService {
   }
 
   /**
-   * Process sync successes to update in memory docs
+   * Process sync successes to update in memory items
    *
    * @params: syncData - an array of successfully synced docs; deleted docs
    * will contain a special flag to avoid searching for a removed doc in memory
@@ -773,7 +728,6 @@ export class InventoryService {
         } else {
           list[itemIndex] = <InventoryItem>_syncData;
         }
-        // TODO handle image uploads on sync
       }
     });
 
@@ -783,8 +737,7 @@ export class InventoryService {
   /**
    * Process all sync flags on a login or reconnect event
    *
-   * @params: onLogin - true if calling sync at login,
-   * false for sync on reconnect
+   * @params: onLogin - true if calling sync at login, false for sync on reconnect
    *
    * @return: none
    */
@@ -816,8 +769,7 @@ export class InventoryService {
   }
 
   /**
-   * Network reconnect event handler
-   * Process sync flags on reconnect only if signed in
+   * Network reconnect event handler - process sync flags on reconnect only if signed in
    *
    * @params: none
    * @params: none
@@ -834,7 +786,7 @@ export class InventoryService {
   }
 
   /**
-   * Post all stored recipes to server
+   * Post all stored inventory items to server
    *
    * @params: none
    * @return: none
@@ -855,7 +807,8 @@ export class InventoryService {
         }
 
         payload['forSync'] = true;
-        return this.syncService.postSync<InventoryItem>(`${this.syncBaseRoute}`, payload, 'inventoryItem');
+
+        return this.configureBackgroundRequest('post', false, payload);
       });
 
     this.syncService.sync('inventory', requests)
@@ -872,11 +825,27 @@ export class InventoryService {
   /***** Other Operations *****/
 
   /**
+   * Check if able to send an http request
+   *
+   * @params: [ids] - optional array of ids to check
+   *
+   * @return: true if ids are valid, device is connected to network, and user logged in
+   */
+  canSendRequest(ids?: string[]): boolean {
+    let idsOk: boolean = !ids;
+    if (ids && ids.length) {
+      idsOk = ids.every((id: string): boolean => id && !hasDefaultIdType(id));
+    }
+
+    return this.connectionService.isConnected() && this.userService.isLoggedIn() && idsOk;
+  }
+
+  /**
    * Get the appropriate quantity color by item
    *
    * @params: item - item instance to get count from item quantity counts
    *
-   * @return: style color
+   * @return: style color hex
    */
   getRemainingColor(item: InventoryItem): string {
     const remaining: number = item.currentQuantity / item.initialQuantity;
@@ -888,6 +857,22 @@ export class InventoryService {
     } else {
       return '#fd4855';
     }
+  }
+
+  /**
+   * Get the replacement file path for a matching search name
+   *
+   * @params: searchName - the image type name to compare
+   * @params: overridePaths - array of replacment file paths
+   *
+   * @return: file path replacement or null if no matches are found
+   */
+  getReplacementPath(searchName: string, overridePaths: { name: string, path: string }[]): string {
+    const replacementPath: { name: string, path: string } = overridePaths
+      .find((override: { name: string, path: string }): boolean => {
+        return override.name === searchName;
+      });
+    return replacementPath ? replacementPath.path : null;
   }
 
   /**
@@ -912,23 +897,57 @@ export class InventoryService {
   }
 
   /**
-   * Register to necessary events
+   * Check if given key should be mapped to the optionalData object
    *
-   * @params: none
+   * @params: key - key to check
+   * @params: optionalData - object to check
+   *
+   * @return: true if key should be mapped to given object
+   */
+  hasMappableKey(key: string, optionalData: object): boolean {
+    return OPTIONAL_INVENTORY_DATA_KEYS.includes(key) && optionalData.hasOwnProperty(key);
+  }
+
+  /**
+   * Map any optional data to an item
+   *
+   * @params: item - the target item
+   * @params: optionalData - contains optional properties to copy
+   *
    * @return: none
    */
-  registerEvents(): void {
-    this.event.register('init-inventory')
-      .subscribe((): void => this.initializeInventory());
+  mapOptionalData(item: InventoryItem, optionalData: object): void {
+    for (const key in optionalData) {
+      if (this.hasMappableKey(key, optionalData)) {
+        if (
+          item.optionalItemData[key]
+          && optionalData[key]
+          && typeof optionalData[key] === 'object'
+        ) {
+          for (const innerKey in optionalData[key]) {
+            if (optionalData[key].hasOwnProperty(innerKey)) {
+              item.optionalItemData[key][innerKey] = optionalData[key][innerKey];
+            }
+          }
+        } else {
+          item.optionalItemData[key] = optionalData[key];
+        }
+      }
+    }
 
-    this.event.register('clear-data')
-      .subscribe((): void => this.clearInventory());
+    if (!item.optionalItemData.supplierLabelImage) {
+      item.optionalItemData.supplierLabelImage = defaultImage();
+    }
+    if (!item.optionalItemData.itemLabelImage) {
+      item.optionalItemData.itemLabelImage = defaultImage();
+    }
 
-    this.event.register('sync-inventory-on-signup')
-      .subscribe((): void => this.syncOnSignup());
-
-    this.event.register('connected')
-      .subscribe((): void => this.syncOnReconnect());
+    if (item.optionalItemData.itemSRM) {
+      item.optionalItemData.srmColor = this.getSRMColor(item);
+    }
+    if (item.initialQuantity && item.currentQuantity) {
+      item.optionalItemData.remainingColor = this.getRemainingColor(item);
+    }
   }
 
   /**
