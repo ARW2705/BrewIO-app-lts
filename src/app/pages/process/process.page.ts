@@ -304,7 +304,7 @@ export class ProcessPage implements OnInit, OnDestroy {
     this.selectedBatch.process.currentStep = nextIndex;
     this.viewStepIndex = nextIndex;
     this.updateViewData();
-    this.processService.patchBatch(this.selectedBatch)
+    this.processService.updateBatch(this.selectedBatch)
       .subscribe(
         (): void => console.log('batch increment step'),
         (error: string): void => {
@@ -540,7 +540,7 @@ export class ProcessPage implements OnInit, OnDestroy {
    */
   startCalendar(): void {
     const values: object = this.calendarRef.startCalendar();
-    this.processService.patchStepById(getId(this.selectedBatch), values)
+    this.processService.updateStepById(getId(this.selectedBatch), values)
       .subscribe((): void => console.log('Started calendar'));
   }
 
@@ -569,16 +569,14 @@ export class ProcessPage implements OnInit, OnDestroy {
     );
   }
 
-  onMeasurementFormModalDismiss(
-    onBatchComplete: boolean
-  ): (update: object) => Observable<Batch> {
+  onMeasurementFormModalDismiss(onBatchComplete: boolean): (update: object) => Observable<Batch> {
     return (update: object): Observable<Batch> => {
       const _update: PrimaryValues = <PrimaryValues>update['data'];
       if (_update) {
-        return this.processService.patchMeasuredValues(
-          !onBatchComplete,
-          getId(this.selectedBatch),
-          _update
+        return this.processService.updateMeasuredValues(
+          this.selectedBatch.cid,
+          _update,
+          !onBatchComplete
         );
       }
       return of(null);
