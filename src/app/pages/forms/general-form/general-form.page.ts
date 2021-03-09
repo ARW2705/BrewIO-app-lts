@@ -76,6 +76,7 @@ export class GeneralFormPage implements OnInit {
   /***** Lifecycle Hooks *****/
 
   ngOnInit() {
+    console.log(this.data);
     this.units = this.preferenceService.getSelectedUnits();
     this.initForm();
   }
@@ -119,8 +120,7 @@ export class GeneralFormPage implements OnInit {
           formValues[key] = this.generalForm.value[key];
         }
         if (this.requiresConversion(key)) {
-          formValues[key] = this.calculator
-            .convertVolume(formValues[key], true, true);
+          formValues[key] = this.calculator.convertVolume(formValues[key], true, true);
         }
       }
     }
@@ -146,12 +146,7 @@ export class GeneralFormPage implements OnInit {
    * @return: true if value should be mapped to form
    */
   hasMappableValue(valueName: string): boolean {
-    return (
-      this.docMethod !== 'create' || this.formType === 'variant'
-    )
-    && valueName !== 'labelImage'
-    && valueName !== 'isFavorite'
-    && valueName !== 'isMaster';
+    return valueName !== 'labelImage' && valueName !== 'isFavorite' && valueName !== 'isMaster';
   }
 
   /**
