@@ -46,17 +46,19 @@ export class StorageService {
       )
       .then((batches: string): Batch[] => {
         if (batches === null) {
-          throw new Error(
-            `${ isActive ? 'Active' : 'Archive' } batch data not found`
-          );
+          const error: Error = new Error();
+          error.name = 'NotFoundError';
+          error.message = `${ isActive ? 'Active' : 'Archive' } batch data not found`;
+          throw error;
         }
 
         const parsed: Batch[] = JSON.parse(batches);
 
         if (!parsed.length) {
-          throw new Error(
-            `No ${ isActive ? 'active' : 'archive' } batch data in storage`
-          );
+          const error: Error = new Error();
+          error.name = 'NotFoundError';
+          error.message = `No ${ isActive ? 'active' : 'archive' } batch data in storage`;
+          throw error;
         }
 
         return parsed;
@@ -75,9 +77,8 @@ export class StorageService {
     this.storage.remove(
       isActive ? this.activeBatchStorageKey : this.archiveBatchStorageKey
     )
-    .then((): void => {
-      console.log(`${ isActive ? 'Active' : 'Archive' } batch data cleared`);
-    });
+    .then((): void => console.log(`${ isActive ? 'Active' : 'Archive' } batch data cleared`))
+    .catch((error: any): void => console.log('Batch storage removal error', error));
   }
 
   /**
@@ -109,13 +110,19 @@ export class StorageService {
       this.storage.get(this.imageStorageKey)
         .then((images: string): Image[] => {
           if (images === null) {
-            throw new Error('Images not found');
+            const error: Error = new Error();
+            error.name = 'NotFoundError';
+            error.message = 'Images not found';
+            throw error;
           }
 
           const parsed: Image[] = JSON.parse(images);
 
           if (!parsed.length) {
-            throw new Error('No images in storage');
+            const error: Error = new Error();
+            error.name = 'NotFoundError';
+            error.message = 'No images in storage';
+            throw error;
           }
 
           return parsed;
@@ -132,7 +139,8 @@ export class StorageService {
   removeImages(): void {
     this.storage
       .remove(this.imageStorageKey)
-      .then((): void => console.log('Images cleared'));
+      .then((): void => console.log('Images cleared'))
+      .catch((error: any): void => console.log('Image storage removal error', error));
   }
 
   /**
@@ -143,12 +151,7 @@ export class StorageService {
    * @return: Observable of storage set response
    */
   setImages(images: Image[]): Observable<any> {
-    return from(
-      this.storage.set(
-        this.imageStorageKey,
-        JSON.stringify(images)
-      )
-    );
+    return from(this.storage.set(this.imageStorageKey, JSON.stringify(images)));
   }
 
   /**
@@ -163,13 +166,19 @@ export class StorageService {
       this.storage.get(this.inventoryStorageKey)
         .then((inventory: string): InventoryItem[] => {
           if (inventory === null) {
-            throw new Error('Inventory data not found');
+            const error: Error = new Error();
+            error.name = 'NotFoundError';
+            error.message = 'Inventory data not found';
+            throw error;
           }
 
           const parsed: InventoryItem[] = JSON.parse(inventory);
 
           if (!parsed.length) {
-            throw new Error('No inventory data in storage');
+            const error: Error = new Error();
+            error.name = 'NotFoundError';
+            error.message = 'No inventory data in storage';
+            throw error;
           }
 
           return parsed;
@@ -186,7 +195,8 @@ export class StorageService {
   removeInventory(): void {
     this.storage
       .remove(this.inventoryStorageKey)
-      .then((): void => console.log('Inventory data cleared'));
+      .then((): void => console.log('Inventory data cleared'))
+      .catch((error: any): void => console.log('Inventory storage removal error', error));
   }
 
   /**
@@ -197,12 +207,7 @@ export class StorageService {
    * @return: Observable of storage set response
    */
   setInventory(inventory: InventoryItem[]): Observable<any> {
-    return from(
-      this.storage.set(
-        this.inventoryStorageKey,
-        JSON.stringify(inventory)
-      )
-    );
+    return from(this.storage.set(this.inventoryStorageKey, JSON.stringify(inventory)));
   }
 
   /**
@@ -217,13 +222,19 @@ export class StorageService {
       this.storage.get(this.libraryStorageKey)
         .then((libraries: string): LibraryStorage => {
           if (libraries === null) {
-            throw new Error('Library data not found');
+            const error: Error = new Error();
+            error.name = 'NotFoundError';
+            error.message = 'Library data not found';
+            throw error;
           }
 
           const parsed: LibraryStorage = JSON.parse(libraries);
 
           if (!Object.keys(parsed).length) {
-            throw new Error('No library data in storage');
+            const error: Error = new Error();
+            error.name = 'NotFoundError';
+            error.message = 'No library data in storage';
+            throw error;
           }
 
           return parsed;
@@ -239,12 +250,7 @@ export class StorageService {
    * @return: Observable of storage set response
    */
   setLibrary(library: LibraryStorage): Observable<any> {
-    return from(
-      this.storage.set(
-        this.libraryStorageKey,
-        JSON.stringify(library)
-      )
-    );
+    return from(this.storage.set(this.libraryStorageKey, JSON.stringify(library)));
   }
 
   /**
@@ -259,13 +265,19 @@ export class StorageService {
       this.storage.get(this.recipeStorageKey)
         .then((recipes: string): RecipeMaster[] => {
           if (recipes === null) {
-            throw new Error('Recipe data not found');
+            const error: Error = new Error();
+            error.name = 'NotFoundError';
+            error.message = 'Recipe data not found';
+            throw error;
           }
 
           const parsed: RecipeMaster[] = JSON.parse(recipes);
 
           if (parsed.length === 0) {
-            throw new Error('No recipe data in storage');
+            const error: Error = new Error();
+            error.name = 'NotFoundError';
+            error.message = 'No recipe data in storage';
+            throw error;
           }
 
           return parsed;
@@ -282,7 +294,8 @@ export class StorageService {
   removeRecipes(): void {
     this.storage
       .remove(this.recipeStorageKey)
-      .then((): void => console.log('Recipe data cleared'));
+      .then((): void => console.log('Recipe data cleared'))
+      .catch((error: any): void => console.log('Recipe storage removal error', error));
   }
 
   /**
@@ -293,12 +306,7 @@ export class StorageService {
    * @return: Observable of storage set response
    */
   setRecipes(recipeMasterList: RecipeMaster[]): Observable<any> {
-    return from(
-      this.storage.set(
-        this.recipeStorageKey,
-        JSON.stringify(recipeMasterList)
-      )
-    );
+    return from(this.storage.set(this.recipeStorageKey, JSON.stringify(recipeMasterList)));
   }
 
   /**
@@ -313,13 +321,19 @@ export class StorageService {
       this.storage.get(this.syncStorageKey)
         .then((flags: string): SyncMetadata[] => {
           if (flags === null) {
-            throw new Error('Sync flags not found');
+            const error: Error = new Error();
+            error.name = 'NotFoundError';
+            error.message = 'Sync flags not found';
+            throw error;
           }
 
           const parsed: SyncMetadata[] = JSON.parse(flags);
 
           if (parsed.length === 0) {
-            throw new Error('No sync flags in storage');
+            const error: Error = new Error();
+            error.name = 'NotFoundError';
+            error.message = 'No sync flags in storage';
+            throw error;
           }
 
           return parsed;
@@ -336,7 +350,8 @@ export class StorageService {
   removeSyncFlags(): void {
     this.storage
       .remove(this.syncStorageKey)
-      .then((): void => console.log('Sync flags cleared'));
+      .then((): void => console.log('Sync flags cleared'))
+      .catch((error: any): void => console.log('Sync storage removal error', error));
   }
 
   /**
@@ -347,12 +362,7 @@ export class StorageService {
    * @return: Observable of storage response
    */
   setSyncFlags(flags: SyncMetadata[]): Observable<any> {
-    return from(
-      this.storage.set(
-        this.syncStorageKey,
-        JSON.stringify(flags)
-      )
-    );
+    return from(this.storage.set(this.syncStorageKey, JSON.stringify(flags)));
   }
 
   /**
@@ -367,7 +377,10 @@ export class StorageService {
       this.storage.get(this.userStorageKey)
         .then((user: string): User => {
           if (user === null) {
-            throw new Error('No user data');
+            const error: Error = new Error();
+            error.name = 'NotFoundError';
+            error.message = 'No user data';
+            throw error;
           }
 
           return JSON.parse(user);
@@ -394,7 +407,8 @@ export class StorageService {
   removeUser(): void {
     this.storage
       .remove(this.userStorageKey)
-      .then((): void => console.log('User data cleared'));
+      .then((): void => console.log('User data cleared'))
+      .catch((error: any): void => console.log('User storage removal error', error));
   }
 
   /**
@@ -405,12 +419,7 @@ export class StorageService {
    * @return: Observable of storage set response
    */
   setUser(user: User): Observable<any> {
-    return from(
-      this.storage.set(
-        this.userStorageKey,
-        JSON.stringify(user)
-      )
-    );
+    return from(this.storage.set(this.userStorageKey, JSON.stringify(user)));
   }
 
 }
