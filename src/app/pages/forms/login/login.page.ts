@@ -1,7 +1,8 @@
 /* Module imports */
 import { Component, OnInit, Input } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { LoadingController, ModalController } from '@ionic/angular';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { finalize } from 'rxjs/operators';
 
 /* Interface imports */
 import { User } from '../../../shared/interfaces/user';
@@ -18,11 +19,13 @@ import { UserService } from '../../../services/user/user.service';
 })
 export class LoginPage implements OnInit {
   @Input() rootURL: string = '';
+  awaitingResponse: boolean = false;
   loginForm: FormGroup = null;
   showPassword: boolean = false;
 
   constructor(
     public formBuilder: FormBuilder,
+    public loadingCtrl: LoadingController,
     public modalCtrl: ModalController,
     public toastService: ToastService,
     public userService: UserService
@@ -69,8 +72,21 @@ export class LoginPage implements OnInit {
    * @params: none
    * @return: none
    */
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
+    this.awaitingResponse = true;
+
+    const loading: HTMLIonLoadingElement = await this.loadingCtrl.create({
+      cssClass: 'loading-custom',
+      spinner: 'lines'
+    });
+
+    await loading.present();
+
     this.userService.logIn(this.loginForm.value, false)
+      .pipe(finalize(() => {
+        loading.dismiss();
+        this.awaitingResponse = false;
+      }))
       .subscribe(
         (user: User): void => {
           this.toastService.presentToast(

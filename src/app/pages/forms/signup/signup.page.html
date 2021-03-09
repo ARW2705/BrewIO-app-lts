@@ -232,7 +232,8 @@
 
           <ion-button color="primary"
                       class="form-button"
-                      (click)="dismiss()">
+                      (click)="dismiss()"
+                      [disabled]="awaitingResponse">
             Cancel
           </ion-button>
 
@@ -244,7 +245,7 @@
           <ion-button color="primary"
                       class="form-button"
                       (click)="onSubmit()"
-                      [disabled]="!signupForm.valid">
+                      [disabled]="!signupForm.valid || awaitingResponse">
             Sign Up
           </ion-button>
 

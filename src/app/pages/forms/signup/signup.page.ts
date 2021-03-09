@@ -1,7 +1,8 @@
 /* Module imports */
 import { Component, OnInit, OnDestroy, Input } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { LoadingController, ModalController } from '@ionic/angular';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { finalize } from 'rxjs/operators';
 
 /* Service imports */
 import { FormValidationService } from '../../../services/form-validation/form-validation.service';
@@ -16,12 +17,14 @@ import { UserService } from '../../../services/user/user.service';
 })
 export class SignupPage implements OnInit, OnDestroy {
   @Input() rootURL: string;
+  awaitingResponse: boolean = false;
   showPassword: boolean = false;
   signupForm: FormGroup = null;
 
   constructor(
     public formBuilder: FormBuilder,
     public formValidator: FormValidationService,
+    public loadingCtrl: LoadingController,
     public modalCtrl: ModalController,
     public toastService: ToastService,
     public userService: UserService
@@ -93,8 +96,21 @@ export class SignupPage implements OnInit, OnDestroy {
    * @params: none
    * @return: none
    */
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
+    this.awaitingResponse = true;
+
+    const loading: HTMLIonLoadingElement = await this.loadingCtrl.create({
+      cssClass: 'loading-custom',
+      spinner: 'lines'
+    });
+
+    await loading.present();
+
     this.userService.signUp(this.signupForm.value)
+      .pipe(finalize(() => {
+        loading.dismiss();
+        this.awaitingResponse = false;
+      }))
       .subscribe(
         (): void => {
           this.toastService.presentToast(
@@ -105,12 +121,7 @@ export class SignupPage implements OnInit, OnDestroy {
           );
           this.dismiss();
         },
-        (error: string): void => {
-          this.toastService.presentErrorToast(
-            error,
-            this.dismiss.bind(this)
-          );
-        }
+        (error: string): void => this.toastService.presentErrorToast(error, this.dismiss.bind(this))
       );
   }
 
