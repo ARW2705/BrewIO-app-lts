@@ -6,19 +6,13 @@
 
     <ion-col size="12">
 
-      <!-- <h2>
-        {{ timer.timer.name }}<span *ngIf="timer.timeRemaining < 1">: Finished</span>
-      </h2> -->
-
-      <!-- <h2 *ngIf="timer.timeRemaining > 0">{{ timer.timer.name }}</h2> -->
-
       <h2 [ngClass]="{ 'timer-expired': timer.timeRemaining < 1 }">
 
-        <span *ngIf="timer.timeRemaining < 1">Finished: </span>
+        <ion-icon *ngIf="timer.timeRemaining < 1"
+                  name="checkmark-circle-outline">
+        </ion-icon>
 
         <span>{{ timer.timer.name }}</span>
-
-        <!-- <span *ngIf="timer.timeRemaining < 1">: Finished</span> -->
 
       </h2>
 

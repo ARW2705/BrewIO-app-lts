@@ -35,12 +35,21 @@
   margin: 10px 0;
 
   /* Children */
-  span:first-child {
+  ion-icon {
+    /* Display */
+    margin-right: 1%;
+
+    /* Color */
+    color: var(--ion-color-accent);
+
     /* Text */
-    white-space: pre;
+    font-size: 2.5rem;
   }
 
-  span:nth-child(2) {
+  span {
+    /* Display */
+    align-self: center;
+
     /* Text */
     white-space: nowrap;
     overflow: hidden;
@@ -79,7 +88,7 @@
       justify-content: center;
 
       /* Text */
-      font-size: 2em;
+      font-size: 2rem;
       text-align: center;
     }
   }
