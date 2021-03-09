@@ -245,7 +245,7 @@ export class RecipePage implements OnInit, OnDestroy {
    * @return: none
    */
   deleteMaster(index: number): void {
-    this.recipeService.deleteRecipeMasterById(getId(this.masterList[index]))
+    this.recipeService.removeRecipeMasterById(getId(this.masterList[index]))
       .subscribe(
         (): void => {
           this.toastService.presentToast(

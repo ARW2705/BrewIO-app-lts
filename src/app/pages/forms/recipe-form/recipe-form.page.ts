@@ -908,7 +908,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
    * @return: observable of updated recipe master
    */
   submitRecipeMasterPatch(): Observable<RecipeMaster> {
-    return this.recipeService.patchRecipeMasterById(getId(this.master), this.constructPayload());
+    return this.recipeService.updateRecipeMasterById(getId(this.master), this.constructPayload());
   }
 
   /**
@@ -919,7 +919,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
    * @return: observable of updated recipe variant
    */
   submitRecipeVariantPatch(): Observable<RecipeVariant> {
-    return this.recipeService.patchRecipeVariantById(
+    return this.recipeService.updateRecipeVariantById(
       getId(this.master),
       getId(this.variant),
       this.constructPayload()
@@ -934,7 +934,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
    * @return: observable of new recipe master
    */
   submitRecipeMasterPost(): Observable<RecipeMaster> {
-    return this.recipeService.postRecipeMaster(this.constructPayload());
+    return this.recipeService.createRecipeMaster(this.constructPayload());
   }
 
   /**
@@ -945,7 +945,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
    * @return: observable of new recipe variant
    */
   submitRecipeVariantPost(): Observable<RecipeVariant> {
-    return this.recipeService.postRecipeToMasterById(
+    return this.recipeService.createRecipeVariant(
       getId(this.master),
       <RecipeVariant>this.constructPayload()
     );

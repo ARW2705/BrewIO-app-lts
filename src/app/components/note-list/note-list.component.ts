@@ -108,13 +108,13 @@ export class NoteListComponent implements OnInit, OnDestroy {
    */
   patchRecipeNotes(): Observable<RecipeMaster | RecipeVariant> {
     if (this.recipeVariantId) {
-      return this.recipeService.patchRecipeVariantById(
+      return this.recipeService.updateRecipeVariantById(
         this.recipeMasterId,
         this.recipeVariantId,
         { notes: this.notes }
       );
     } else {
-      return this.recipeService.patchRecipeMasterById(
+      return this.recipeService.updateRecipeMasterById(
         this.recipeMasterId,
         { notes: this.notes }
       );

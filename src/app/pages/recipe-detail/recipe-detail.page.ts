@@ -207,7 +207,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
       const confirmed: boolean = confirmation['data'];
 
       if (confirmed) {
-        this.recipeService.deleteRecipeVariantById(
+        this.recipeService.removeRecipeVariantById(
           getId(this.recipeMaster),
           getId(this.displayVariantList[index])
         )
@@ -329,7 +329,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
    * @return: none
    */
   toggleFavorite(variant: RecipeVariant): void {
-    this.recipeService.patchRecipeVariantById(
+    this.recipeService.updateRecipeVariantById(
       getId(this.recipeMaster),
       getId(variant),
       { isFavorite: !variant.isFavorite }
