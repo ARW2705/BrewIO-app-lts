@@ -36,7 +36,13 @@ export class SyncService {
           console.log('sync flags', flags);
           this.syncFlags = flags;
         },
-        (error: object): void => console.log(error)
+        (error: object): void => {
+          if (error['name'] === 'NotFoundError') {
+            console.log(error['message']);
+          } else {
+            console.log('Sync error', error);
+          }
+        }
       );
   }
 
@@ -160,88 +166,6 @@ export class SyncService {
       throw new Error(`Unknown sync flag method: ${metadata.method}`);
     }
     this.updateStorage();
-  }
-
-  /**
-   * Peform a delete operation, process error as new observable to use in forkJoins
-   *
-   * @params: route - server route to request a deletion
-   *
-   * @return: Observable of deletion flag on success or http error
-   */
-  deleteSync<T>(route: string): Observable<SyncData<T> | HttpErrorResponse> {
-    return this.http.delete(`${BASE_URL}/${API_VERSION}/${route}`)
-      .pipe(
-        map((response: T): SyncData<T> => {
-          return {
-            isDeleted: true,
-            data: response
-          };
-        }),
-        catchError((error: HttpErrorResponse): Observable<HttpErrorResponse> => {
-          return of(error);
-        })
-      );
-  }
-
-  /**
-   * Peform a patch operation, process error as new observable to use in forkJoins
-   *
-   * @params: route - server route to request a patch
-   * @params: data - current document flagged for an update
-   *
-   * @return: Observable of server response
-   */
-  patchSync<T>(
-    route: string,
-    data: T,
-    docType: string
-  ): Observable<T | HttpErrorResponse> {
-    let patchRequest: Observable<T>;
-
-    if (this.docsRequiringFormData.some((required: string): boolean => required === docType)) {
-      const formData: FormData = new FormData();
-      formData.append(docType, JSON.stringify(data));
-
-      patchRequest = this.http.patch<T>(`${BASE_URL}/${API_VERSION}/${route}`, formData);
-    } else {
-      patchRequest = this.http.patch<T>(`${BASE_URL}/${API_VERSION}/${route}`, data);
-    }
-
-    return patchRequest
-      .pipe(
-        catchError((error: HttpErrorResponse): Observable<HttpErrorResponse> => {
-          return of(error);
-        })
-      );
-  }
-
-  /**
-   * Peform a post operation, process error as new observable to use in forkJoins
-   *
-   * @params: route - server route to request a post
-   * @params: data - current document flagged for server post
-   *
-   * @return: Observable of server response
-   */
-  postSync<T>(route: string, data: T, docType: string): Observable<T | HttpErrorResponse> {
-    let postRequest: Observable<T>;
-
-    if (this.docsRequiringFormData.some((required: string): boolean => required === docType)) {
-      const formData: FormData = new FormData();
-      formData.append(docType, JSON.stringify(data));
-
-      postRequest = this.http.post<T>(`${BASE_URL}/${API_VERSION}/${route}`, formData);
-    } else {
-      postRequest = this.http.post<T>(`${BASE_URL}/${API_VERSION}/${route}`, data);
-    }
-
-    return postRequest
-      .pipe(
-        catchError((error: HttpErrorResponse): Observable<HttpErrorResponse> => {
-          return of(error);
-        })
-      );
   }
 
   /**
