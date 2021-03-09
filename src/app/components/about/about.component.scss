@@ -6,7 +6,8 @@
   color: var(--ion-color-light);
 
   /* Text*/
-  text-align: left;
+  font-size: 1.35rem;
+  text-align: center;
 }
 
 a {
@@ -21,39 +22,36 @@ ion-card {
 
 ion-card-content {
   /* Text */
-  font-size: 1.3em;
+  font-size: 2rem;
 }
 
 ion-card-header {
   /* Display */
   display: flex;
   justify-content: center;
+  align-items: center;
+
+  /* Color */
+  color: var(--ion-color-light);
 
   /* Children */
   ion-icon {
     /* Display */
     padding-right: 5%;
-    align-self: center;
 
     /* Text */
-    font-size: 1.8em;
+    font-size: 3rem;
   }
 
   h2 {
-    /* Display */
-    align-self: center;
-
-    /* Color */
-    color: var(--ion-color-primary);
-
-    /* Text*/
-    font-size: 1.8em;
+    /* Text */
+    font-size: 3rem;
   }
 }
 
 ion-col {
   /* Color */
-  color: var(--ion-color-light);
+  color: var(--ion-color-secondary-tint);
 
   /* Text */
   text-align: center;
