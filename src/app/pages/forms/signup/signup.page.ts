@@ -1,11 +1,23 @@
 /* Module imports */
-import { Component, OnInit, OnDestroy, Input } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { LoadingController, ModalController } from '@ionic/angular';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { from } from 'rxjs';
 import { finalize } from 'rxjs/operators';
+
+/* Default imports */
+import { defaultImage } from '../../../shared/defaults/default-image';
+
+/* Interface imports */
+import { Image } from '../../../shared/interfaces/image';
+import { User } from '../../../shared/interfaces/user';
+
+/* Page */
+import { ImageFormPage } from '../image-form/image-form.page';
 
 /* Service imports */
 import { FormValidationService } from '../../../services/form-validation/form-validation.service';
+import { ImageService } from '../../../services/image/image.service';
 import { ToastService } from '../../../services/toast/toast.service';
 import { UserService } from '../../../services/user/user.service';
 
@@ -15,15 +27,19 @@ import { UserService } from '../../../services/user/user.service';
   templateUrl: './signup.page.html',
   styleUrls: ['./signup.page.scss']
 })
-export class SignupPage implements OnInit, OnDestroy {
+export class SignupPage implements OnInit {
   @Input() rootURL: string;
   awaitingResponse: boolean = false;
+  defaultImage: Image = defaultImage();
+  breweryLabelImage: Image = this.defaultImage;
+  userImage: Image = this.defaultImage;
   showPassword: boolean = false;
   signupForm: FormGroup = null;
 
   constructor(
     public formBuilder: FormBuilder,
     public formValidator: FormValidationService,
+    public imageService: ImageService,
     public loadingCtrl: LoadingController,
     public modalCtrl: ModalController,
     public toastService: ToastService,
@@ -35,10 +51,6 @@ export class SignupPage implements OnInit, OnDestroy {
   ngOnInit() {
     console.log('signup page init');
     this.initForm();
-  }
-
-  ngOnDestroy() {
-    console.log('signup page destroy');
   }
 
   /***** End Lifecycle Hooks *****/
@@ -91,6 +103,45 @@ export class SignupPage implements OnInit, OnDestroy {
   }
 
   /**
+   * Open image selection modal
+   *
+   * @params: imageType - identifies image as either userImage or breweryLabelImage
+   *
+   * @return: none
+   */
+  async openImageModal(imageType: string): Promise<void> {
+    let options: { image: Image } = null;
+    if (imageType === 'user' && !this.imageService.hasDefaultImage(this.userImage)) {
+      options = { image: this.userImage };
+    } else if (imageType === 'brewery' && !this.imageService.hasDefaultImage(this.breweryLabelImage)) {
+      options = { image: this.breweryLabelImage };
+    }
+
+    const modal: HTMLIonModalElement = await this.modalCtrl.create({
+      component: ImageFormPage,
+      componentProps: options
+    });
+
+    from(modal.onDidDismiss())
+      .subscribe(
+        (data: object): void => {
+          const _data: Image = data['data'];
+          if (imageType === 'user' && _data) {
+            this.userImage = _data;
+          } else if (imageType === 'brewery' && _data) {
+            this.breweryLabelImage = _data;
+          }
+        },
+        (error: string): void => {
+          console.log('modal dismiss error', error);
+          this.toastService.presentErrorToast('Error selecting image');
+        }
+      );
+
+    await modal.present();
+  }
+
+  /**
    * Submit user signup form to user service, provide feedback on response
    *
    * @params: none
@@ -106,7 +157,11 @@ export class SignupPage implements OnInit, OnDestroy {
 
     await loading.present();
 
-    this.userService.signUp(this.signupForm.value)
+    const newUser: object = this.signupForm.value;
+    newUser['userImage'] = this.userImage;
+    newUser['breweryLabelImage'] = this.breweryLabelImage;
+
+    this.userService.signUp(<User>newUser)
       .pipe(finalize(() => {
         loading.dismiss();
         this.awaitingResponse = false;
