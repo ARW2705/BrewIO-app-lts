@@ -8,7 +8,7 @@ import { WebView } from '@ionic-native/ionic-webview/ngx';
 import { Crop } from '@ionic-native/crop/ngx';
 import { ImageResizer, ImageResizerOptions } from '@ionic-native/image-resizer/ngx';
 import { Observable, Observer, forkJoin, from, of, throwError } from 'rxjs';
-import { defaultIfEmpty, map, mergeMap } from 'rxjs/operators';
+import { catchError, defaultIfEmpty, map, mergeMap, tap } from 'rxjs/operators';
 
 /* Constant imports */
 import { BASE_URL } from '../../shared/constants/base-url';
@@ -130,12 +130,16 @@ export class ImageService {
                 observer.complete();
               },
               (error: FileError): void => {
-                console.log('file deletion error', error);
+                console.log('file deletion error', error, filePath);
                 observer.next(error.message);
                 observer.complete();
               }
             );
           });
+        }),
+        catchError((error: any): Observable<string> => {
+          console.log('file read error', error);
+          return of(null);
         })
       );
   }
@@ -213,17 +217,15 @@ export class ImageService {
       return of(image);
     }
 
-    console.log('storing image...');
     return this.resizeImage(image)
       .pipe(
-        map((resizedImagePath: string): void => {
+        tap((resizedImagePath: string): void => {
           image.filePath = resizedImagePath;
           image.localURL = this.webview.convertFileSrc(resizedImagePath);
           image.url = image.localURL;
-          console.log('resizing', resizedImagePath, image.localURL);
         }),
         mergeMap((): Observable<string> => {
-          const tempPath: string = `${this.file.cacheDirectory}/${image.cid}${IMAGE_FILE_EXTENSION}`;
+          const tempPath: string = `${this.file.cacheDirectory}${image.cid}${IMAGE_FILE_EXTENSION}`;
           console.log('moving to persistent from', tempPath);
           return this.deleteLocalImage(tempPath);
         }),
@@ -356,41 +358,6 @@ export class ImageService {
       );
   }
 
-  /**
-   * Compose image storage request if given image should be stored
-   *
-   * @params: image - the image data on which to base request
-   * @params: pendingImages - array of image upload flags
-   * @params: [overridePaths] - array of image file paths that will be overwritten
-   *
-   * @return: observable of stored images
-   */
-  // composeImageStoreRequest(
-  //   image: Image,
-  //   pendingImages: PendingImageFlag[],
-  //   overridePaths: { name: string, path: string }[] = []
-  // ): Observable<Image>[] {
-  //   const storeImages: Observable<Image>[] = [];
-  //
-  //   pendingImages.forEach((pending: PendingImageFlag): void => {
-  //     if (pending.hasTemp) {
-  //       const overridePath: { name: string, path: string } = overridePaths
-  //         .find((pathData: { name: string, path: string }): boolean => {
-  //           return pathData.name === pending.name;
-  //         });
-  //       const replacedPath: string = overridePath ? overridePath.path : null;
-  //       storeImages.push(
-  //         this.storeFileToLocalDir(
-  //           image[pending.name],
-  //           replacedPath
-  //         )
-  //       );
-  //     }
-  //   });
-  //
-  //   return storeImages;
-  // }
-
   /***** End Server Upload Methods *** */
 
 
@@ -424,6 +391,17 @@ export class ImageService {
   }
 
   /**
+   * Check if an image is the default image
+   *
+   * @params: image - image to check
+   *
+   * @return: true if image has the same id as the default image
+   */
+  hasDefaultImage(image: Image): boolean {
+    return image.cid === this._defaultImage.cid;
+  }
+
+  /**
    * Check if image has a filepath to the temporary directory
    *
    * @params: image - image with metadata to check
@@ -447,12 +425,8 @@ export class ImageService {
   loadImagesFromStorage(): void {
     this.storage.getImages()
       .subscribe(
-        (images: Image[]): void => {
-          this.images = images;
-        },
-        (error: string): void => {
-          console.log(`${error}: awaiting data from server`);
-        }
+        (images: Image[]): void => { this.images = images; },
+        (error: string): void => console.log(`${error}: awaiting data from server`)
       );
   }
 
@@ -477,30 +451,5 @@ export class ImageService {
   }
 
   /***** End Other Methods *****/
-
-  hasDefaultImage(image: Image): boolean {
-    return image.cid === this._defaultImage.cid;
-  }
-
-  /**
-   * Check if new image should be uploaded to server
-   * Images should be uploaded if they do not match the default image and if
-   * image is a new compared to current image
-   *
-   * @params: currentData - the current doc that is pending addition or update
-   * @params: newData - object containing new doc optional data
-   * @params: imageKey - the particular image name to check
-   *
-   * @return: true if image should be uploaded to server
-   */
-  hasPendingImage(currentData: object, newData: object, imageKey: string): boolean {
-    const hasNonDefaultImage: boolean = newData[imageKey] && newData[imageKey]['cid'] !== this._defaultImage['cid'];
-    const hasDifferentNewImage: boolean = !!currentData[imageKey] && currentData[imageKey]['cid'] !== newData[imageKey]['cid'];
-
-    return (
-      (!currentData[imageKey] && hasNonDefaultImage)
-      || (currentData[imageKey] && hasNonDefaultImage && hasDifferentNewImage)
-    );
-  }
 
 }
