@@ -373,10 +373,10 @@ export class InventoryService {
 
     const storeImages: Observable<Image>[] = this.composeImageStoreRequests(
       toUpdate,
-      [
-        { name: 'itemLabelImage', path: previousItemImagePath },
-        { name: 'suppilerLabelImage', path: previousSupplierImagePath }
-      ]
+      {
+        itemLabelImage: previousItemImagePath,
+        supplierLabelImage: previousSupplierImagePath
+      }
     );
 
     return forkJoin(storeImages)
@@ -411,8 +411,8 @@ export class InventoryService {
   composeImageUploadRequests(item: InventoryItem): ImageRequestFormData[] {
     const imageRequests: ImageRequestFormData[] = [];
 
-    let imageName = 'itemLabelImage';
-    let image = item.optionalItemData[imageName];
+    let imageName: string = 'itemLabelImage';
+    let image: Image = item.optionalItemData[imageName];
 
     if (image && image.hasPending) {
       imageRequests.push({ image: item.optionalItemData[imageName], name: imageName });
@@ -433,30 +433,25 @@ export class InventoryService {
    * If an existing persistent image is to be overridden, provide new path
    *
    * @params: item - item that contains the image(s)
-   * @params: overridePaths - new file path for overriding persistent image
+   * @params: replacementPaths - object with original paths for overriding persistent image
    *
    * @return: array of persistent image observables
    */
-  composeImageStoreRequests(
-    item: InventoryItem,
-    overridePaths: { name: string, path: string }[] = []
-  ): Observable<Image>[] {
+  composeImageStoreRequests(item: InventoryItem, replacementPaths: object = {}): Observable<Image>[] {
     const storeImages: Observable<Image>[] = [];
 
     let imageName: string = 'itemLabelImage';
     let image: Image = item.optionalItemData[imageName];
 
     if (image && image.hasPending) {
-      const replacementPath: string = this.getReplacementPath(imageName, overridePaths);
-      storeImages.push(this.imageService.storeFileToLocalDir(image, replacementPath));
+      storeImages.push(this.imageService.storeFileToLocalDir(image, replacementPaths[imageName]));
     }
 
     imageName = 'supplierLabelImage';
     image = item.optionalItemData[imageName];
 
     if (image && image.hasPending) {
-      const replacementPath: string = this.getReplacementPath(imageName, overridePaths);
-      storeImages.push(this.imageService.storeFileToLocalDir(image, replacementPath));
+      storeImages.push(this.imageService.storeFileToLocalDir(image, replacementPaths[imageName]));
     }
 
     return storeImages;
@@ -857,22 +852,6 @@ export class InventoryService {
     } else {
       return '#fd4855';
     }
-  }
-
-  /**
-   * Get the replacement file path for a matching search name
-   *
-   * @params: searchName - the image type name to compare
-   * @params: overridePaths - array of replacment file paths
-   *
-   * @return: file path replacement or null if no matches are found
-   */
-  getReplacementPath(searchName: string, overridePaths: { name: string, path: string }[]): string {
-    const replacementPath: { name: string, path: string } = overridePaths
-      .find((override: { name: string, path: string }): boolean => {
-        return override.name === searchName;
-      });
-    return replacementPath ? replacementPath.path : null;
   }
 
   /**
