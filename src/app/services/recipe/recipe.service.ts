@@ -398,7 +398,6 @@ export class RecipeService {
 
     const previousImagePath: string = master.labelImage.filePath;
     const isTemp: boolean = this.imageService.isTempImage(master.labelImage);
-    const hasPending = this.imageService.hasPendingImage(master, update, 'labelImage');
 
     for (const key in update) {
       if (master.hasOwnProperty(key) && key !== 'variants') {
@@ -407,9 +406,10 @@ export class RecipeService {
     }
 
     let storeImage: Observable<Image>;
-    if (hasPending) {
+    const labelImage: Image = update['labelImage'] ;
+    if (labelImage && labelImage.hasPending) {
       storeImage = this.imageService.storeFileToLocalDir(
-        update['labelImage'],
+        labelImage,
         isTemp ? null : previousImagePath
       );
     } else {
