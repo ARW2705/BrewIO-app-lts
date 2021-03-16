@@ -32,11 +32,20 @@
   justify-content: center;
 }
 
+.item {
+  /* Display */
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
 ion-item {
   /* Display */
-  --padding-start: 0;
-  --padding-end: 0;
   --inner-padding-start: 0;
-  --inner-padding-end: 0;
-  border-bottom: 1px solid var(--ion-color-light);
+  --padding-start: 0;
+
+  /* Color */
+  --highlight-color-valid: var(--ion-color-primary);
+  --highlight-color-invalid: transparent;
+  --highlight-color-focused: transparent;
+  --border-color: var(--ion-color-light);
 }

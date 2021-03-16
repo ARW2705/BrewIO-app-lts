@@ -1,7 +1,7 @@
 /* Module imports */
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { IonInput, ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular';
 import { Subject, from } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -27,9 +27,6 @@ import { ToastService } from '../../services/toast/toast.service';
   styleUrls: ['./profile.component.scss']
 })
 export class ProfileComponent implements OnInit, OnDestroy {
-  @ViewChild('email') emailField: IonInput;
-  @ViewChild('firstname') firstnameField: IonInput;
-  @ViewChild('lastname') lastnameField: IonInput;
   defaultImage: Image = defaultImage();
   breweryLabelImage: Image = this.defaultImage;
   userImage: Image = this.defaultImage;
@@ -40,7 +37,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
   userForm: FormGroup = null;
 
   constructor(
-    public cdRef: ChangeDetectorRef,
     public formBuilder: FormBuilder,
     public imageService: ImageService,
     public modalCtrl: ModalController,
@@ -79,28 +75,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
   /***** Form Methods *****/
 
   /**
-   * Select field to be edited
-   *
-   * @params: field - the form control field to edit
-   * @params: update - new text to be applied
-   *
-   * @return: none
-   */
-  changeEdit(field: string, update: IonInput): void {
-    this.editing = update === undefined ? field : '';
-    if (update === undefined) {
-      this.cdRef.detectChanges();
-      if (field === 'email') {
-        this.emailField.setFocus();
-      } else if (field === 'firstname') {
-        this.firstnameField.setFocus();
-      } else if (field === 'lastname') {
-        this.lastnameField.setFocus();
-      }
-    }
-  }
-
-  /**
    * Create form with profile values in form fields
    *
    * @params: user - user profile object
@@ -115,11 +89,11 @@ export class ProfileComponent implements OnInit, OnDestroy {
       ],
       firstname: [
         (user && user.firstname ? user.firstname : ''),
-        [Validators.maxLength(25)]
+        [Validators.maxLength(50)]
       ],
       lastname: [
         (user && user.lastname ? user.lastname : ''),
-        [Validators.maxLength(25)]
+        [Validators.maxLength(50)]
       ]
     });
     if (user.userImage) {
@@ -128,17 +102,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
     if (user.breweryLabelImage) {
       this.breweryLabelImage = user.breweryLabelImage;
     }
-  }
-
-  /**
-   * Check if given field is being edited
-   *
-   * @params: field - form field to check
-   *
-   * @return: true if given field matches the currently editing field
-   */
-  isEditing(field: string): boolean {
-    return field === this.editing;
   }
 
   /**
