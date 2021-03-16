@@ -27,6 +27,7 @@ import { Style } from '../../../shared/interfaces/library';
 import { ImageFormPage } from '../image-form/image-form.page';
 
 /* Service imports */
+import { ImageService } from '../../../services/image/image.service';
 import { LibraryService } from '../../../services/library/library.service';
 import { RecipeService } from '../../../services/recipe/recipe.service';
 import { ToastService } from '../../../services/toast/toast.service';
@@ -68,6 +69,7 @@ export class InventoryFormPage implements OnInit {
 
   constructor(
     public formBuilder: FormBuilder,
+    public imageService: ImageService,
     public libraryService: LibraryService,
     public modalCtrl: ModalController,
     public recipeService: RecipeService,
@@ -381,17 +383,6 @@ export class InventoryFormPage implements OnInit {
   }
 
   /**
-   * Check if the given image is the default image
-   *
-   * @params: image - image to compare
-   *
-   * @return: true if image id matches default image id
-   */
-  isDefaultImage(image: Image): boolean {
-    return image.cid === this._defaultImage.cid;
-  }
-
-  /**
    * Open image selection modal
    *
    * @params: imageType - assign image to this item property
@@ -400,9 +391,9 @@ export class InventoryFormPage implements OnInit {
    */
   async openImageModal(imageType: string): Promise<void> {
     let options: { image: Image } = null;
-    if (imageType === 'item' && !this.isDefaultImage(this.itemLabelImage)) {
+    if (imageType === 'item' && !this.imageService.hasDefaultImage(this.itemLabelImage)) {
       options = { image: this.itemLabelImage };
-    } else if (imageType === 'supplier' && !this.isDefaultImage(this.supplierLabelImage)) {
+    } else if (imageType === 'supplier' && !this.imageService.hasDefaultImage(this.supplierLabelImage)) {
       options = { image: this.supplierLabelImage };
     }
 
