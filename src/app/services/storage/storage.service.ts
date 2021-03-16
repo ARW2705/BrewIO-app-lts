@@ -23,7 +23,6 @@ import { defaultEnglish } from '../../shared/defaults/default-units';
 export class StorageService {
   activeBatchStorageKey: string = 'active';
   archiveBatchStorageKey: string = 'archive';
-  imageStorageKey: string = 'image';
   inventoryStorageKey: string = 'inventory';
   libraryStorageKey: string = 'library';
   recipeStorageKey: string = 'recipe';
@@ -96,62 +95,6 @@ export class StorageService {
         JSON.stringify(batchList)
       )
     );
-  }
-
-  /**
-   * Get images from storage
-   *
-   * @params: none
-   *
-   * @return: Observable of array of base64 image strings
-   */
-  getImages(): Observable<Image[]> {
-    return from(
-      this.storage.get(this.imageStorageKey)
-        .then((images: string): Image[] => {
-          if (images === null) {
-            const error: Error = new Error();
-            error.name = 'NotFoundError';
-            error.message = 'Images not found';
-            throw error;
-          }
-
-          const parsed: Image[] = JSON.parse(images);
-
-          if (!parsed.length) {
-            const error: Error = new Error();
-            error.name = 'NotFoundError';
-            error.message = 'No images in storage';
-            throw error;
-          }
-
-          return parsed;
-        })
-    );
-  }
-
-  /**
-   * Remove images from storage
-   *
-   * @params: none
-   * @return: none
-   */
-  removeImages(): void {
-    this.storage
-      .remove(this.imageStorageKey)
-      .then((): void => console.log('Images cleared'))
-      .catch((error: any): void => console.log('Image storage removal error', error));
-  }
-
-  /**
-   * Store image
-   *
-   * @params: images - array of base64 image strings
-   *
-   * @return: Observable of storage set response
-   */
-  setImages(images: Image[]): Observable<any> {
-    return from(this.storage.set(this.imageStorageKey, JSON.stringify(images)));
   }
 
   /**

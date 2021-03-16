@@ -25,7 +25,6 @@ import { Image, ImageRequestFormData, ImageRequestMetadata } from '../../shared/
 /* Service imports */
 import { ClientIdService } from '../client-id/client-id.service';
 import { HttpErrorService } from '../http-error/http-error.service';
-import { StorageService } from '../storage/storage.service';
 
 
 @Injectable({
@@ -33,7 +32,6 @@ import { StorageService } from '../storage/storage.service';
 })
 export class ImageService {
   _defaultImage: Image = defaultImage();
-  images: Image[] = [];
 
   constructor(
     public camera: Camera,
@@ -44,7 +42,6 @@ export class ImageService {
     public http: HttpClient,
     public imageResizer: ImageResizer,
     public processHttpError: HttpErrorService,
-    public storage: StorageService,
     public webview: WebView
   ) { }
 
@@ -414,20 +411,6 @@ export class ImageService {
     }
     return this.file.cacheDirectory
       === image.filePath.substring(0, image.filePath.lastIndexOf('/') + 1);
-  }
-
-  /**
-   * Load images from storage
-   *
-   * @params: none
-   * @return: none
-   */
-  loadImagesFromStorage(): void {
-    this.storage.getImages()
-      .subscribe(
-        (images: Image[]): void => { this.images = images; },
-        (error: string): void => console.log(`${error}: awaiting data from server`)
-      );
   }
 
   /**
