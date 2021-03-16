@@ -1,6 +1,7 @@
 /* Module imports */
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, forkJoin, of } from 'rxjs';
 import { catchError, defaultIfEmpty, mergeMap, map, tap } from 'rxjs/operators';
 
@@ -61,6 +62,7 @@ export class UserService {
     public imageService: ImageService,
     public preferenceService: PreferencesService,
     public httpError: HttpErrorService,
+    public router: Router,
     public storageService: StorageService,
     public syncService: SyncService,
     public toastService: ToastService
@@ -76,14 +78,12 @@ export class UserService {
    * @return: Observable of UserResponse
    */
   checkJWToken(): Observable<UserResponse> {
-    return this.http.get<UserResponse>(
-      `${BASE_URL}/${API_VERSION}/users/checkJWToken`
-    )
-    .pipe(
-      catchError((error: HttpErrorResponse): Observable<never> => {
-        return this.httpError.handleError(error);
-      })
-    );
+    return this.http.get<UserResponse>(`${BASE_URL}/${API_VERSION}/users/checkJWToken`)
+      .pipe(
+        catchError((error: HttpErrorResponse): Observable<never> => {
+          return this.httpError.handleError(error);
+        })
+      );
   }
 
   /**
@@ -169,24 +169,21 @@ export class UserService {
               .subscribe(
                 (jwtResponse: UserResponse): void => console.log(jwtResponse.status),
                 (error: string): void => {
-                  console.log(error);
+                  console.log('jwt error', error);
                   if (error.includes('401')) {
-                    const removedToken: User = this.getUser().value;
-                    removedToken.token = undefined;
-                    this.user$.next(removedToken);
-                    this.toastService.presentErrorToast('Login has expired, please log in again');
+                    this.clearUserData();
+                    this.toastService.presentErrorToast(
+                      'Login has expired, please log in again',
+                      this.navToHome.bind(this)
+                    );
                   }
                 }
               );
           } else {
             this.connectionService.setOfflineMode(true);
           }
-          console.log('emit init recipes');
           this.event.emit('init-recipes');
-          this.preferenceService.setUnits(
-            user.preferredUnitSystem,
-            user.units
-          );
+          this.preferenceService.setUnits(user.preferredUnitSystem, user.units);
         },
         (error: string): void => console.log(`User load error: ${error}`)
       );
@@ -283,6 +280,16 @@ export class UserService {
     if (!inputUser) {
       user$.next(user);
     }
+  }
+
+  /**
+   * Navigate to home page
+   *
+   * @params: none
+   * @return: none
+   */
+  navToHome(): void {
+    this.router.navigate(['tabs/home']);
   }
 
   /**
@@ -574,10 +581,18 @@ export class UserService {
     const user$: BehaviorSubject<User> = this.getUser();
     const user: User = user$.value;
 
+    const requests: SyncMetadata[] = this.syncService.getSyncFlagsByType('user');
+    if (!requests.length) {
+      return of(true);
+    }
+
     return this.syncService.sync('user', [this.configureBackgroundRequest(user, true)])
       .pipe(
         map((response: SyncResponse<User>): boolean => {
-          user$.next(<User>response.successes[0]);
+          console.log('sync complete', response);
+          const userResponse: User = <User>response.successes[0];
+          this.mapUserData(userResponse, user);
+          user$.next(user);
           return true;
         })
       );
