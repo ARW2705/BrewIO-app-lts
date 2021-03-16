@@ -1,14 +1,22 @@
 /* Module imports */
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { IonInput } from '@ionic/angular';
-import { Subject } from 'rxjs';
+import { IonInput, ModalController } from '@ionic/angular';
+import { Subject, from } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
-/* Page imports */
+/* Default imports */
+import { defaultImage } from '../../shared/defaults/default-image';
+
+/* Interface imports */
+import { Image } from '../../shared/interfaces/image';
 import { User } from '../../shared/interfaces/user';
 
+/* Page imports */
+import { ImageFormPage } from '../../pages/forms/image-form/image-form.page';
+
 /* Service imports */
+import { ImageService } from '../../services/image/image.service';
 import { UserService } from '../../services/user/user.service';
 import { ToastService } from '../../services/toast/toast.service';
 
@@ -22,6 +30,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
   @ViewChild('email') emailField: IonInput;
   @ViewChild('firstname') firstnameField: IonInput;
   @ViewChild('lastname') lastnameField: IonInput;
+  defaultImage: Image = defaultImage();
+  breweryLabelImage: Image = this.defaultImage;
+  userImage: Image = this.defaultImage;
   destroy$: Subject<boolean> = new Subject<boolean>();
   editing: string = '';
   isLoggedIn: boolean = false;
@@ -31,6 +42,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
   constructor(
     public cdRef: ChangeDetectorRef,
     public formBuilder: FormBuilder,
+    public imageService: ImageService,
+    public modalCtrl: ModalController,
     public toastService: ToastService,
     public userService: UserService
   ) { }
@@ -109,6 +122,12 @@ export class ProfileComponent implements OnInit, OnDestroy {
         [Validators.maxLength(25)]
       ]
     });
+    if (user.userImage) {
+      this.userImage = user.userImage;
+    }
+    if (user.breweryLabelImage) {
+      this.breweryLabelImage = user.breweryLabelImage;
+    }
   }
 
   /**
@@ -123,6 +142,45 @@ export class ProfileComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Open image selection modal
+   *
+   * @params: imageType - identifies image as either userImage or breweryLabelImage
+   *
+   * @return: none
+   */
+  async openImageModal(imageType: string): Promise<void> {
+    let options: { image: Image } = null;
+    if (imageType === 'user' && !this.imageService.hasDefaultImage(this.userImage)) {
+      options = { image: this.userImage };
+    } else if (imageType === 'brewery' && !this.imageService.hasDefaultImage(this.breweryLabelImage)) {
+      options = { image: this.breweryLabelImage };
+    }
+
+    const modal: HTMLIonModalElement = await this.modalCtrl.create({
+      component: ImageFormPage,
+      componentProps: options
+    });
+
+    from(modal.onDidDismiss())
+      .subscribe(
+        (data: object): void => {
+          const _data: Image = data['data'];
+          if (imageType === 'user' && _data) {
+            this.userImage = _data;
+          } else if (imageType === 'brewery' && _data) {
+            this.breweryLabelImage = _data;
+          }
+        },
+        (error: string): void => {
+          console.log('modal dismiss error', error);
+          this.toastService.presentErrorToast('Error selecting image');
+        }
+      );
+
+    await modal.present();
+  }
+
+  /**
    * Submit updated user profile, update view on successful response or
    * display error message on error
    *
@@ -130,10 +188,18 @@ export class ProfileComponent implements OnInit, OnDestroy {
    * @return: none
    */
   onUpdate(): void {
-    this.userService.updateUserProfile(this.userForm.value)
+    const userUpdate: object = this.userForm.value;
+    if (!this.imageService.hasDefaultImage(this.userImage)) {
+      userUpdate['userImage'] = this.userImage;
+    }
+    if (!this.imageService.hasDefaultImage(this.breweryLabelImage)) {
+      userUpdate['breweryLabelImage'] = this.breweryLabelImage;
+    }
+
+    this.userService.updateUserProfile(userUpdate)
       .subscribe(
         (): void => {
-          this.toastService.presentToast('Profile Updated');
+          this.toastService.presentToast('Profile Updated', 1000);
         },
         (error: string): void => {
           console.log('profile update error', error);

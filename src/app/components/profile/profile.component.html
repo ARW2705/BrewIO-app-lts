@@ -38,6 +38,49 @@
           </ion-input>
 
         </ion-item>
+        
+
+        <!-- User image -->
+        <ion-item>
+
+          <ion-label>
+            User Avatar
+          </ion-label>
+
+          <ion-button (click)="openImageModal('user')"
+                      class="image-input">
+
+            <ion-avatar>
+
+              <img [src]="userImage.url"/>
+
+            </ion-avatar>
+
+          </ion-button>
+
+        </ion-item>
+
+
+        <!-- Brewery image -->
+        <ion-item>
+
+          <ion-label>
+            Brewery Image
+          </ion-label>
+
+          <ion-button (click)="openImageModal('brewery')"
+                      class="image-input">
+
+            <ion-avatar>
+
+              <img [src]="breweryLabelImage.url"/>
+
+            </ion-avatar>
+
+          </ion-button>
+
+        </ion-item>
+
 
         <!-- First name field (not form) -->
         <ion-item *ngIf="editing !== 'firstname'">
