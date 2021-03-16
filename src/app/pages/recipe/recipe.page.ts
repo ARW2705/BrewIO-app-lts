@@ -1,7 +1,7 @@
 /* Module imports */
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { ModalController, NavController, IonList, IonContent } from '@ionic/angular';
+import { ModalController, IonList, IonContent } from '@ionic/angular';
 import { BehaviorSubject, Subject, from } from 'rxjs';
 import { map, takeUntil } from 'rxjs/operators';
 
@@ -15,7 +15,6 @@ import { getId, hasId } from '../../shared/utility-functions/id-helpers';
 
 /* Page imports */
 import { ConfirmationComponent } from '../../components/confirmation/confirmation.component';
-// import { ConfirmationPage } from '../confirmation/confirmation.page';
 
 /* Service imports */
 import { RecipeService } from '../../services/recipe/recipe.service';
@@ -41,7 +40,6 @@ export class RecipePage implements OnInit, OnDestroy {
 
   constructor(
     public modalCtrl: ModalController,
-    public navCtrl: NavController,
     public route: ActivatedRoute,
     public router: Router,
     public recipeService: RecipeService,
@@ -171,9 +169,7 @@ export class RecipePage implements OnInit, OnDestroy {
       this.router.navigate([`tabs/recipe/${getId(this.masterList[index])}`]);
     } catch (error) {
       console.log('Details nav error', error);
-      this.toastService.presentErrorToast(
-        'Error: invalid Recipe Master list index'
-      );
+      this.toastService.presentErrorToast('Error: invalid Recipe Master list index');
     }
   }
 
@@ -258,9 +254,7 @@ export class RecipePage implements OnInit, OnDestroy {
         },
         (error: string): void => {
           console.log('Error deleting recipe master', error);
-          this.toastService.presentErrorToast(
-            'An error occured during recipe deletion'
-          );
+          this.toastService.presentErrorToast('An error occured during recipe deletion');
         }
       );
   }

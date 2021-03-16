@@ -18,7 +18,6 @@ import { AccordionComponent } from '../../components/accordion/accordion.compone
 
 /* Page imports */
 import { ConfirmationComponent } from '../../components/confirmation/confirmation.component';
-// import { ConfirmationPage } from '../confirmation/confirmation.page';
 
 /* Service imports */
 import { RecipeService } from '../../services/recipe/recipe.service';
