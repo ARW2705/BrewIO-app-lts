@@ -32,7 +32,7 @@
 
 
       <!-- User name when logged in -->
-      <ion-col  *ngIf="user && user.username"
+      <ion-col  *ngIf="user && user.username && !shouldHideLoginButton"
                 size="4"
                 class="ion-no-padding ion-align-self-center login-header-text">
 
@@ -44,7 +44,7 @@
 
 
       <!-- Log In Button or User name -->
-      <ion-col  *ngIf="!isLoggedIn"
+      <ion-col  *ngIf="!isLoggedIn && !shouldHideLoginButton"
                 size="2"
                 class="ion-no-padding ion-align-self-center login-button">
 

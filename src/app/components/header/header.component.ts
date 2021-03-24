@@ -25,6 +25,7 @@ import { UserService } from '../../services/user/user.service';
 export class HeaderComponent implements OnInit, OnDestroy {
   @Input() overrideBackButton?: () => void;
   @Input() rootURL?: string;
+  @Input() shouldHideLoginButton: boolean = false;
   @Input() title: string;
   destroy$: Subject<boolean> = new Subject<boolean>();
   isLoggedIn: boolean = false;
