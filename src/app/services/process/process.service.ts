@@ -628,7 +628,11 @@ export class ProcessService {
         return;
       }
 
+      const user$: BehaviorSubject<User> = this.userService.getUser();
+      const user: User = user$.value;
+
       const payload: Batch = batch$.value;
+      payload.owner = user._id;
       payload['recipeMasterId'] = recipe$.value._id;
       payload['forSync'] = true;
 
