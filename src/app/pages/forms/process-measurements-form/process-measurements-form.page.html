@@ -1,5 +1,6 @@
 <app-header title="Measurements"
-            [overrideBackButton]="onBackClick">
+            [overrideBackButton]="onBackClick"
+            [shouldHideLoginButton]="areAllRequired">
 </app-header>
 
 <ion-content class="sub-page">
@@ -34,12 +35,18 @@
 
     <ion-row>
 
+      <p  *ngIf="areAllRequired"
+          class="form-info required">
+        Required fields
+      </p>
+
       <form [formGroup]="measurementsForm">
 
         <!-- Original Gravity Input -->
         <ion-item>
 
-          <ion-label position="floating">
+          <ion-label  position="floating"
+                      [ngClass]="{ required: areAllRequired }">
             Original Gravity ({{ units.density.shortName }})
           </ion-label>
 
@@ -68,7 +75,8 @@
         <!-- Final Gravity Input -->
         <ion-item>
 
-          <ion-label position="floating">
+          <ion-label  position="floating"
+                      [ngClass]="{ required: areAllRequired }">
             Final Gravity ({{ units.density.shortName }})
           </ion-label>
 
@@ -97,7 +105,8 @@
         <!-- Batch Volume Input -->
         <ion-item>
 
-          <ion-label position="floating">
+          <ion-label  position="floating"
+                      [ngClass]="{ required: areAllRequired }">
             Batch Volume ({{ units.volumeLarge.shortName }})
           </ion-label>
 

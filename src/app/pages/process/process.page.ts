@@ -3,7 +3,7 @@ import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute, Navigation } from '@angular/router';
 import { ModalController, Platform } from '@ionic/angular';
 import { BehaviorSubject, Observable, Subject, from, of, throwError } from 'rxjs';
-import { map, mergeMap, takeUntil } from 'rxjs/operators';
+import { map, mergeMap, takeUntil, tap } from 'rxjs/operators';
 
 /* Interface imports */
 import { Alert } from '../../shared/interfaces/alert';
@@ -46,6 +46,7 @@ export class ProcessPage implements OnInit, OnDestroy {
     startCalendar: this.startCalendar.bind(this)
   };
   destroy$: Subject<boolean> = new Subject<boolean>();
+  hideButton: boolean = false;
   isCalendarInProgress: boolean = false;
   isConcurrent: boolean = false;
   navigateToRoot: () => void = () => this.router.navigate([this.rootURL]);
@@ -82,6 +83,7 @@ export class ProcessPage implements OnInit, OnDestroy {
 
   ngOnInit() {
     console.log('process page init');
+    this.hideButton = false;
     this.listenForRouteChanges();
     this.event.register('change-date')
       .pipe(takeUntil(this.destroy$))
@@ -602,7 +604,9 @@ export class ProcessPage implements OnInit, OnDestroy {
     });
 
     from(modal.onDidDismiss())
-      .pipe(mergeMap(this.onMeasurementFormModalDismiss(onBatchComplete)))
+      .pipe(
+        tap(() => { this.hideButton = true; }),
+        mergeMap(this.onMeasurementFormModalDismiss(onBatchComplete)))
       .subscribe(
         (updated: Batch): void => {
           if (updated) {
@@ -613,7 +617,6 @@ export class ProcessPage implements OnInit, OnDestroy {
             );
           }
           if (onBatchComplete) {
-            console.log('navigating to inventory with info');
             this.navToInventory(updated);
           }
         },

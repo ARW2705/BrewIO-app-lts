@@ -1,6 +1,6 @@
 /* Module imports */
 import { Component, OnInit, Input } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { LoadingController, ModalController } from '@ionic/angular';
 import { FormGroup, FormBuilder, FormControl, Validators } from '@angular/forms';
 import { Observable, forkJoin, from, of } from 'rxjs';
 
@@ -71,6 +71,7 @@ export class InventoryFormPage implements OnInit {
     public formBuilder: FormBuilder,
     public imageService: ImageService,
     public libraryService: LibraryService,
+    public loadingCtrl: LoadingController,
     public modalCtrl: ModalController,
     public recipeService: RecipeService,
     public toastService: ToastService,
@@ -99,6 +100,7 @@ export class InventoryFormPage implements OnInit {
         this.styles = styles;
         this.author = author;
         this.initForm();
+        this.loadingCtrl.dismiss().then(() => {});
       },
       (error: string): void => {
         console.log('Inventory form error', error);

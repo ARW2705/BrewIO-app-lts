@@ -1,6 +1,6 @@
 /* Module imports */
 import { Component, OnInit, OnDestroy, Input } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { LoadingController, ModalController } from '@ionic/angular';
 import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -39,6 +39,7 @@ export class ProcessMeasurementsFormPage implements OnInit, OnDestroy {
     public calculator: CalculationsService,
     public formBuilder: FormBuilder,
     public formValidator: FormValidationService,
+    public loadingCtrl: LoadingController,
     public modalCtrl: ModalController,
     public preferenceService: PreferencesService
   ) { }
@@ -262,12 +263,21 @@ export class ProcessMeasurementsFormPage implements OnInit, OnDestroy {
    * @params: none
    * @return: none
    */
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     const formValues: object = this.measurementsForm.value;
 
     this.convertFormValuesToNumbers(formValues);
     this.formatDensityValues(formValues);
     this.formatVolumeValues(formValues);
+
+    if (this.areAllRequired) {
+      const loading: HTMLIonLoadingElement = await this.loadingCtrl.create({
+        cssClass: 'loading-custom',
+        spinner: 'lines'
+      });
+
+      await loading.present();
+    }
 
     this.modalCtrl.dismiss(formValues);
   }
