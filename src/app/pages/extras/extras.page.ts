@@ -77,7 +77,7 @@ export class ExtrasPage implements OnInit, OnDestroy {
             const options: object = nav.extras.state;
             if (options['passTo'] === 'inventory') {
               this.optionalInventoryData = options['optionalData'];
-              this.displayComponent(1);
+              this.displayComponent(1, true);
             }
           }
         },
@@ -138,20 +138,24 @@ export class ExtrasPage implements OnInit, OnDestroy {
    * Navigate to component at given index
    *
    * @params: index - index of extras to navigate to
+   * @params: passThrough - true if calling a specific component from outside extras and animation
+   * should be bypassed; defaults to false
    *
    * @return: none
    */
-  async displayComponent(index: number): Promise<void> {
+  async displayComponent(index: number, passThrough: boolean = false): Promise<void> {
     this.title = toTitleCase(this.extras[index].title);
     this.onBackClick = this.viewPageRoot.bind(this, index);
     try {
-      const animation = this.animationService.slideIn(
-        this.getContainer(index),
-        {
-          speed: 250
-        }
-      );
-      await animation.play();
+      if (!passThrough) {
+        const animation = this.animationService.slideIn(
+          this.getContainer(index),
+          {
+            speed: 250
+          }
+        );
+        await animation.play();
+      }
     } catch (error) {
       console.log('display extras error', error);
     }
