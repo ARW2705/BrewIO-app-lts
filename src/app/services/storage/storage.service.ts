@@ -6,7 +6,6 @@ import { Observable, from } from 'rxjs';
 /* Interface imports */
 import { Batch } from '../../shared/interfaces/batch';
 import { LibraryStorage } from '../../shared/interfaces/library';
-import { Image } from '../../shared/interfaces/image';
 import { InventoryItem } from '../../shared/interfaces/inventory-item';
 import { RecipeMaster } from '../../shared/interfaces/recipe-master';
 import { SelectedUnits } from '../../shared/interfaces/units';

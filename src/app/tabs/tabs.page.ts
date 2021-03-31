@@ -1,7 +1,9 @@
+/* Module imports */
 import { Component, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonTabs } from '@ionic/angular';
 
+/* Service imports */
 import { EventService } from '../services/event/event.service';
 
 
@@ -19,7 +21,7 @@ export class TabsPage {
   ) { }
 
   async onTabClick(tab: string, event: MouseEvent): Promise<boolean> {
-    const selectedTab = this.tabs.getSelected();
+    const selectedTab: string = this.tabs.getSelected();
     event.stopImmediatePropagation();
     event.preventDefault();
     this.emitTabChange({tab: tab});

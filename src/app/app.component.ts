@@ -75,8 +75,7 @@ export class AppComponent {
    */
   @HostListener('ionAlertDidPresent')
   onAlertOpen() {
-    const selectedButton: HTMLElement
-      = document.querySelector('[aria-checked="true"]');
+    const selectedButton: HTMLElement = document.querySelector('[aria-checked="true"]');
 
     if (this.isSelectOptionChecked(selectedButton)) {
       selectedButton.scrollIntoView();

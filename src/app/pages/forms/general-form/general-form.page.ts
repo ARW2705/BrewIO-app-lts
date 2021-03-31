@@ -76,7 +76,6 @@ export class GeneralFormPage implements OnInit {
   /***** Lifecycle Hooks *****/
 
   ngOnInit() {
-    console.log(this.data);
     this.units = this.preferenceService.getSelectedUnits();
     this.initForm();
   }
