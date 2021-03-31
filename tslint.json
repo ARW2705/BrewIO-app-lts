@@ -33,6 +33,7 @@
       "kebab-case"
     ],
     "eofline": true,
+    "experimentalDecorators": { "severity": "warning" },
     "forin": { "severity": "warning" },
     "import-blacklist": [
       true,

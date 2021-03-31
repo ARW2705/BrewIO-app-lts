@@ -7,7 +7,9 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
-    "test": "ng test",
+    "test": "jest",
+    "test-silent": "jest --silent",
+    "test-coverage": "jest --coverage",
     "lint": "ng lint",
     "e2e": "ng e2e"
   },
@@ -58,6 +60,7 @@
     "zone.js": "~0.10.3"
   },
   "devDependencies": {
+    "@angular-builders/jest": "^11.1.1",
     "@angular-devkit/build-angular": "^0.1001.0",
     "@angular/cli": "~10.0.5",
     "@angular/compiler": "~10.0.0",
@@ -107,7 +110,7 @@
       "src"
     ],
     "setupFilesAfterEnv": [
-      "<rootDir>/src/jest/setupJest.ts"
+      "<rootDir>/test-config/setup-jest.ts"
     ],
     "transformIgnorePatterns": [
       "node_modules/(?!@ngrx|@ionic-native|@ionic)"
