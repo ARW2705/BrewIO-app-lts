@@ -68,22 +68,8 @@ export class CalculationsService {
         || inputUnit === Units.BRIX.longName
       )
     ) {
-      return (
-        (density / (Constant.PLATO_TO_SG[0] - (density * Constant.PLATO_TO_SG[1] / Constant.PLATO_TO_SG[2]))) + 1
-      );
-    } else if (
-      (
-        inputUnit === Units.SPECIFIC_GRAVITY.longName
-        || inputUnit === Units.PLATO.longName
-        || inputUnit === Units.BRIX.longName
-      )
-      &&
-      (
-        outputUnit === Units.SPECIFIC_GRAVITY.longName
-        || outputUnit === Units.PLATO.longName
-        || outputUnit === Units.BRIX.longName
-      )
-    ) {
+      return ((density / (Constant.PLATO_TO_SG[0] - (density * Constant.PLATO_TO_SG[1] / Constant.PLATO_TO_SG[2]))) + 1);
+    } else if (this.isValidUnit(inputUnit) && this.isValidUnit(outputUnit)) {
       return density;
     }
 
@@ -138,6 +124,19 @@ export class CalculationsService {
     } else {
       return weight * (toEn ? Constant.G_TO_OZ : Constant.OZ_TO_G);
     }
+  }
+
+  /**
+   * Check if a given density unit name is valid
+   *
+   * @params: unitName - density unit long name
+   *
+   * @return: true if unitName matches SPECIFIC_GRAVITY, PLATO, or BRIX longName
+   */
+  isValidUnit(unitName: string): boolean {
+    return unitName === Units.SPECIFIC_GRAVITY.longName
+      || unitName === Units.PLATO.longName
+      || unitName === Units.BRIX.longName;
   }
 
   /**
