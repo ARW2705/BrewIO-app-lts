@@ -40,7 +40,7 @@ export class ActionSheetService {
       buttons: buttons,
       cssClass: customClass || 'action-sheet-main'
     })
-    .then((actionSheet) => actionSheet.present());
+    .then((actionSheet: HTMLIonActionSheetElement) => actionSheet.present());
   }
 
 }
