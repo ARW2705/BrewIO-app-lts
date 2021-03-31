@@ -70,7 +70,10 @@ export class BackgroundModeService {
    * @return: true if backgroud mode is active
    */
   isActive(): boolean {
-    return this.backgroundMode.isActive();
+    if (this.platform.is('cordova')) {
+      return this.backgroundMode.isActive();
+    }
+    return false;
   }
 
   /**
