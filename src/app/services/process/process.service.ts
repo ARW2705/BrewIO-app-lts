@@ -70,8 +70,7 @@ export class ProcessService {
    *
    * @params: none
    *
-   * @return: observable success requires no additional actions,
-   *   using for error handling
+   * @return: observable success requires no additional actions, using for error handling
    */
   initFromServer(): void {
     concat(
@@ -119,9 +118,7 @@ export class ProcessService {
             this.mapBatchArrayToSubjectArray(true, activeBatchList);
           }
         },
-        (error: string): void => {
-          console.log(`${error}: awaiting active batch data from server`);
-        }
+        (error: string): void => console.log(`${error}: awaiting active batch data from server`)
       );
 
     // Get archive batches from storage, do not overwrite if batches from server
@@ -181,7 +178,7 @@ export class ProcessService {
    */
   endBatchById(batchId: string): Observable<Batch> {
     const batch$: BehaviorSubject<Batch> = this.getBatchById(batchId);
-    if (batch$ === undefined) {
+    if (!batch$) {
       return throwError(`End of batch error: batch with id ${batchId} not found`);
     }
     const batch: Batch = batch$.value;
@@ -189,9 +186,7 @@ export class ProcessService {
     batch.isArchived = true;
 
     return this.updateBatch(batch)
-      .pipe(
-        mergeMap((): Observable<Batch> => this.archiveActiveBatch(batchId))
-      );
+      .pipe(mergeMap((): Observable<Batch> => this.archiveActiveBatch(batchId)));
   }
 
   /**
@@ -207,7 +202,7 @@ export class ProcessService {
     return this.generateBatchFromRecipe(userId, recipeMasterId, recipeVariantId)
       .pipe(
         mergeMap((newBatch: Batch) => {
-          if (newBatch === undefined) {
+          if (!newBatch) {
             return throwError('Unable to generate new batch: missing recipe');
           }
 
@@ -226,13 +221,13 @@ export class ProcessService {
    * Update a batch
    *
    * @params: updatedBatch - batch with new values
-   * @params: isActive - true for active batch, false for archive batch
+   * @params: isActive - true for active batch, false for archive batch; defaults to true
    *
    * @return: Observable of updated batch
    */
   updateBatch(updatedBatch: Batch, isActive: boolean = true): Observable<Batch> {
     const batch$: BehaviorSubject<Batch> = this.getBatchById(getId(updatedBatch));
-    if (batch$ === undefined) {
+    if (!batch$) {
       return throwError(`Update batch error: batch with id ${getId(updatedBatch)} not found`);
     }
 
@@ -294,7 +289,7 @@ export class ProcessService {
    */
   updateStepById(batchId: string, stepUpdate: object): Observable<Batch> {
     const batch$: BehaviorSubject<Batch> = this.getBatchById(batchId);
-    if (batch$ === undefined) {
+    if (!batch$) {
       return throwError(`Active batch with id ${batchId} not found`);
     }
     const batch: Batch = batch$.value;
@@ -307,9 +302,7 @@ export class ProcessService {
       return throwError('Step update missing an id');
     }
 
-    const stepIndex: number = batch
-      .process
-      .schedule
+    const stepIndex: number = batch.process.schedule
       .findIndex((step: Process) => hasId(step, stepUpdate['id']));
 
     if (stepIndex === -1) {
@@ -331,9 +324,9 @@ export class ProcessService {
    * Configure a background request while defining which error handling method to use
    *
    * @params: syncMethod - the http method to apply
-   * @params: batch - the batch to use in request
    * @params: shouldResolveError - true if error should return the error response as an observable
    * or false if error should be handled as an error
+   * @params: batch - the batch to use in request
    *
    * @return: observable of batch or HttpErrorResponse
    */
@@ -394,8 +387,8 @@ export class ProcessService {
       .pipe(
         tap((batchResponse: Batch): void => {
           const batch$: BehaviorSubject<Batch> = this.getBatchById(batchResponse.cid);
-          if (batch$ === undefined) {
-            throw new Error(`Batch with id ${batchResponse.cid} not found`);
+          if (!batch$) {
+            this.toastService.presentErrorToast(`Batch with id ${batchResponse.cid} not found`);
           } else {
             batch$.next(batchResponse);
             this.emitBatchListUpdate(true);
@@ -431,11 +424,13 @@ export class ProcessService {
    * @return: none
    */
   addSyncFlag(method: string, docId: string): void {
-    this.syncService.addSyncFlag({
+    const syncFlag: SyncMetadata = {
       method: method,
       docId: docId,
       docType: 'batch'
-    });
+    };
+
+    this.syncService.addSyncFlag(syncFlag);
   }
 
   /**
@@ -486,9 +481,10 @@ export class ProcessService {
         const batch: Batch = batch$.value;
 
         if (batch.owner === 'offline') {
+          // TODO: extract to own method(?)
           const user$: BehaviorSubject<User> = this.userService.getUser();
           const user: User = user$.value;
-          if (user.cid === 'offline' || !user._id) {
+          if (!user._id || (!user._id && user.cid !== 'offline')) {
             const errMsg: string = 'Error getting user id';
             errors.push(this.syncService.constructSyncError(errMsg));
             return;
@@ -497,6 +493,7 @@ export class ProcessService {
         }
 
         if (hasDefaultIdType(batch.recipeMasterId)) {
+          // TODO: extract to own method(?)
           const recipeMaster$: BehaviorSubject<RecipeMaster>
             = this.recipeService.getRecipeMasterById(batch.recipeMasterId);
 
@@ -554,8 +551,8 @@ export class ProcessService {
       }
     });
 
-    this.getBatchList(true).next(this.getBatchList(true).value);
-    this.getBatchList(false).next(this.getBatchList(false).value);
+    this.emitBatchListUpdate(true);
+    this.emitBatchListUpdate(false);
   }
 
   /**
@@ -619,6 +616,7 @@ export class ProcessService {
 
     const batchList: BehaviorSubject<Batch>[] = this.getAllBatchesList();
 
+    // TODO: extract to own method(?)
     batchList.forEach((batch$: BehaviorSubject<Batch>): void => {
       const recipe$: BehaviorSubject<RecipeMaster>
         = this.recipeService.getRecipeMasterById(batch$.value.recipeMasterId);
@@ -639,7 +637,7 @@ export class ProcessService {
       requests.push(this.configureBackgroundRequest('post', false, payload));
     });
 
-    this.syncService.sync('batch', requests)
+    this.syncService.sync<Batch | HttpErrorResponse>('batch', requests)
       .pipe(
         finalize(() => this.event.emit('sync-inventory-on-signup')),
         map((responses: SyncResponse<Batch>): boolean => {
@@ -732,11 +730,7 @@ export class ProcessService {
   clearBatchList(isActive: boolean): void {
     const batchList$: BehaviorSubject<BehaviorSubject<Batch>[]> = this.getBatchList(isActive);
 
-    batchList$
-      .value
-      .forEach((batch$: BehaviorSubject<Batch>): void => {
-        batch$.complete();
-      });
+    batchList$.value.forEach((batch$: BehaviorSubject<Batch>): void => batch$.complete());
     batchList$.next([]);
 
     this.storageService.removeBatches(isActive);
@@ -786,17 +780,13 @@ export class ProcessService {
       .pipe(
         take(1),
         map((recipeMaster: RecipeMaster): Batch => {
-          if (recipeMaster === undefined) {
-            return undefined;
-          }
-
           const variant = recipeMaster.variants
             .find((_variant: RecipeVariant): boolean => {
               return hasId(_variant, variantId);
             });
 
           if (variant === undefined) {
-            return undefined;
+            throw Error('Missing recipe template');
           }
 
           const newBatch: Batch = {
@@ -858,7 +848,8 @@ export class ProcessService {
           };
           console.log('new batch', newBatch);
           return newBatch;
-        })
+        }),
+        catchError((error: Error) => throwError(error.message))
       );
   }
 
@@ -881,16 +872,14 @@ export class ProcessService {
    * @return: Batch behavior subject or undefined if not found
    */
   getBatchById(batchId: string): BehaviorSubject<Batch> {
-    const active$: BehaviorSubject<Batch> = this.getBatchList(true)
-      .value
+    const active$: BehaviorSubject<Batch> = this.getBatchList(true).value
       .find((batch$: BehaviorSubject<Batch>): boolean => {
         return hasId(batch$.value, batchId);
       });
 
     if (active$ !== undefined) return active$;
 
-    return this.getBatchList(false)
-      .value
+    return this.getBatchList(false).value
       .find((batch$: BehaviorSubject<Batch>): boolean => {
         return hasId(batch$.value, batchId);
       });
@@ -943,7 +932,7 @@ export class ProcessService {
 
     batchList[indexToRemove].complete();
     batchList.splice(indexToRemove, 1);
-    this.emitBatchListUpdate(isActive);
+    batchList$.next(batchList);
     this.updateBatchStorage(isActive);
 
     return of(null);
@@ -962,14 +951,11 @@ export class ProcessService {
    * @return: none
    */
   updateBatchStorage(isActive: boolean): void {
-    const batchList$: BehaviorSubject<BehaviorSubject<Batch>[]> =
-      this.getBatchList(isActive);
+    const batchList$: BehaviorSubject<BehaviorSubject<Batch>[]> = this.getBatchList(isActive);
 
     this.storageService.setBatches(
       isActive,
-      batchList$.value.map(
-        (batch$: BehaviorSubject<Batch>): Batch => batch$.value
-      )
+      batchList$.value.map((batch$: BehaviorSubject<Batch>): Batch => batch$.value)
     )
     .subscribe(
       (): void => console.log(`stored ${ isActive ? 'active' : 'archive' } batches`),
