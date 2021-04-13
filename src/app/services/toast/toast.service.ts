@@ -86,7 +86,7 @@ export class ToastService {
     const toast: HTMLIonToastElement = await this.toastCtrl.create(toastOptions);
 
     if (dismissFn) {
-      toast.onDidDismiss().then(() => dismissFn());
+      toast.onDidDismiss().then((): void => dismissFn());
     }
 
     return await toast.present();
