@@ -1,7 +1,7 @@
 import { ActionSheetButton } from '../../src/app/shared/interfaces/action-sheet-buttons';
 
 export const mockActionSheetButtons = () => {
-  const mock: Array<ActionSheetButton> = [
+  const mock: ActionSheetButton[] = [
     {
       text: 'Choice 1',
       handler: () => { }
@@ -21,4 +21,11 @@ export const mockActionSheetButtons = () => {
     }
   ];
   return mock;
+};
+
+
+export const mockActionSheetElement = () => {
+  return {
+    present: () => {}
+  };
 };

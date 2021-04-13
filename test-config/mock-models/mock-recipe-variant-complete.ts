@@ -1,10 +1,10 @@
 import { RecipeVariant } from '../../src/app/shared/interfaces/recipe-variant';
 import { mockGrainBill } from './mock-grain-bill';
 import { mockHopsSchedule } from './mock-hops-schedule';
-import { mockYeastGroup } from './mock-yeast-group';
+import { mockYeastBatch } from './mock-yeast-batch';
 import { mockProcessSchedule } from './mock-process-schedule';
 
-export const mockRecipeVariantComplete = () => {
+export const mockRecipeVariantComplete: () => RecipeVariant = () => {
   const mock: RecipeVariant = {
     _id: 'complete',
     cid: '1234567890123',
@@ -26,7 +26,7 @@ export const mockRecipeVariantComplete = () => {
     SRM: 0,
     grains: mockGrainBill(),
     hops: mockHopsSchedule(),
-    yeast: mockYeastGroup(),
+    yeast: mockYeastBatch(),
     otherIngredients: [],
     processSchedule: mockProcessSchedule()
   };

@@ -1,7 +1,7 @@
 import { YeastBatch } from '../../src/app/shared/interfaces/yeast-batch';
 
-export const mockYeastGroup = () => {
-  const mock: Array<YeastBatch> = [
+export const mockYeastBatch: () => YeastBatch[] = (): YeastBatch[] => {
+  const mock: YeastBatch[] = [
     {
       _id: '1',
       cid: '1234567890123',

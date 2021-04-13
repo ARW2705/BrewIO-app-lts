@@ -66,6 +66,44 @@ export class BackgroundModeMock {
 }
 
 
+export class CameraMock {
+  PictureSourceType = { PHOTOLIBRARY: 0 };
+  EncodingType = { JPEG: 0 };
+  MediaType = { PICTURE: 0 };
+
+  public getPicture(...options) {}
+}
+
+export class CropMock {
+  public crop(...options) {}
+}
+
+export class ImageResizerMock {
+  public resize(...options) {}
+}
+
+export class FileMock {
+  cacheDirectory: string = 'tmp';
+  dataDirectory: string = 'data';
+
+  public copyFile(...args) { }
+}
+
+export class FilePathMock {
+  public resolveNativePath(): Promise<string> {
+    return Promise.resolve('native-path');
+  }
+}
+
+export class FileEntryMock {
+  public file(...args) { }
+}
+
+export class WebViewMock {
+
+}
+
+
 export class ConfigMock {
   public get(...args): any {
     return;
@@ -138,6 +176,11 @@ export class HttpMock {
   public get(): Observable<any> {
     return this.http.get<any>(this.ROOT_URL + '/mock');
   }
+}
+
+
+export class LocalNotificationsMock {
+  public schedule() {}
 }
 
 
@@ -241,6 +284,10 @@ export class NavParamsMock {
 
 
 export class NetworkMock {
+  Connection = {
+    NONE: 'NONE'
+  };
+
   public onConnect(): Observable<any> {
     return of();
   }
@@ -387,6 +434,11 @@ export class PlatformMockDev extends PlatformMock {
 }
 
 
+export class RouterMock {
+  
+}
+
+
 export class SplashScreenMock extends SplashScreen {
   hide() {
     return;
@@ -397,22 +449,6 @@ export class SplashScreenMock extends SplashScreen {
 export class StatusBarMock extends StatusBar {
   styleDefault() {
     return;
-  }
-}
-
-
-@Injectable()
-export class EventMock {
-  public register() {
-
-  }
-
-  public unregister() {
-
-  }
-
-  public emit() {
-
   }
 }
 
