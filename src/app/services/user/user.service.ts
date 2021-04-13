@@ -71,7 +71,7 @@ export class UserService {
   }
 
   /**
-   * Request server check json web token validity
+   * Request server check of json web token validity
    *
    * @params: none
    *
@@ -79,11 +79,9 @@ export class UserService {
    */
   checkJWToken(): Observable<UserResponse> {
     return this.http.get<UserResponse>(`${BASE_URL}/${API_VERSION}/users/checkJWToken`)
-      .pipe(
-        catchError((error: HttpErrorResponse): Observable<never> => {
-          return this.httpError.handleError(error);
-        })
-      );
+      .pipe(catchError((error: HttpErrorResponse): Observable<never> => {
+        return this.httpError.handleError(error);
+      }));
   }
 
   /**
@@ -147,8 +145,7 @@ export class UserService {
    * @return: true if an auth token is present and not an empty string
    */
   isLoggedIn(): boolean {
-    return this.getUser().value.token !== undefined
-      && this.getUser().value.token !== '';
+    return this.getUser().value.token !== undefined && this.getUser().value.token !== '';
   }
 
   /**
@@ -193,13 +190,13 @@ export class UserService {
    * Log user in with username and password. Update user subject with response.
    * If user selected to remember login, store user data in ionic storage
    *
-   * @params: user - contains username string, password string, and remember boolean
+   * @params: user - contains username, password, and remember boolean
    * @params: onSignupSync - true if logging in after initial sign up
    *
    * @return: observable with login response user data
    */
   logIn(user: LoginCredentials, onSignupSync: boolean): Observable<User> {
-    return this.http.post(`${BASE_URL}/${API_VERSION}/users/login`, user)
+    return this.http.post<UserResponse>(`${BASE_URL}/${API_VERSION}/users/login`, user)
       .pipe(
         map((response: UserResponse): User => {
           this.user$.next(response.user);
@@ -211,10 +208,7 @@ export class UserService {
             this.event.emit('init-recipes');
           }
 
-          this.preferenceService.setUnits(
-            response.user.preferredUnitSystem,
-            response.user.units
-          );
+          this.preferenceService.setUnits(response.user.preferredUnitSystem, response.user.units);
 
           if (user.remember) {
             this.storageService.setUser(response.user)
@@ -251,11 +245,11 @@ export class UserService {
   }
 
   /**
-   * Copy data from updated user or user values to current user
+   * Copy data from updated user or partial user values to current user
    *
    * @params: userUpdate - object with new user values
    * @params: [inputUser] - optional given user to apply new values to;
-   * use current user if input not given
+   * uses current user if input not given
    *
    * @return: none
    */
@@ -266,9 +260,13 @@ export class UserService {
     for (const key in userUpdate) {
       if (userUpdate.hasOwnProperty(key)) {
         if (user[key] && userUpdate[key] && typeof userUpdate[key] === 'object') {
-          for (const innerKey in userUpdate[key]) {
-            if (userUpdate[key].hasOwnProperty(innerKey)) {
-              user[key][innerKey] = userUpdate[key][innerKey];
+          if (Array.isArray(userUpdate[key])) {
+            user[key] = userUpdate[key];
+          } else {
+            for (const innerKey in userUpdate[key]) {
+              if (userUpdate[key].hasOwnProperty(innerKey)) {
+                user[key][innerKey] = userUpdate[key][innerKey];
+              }
             }
           }
         } else {
@@ -297,8 +295,7 @@ export class UserService {
    *
    * @params: user - user must contain at least a username, password, and email
    *
-   * @return: if signup successful, return observable of login response,
-   *          else signup response
+   * @return: if signup successful, return observable of login response, else signup response
    */
   signUp(user: User): Observable<UserResponse> {
     // Attach required user fields
@@ -409,7 +406,7 @@ export class UserService {
 
   /**
    * Set up image storage function calls to persistently store image
-   * If an existing persistent image is to be overridden, provide new path
+   * If an existing persistent image is to be overridden, provide object with new paths
    *
    * @params: user - contains the image(s)
    * @params: replacementPaths - object with original paths for overriding persistent image
@@ -423,14 +420,14 @@ export class UserService {
     let image: Image = user[imageName];
 
     if (image && image.hasPending) {
-      storeImages.push(this.imageService.storeFileToLocalDir(image, replacementPaths[imageName]));
+      storeImages.push(this.imageService.storeImageToLocalDir(image, replacementPaths[imageName]));
     }
 
     imageName = 'breweryLabelImage';
     image = user[imageName];
 
     if (image && image.hasPending) {
-      storeImages.push(this.imageService.storeFileToLocalDir(image, replacementPaths[imageName]));
+      storeImages.push(this.imageService.storeImageToLocalDir(image, replacementPaths[imageName]));
     }
 
     return storeImages;
@@ -527,7 +524,7 @@ export class UserService {
   }
 
   /**
-   * Perform background server http request
+   * Perform background server http request - update local user with response
    *
    * @params: user - the user to push to server
    *
@@ -572,7 +569,7 @@ export class UserService {
   }
 
   /**
-   * Process all sync flags on reconnect;
+   * Process all sync flags on reconnect
    *
    * @params: none
    * @return: none
