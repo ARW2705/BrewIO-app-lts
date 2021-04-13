@@ -1,7 +1,8 @@
 /* Module imports */
 import { Injectable } from '@angular/core';
 import { Storage } from '@ionic/storage';
-import { Observable, from } from 'rxjs';
+import { Observable, from, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 /* Interface imports */
 import { Batch } from '../../shared/interfaces/batch';
@@ -39,28 +40,29 @@ export class StorageService {
    */
   getBatches(isActive: boolean): Observable<Batch[]> {
     return from(
-      this.storage.get(
-        isActive ? this.activeBatchStorageKey : this.archiveBatchStorageKey
-      )
-      .then((batches: string): Batch[] => {
-        if (batches === null) {
-          const error: Error = new Error();
-          error.name = 'NotFoundError';
-          error.message = `${ isActive ? 'Active' : 'Archive' } batch data not found`;
-          throw error;
-        }
+      this.storage.get(isActive ? this.activeBatchStorageKey : this.archiveBatchStorageKey)
+        .then((batches: string): Batch[] => {
+          if (batches === null) {
+            const error: Error = new Error();
+            error.name = 'NotFoundError';
+            error.message = `${ isActive ? 'active' : 'archive' } batch data not found`;
+            throw error;
+          }
 
-        const parsed: Batch[] = JSON.parse(batches);
+          const parsed: Batch[] = JSON.parse(batches);
 
-        if (!parsed.length) {
-          const error: Error = new Error();
-          error.name = 'NotFoundError';
-          error.message = `No ${ isActive ? 'active' : 'archive' } batch data in storage`;
-          throw error;
-        }
+          if (!parsed.length) {
+            const error: Error = new Error();
+            error.name = 'NotFoundError';
+            error.message = `No ${ isActive ? 'active' : 'archive' } batch data in storage`;
+            throw error;
+          }
 
-        return parsed;
-      })
+          return parsed;
+        })
+    )
+    .pipe(
+      catchError((error: Error): Observable<never> => throwError(`${error.name} ${error.message}`))
     );
   }
 
@@ -125,6 +127,9 @@ export class StorageService {
 
           return parsed;
         })
+    )
+    .pipe(
+      catchError((error: Error): Observable<never> => throwError(`${error.name} ${error.message}`))
     );
   }
 
@@ -135,8 +140,7 @@ export class StorageService {
    * @return: none
    */
   removeInventory(): void {
-    this.storage
-      .remove(this.inventoryStorageKey)
+    this.storage.remove(this.inventoryStorageKey)
       .then((): void => console.log('Inventory data cleared'))
       .catch((error: any): void => console.log('Inventory storage removal error', error));
   }
@@ -181,6 +185,9 @@ export class StorageService {
 
           return parsed;
         })
+    )
+    .pipe(
+      catchError((error: Error): Observable<never> => throwError(`${error.name} ${error.message}`))
     );
   }
 
@@ -224,6 +231,9 @@ export class StorageService {
 
           return parsed;
         })
+    )
+    .pipe(
+      catchError((error: Error): Observable<never> => throwError(`${error.name} ${error.message}`))
     );
   }
 
@@ -280,6 +290,9 @@ export class StorageService {
 
           return parsed;
         })
+    )
+    .pipe(
+      catchError((error: Error): Observable<never> => throwError(`${error.name} ${error.message}`))
     );
   }
 
