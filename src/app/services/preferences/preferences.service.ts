@@ -18,12 +18,12 @@ export class PreferencesService {
   constructor() { }
 
   /**
-   * Get the preferred units system
+   * Get the preferred units system name
    *
    * @params: none
    * @params: none
    */
-  getPreferredUnitSystem(): string {
+  getPreferredUnitSystemName(): string {
     return this.preferredUnitSystem;
   }
 
