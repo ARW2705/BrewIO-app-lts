@@ -26,7 +26,7 @@ export class LocalNotificationService {
     };
 
     if (text) {
-      notification[text] = text;
+      notification['text'] = text;
     }
 
     this.localNotifications.schedule(notification);
