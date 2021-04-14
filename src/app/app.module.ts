@@ -33,6 +33,7 @@ import { CalculationsService } from './services/calculations/calculations.servic
 import { ClientIdService } from './services/client-id/client-id.service';
 import { ConnectionService } from './services/connection/connection.service';
 import { EventService } from './services/event/event.service';
+import { FileService } from './services/file/file.service';
 import { FormValidationService } from './services/form-validation/form-validation.service';
 import { InventoryService } from './services/inventory/inventory.service';
 import { LibraryService } from './services/library/library.service';
@@ -84,6 +85,7 @@ import { UserService } from './services/user/user.service';
     ClientIdService,
     ConnectionService,
     EventService,
+    FileService,
     FormValidationService,
     InventoryService,
     LibraryService,
