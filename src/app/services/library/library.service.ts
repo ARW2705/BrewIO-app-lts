@@ -1,7 +1,7 @@
 /* Module imports */
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, forkJoin, of } from 'rxjs';
+import { Observable, forkJoin, of, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
 /* Constants imports */
@@ -22,6 +22,7 @@ export class LibraryService {
   hopsLibrary: Hops[] = null;
   yeastLibrary: Yeast[] = null;
   styleLibrary: Style[] = null;
+  libraryNames: string[] = ['grains', 'hops', 'yeast', 'style'];
 
   constructor(
     public http: HttpClient,
@@ -32,28 +33,12 @@ export class LibraryService {
   /***** API access methods *** */
 
   /**
-   * Fetch each library type to pre-load into memory, not to be used to return
-   * the observables
+   * Fetch all libraries from the server; overwrite any existing library
    *
    * @params: none
    * @return: none
    */
-  fetchAllLibraries(): void {
-    // Get libraries from storage, but do not overwrite if fetched from server
-    this.storageService.getLibrary()
-      .subscribe(
-        (libraries: LibraryStorage): void => {
-          if (this.grainsLibrary === null) this.grainsLibrary = libraries.grains;
-          if (this.hopsLibrary === null) this.hopsLibrary = libraries.hops;
-          if (this.yeastLibrary === null) this.yeastLibrary = libraries.yeast;
-          if (this.styleLibrary === null) this.styleLibrary = libraries.style;
-        },
-        (error: string): void => {
-          console.log(`${error}: awaiting data from server`);
-        }
-      );
-
-    // Get libraries from server
+  fetchAllLibrariesFromServer(): void {
     forkJoin(
       this.fetchGrainsLibrary(),
       this.fetchHopsLibrary(),
@@ -75,6 +60,44 @@ export class LibraryService {
   }
 
   /**
+   * Fetch each library type to pre-load into memory, not to be used to return
+   * the observables
+   *
+   * @params: none
+   * @return: none
+   */
+  fetchAllLibraries(): void {
+    this.getAllLibrariesFromStorage();
+    this.fetchAllLibrariesFromServer();
+  }
+
+  /**
+   * Helper method to fetch a library for a given type
+   *
+   * @params: libraryName - the name of the library for the given type;
+   * choices include 'grains', 'hops', 'yeast', or 'style'
+   *
+   * @return: observable of requested library
+   */
+  fetchLibrary<T>(libraryName: string): Observable<T[]> {
+    if (!this.libraryNames.includes(libraryName)) {
+      return throwError(`Invalid library name: ${libraryName}`);
+    }
+
+    return this.http.get(`${BASE_URL}/${API_VERSION}/library/${libraryName}`)
+      .pipe(
+        map((library: T[]): T[] => {
+          this[`${libraryName}Library`] = library.sort(this.sortAlpha);
+          this.updateStorage();
+          return library;
+        }),
+        catchError((error: HttpErrorResponse): Observable<never> => {
+          return this.httpError.handleError(error);
+        })
+      );
+  }
+
+  /**
    * Fetch grains library
    *
    * @params: none
@@ -82,17 +105,7 @@ export class LibraryService {
    * @return: observable of array of grains
    */
   fetchGrainsLibrary(): Observable<Grains[]> {
-    return this.http.get(`${BASE_URL}/${API_VERSION}/library/grains`)
-      .pipe(
-        map((grains: Grains[]): Grains[] => {
-          this.grainsLibrary = grains.sort(this.sortAlpha);
-          this.updateStorage();
-          return grains;
-        }),
-        catchError((error: HttpErrorResponse): Observable<never> => {
-          return this.httpError.handleError(error);
-        })
-      );
+    return this.fetchLibrary<Grains>('grains');
   }
 
   /**
@@ -103,17 +116,7 @@ export class LibraryService {
    * @return: observable of array of hops
    */
   fetchHopsLibrary(): Observable<Hops[]> {
-    return this.http.get(`${BASE_URL}/${API_VERSION}/library/hops`)
-      .pipe(
-        map((hops: Hops[]): Hops[] => {
-          this.hopsLibrary = hops.sort(this.sortAlpha);
-          this.updateStorage();
-          return hops;
-        }),
-        catchError((error: HttpErrorResponse): Observable<never> => {
-          return this.httpError.handleError(error);
-        })
-      );
+    return this.fetchLibrary<Hops>('hops');
   }
 
   /**
@@ -124,17 +127,7 @@ export class LibraryService {
    * @return: observable of array of yeast
    */
   fetchYeastLibrary(): Observable<Yeast[]> {
-    return this.http.get(`${BASE_URL}/${API_VERSION}/library/yeast`)
-      .pipe(
-        map((yeast: Yeast[]): Yeast[] => {
-          this.yeastLibrary = yeast.sort(this.sortAlpha);
-          this.updateStorage();
-          return yeast;
-        }),
-        catchError((error: HttpErrorResponse): Observable<never> => {
-          return this.httpError.handleError(error);
-        })
-      );
+    return this.fetchLibrary<Yeast>('yeast');
   }
 
   /**
@@ -145,23 +138,13 @@ export class LibraryService {
    * @return: observable of array of style
    */
   fetchStyleLibrary(): Observable<Style[]> {
-    return this.http.get(`${BASE_URL}/${API_VERSION}/library/style`)
-      .pipe(
-        map((style: Style[]): Style[] => {
-          this.styleLibrary = style.sort(this.sortAlpha);
-          this.updateStorage();
-          return style;
-        }),
-        catchError((error: HttpErrorResponse): Observable<never> => {
-          return this.httpError.handleError(error);
-        })
-      );
+    return this.fetchLibrary<Style>('style');
   }
 
-  /***** End API access methods *** */
+  /***** End API access methods *****/
 
 
-  /***** Utility methods *** */
+  /***** Local Get Methods *****/
 
   /**
    * Call get methods for each library type
@@ -188,33 +171,7 @@ export class LibraryService {
    * @return: observable of array of grains
    */
   getGrainsLibrary(): Observable<Grains[]> {
-    return this.grainsLibrary === null
-      ? this.fetchGrainsLibrary()
-      : of(this.grainsLibrary);
-  }
-
-  /**
-   * Get grains by id, fetch the library if one is not present
-   *
-   * @params: grainId - id of grains document to retrieve
-   *
-   * @return: observable of grains document
-   */
-  getGrainsById(grainId: string): Observable<Grains> {
-    let grains: Grains;
-    if (this.grainsLibrary !== null) {
-      grains = this.grainsLibrary
-        .find((entry: Grains): boolean => entry._id === grainId);
-    }
-    return grains !== undefined
-      ? of(grains)
-      : this.fetchGrainsLibrary()
-          .pipe(
-            map((library: Grains[]): Grains => {
-              return library
-                .find((entry: Grains): boolean => entry._id === grainId);
-            })
-          );
+    return this.grainsLibrary === null ? this.fetchGrainsLibrary() : of(this.grainsLibrary);
   }
 
   /**
@@ -225,33 +182,7 @@ export class LibraryService {
    * @return: observable of array of hops
    */
   getHopsLibrary(): Observable<Hops[]> {
-    return this.hopsLibrary === null
-      ? this.fetchHopsLibrary()
-      : of(this.hopsLibrary);
-  }
-
-  /**
-   * Get hops by id, fetch the library if one is not present
-   *
-   * @params: hopsId - id of hops document to retrieve
-   *
-   * @return: observable of hops document
-   */
-  getHopsById(hopsId: string): Observable<Hops> {
-    let hops: Hops;
-    if (this.hopsLibrary !== null) {
-      hops = this.hopsLibrary
-        .find((entry: Hops): boolean => entry._id === hopsId);
-    }
-    return hops !== undefined
-      ? of(hops)
-      : this.fetchHopsLibrary()
-          .pipe(
-            map((library: Hops[]): Hops => {
-              return library
-                .find((entry: Hops): boolean => entry._id === hopsId);
-            })
-          );
+    return this.hopsLibrary === null ? this.fetchHopsLibrary() : of(this.hopsLibrary);
   }
 
   /**
@@ -262,33 +193,7 @@ export class LibraryService {
    * @return: observable of array of yeast
    */
   getYeastLibrary(): Observable<Yeast[]> {
-    return this.yeastLibrary === null
-      ? this.fetchYeastLibrary()
-      : of(this.yeastLibrary);
-  }
-
-  /**
-   * Get yeast by id, fetch the library if one is not present
-   *
-   * @params: yeastId - id of yeast document to retrieve
-   *
-   * @return: observable of yeast document
-   */
-  getYeastById(yeastId: string): Observable<Yeast> {
-    let yeast: Yeast;
-    if (this.yeastLibrary !== null) {
-      yeast = this.yeastLibrary
-        .find((entry: Yeast): boolean => entry._id === yeastId);
-    }
-    return yeast !== undefined
-      ? of(yeast)
-      : this.fetchYeastLibrary()
-          .pipe(
-            map((library: Yeast[]): Yeast => {
-              return library
-                .find((entry: Yeast): boolean => entry._id === yeastId);
-            })
-          );
+    return this.yeastLibrary === null ? this.fetchYeastLibrary() : of(this.yeastLibrary);
   }
 
   /**
@@ -299,9 +204,66 @@ export class LibraryService {
    * @return: observable of array of style
    */
   getStyleLibrary(): Observable<Style[]> {
-    return this.styleLibrary === null
-      ? this.fetchStyleLibrary()
-      : of(this.styleLibrary);
+    return this.styleLibrary === null ? this.fetchStyleLibrary() : of(this.styleLibrary);
+  }
+
+  /**
+   * Helper method to get a library for a given type
+   *
+   * @params: libraryName - the name of the library for the given type;
+   * choices include 'grains', 'hops', 'yeast', or 'style'
+   *
+   * @return: observable of requested library
+   */
+  getIngredientById<T>(ingredientName: string, id: string): Observable<T> {
+    if (!this.libraryNames.includes(ingredientName)) {
+      return throwError(`Invalid library name: ${ingredientName}`);
+    }
+
+    let ingredient: T;
+
+    if (this[`${ingredientName}Library`] !== null) {
+      ingredient = this[`${ingredientName}Library`]
+        .find((entry: T): boolean => entry['_id'] === id);
+    }
+
+    return ingredient !== undefined
+      ? of(ingredient)
+      : this.fetchLibrary<T>(ingredientName)
+        .pipe(map((library: T[]): T => library.find((entry: T): boolean => entry['_id'] === id)));
+  }
+
+  /**
+   * Get grains by id, fetch the library if one is not present
+   *
+   * @params: grainId - id of grains document to retrieve
+   *
+   * @return: observable of grains document
+   */
+  getGrainsById(grainId: string): Observable<Grains> {
+    return this.getIngredientById('grains', grainId);
+  }
+
+  /**
+   * Get hops by id, fetch the library if one is not present
+   *
+   * @params: hopsId - id of hops document to retrieve
+   *
+   * @return: observable of hops document
+   */
+  getHopsById(hopsId: string): Observable<Hops> {
+    return this.getIngredientById('hops', hopsId);
+  }
+
+  /**
+   * Get yeast by id, fetch the library if one is not present
+   *
+   * @params: yeastId - id of yeast document to retrieve
+   *
+   * @return: observable of yeast document
+   */
+  getYeastById(yeastId: string): Observable<Yeast> {
+    return this.getIngredientById('yeast', yeastId);
   }
 
   /**
@@ -312,20 +274,33 @@ export class LibraryService {
    * @return: observable of style
    */
   getStyleById(styleId: string): Observable<Style> {
-    let style: Style;
-    if (this.styleLibrary !== null) {
-      style = this.styleLibrary
-        .find((entry: Style): boolean => entry._id === styleId);
-    }
-    return style !== undefined
-      ? of(style)
-      : this.fetchStyleLibrary()
-          .pipe(
-            map((library: Style[]): Style => {
-              return library
-                .find((entry: Style): boolean => entry._id === styleId);
-            })
-          );
+    return this.getIngredientById('style', styleId);
+  }
+
+  /***** End Local Get Methods *****/
+
+
+  /***** Utility Methods *****/
+
+  /**
+   * Get all libraries that have been stored; do not overwrite any library that is already present
+   *
+   * @params: none
+   * @return: none
+   */
+  getAllLibrariesFromStorage(): void {
+    this.storageService.getLibrary()
+      .subscribe(
+        (libraries: LibraryStorage): void => {
+          if (this.grainsLibrary === null) this.grainsLibrary = libraries.grains;
+          if (this.hopsLibrary === null) this.hopsLibrary = libraries.hops;
+          if (this.yeastLibrary === null) this.yeastLibrary = libraries.yeast;
+          if (this.styleLibrary === null) this.styleLibrary = libraries.style;
+        },
+        (error: string): void => {
+          console.log(`${error}: awaiting data from server`);
+        }
+      );
   }
 
   /**
@@ -338,6 +313,7 @@ export class LibraryService {
    *          0 if equal
    */
   sortAlpha(a: any, b: any): number {
+    if (!a.name || !b.name) return 0;
     if (a.name < b.name) return -1;
     if (a.name > b.name) return 1;
     return 0;
