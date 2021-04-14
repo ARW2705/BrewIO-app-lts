@@ -270,7 +270,7 @@ export class RecipeService {
     try {
       const newMaster: RecipeMaster = this.formatNewRecipeMaster(newMasterValues);
 
-      return this.imageService.storeFileToLocalDir(newMaster.labelImage)
+      return this.imageService.storeImageToLocalDir(newMaster.labelImage)
         .pipe(
           mergeMap((): Observable<RecipeMaster> => this.addRecipeMasterToList(newMaster)),
           tap(() => {
@@ -408,7 +408,7 @@ export class RecipeService {
     let storeImage: Observable<Image>;
     const labelImage: Image = update['labelImage'] ;
     if (labelImage && labelImage.hasPending) {
-      storeImage = this.imageService.storeFileToLocalDir(
+      storeImage = this.imageService.storeImageToLocalDir(
         labelImage,
         isTemp ? null : previousImagePath
       );
@@ -1049,23 +1049,6 @@ export class RecipeService {
 
     return of(master.variants.find((variant: RecipeVariant): boolean => hasId(variant, variantId)));
   }
-
-  /**
-   * Get the recipe master that stores the given variant id
-   *
-   * @params: variantId - recipe variant to search for
-   *
-   * @return: the owner recipe master subject
-   */
-  // getRecipeMasterByRecipeId(variantId: string): BehaviorSubject<RecipeMaster> {
-  //   return this.recipeMasterList$.value
-  //     .find((recipeMaster$: BehaviorSubject<RecipeMaster>): boolean => {
-  //       return recipeMaster$.value.variants
-  //         .some((variant: RecipeVariant): boolean => {
-  //           return hasId(variant, variantId);
-  //         });
-  //     });
-  // }
 
   /**
    * Check if there is a process schedule available for a recipe variant. A
