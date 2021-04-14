@@ -59,7 +59,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
         take(1),
         map((user: User): void => {
           this.user = user;
-          this.preferredUnits = this.preferenceService.getPreferredUnitSystem();
+          this.preferredUnits = this.preferenceService.getPreferredUnitSystemName();
           this.setUnits = this.preferenceService.getSelectedUnits();
           this.mapDisplayUnits();
 
