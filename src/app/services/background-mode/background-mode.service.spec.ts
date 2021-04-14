@@ -7,7 +7,7 @@ import { BackgroundMode } from '@ionic-native/background-mode/ngx';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { BackgroundModeMock, PlatformMock, PlatformMockDev, PlatformMockCordova } from '../../../../test-config/mocks-ionic';
+import { BackgroundModeMock, PlatformMockDev, PlatformMockCordova } from '../../../../test-config/mocks-ionic';
 
 /* Service imports */
 import { BackgroundModeService } from './background-mode.service';
@@ -35,6 +35,10 @@ describe('BackgroundModeService', () => {
     beforeEach(() => {
       injector = getTestBed();
       backgroundService = injector.get(BackgroundModeService);
+    });
+
+    test('should create the service', () => {
+      expect(backgroundService).toBeDefined();
     });
 
     test('should not listen for background mode', () => {
