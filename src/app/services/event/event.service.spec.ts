@@ -16,8 +16,6 @@ describe('EventService', () => {
 
   beforeAll(async((): void => {
     TestBed.configureTestingModule({
-      declarations: [],
-      imports: [],
       providers: [ EventService ]
     });
 

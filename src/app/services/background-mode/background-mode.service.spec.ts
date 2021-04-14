@@ -22,8 +22,6 @@ describe('BackgroundModeService', () => {
 
     beforeAll(async(() => {
       TestBed.configureTestingModule({
-        declarations: [],
-        imports: [],
         providers: [
           BackgroundModeService,
           { provide: Platform, useClass: PlatformMockDev },

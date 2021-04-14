@@ -1,6 +1,6 @@
+/* Module imports */
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
-
 import { Platform } from '@ionic/angular';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
@@ -9,6 +9,7 @@ import { StatusBar } from '@ionic-native/status-bar/ngx';
 import { configureTestBed } from '../../test-config/configure-test-bed';
 
 /* Mock imports */
+import { RecipeServiceMock, InventoryServiceMock, LibraryServiceMock, ProcessServiceMock, UserServiceMock } from '../../test-config/mocks-app';
 import { DomMock, PlatformMockDev, StatusBarMock, SplashScreenMock, StorageMock } from '../../test-config/mocks-ionic';
 
 /* Service imports */
@@ -31,24 +32,13 @@ describe('AppComponent', () => {
   beforeAll((done: any) => (async () => {
     TestBed.configureTestingModule({
       declarations: [ AppComponent ],
-      imports: [ ],
       providers: [
-        {
-          provide: LibraryService,
-          useValue: {
-            fetchAllLibraries: () => []
-          }
-        },
-        {
-          provide: UserService,
-          useValue: {
-            loadUserFromStorage: () => {}
-          }
-        },
+        { provide: LibraryService, useClass: LibraryServiceMock },
+        { provide: UserService, useClass: UserServiceMock },
         { provide: Document, useClass: DomMock },
-        { provide: InventoryService, useValue: {} },
-        { provide: ProcessService, useValue: {} },
-        { provide: RecipeService, useValue: {} },
+        { provide: InventoryService, useClass: InventoryServiceMock },
+        { provide: ProcessService, useClass: ProcessServiceMock },
+        { provide: RecipeService, useClass: RecipeServiceMock },
         { provide: StatusBar, useClass: StatusBarMock },
         { provide: SplashScreen, useClass: SplashScreenMock },
         { provide: Platform, useClass: PlatformMockDev },

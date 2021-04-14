@@ -22,8 +22,6 @@ describe('Connection Provider', (): void => {
 
     beforeAll(async((): void => {
       TestBed.configureTestingModule({
-        declarations: [],
-        imports: [],
         providers: [
           ConnectionService,
           { provide: Platform, useClass: PlatformMockDev },

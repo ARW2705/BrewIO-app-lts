@@ -15,8 +15,6 @@ describe('ClientIdService', () => {
 
   beforeAll(async ((): void => {
     TestBed.configureTestingModule({
-      declarations: [],
-      imports: [],
       providers: [ ClientIdService ]
     });
 

@@ -25,7 +25,6 @@ describe('ActionSheetService', () => {
 
   beforeAll(async(() => {
     TestBed.configureTestingModule({
-      imports : [],
       providers: [
         ActionSheetService,
         { provide: ActionSheetController, useClass: ActionSheetControllerMock }
