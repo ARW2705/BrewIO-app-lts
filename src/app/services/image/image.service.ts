@@ -1,14 +1,11 @@
 /* Module imports */
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
-import { File, FileEntry, Entry, IFile, FileError, Metadata } from '@ionic-native/file/ngx';
-import { FilePath } from '@ionic-native/file-path/ngx';
-import { WebView } from '@ionic-native/ionic-webview/ngx';
+import { Entry, Metadata } from '@ionic-native/file/ngx';
 import { Crop } from '@ionic-native/crop/ngx';
 import { ImageResizer, ImageResizerOptions } from '@ionic-native/image-resizer/ngx';
-import { Observable, Observer, forkJoin, from, of, throwError } from 'rxjs';
-import { catchError, defaultIfEmpty, map, mergeMap, tap } from 'rxjs/operators';
+import { Observable, forkJoin, from, of, throwError } from 'rxjs';
+import { defaultIfEmpty, map, mergeMap, tap } from 'rxjs/operators';
 
 /* Constant imports */
 import { BASE_URL } from '../../shared/constants/base-url';
@@ -24,7 +21,7 @@ import { Image, ImageRequestFormData, ImageRequestMetadata } from '../../shared/
 
 /* Service imports */
 import { ClientIdService } from '../client-id/client-id.service';
-import { HttpErrorService } from '../http-error/http-error.service';
+import { FileService } from '../file/file.service';
 
 
 @Injectable({
@@ -37,37 +34,11 @@ export class ImageService {
     public camera: Camera,
     public clientIdService: ClientIdService,
     public crop: Crop,
-    public file: File,
-    public filePath: FilePath,
-    public http: HttpClient,
-    public imageResizer: ImageResizer,
-    public processHttpError: HttpErrorService,
-    public webview: WebView
+    public fileService: FileService,
+    public imageResizer: ImageResizer
   ) { }
 
   /***** Device Actions *** */
-
-  /**
-   * Get file entry metadata
-   *
-   * @params: entry - file entry to query
-   *
-   * @return: observable of metadata
-   */
-  getMetadata(entry: Entry): Observable<Metadata> {
-    return new Observable((observer: Observer<Metadata>): void => {
-      entry.getMetadata(
-        (data: Metadata): void => {
-          observer.next(data);
-          observer.complete();
-        },
-        (error: any): void => {
-          observer.error(error);
-          observer.complete();
-        }
-      );
-    });
-  }
 
   /**
    * Copy image file from device image gallery to local temporary directory
@@ -77,30 +48,25 @@ export class ImageService {
    *
    * @return: observable of temporary Image
    */
-  copyFileToLocalTmpDir(path: string, fileName: string): Observable<Image> {
+  copyImageToLocalTmpDir(path: string, fileName: string): Observable<Image> {
     const cid: string = this.clientIdService.getNewId();
 
-    return from(
-      this.file.copyFile(path, fileName, this.file.cacheDirectory, cid + IMAGE_FILE_EXTENSION)
-    )
-    .pipe(
-      mergeMap((entry: Entry): Observable<[Entry, Metadata]> => {
-        return forkJoin(of(entry), this.getMetadata(entry));
-      }),
-      map(([entry, metadata]: [Entry, Metadata]): Image => {
-        const filePath: string = entry.nativeURL;
-        const localURL: string = this.webview.convertFileSrc(filePath);
+    return this.fileService.copyFileToLocalTmpDir(cid, path, fileName, IMAGE_FILE_EXTENSION)
+      .pipe(
+        map(([entry, metadata]: [Entry, Metadata]): Image => {
+          const filePath: string = entry.nativeURL;
+          const localURL: string = this.fileService.getLocalUrl(filePath);
 
-        return {
-          cid: cid,
-          filePath: filePath,
-          fileSize: metadata.size,
-          hasPending: true,
-          localURL: localURL,
-          url: localURL
-        };
-      })
-    );
+          return {
+            cid: cid,
+            filePath: filePath,
+            fileSize: metadata.size,
+            hasPending: true,
+            localURL: localURL,
+            url: localURL
+          };
+        })
+      );
   }
 
   /**
@@ -117,47 +83,7 @@ export class ImageService {
       return throwError(`Deletion error: invalid file path: ${filePath}`);
     }
 
-    return from(this.file.resolveLocalFilesystemUrl(filePath))
-      .pipe(
-        mergeMap((entry: FileEntry): Observable<string> => {
-          return new Observable((observer: Observer<string>): void => {
-            entry.remove(
-              (): void => {
-                observer.next(null);
-                observer.complete();
-              },
-              (error: FileError): void => {
-                console.log('file deletion error', error, filePath);
-                observer.next(error.message);
-                observer.complete();
-              }
-            );
-          });
-        }),
-        catchError((error: any): Observable<string> => {
-          console.log('file read error', error);
-          return of(null);
-        })
-      );
-  }
-
-  /**
-   * Get a device file
-   *
-   * @params: path - file path to load
-   *
-   * @return: file buffer or error message
-   */
-  getLocalFile(path: string): Observable<string | ArrayBuffer> {
-    return from(this.file.resolveLocalFilesystemUrl(path))
-      .pipe(
-        mergeMap((fileEntry: FileEntry): Observable<IFile | FileError> => {
-          return this.convertFileEntrytoCordovaFile(fileEntry);
-        }),
-        mergeMap((file: IFile): Observable<string | ArrayBuffer> => {
-          return this.convertCordovaFileToJSFile(file);
-        })
-      );
+    return this.fileService.deleteLocalFile(filePath);
   }
 
   /**
@@ -184,7 +110,7 @@ export class ImageService {
         }),
         mergeMap((imagePath: string): Observable<string[]> => {
           return forkJoin(
-            from(this.filePath.resolveNativePath(imagePath)),
+            this.fileService.resolveNativePath(imagePath),
             of<string>(imagePath)
           );
         }),
@@ -195,7 +121,7 @@ export class ImageService {
               imagePath.lastIndexOf('/') + 1,
               imagePath.lastIndexOf('?')
             );
-          return this.copyFileToLocalTmpDir(path, originalName);
+          return this.copyImageToLocalTmpDir(path, originalName);
         })
       );
   }
@@ -209,7 +135,7 @@ export class ImageService {
    *
    * @return: observable of persistent Image
    */
-  storeFileToLocalDir(image: Image, replaceImagePath?: string): Observable<Image> {
+  storeImageToLocalDir(image: Image, replaceImagePath?: string): Observable<Image> {
     if (!this.isTempImage(image)) {
       return of(image);
     }
@@ -218,11 +144,11 @@ export class ImageService {
       .pipe(
         tap((resizedImagePath: string): void => {
           image.filePath = resizedImagePath;
-          image.localURL = this.webview.convertFileSrc(resizedImagePath);
+          image.localURL = this.fileService.getLocalUrl(resizedImagePath);
           image.url = image.localURL;
         }),
         mergeMap((): Observable<string> => {
-          const tempPath: string = `${this.file.cacheDirectory}${image.cid}${IMAGE_FILE_EXTENSION}`;
+          const tempPath: string = `${this.fileService.getTmpDirPath()}${image.cid}${IMAGE_FILE_EXTENSION}`;
           console.log('moving to persistent from', tempPath);
           return this.deleteLocalImage(tempPath);
         }),
@@ -238,53 +164,6 @@ export class ImageService {
 
 
   /***** File Conversions *** */
-
-  /**
-   * Convert a cordova file to a js file
-   *
-   * @params: file - input cordova file to convert
-   *
-   * @return: observable of js file buffer or error message
-   */
-  convertCordovaFileToJSFile(file: IFile): Observable<string | ArrayBuffer> {
-    const reader: FileReader = new FileReader();
-    const reader$: Observable<string | ArrayBuffer> = new Observable(
-      (observer: Observer<string | ArrayBuffer>): void => {
-        reader.onload = (): void => {
-          observer.next(reader.result);
-          observer.complete();
-        };
-        reader.onerror = (): void => {
-          observer.error(`file reader error: ${reader.error}`);
-          observer.complete();
-        };
-      }
-    );
-    reader.readAsArrayBuffer(file);
-    return reader$;
-  }
-
-  /**
-   * Convert a file entry to a cordova file
-   *
-   * @params: file - input device file to convert
-   *
-   * @return: observable of cordova input file or file error
-   */
-  convertFileEntrytoCordovaFile(fileEntry: FileEntry): Observable<IFile | FileError> {
-    return new Observable((observer: Observer<IFile | FileError>): void => {
-      fileEntry.file(
-        (file: IFile): void => {
-          observer.next(file);
-          observer.complete();
-        },
-        (error: FileError): void => {
-          observer.error(error.message);
-          observer.complete();
-        }
-      );
-    });
-  }
 
   /**
    * Resize an image
@@ -307,7 +186,7 @@ export class ImageService {
 
     const options: ImageResizerOptions = {
       uri: image.filePath,
-      folderName: this.file.dataDirectory,
+      folderName: this.fileService.getPersistentDirPath(),
       fileName: image.filePath.substring(image.filePath.lastIndexOf('/') + 1),
       quality: reductionFactor,
       width: 300,
@@ -335,7 +214,7 @@ export class ImageService {
 
     for (const imageDatum of imageData) {
       if (!this.isTempImage(imageDatum.image)) {
-        files.push(this.getLocalFile(imageDatum.image.filePath));
+        files.push(this.fileService.getLocalFile(imageDatum.image.filePath));
       }
     }
 
@@ -383,7 +262,7 @@ export class ImageService {
     if (image.url === image.localURL) {
       image.url = this.getServerURL(image.serverFilename);
     } else {
-      image.url = this._defaultImage.filePath;
+      image.url = this._defaultImage.url;
     }
   }
 
@@ -409,7 +288,7 @@ export class ImageService {
     if (!image || !image.filePath) {
       return false;
     }
-    return this.file.cacheDirectory
+    return this.fileService.getTmpDirPath()
       === image.filePath.substring(0, image.filePath.lastIndexOf('/') + 1);
   }
 
