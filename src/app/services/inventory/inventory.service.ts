@@ -311,6 +311,11 @@ export class InventoryService {
     const list$: BehaviorSubject<InventoryItem[]> = this.getInventoryList();
     const list: InventoryItem[] = list$.value;
     const removeIndex: number = list.findIndex((item: InventoryItem): boolean => hasId(item, itemId));
+
+    if (removeIndex === -1) {
+      return throwError(`Item with id: '${itemId}' not found`);
+    }
+
     const toDelete: InventoryItem = list[removeIndex];
 
     // delete item label image file
@@ -444,14 +449,14 @@ export class InventoryService {
     let image: Image = item.optionalItemData[imageName];
 
     if (image && image.hasPending) {
-      storeImages.push(this.imageService.storeFileToLocalDir(image, replacementPaths[imageName]));
+      storeImages.push(this.imageService.storeImageToLocalDir(image, replacementPaths[imageName]));
     }
 
     imageName = 'supplierLabelImage';
     image = item.optionalItemData[imageName];
 
     if (image && image.hasPending) {
-      storeImages.push(this.imageService.storeFileToLocalDir(image, replacementPaths[imageName]));
+      storeImages.push(this.imageService.storeImageToLocalDir(image, replacementPaths[imageName]));
     }
 
     return storeImages;
@@ -582,7 +587,10 @@ export class InventoryService {
         mergeMap((itemResponse: InventoryItem): Observable<boolean> => {
           return this.handleBackgroundUpdateResponse(itemResponse, syncMethod === 'delete');
         }),
-        catchError((error: HttpErrorResponse): Observable<never> => {
+        catchError((error: HttpErrorResponse | string): Observable<never> => {
+          if (typeof error === 'string') {
+            return throwError(error);
+          }
           return this.httpError.handleError(error);
         })
       )
@@ -678,7 +686,7 @@ export class InventoryService {
         }
 
         if (syncFlag.method === 'update' && isMissingServerId(item._id)) {
-          const errMsg: string = `Item with id: ${item.cid} is missing its server id`;
+          const errMsg: string = `Item with id: '${item.cid}' is missing its server id`;
           errors.push(this.syncService.constructSyncError(errMsg));
         } else if (syncFlag.method === 'create') {
           item['forSync'] = true;
