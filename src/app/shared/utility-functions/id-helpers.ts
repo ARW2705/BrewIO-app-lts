@@ -9,7 +9,7 @@ import { DEFAULT_ID_TYPE_REGEX } from '../constants/default-id-pattern';
  * @return: the id as a string else undefined
  */
 export function getId(obj: object): string {
-  if (obj === null) return undefined;
+  if (!obj) return undefined;
   if (obj['_id'] !== undefined) return obj['_id'];
   if (obj['cid'] !== undefined) return obj['cid'];
   return undefined;
@@ -72,5 +72,5 @@ export function hasId(obj: object, searchId: string): boolean {
  * @return: true if id is undefined
  */
 export function isMissingServerId(id: string): boolean {
-  return id === undefined;
+  return id === undefined || id === null;
 }
