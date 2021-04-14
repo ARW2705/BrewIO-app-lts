@@ -6,9 +6,8 @@ import { ActionSheetController } from '@ionic/angular';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockActionSheetButtons } from '../../../../test-config/mock-models/mock-action-sheet-buttons';
-import { mockActionSheetElement } from '../../../../test-config/mock-models/mock-action-sheet-element';
-import { ActionSheetControllerMock, ActionSheetMock } from '../../../../test-config/mocks-ionic';
+import { mockActionSheetButtons, mockActionSheetElement } from '../../../../test-config/mock-models/mock-action-sheet';
+import { ActionSheetControllerMock } from '../../../../test-config/mocks-ionic';
 
 /* Interface imports */
 import { ActionSheetButton } from '../../shared/interfaces/action-sheet-buttons';
@@ -37,6 +36,10 @@ describe('ActionSheetService', () => {
     actionSheetService = injector.get(ActionSheetService);
     actionCtrl = injector.get(ActionSheetController);
   }));
+
+  test('should create the service', () => {
+    expect(actionSheetService).toBeDefined();
+  });
 
   test('should open action sheet with default options', (done: jest.DoneCallback) => {
     const _mockActionSheetElement = mockActionSheetElement();
