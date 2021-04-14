@@ -20,14 +20,13 @@ export interface InventoryItem {
 
 export interface OptionalItemData {
   batchId?: string;
-  supplierURL?: string;
-  supplierLabelImage?: Image;
   itemIBU?: number;
-  itemSRM?: number;
   itemLabelImage?: Image;
+  itemSRM?: number;
   itemSubname?: string;
-  packagingDate?: string;
   originalRecipe?: string;
-  srmColor?: string;
+  packagingDate?: string;
   remainingColor?: string;
+  srmColor?: string;
+  supplierLabelImage?: Image;
 }
