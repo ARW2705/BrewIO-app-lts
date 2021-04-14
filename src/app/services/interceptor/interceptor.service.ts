@@ -24,14 +24,11 @@ export class AuthorizedInterceptor implements HttpInterceptor {
    *
    * @return: observable of http event to pass response back to origin
    */
-  intercept(
-    req: HttpRequest<any>,
-    next: HttpHandler
-  ): Observable<HttpEvent<any>> {
+  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const userService: UserService = this.injector.get(UserService);
     const authToken: string = userService.getToken();
     const authRequest: HttpRequest<any> = req.clone(
-      {headers: req.headers.set('Authorization', `bearer ${authToken}`)}
+      { headers: req.headers.set('Authorization', `bearer ${authToken}`) }
     );
     return next.handle(authRequest);
   }
@@ -56,10 +53,7 @@ export class UnauthorizedInterceptor implements HttpInterceptor {
    *
    * @return: observable of http event to pass response back to origin
    */
-  intercept(
-    req: HttpRequest<any>,
-    next: HttpHandler
-  ): Observable<HttpEvent<any>> {
+  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return next
       .handle(req)
       .pipe(
