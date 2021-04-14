@@ -77,22 +77,64 @@ export class ImageServiceMock {
   public setInitialURL(...options) {}
 }
 
+
+@Injectable()
+export class InventoryServiceMock {
+  public initFromServer() {}
+  public initFromStorage() {}
+  public initializeInventory() {}
+  public registerEvents() {}
+  public addItemToList(...options) {}
+  public clearInventory() {}
+  public createItem(...options) {}
+  public createItemFromBatch(...options) {}
+  public getInventoryList() {}
+  public getItemById(...options) {}
+  public removeItem(...options) {}
+  public updateItem(...options) {}
+  public composeImageUploadRequests(...options) {}
+  public composeImageStoreRequests(...options) {}
+  public configureBackgroundRequest(...options) {}
+  public getBackgroundRequest(...options) {}
+  public handleBackgroundUpdateResponse(...options) {}
+  public requestInBackground(...options) {}
+  public addSyncFlag(...options) {}
+  public dismissAllErrors() {}
+  public dismissSyncError(...options) {}
+  public generateSyncRequests() {}
+  public processSyncSuccess(...options) {}
+  public syncOnConnection(...options) {}
+  public syncOnReconnect() {}
+  public syncOnSignup() {}
+  public canSendRequest(...options) {}
+  public getRemainingColor(...options) {}
+  public getSRMColor(...options) {}
+  public hasMappableKey(...options) {}
+  public mapOptionalData(...options) {}
+  public updateInventoryStorage() {}
+}
+
+
 @Injectable()
 export class LibraryServiceMock {
+  public fetchAllLibrariesFromServer() {}
   public fetchAllLibraries() {}
+  public fetchLibrary<T>(...options) {}
   public fetchGrainsLibrary() {}
   public fetchHopsLibrary() {}
-  public fetchStyleLibrary() {}
   public fetchYeastLibrary() {}
+  public fetchStyleLibrary() {}
   public getAllLibraries() {}
   public getGrainsLibrary() {}
-  public getGrainsById(...options) {}
   public getHopsLibrary() {}
-  public getHopsById(...options) {}
   public getYeastLibrary() {}
-  public getYeastById(...options) {}
   public getStyleLibrary() {}
+  public getIngredientById<T>(...options) {}
+  public getGrainsById(...options) {}
+  public getHopsById(...options) {}
+  public getYeastById(...options) {}
   public getStyleById(...options) {}
+  public getAllLibrariesFromStorage() {}
   public sortAlpha(...options) {}
   public updateStorage() {}
 }
