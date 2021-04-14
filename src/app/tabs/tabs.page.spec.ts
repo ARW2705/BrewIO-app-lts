@@ -8,7 +8,7 @@ import { IonicModule } from '@ionic/angular';
 import { configureTestBed } from '../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { EventMock } from '../../../test-config/mocks-ionic';
+import { EventServiceMock } from '../../../test-config/mocks-app';
 
 /* Service imports */
 import { EventService } from '../services/event/event.service';
@@ -31,7 +31,7 @@ describe('TabsPage', () => {
         RouterTestingModule
       ],
       providers: [
-        { provide: EventService, useClass: EventMock },
+        { provide: EventService, useClass: EventServiceMock },
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
