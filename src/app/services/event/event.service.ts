@@ -41,7 +41,7 @@ export class EventService {
     if (!this.subscribers[name]) {
       this.subscribers[name] = {
         message: new Subject<object>(),
-        subscriberCount: 1
+        subscriberCount: 0
       };
     }
     this.subscribers[name].subscriberCount++;
