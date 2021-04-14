@@ -7,7 +7,7 @@ export const OPTIONAL_INVENTORY_DATA_KEYS: string[] = [
   'itemLabelImage',
   'itemSubname',
   'packagingDate',
-  'originalRecipeId',
+  'originalRecipe',
   'srmColor',
   'remainingColor'
 ];
