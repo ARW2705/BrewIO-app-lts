@@ -9,7 +9,7 @@ import { mockEnglishUnits, mockMetricUnits } from '../../../../test-config/mock-
 import { mockGrainBill } from '../../../../test-config/mock-models/mock-grain-bill';
 import { mockHopsSchedule } from '../../../../test-config/mock-models/mock-hops-schedule';
 import { mockRecipeVariantComplete } from '../../../../test-config/mock-models/mock-recipe-variant-complete';
-import { mockYeastGroup } from '../../../../test-config/mock-models/mock-yeast-group';
+import { mockYeastBatch } from '../../../../test-config/mock-models/mock-yeast-batch';
 
 /* Constan imports */
 import * as Units from '../../shared/constants/units';
@@ -49,6 +49,10 @@ describe('CalculationsService', () => {
       .fn()
       .mockReturnValue(mockEnglishUnits());
   }));
+
+  test('should create the service', () => {
+    expect(calculator).toBeDefined();
+  });
 
   describe('Handle unit conversions', () => {
 
@@ -202,7 +206,7 @@ describe('CalculationsService', () => {
   describe('\nCalculates with provided ingredients', () => {
     const _mockGrainBill: GrainBill[] = mockGrainBill();
     const _mockHopsSchedule: HopsSchedule[] = mockHopsSchedule();
-    const _mockYeastGroup: YeastBatch[] = mockYeastGroup();
+    const _mockYeastBatch: YeastBatch[] = mockYeastBatch();
 
     test('should calculate mash efficiency: 10 gal and provided GrainBill and Measured Efficiency', () => {
       expect(calculator.calculateMashEfficiency(_mockGrainBill, 1.035, 10)).toEqual(74);
@@ -242,7 +246,7 @@ describe('CalculationsService', () => {
     });
 
     test('should calculate Avg Attenutation from provided yeast group', () => {
-      expect(calculator.getAverageAttenuation(_mockYeastGroup)).toEqual(74);
+      expect(calculator.getAverageAttenuation(_mockYeastBatch)).toEqual(74);
     });
 
   }); // end 'Calculates with provided ingredients' section
