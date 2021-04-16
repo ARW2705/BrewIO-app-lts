@@ -4,14 +4,13 @@ import { RecipeVariant } from '../../src/app/shared/interfaces/recipe-variant';
 import { User } from '../../src/app/shared/interfaces/user';
 import { Process } from '../../src/app/shared/interfaces/process';
 
-import { mockGrainBill } from './mock-grain-bill';
-import { mockHopsSchedule } from './mock-hops-schedule';
-import { mockYeastBatch } from './mock-yeast-batch';
+import { mockGrainBill } from './mock-grains';
+import { mockHopsSchedule } from './mock-hops';
+import { mockYeastBatch } from './mock-yeast';
 import { mockOtherIngredients } from './mock-other-ingredients';
 import { mockImage } from './mock-image';
 import { mockProcessSchedule } from './mock-process-schedule';
-import { mockRecipeMasterActive } from './mock-recipe-master-active';
-import { mockRecipeVariantComplete } from './mock-recipe-variant-complete';
+import { mockRecipeMasterActive, mockRecipeVariantComplete } from './mock-recipe';
 import { mockStyles } from './mock-styles';
 import { mockUser } from './mock-user';
 

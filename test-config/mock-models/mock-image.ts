@@ -21,11 +21,11 @@ export const mockImageRequestFormData: () => ImageRequestFormData = (): ImageReq
   return mock;
 };
 
-export const mockImageRequestMetadata: () => ImageRequestMetadata = (): ImageRequestMetadata => {
+export const mockImageRequestMetadata: (options?: { name?: string, blob?: Blob, filename?: string }) => ImageRequestMetadata = (options?: { name?: string, blob?: Blob, filename?: string }): ImageRequestMetadata => {
   const mock: ImageRequestMetadata = {
-    name: 'test-img',
-    blob: new Blob(),
-    filename: 'test-filename'
+    name: options && options.name ? options.name : 'test-img',
+    blob: options && options.blob ? options.blob : new Blob(),
+    filename: options && options.filename ? options.filename : 'test-filename'
   };
   return mock;
 };
