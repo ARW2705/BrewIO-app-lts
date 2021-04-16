@@ -325,7 +325,7 @@ export class RecipeService {
   removeRecipeMasterById(masterId: string): Observable<boolean> {
     const recipeMaster$: BehaviorSubject<RecipeMaster> = this.getRecipeMasterById(masterId);
     if (!recipeMaster$) {
-      return throwError('Variant\'s master recipe not found');
+      return throwError('Master recipe not found');
     }
 
     const recipeMaster: RecipeMaster = recipeMaster$.value;
@@ -390,7 +390,7 @@ export class RecipeService {
   updateRecipeMasterById(masterId: string, update: object): Observable<RecipeMaster> {
     const master$: BehaviorSubject<RecipeMaster> = this.getRecipeMasterById(masterId);
 
-    if (master$ === undefined) {
+    if (!master$) {
       return throwError(`Update error: Recipe master with id ${masterId} not found`);
     }
 
@@ -400,7 +400,7 @@ export class RecipeService {
     const isTemp: boolean = this.imageService.isTempImage(master.labelImage);
 
     for (const key in update) {
-      if (master.hasOwnProperty(key) && key !== 'variants') {
+      if (update.hasOwnProperty(key) && master.hasOwnProperty(key) && key !== 'variants') {
         master[key] = update[key];
       }
     }
@@ -500,7 +500,7 @@ export class RecipeService {
    * @return: observable of server request
    */
   getBackgroundRequest<T>(
-    syncMethod: string,
+    requestMethod: string,
     recipeMaster: RecipeMaster,
     recipeVariant?: RecipeVariant,
     deletionId?: string
@@ -509,7 +509,7 @@ export class RecipeService {
 
     let route: string = `${BASE_URL}/${API_VERSION}/recipes/private`;
 
-    if (syncMethod === 'delete') {
+    if (requestMethod === 'delete') {
       route += '/master/';
       if (!recipeMaster && !recipeVariant && deletionId) {
         route += deletionId;
@@ -539,10 +539,10 @@ export class RecipeService {
             formData.append(imageData[0].name, imageData[0].blob, imageData[0].filename);
           }
 
-          if (syncMethod === 'post') {
+          if (requestMethod === 'post') {
             route += `${isMaster ? '' : `/master/${recipeMaster._id}`}`;
             return this.http.post<T>(route, formData);
-          } else if (syncMethod === 'patch') {
+          } else if (requestMethod === 'patch') {
             route += `/master/${recipeMaster._id}${isMaster ? '' : `/variant/${recipeVariant._id}`}`;
             return this.http.patch<T>(route, formData);
           } else {
@@ -606,6 +606,9 @@ export class RecipeService {
           return this.handleBackgroundUpdateResponse(recipeMaster.cid, variantId, recipeResponse);
         }),
         catchError((error: HttpErrorResponse): Observable<never> => {
+          if (!(error instanceof HttpErrorResponse)) {
+            return throwError(error);
+          }
           return this.httpError.handleError(error);
         })
       )
@@ -621,7 +624,7 @@ export class RecipeService {
   /***** End Background Server Update Methods *****/
 
 
-  /***** Sync pending requests to server *****/
+  /***** Sync Methods *****/
 
   /**
    * Add a sync flag for a recipe
@@ -632,11 +635,13 @@ export class RecipeService {
    * @return: none
    */
   addSyncFlag(method: string, docId: string): void {
-    this.syncService.addSyncFlag({
+    const syncFlag: SyncMetadata = {
       method: method,
       docId: docId,
       docType: 'recipe'
-    });
+    };
+
+    this.syncService.addSyncFlag(syncFlag);
   }
 
   /**
@@ -685,7 +690,7 @@ export class RecipeService {
           errors.push(this.syncService.constructSyncError(errMsg));
           return;
         } else if (syncFlag.method === 'delete') {
-          requests.push(this.configureBackgroundRequest('delete', true, null, null, syncFlag.docId));
+          requests.push(this.configureBackgroundRequest<RecipeMaster>('delete', true, null, null, syncFlag.docId));
           return;
         }
 
@@ -705,9 +710,9 @@ export class RecipeService {
           errors.push(this.syncService.constructSyncError(errMsg));
         } else if (syncFlag.method === 'create') {
           recipeMaster['forSync'] = true;
-          requests.push(this.configureBackgroundRequest('post', true, recipeMaster, null));
+          requests.push(this.configureBackgroundRequest<RecipeMaster>('post', true, recipeMaster, null));
         } else if (syncFlag.method === 'update' && !isMissingServerId(recipeMaster._id)) {
-          requests.push(this.configureBackgroundRequest('patch', true, recipeMaster, null));
+          requests.push(this.configureBackgroundRequest<RecipeMaster>('patch', true, recipeMaster, null));
         } else {
           const errMsg = `Sync error: Unknown sync flag method '${syncFlag.method}'`;
           errors.push(this.syncService.constructSyncError(errMsg));
@@ -734,7 +739,7 @@ export class RecipeService {
         if (recipeMaster$ === undefined) {
           this.syncErrors.push({
             errCode: -1,
-            message: `Recipe with id: '${(<RecipeMaster>_syncData).cid}' not found`
+            message: `Sync error: recipe with id: '${(<RecipeMaster>_syncData).cid}' not found`
           });
         } else {
           recipeMaster$.next(<RecipeMaster>_syncData);
@@ -836,7 +841,7 @@ export class RecipeService {
       );
   }
 
-  /***** End sync pending requests to server *****/
+  /***** End Sync Methods *****/
 
 
   /***** Utility methods *****/
@@ -871,7 +876,7 @@ export class RecipeService {
   ): Observable<RecipeVariant> {
     const master$: BehaviorSubject<RecipeMaster> = this.getRecipeMasterById(masterId);
 
-    if (master$ === undefined) {
+    if (!master$) {
       return throwError(`Recipe master with id ${masterId} not found`);
     }
 
@@ -903,8 +908,22 @@ export class RecipeService {
     if (ids && ids.length) {
       idsOk = ids.every((id: string): boolean => id && !hasDefaultIdType(id));
     }
-
     return this.connectionService.isConnected() && this.userService.isLoggedIn() && idsOk;
+  }
+
+  /**
+   * Call complete for all recipe subjects and clear recipeMasterList array
+   *
+   * @params: none
+   * @return: none
+   */
+  clearRecipes(): void {
+    this.getMasterList().value
+      .forEach((recipeMaster$: BehaviorSubject<RecipeMaster>) => {
+        recipeMaster$.complete();
+      });
+    this.getMasterList().next([]);
+    this.storageService.removeRecipes();
   }
 
   /**
@@ -944,21 +963,6 @@ export class RecipeService {
     };
 
     return newMaster;
-  }
-
-  /**
-   * Call complete for all recipe subjects and clear recipeMasterList array
-   *
-   * @params: none
-   * @return: none
-   */
-  clearRecipes(): void {
-    this.getMasterList().value
-      .forEach((recipeMaster$: BehaviorSubject<RecipeMaster>) => {
-        recipeMaster$.complete();
-      });
-    this.getMasterList().next([]);
-    this.storageService.removeRecipes();
   }
 
   /**
@@ -1042,7 +1046,7 @@ export class RecipeService {
    */
   getRecipeVariantById(masterId: string, variantId: string): Observable<RecipeVariant> {
     const master$: BehaviorSubject<RecipeMaster> = this.getRecipeMasterById(masterId);
-    if (master$ === undefined) {
+    if (!master$) {
       return throwError(`Recipe master with id ${masterId} not found`);
     }
     const master: RecipeMaster = master$.value;
@@ -1151,8 +1155,7 @@ export class RecipeService {
     if (recipeMaster.variants.length > 1) {
       recipeMaster.variants[changeIndex].isMaster = false;
 
-      const newMaster: RecipeVariant
-        = recipeMaster.variants[changeIndex === 0 ? 1 : 0];
+      const newMaster: RecipeVariant = recipeMaster.variants[changeIndex === 0 ? 1 : 0];
 
       newMaster.isMaster = true;
       recipeMaster.master = newMaster._id || newMaster.cid;
@@ -1269,7 +1272,7 @@ export class RecipeService {
     update: RecipeVariant | object
   ): Observable<RecipeVariant> {
     const master$: BehaviorSubject<RecipeMaster> = this.getRecipeMasterById(masterId);
-    if (master$ === undefined) {
+    if (!master$) {
       return throwError(`Recipe master with id ${masterId} not found`);
     }
     const master: RecipeMaster = master$.value;
