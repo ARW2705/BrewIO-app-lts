@@ -6,13 +6,13 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
 import { mockEnglishUnits, mockMetricUnits } from '../../../../test-config/mock-models/mock-units';
-import { mockGrainBill } from '../../../../test-config/mock-models/mock-grain-bill';
-import { mockHopsSchedule } from '../../../../test-config/mock-models/mock-hops-schedule';
-import { mockRecipeVariantComplete } from '../../../../test-config/mock-models/mock-recipe-variant-complete';
-import { mockYeastBatch } from '../../../../test-config/mock-models/mock-yeast-batch';
+import { mockGrainBill } from '../../../../test-config/mock-models/mock-grains';
+import { mockHopsSchedule } from '../../../../test-config/mock-models/mock-hops';
+import { mockRecipeVariantComplete } from '../../../../test-config/mock-models/mock-recipe';
+import { mockYeastBatch } from '../../../../test-config/mock-models/mock-yeast';
 import { PreferencesServiceMock } from '../../../../test-config/mocks-app';
 
-/* Constan imports */
+/* Constant imports */
 import * as Units from '../../shared/constants/units';
 
 /* Utility imports */

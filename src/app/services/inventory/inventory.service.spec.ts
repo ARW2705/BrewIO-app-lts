@@ -13,7 +13,7 @@ import { mockAuthor } from '../../../../test-config/mock-models/mock-author';
 import { mockBatch } from '../../../../test-config/mock-models/mock-batch';
 import { mockImage, mockImageRequestMetadata } from '../../../../test-config/mock-models/mock-image';
 import { mockInventoryItem, mockOptionalItemData } from '../../../../test-config/mock-models/mock-inventory';
-import { mockRecipeMasterActive } from '../../../../test-config/mock-models/mock-recipe-master-active';
+import { mockRecipeMasterActive } from '../../../../test-config/mock-models/mock-recipe';
 import { mockErrorResponse } from '../../../../test-config/mock-models/mock-response';
 import { mockStyles } from '../../../../test-config/mock-models/mock-styles';
 import { mockSyncMetadata, mockSyncError, mockSyncResponse } from '../../../../test-config/mock-models/mock-sync';

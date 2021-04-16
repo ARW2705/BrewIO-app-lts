@@ -11,7 +11,7 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 import { mockAlert } from '../../../../test-config/mock-models/mock-alert';
 import { mockBatch, mockGeneratedBatch } from '../../../../test-config/mock-models/mock-batch';
 import { mockSyncError, mockSyncMetadata, mockSyncResponse } from '../../../../test-config/mock-models/mock-sync';
-import { mockRecipeMasterActive } from '../../../../test-config/mock-models/mock-recipe-master-active';
+import { mockRecipeMasterActive } from '../../../../test-config/mock-models/mock-recipe';
 import { mockPrimaryValues } from '../../../../test-config/mock-models/mock-primary-values';
 import { mockErrorResponse } from '../../../../test-config/mock-models/mock-response';
 import { mockUser } from '../../../../test-config/mock-models/mock-user';
@@ -342,7 +342,7 @@ describe('ProcessService', (): void => {
         .subscribe(
           (): void => {},
           (error: any): void => {
-            console.log(`Error in `, error);
+            console.log(`Error in 'should start a new batch'`, error);
             expect(true).toBe(false);
           }
         );
@@ -351,7 +351,7 @@ describe('ProcessService', (): void => {
         .subscribe(
           (): void => {},
           (error: any): void => {
-            console.log(`Error in `, error);
+            console.log(`Error in 'should start a new batch'`, error);
             expect(true).toBe(false);
           }
         );

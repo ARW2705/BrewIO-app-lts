@@ -9,7 +9,7 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 import { mockBatch } from '../../../../test-config/mock-models/mock-batch';
 import { mockInventoryItem } from '../../../../test-config/mock-models/mock-inventory';
 import { mockLibraryStorage } from '../../../../test-config/mock-models/mock-library';
-import { mockRecipeMasterActive } from '../../../../test-config/mock-models/mock-recipe-master-active';
+import { mockRecipeMasterActive } from '../../../../test-config/mock-models/mock-recipe';
 import { mockSyncMetadata } from '../../../../test-config/mock-models/mock-sync';
 import { mockUser } from '../../../../test-config/mock-models/mock-user';
 import { StorageMock } from '../../../../test-config/mocks-ionic';
