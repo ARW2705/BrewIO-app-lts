@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 
 @Injectable()
 export class CalculationsServiceMock {
@@ -246,6 +246,8 @@ export class RecipeServiceMock {
 
 @Injectable()
 export class StorageServiceMock {
+  static _body;
+
   public getBatches(...options) {}
   public removeBatches(...options) {}
   public setBatches(...options) {}
@@ -257,7 +259,9 @@ export class StorageServiceMock {
   public getRecipes() {}
   public removeRecipes() {}
   public setRecipes(...options) {}
-  public getSyncFlags() {}
+  public getSyncFlags() {
+    return StorageServiceMock._body;
+  }
   public removeSyncFlags() {}
   public setSyncFlags(...options) {}
   public getUser() {}
