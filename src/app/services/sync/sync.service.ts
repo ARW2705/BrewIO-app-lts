@@ -1,5 +1,5 @@
 /* Module imports */
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, forkJoin } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -22,24 +22,60 @@ export class SyncService {
   syncFlags: SyncMetadata[] = [];
   syncKey: string = 'sync';
 
-  constructor(
-    public http: HttpClient,
-    public storageService: StorageService
-  ) {
-    this.storageService.getSyncFlags()
-      .subscribe(
-        (flags: SyncMetadata[]): void => {
-          console.log('sync flags', flags);
-          this.syncFlags = flags;
-        },
-        (error: object): void => {
-          if (error['name'] === 'NotFoundError') {
-            console.log(error['message']);
-          } else {
-            console.log('Sync error', error);
-          }
-        }
-      );
+  constructor(public storageService: StorageService) {
+    this.init();
+  }
+
+  /**
+   * Add a flag to sync document on reconnect with the following considerations:
+   * Sync method is primary determination for flags being added or modified.
+   *
+   * For 'create' method: No conditions, the flag is always added
+   *
+   * For 'update' method: Add this flag only if there are no other flags for docId
+   *
+   * For 'delete' method: Add, modify, or remove flag based on the following conditions
+   *  - If no flags present, add the delete flag
+   *  - If a create flag is present, remove the flag. The doc doesn't need to
+   *    sync before deleting
+   *  - If an update flag is present, change the method to delete. The doc
+   *    doesn't need to be updated before deleting
+   *
+   * @params: metadata - SyncMetadata containing sync method and doc id
+   *
+   * @return: none
+   */
+  addSyncFlag(metadata: SyncMetadata): void {
+    if (metadata.method === 'create') {
+      if (this.syncFlags.every((flag: SyncMetadata): boolean => flag.docId !== metadata.docId)) {
+        this.syncFlags.push(metadata);
+      }
+    } else if (metadata.method === 'update') {
+      const currentFlagIndex = this.syncFlags
+        .findIndex((syncFlag: SyncMetadata): boolean => {
+          return syncFlag.docId === metadata.docId;
+        });
+
+      if (currentFlagIndex === -1 && !hasDefaultIdType(metadata.docId)) {
+        this.syncFlags.push(metadata);
+      }
+    } else if (metadata.method === 'delete') {
+      const currentFlagIndex = this.syncFlags
+        .findIndex((syncFlag: SyncMetadata): boolean => {
+          return syncFlag.docId === metadata.docId;
+        });
+
+      if (currentFlagIndex === -1) {
+        this.syncFlags.push(metadata);
+      } else if (this.syncFlags[currentFlagIndex].method === 'create') {
+        this.syncFlags.splice(currentFlagIndex, 1);
+      } else if (this.syncFlags[currentFlagIndex].method === 'update') {
+        this.syncFlags[currentFlagIndex].method = 'delete';
+      }
+    } else {
+      throw new Error(`Unknown sync flag method: ${metadata.method}`);
+    }
+    this.updateStorage();
   }
 
   /**
@@ -113,55 +149,26 @@ export class SyncService {
   }
 
   /**
-   * Add a flag to sync document on reconnect with the following considerations:
-   * Sync method is primary determination for flags being added or modified.
+   * Get any stored sync flags
    *
-   * For 'create' method: No conditions, the flag is always added
-   *
-   * For 'update' method: Add this flag only if there are no other flags for docId
-   *
-   * For 'delete' method: Add, modify, or remove flag based on the following conditions
-   *  - If no flags present, add the delete flag
-   *  - If a create flag is present, remove the flag. The doc doesn't need to
-   *    sync before deleting
-   *  - If an update flag is present, change the method to delete. The doc
-   *    doesn't need to be updated before deleting
-   *
-   * @params: metadata - SyncMetadata containing sync method and doc id
-   *
+   * @params: none
    * @return: none
    */
-  addSyncFlag(metadata: SyncMetadata): void {
-    if (metadata.method === 'create') {
-      if (this.syncFlags.every((flag: SyncMetadata): boolean => flag.docId !== metadata.docId)) {
-        this.syncFlags.push(metadata);
-      }
-    } else if (metadata.method === 'update') {
-      const currentFlagIndex = this.syncFlags
-        .findIndex((syncFlag: SyncMetadata): boolean => {
-          return syncFlag.docId === metadata.docId;
-        });
-
-      if (currentFlagIndex === -1 && !hasDefaultIdType(metadata.docId)) {
-        this.syncFlags.push(metadata);
-      }
-    } else if (metadata.method === 'delete') {
-      const currentFlagIndex = this.syncFlags
-        .findIndex((syncFlag: SyncMetadata): boolean => {
-          return syncFlag.docId === metadata.docId;
-        });
-
-      if (currentFlagIndex === -1) {
-        this.syncFlags.push(metadata);
-      } else if (this.syncFlags[currentFlagIndex].method === 'create') {
-        this.syncFlags.splice(currentFlagIndex, 1);
-      } else if (this.syncFlags[currentFlagIndex].method === 'update') {
-        this.syncFlags[currentFlagIndex].method = 'delete';
-      }
-    } else {
-      throw new Error(`Unknown sync flag method: ${metadata.method}`);
-    }
-    this.updateStorage();
+  init(): void {
+    this.storageService.getSyncFlags()
+      .subscribe(
+        (flags: SyncMetadata[]): void => {
+          console.log('sync flags', flags);
+          this.syncFlags = flags;
+        },
+        (error: object | string): void => {
+          if (error['name'] === 'NotFoundError') {
+            console.log(error['message']);
+          } else {
+            console.log('Sync error', error);
+          }
+        }
+      );
   }
 
   /**
@@ -194,7 +201,7 @@ export class SyncService {
    *
    * @return: observable of sync responses
    */
-  sync<T>(docType: string, requests: Observable<T>[]): Observable<SyncResponse<T>> {
+  sync<T>(docType: string, requests: Observable<T | HttpErrorResponse>[]): Observable<SyncResponse<T>> {
     console.log(`performing ${requests.length} ${docType} sync requests`);
     return forkJoin(requests)
       .pipe(
@@ -230,9 +237,7 @@ export class SyncService {
     this.storageService.setSyncFlags(this.syncFlags)
       .subscribe(
         (): void => console.log('Stored sync flags'),
-        (error: string): void => {
-          console.log(`Sync flag store error: ${error}`);
-        }
+        (error: string): void => console.log(`Sync flag store error: ${error}`)
       );
   }
 
