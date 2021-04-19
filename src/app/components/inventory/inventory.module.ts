@@ -2,9 +2,13 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { PipesModule } from '../../pipes/pipes.module';
 import { AccordionComponentModule } from '../accordion/accordion.module';
 import { ImageFormPageModule } from '../../pages/forms/image-form/image-form.module';
+
+/* Pipe imports */
+import { FormatStockPipeModule } from '../../pipes/format-stock/format-stock.module';
+import { RoundPipeModule } from '../../pipes/round/round.module';
+import { TruncatePipeModule } from '../../pipes/truncate/truncate.module';
 
 /* Component imports */
 import { InventoryComponent } from './inventory.component';
@@ -13,7 +17,9 @@ import { InventoryComponent } from './inventory.component';
   imports: [
     CommonModule,
     IonicModule,
-    PipesModule,
+    FormatStockPipeModule,
+    RoundPipeModule,
+    TruncatePipeModule,
     AccordionComponentModule,
     ImageFormPageModule
   ],

@@ -24,7 +24,7 @@ import { ProcessFormPageModule } from '../process-form/process-form.module';
 import { RecipeFormPage } from './recipe-form.page';
 
 /* Pipe imports */
-import { PipesModule } from '../../../pipes/pipes.module';
+import { TruncatePipeModule } from '../../../pipes/truncate/truncate.module';
 
 
 @NgModule({
@@ -34,7 +34,7 @@ import { PipesModule } from '../../../pipes/pipes.module';
     IonicModule,
     RouterModule.forChild([{path: '', component: RecipeFormPage}]),
     HeaderComponentModule,
-    PipesModule,
+    TruncatePipeModule,
     GeneralFormPageModule,
     GrainBillComponentModule,
     HopsScheduleComponentModule,

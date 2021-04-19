@@ -2,7 +2,10 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { PipesModule } from '../../pipes/pipes.module';
+
+/* Pipe imports */
+import { RatioPipeModule } from '../../pipes/ratio/ratio.module';
+import { UnitConversionPipeModule } from '../../pipes/unit-conversion/unit-conversion.module';
 
 /* Component imports */
 import { GrainBillComponent } from './grain-bill.component';
@@ -11,7 +14,8 @@ import { GrainBillComponent } from './grain-bill.component';
   imports: [
     CommonModule,
     IonicModule,
-    PipesModule
+    RatioPipeModule,
+    UnitConversionPipeModule
   ],
   declarations: [
     GrainBillComponent

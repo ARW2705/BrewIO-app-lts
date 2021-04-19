@@ -10,7 +10,7 @@ import { Batch } from '../../shared/interfaces/batch';
 
 /* Utility function imports */
 import { getId } from '../../shared/utility-functions/id-helpers';
-import { getArrayFromSubjects } from '../../shared/utility-functions/observable-helpers';
+import { getArrayFromSubjects } from '../../shared/utility-functions/subject-helpers';
 
 /* Service imports */
 import { ProcessService } from '../../services/process/process.service';

@@ -2,7 +2,10 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { PipesModule } from '../../pipes/pipes.module';
+
+/* Pipe imports */
+import { CalculatePipeModule } from '../../pipes/calculate/calculate.module';
+import { UnitConversionPipeModule } from '../../pipes/unit-conversion/unit-conversion.module';
 
 /* Component imports */
 import { HopsScheduleComponent } from './hops-schedule.component';
@@ -11,7 +14,8 @@ import { HopsScheduleComponent } from './hops-schedule.component';
   imports: [
     CommonModule,
     IonicModule,
-    PipesModule
+    CalculatePipeModule,
+    UnitConversionPipeModule
   ],
   declarations: [
     HopsScheduleComponent

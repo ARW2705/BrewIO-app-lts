@@ -2,7 +2,9 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { PipesModule } from '../../pipes/pipes.module';
+
+/* Pipe imports */
+import { MomentPipeModule } from '../../pipes/moment/moment.module';
 
 /* Component imports */
 import { DateButtonComponent } from './date-button.component';
@@ -12,7 +14,7 @@ import { DateButtonComponent } from './date-button.component';
   imports: [
     CommonModule,
     IonicModule,
-    PipesModule
+    MomentPipeModule
   ],
   declarations: [
     DateButtonComponent

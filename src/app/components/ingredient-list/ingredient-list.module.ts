@@ -2,7 +2,9 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { PipesModule } from '../../pipes/pipes.module';
+
+/* Pipe imports */
+import { UnitConversionPipeModule } from '../../pipes/unit-conversion/unit-conversion.module';
 
 /* Component imports */
 import { IngredientListComponent } from './ingredient-list.component';
@@ -11,7 +13,7 @@ import { IngredientListComponent } from './ingredient-list.component';
   imports: [
     CommonModule,
     IonicModule,
-    PipesModule
+    UnitConversionPipeModule
   ],
   declarations: [
     IngredientListComponent

@@ -2,7 +2,8 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { PipesModule } from '../../pipes/pipes.module';
+import { TruncatePipeModule } from '../../pipes/truncate/truncate.module';
+import { UnitConversionPipeModule } from '../../pipes/unit-conversion/unit-conversion.module';
 
 /* Component imports */
 import { RecipeQuickDataComponent } from './recipe-quick-data.component';
@@ -11,7 +12,8 @@ import { RecipeQuickDataComponent } from './recipe-quick-data.component';
   imports: [
     CommonModule,
     IonicModule,
-    PipesModule
+    TruncatePipeModule,
+    UnitConversionPipeModule
   ],
   declarations: [
     RecipeQuickDataComponent

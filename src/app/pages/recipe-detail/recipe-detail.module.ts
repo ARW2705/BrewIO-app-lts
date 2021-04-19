@@ -16,14 +16,19 @@ import { NoteListComponentModule } from '../../components/note-list/note-list.mo
 import { RecipeDetailPage } from './recipe-detail.page';
 
 /* Pipe imports */
-import { PipesModule } from '../../pipes/pipes.module';
+import { RoundPipeModule } from '../../pipes/round/round.module';
+import { TruncatePipeModule } from '../../pipes/truncate/truncate.module';
+import { UnitConversionPipeModule } from '../../pipes/unit-conversion/unit-conversion.module';
+
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    PipesModule,
+    RoundPipeModule,
+    TruncatePipeModule,
+    UnitConversionPipeModule,
     HeaderComponentModule,
     AccordionComponentModule,
     ConfirmationComponentModule,

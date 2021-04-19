@@ -5,7 +5,9 @@ import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 
 /* Pipe imports */
-import { PipesModule } from '../../pipes/pipes.module';
+import { RoundPipeModule } from '../../pipes/round/round.module';
+import { TruncatePipeModule } from '../../pipes/truncate/truncate.module';
+import { UnitConversionPipeModule } from '../../pipes/unit-conversion/unit-conversion.module';
 
 /* Component imports */
 import { AccordionComponentModule } from '../../components/accordion/accordion.module';
@@ -20,7 +22,9 @@ import { RecipePage } from './recipe.page';
   imports: [
     CommonModule,
     IonicModule,
-    PipesModule,
+    RoundPipeModule,
+    TruncatePipeModule,
+    UnitConversionPipeModule,
     AccordionComponentModule,
     ConfirmationComponentModule,
     HeaderComponentModule,

@@ -3,7 +3,6 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouteReuseStrategy } from '@angular/router';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { IonicStorageModule } from '@ionic/storage';
@@ -22,7 +21,6 @@ import { ImageResizer } from '@ionic-native/image-resizer/ngx';
 /* App Modules */
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { PipesModule } from './pipes/pipes.module';
 
 /* Services */
 import { ActionSheetService } from './services/action-sheet/action-sheet.service';
@@ -61,9 +59,6 @@ import { UserService } from './services/user/user.service';
       scrollPadding: false
     }),
     IonicStorageModule.forRoot(),
-    PipesModule,
-    FormsModule,
-    ReactiveFormsModule
   ],
   providers: [
     Camera,
