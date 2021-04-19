@@ -92,11 +92,10 @@ export class TimerService {
    * @return: observable of updated timer
    */
   addTimeToTimer(batchId: string, timerId: string): Observable<Timer> {
-    const timer$: BehaviorSubject<Timer>
-      = this.getTimerSubjectById(batchId, timerId);
+    const timer$: BehaviorSubject<Timer> = this.getTimerSubjectById(batchId, timerId);
 
-    if (timer$ === undefined) {
-      return throwError('Timer not found');
+    if (!timer$) {
+      return throwError('Error adding time: timer not found');
     }
 
     const timer: Timer = timer$.value;
@@ -117,6 +116,10 @@ export class TimerService {
    * @return: datetime string in hh:mm:ss format - hour/minutes removed if zero
    */
   formatProgressCircleText(timeRemaining: number): string {
+    if (timeRemaining < 0) {
+      return '';
+    }
+
     let remainder: number = timeRemaining;
     let result: string = '';
     let hours: number;
@@ -189,8 +192,7 @@ export class TimerService {
    *          not found
    */
   getBatchTimerById(batchId: string): BatchTimer {
-    return this.batchTimers
-      .find((batchTimer: BatchTimer): boolean => batchTimer.batchId === batchId);
+    return this.batchTimers.find((batchTimer: BatchTimer): boolean => batchTimer.batchId === batchId);
   }
 
   /**
@@ -233,6 +235,7 @@ export class TimerService {
     if (duration) {
       result += `${duration} minute${duration > 1 ? 's' : ''}`;
     }
+
     return result;
   }
 
@@ -274,15 +277,12 @@ export class TimerService {
    * Get all timer behaviorsubjects associated with given process id
    *
    * @params: batchId - batch id assigned to batchTimer
-   * @params: processId -  the Process to match timers to
+   * @params: processId - the Process to match timers to
    *
    * @return: array of timer behaviorsubjects associated to process else
    *          else undefined if not found
    */
-  getTimersByProcessId(
-    batchId: string,
-    processId: string
-  ): BehaviorSubject<Timer>[] {
+  getTimersByProcessId(batchId: string, processId: string): BehaviorSubject<Timer>[] {
     const batchTimer: BatchTimer = this.getBatchTimerById(batchId);
 
     if (batchTimer === undefined) {
@@ -290,9 +290,7 @@ export class TimerService {
     }
 
     return batchTimer.timers
-      .filter((timer$: BehaviorSubject<Timer>): boolean => {
-        return timer$.value.first === processId;
-      });
+      .filter((timer$: BehaviorSubject<Timer>): boolean => timer$.value.first === processId);
   }
 
   /**
@@ -311,9 +309,7 @@ export class TimerService {
     }
 
     return batchTimer.timers
-      .find((timer$: BehaviorSubject<Timer>): boolean => {
-        return hasId(timer$.value, timerId);
-      });
+      .find((timer$: BehaviorSubject<Timer>): boolean => hasId(timer$.value, timerId));
   }
 
   /**
@@ -363,9 +359,7 @@ export class TimerService {
    */
   removeBatchTimer(batchId: string): void {
     const batchTimerIndex: number = this.batchTimers
-      .findIndex((batchTimer) => {
-        return batchTimer.batchId === batchId;
-      });
+      .findIndex((batchTimer) => batchTimer.batchId === batchId);
 
     if (batchTimerIndex !== -1) {
       this.batchTimers[batchTimerIndex].timers
@@ -383,15 +377,10 @@ export class TimerService {
    *
    * @return: observable of updated timer
    */
-  resetTimer(
-    batchId: string,
-    timerId: string,
-    duration: number
-  ): Observable<Timer> {
-    const timer$: BehaviorSubject<Timer>
-      = this.getTimerSubjectById(batchId, timerId);
+  resetTimer(batchId: string, timerId: string, duration: number): Observable<Timer> {
+    const timer$: BehaviorSubject<Timer> = this.getTimerSubjectById(batchId, timerId);
 
-    if (timer$ === undefined) {
+    if (!timer$) {
       return throwError('Timer not found');
     }
 
@@ -418,17 +407,14 @@ export class TimerService {
     timer.settings.circle.strokeDashoffset = `
       ${this.circumference - timer.timeRemaining / (timer.timer.duration * 60) * this.circumference}
     `;
-    timer.settings.text.content
-      = this.formatProgressCircleText(timer.timeRemaining);
+    timer.settings.text.content = this.formatProgressCircleText(timer.timeRemaining);
 
     if (timer.isRunning) {
       if (timer.timeRemaining < 1) {
         timer.isRunning = false;
         this.notificationService.setLocalNotification(`${timer.timer.name} complete!`);
       } else if (timer.timer.splitInterval > 1) {
-        const interval: number = timer.timer.duration
-          * 60
-          / timer.timer.splitInterval;
+        const interval: number = timer.timer.duration * 60 / timer.timer.splitInterval;
 
         if (timer.timeRemaining % interval === 0) {
           this.notificationService.setLocalNotification(`${timer.timer.name} interval complete!`);
@@ -471,11 +457,10 @@ export class TimerService {
    * @return: observable of updated timer
    */
   switchTimer(batchId: string, timerId: string, run: boolean): Observable<Timer> {
-    const timer$: BehaviorSubject<Timer>
-      = this.getTimerSubjectById(batchId, timerId);
+    const timer$: BehaviorSubject<Timer> = this.getTimerSubjectById(batchId, timerId);
 
-    if (timer$ === undefined) {
-      return throwError('Timer not found');
+    if (!timer$) {
+      return throwError('Timer switch error: timer not found');
     }
 
     const timer: Timer = timer$.value;
@@ -517,7 +502,7 @@ export class TimerService {
       });
     });
 
-    this.updateNotifications(runningTimers);
+    this.updatedBackgroundNotifications(runningTimers);
   }
 
   /**
@@ -527,7 +512,7 @@ export class TimerService {
    *
    * @return: none
    */
-  updateNotifications(timers: Timer[]): void {
+  updatedBackgroundNotifications(timers: Timer[]): void {
     if (this.platform.is('cordova') && this.backgroundModeService.isActive()) {
       if (timers.length) {
         let nearest: Timer = timers[0];
@@ -542,7 +527,7 @@ export class TimerService {
 
         this.backgroundModeService.setNotification(
           `${nearest.timer.name}: ${nearest.settings.text.content}`,
-          `${timers.length} timer${timers.length > 2 ? 's' : ''} running`
+          `${timers.length} timer${timers.length > 1 ? 's' : ''} running`
         );
       } else {
         this.backgroundModeService.disableBackgroundMode();
