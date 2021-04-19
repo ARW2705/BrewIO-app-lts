@@ -23,7 +23,7 @@ import { YeastBatch } from '../../shared/interfaces/yeast-batch';
 
 /* Utility function imports */
 import { getId, getIndexById, hasDefaultIdType, hasId, isMissingServerId } from '../../shared/utility-functions/id-helpers';
-import { getArrayFromSubjects, toSubjectArray } from '../../shared/utility-functions/observable-helpers';
+import { getArrayFromSubjects, toSubjectArray } from '../../shared/utility-functions/subject-helpers';
 
 /* Default imports */
 import { defaultImage } from '../../shared/defaults/default-image';

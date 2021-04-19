@@ -18,7 +18,7 @@ import { SyncData, SyncError, SyncMetadata, SyncRequests, SyncResponse } from '.
 import { User } from '../../shared/interfaces/user';
 
 /* Utility function imports */
-import { getArrayFromSubjects, toSubjectArray } from '../../shared/utility-functions/observable-helpers';
+import { getArrayFromSubjects, toSubjectArray } from '../../shared/utility-functions/subject-helpers';
 import { getId, getIndexById, hasDefaultIdType, hasId, isMissingServerId } from '../../shared/utility-functions/id-helpers';
 import { clone } from '../../shared/utility-functions/clone';
 
