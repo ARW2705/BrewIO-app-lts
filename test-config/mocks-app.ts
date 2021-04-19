@@ -2,6 +2,17 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 
 @Injectable()
+export class BackgroundModeServiceMock {
+  public disableBackgroundMode() {}
+  public enableBackgroundMode() {}
+  public initBackgroundMode() {}
+  public isActive() {}
+  public onActivate() {}
+  public onDeactivate() {}
+  public setNotification(...options) {}
+}
+
+@Injectable()
 export class CalculationsServiceMock {
   public convertDensity(...options) {}
   public convertTemperature(...options) {}
@@ -137,6 +148,11 @@ export class LibraryServiceMock {
   public getAllLibrariesFromStorage() {}
   public sortAlpha(...options) {}
   public updateStorage() {}
+}
+
+@Injectable()
+export class LocalNotificationServiceMock {
+  public setLocalNotification(...options) {}
 }
 
 @Injectable()
