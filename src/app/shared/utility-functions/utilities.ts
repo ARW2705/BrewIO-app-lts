@@ -7,9 +7,9 @@
  * @return: true if object ids match
  */
 export function compareWith(o1: any, o2: any): boolean {
-  try {
+  if (o1 && typeof o1 === 'object' && o2 && typeof o2 === 'object') {
     return o1['_id'] === o2['_id'];
-  } catch (error) {
+  } else {
     return o1 === o2;
   }
 }
