@@ -2,6 +2,11 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 
 @Injectable()
+export class ActionSheetServiceMock {
+  
+}
+
+@Injectable()
 export class BackgroundModeServiceMock {
   public disableBackgroundMode() {}
   public enableBackgroundMode() {}

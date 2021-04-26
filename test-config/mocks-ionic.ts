@@ -3,7 +3,6 @@ import { StatusBar } from '@ionic-native/status-bar/ngx';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { Pipe, PipeTransform } from '@angular/core';
 
 import { BASE_URL } from '../src/app/shared/constants/base-url';
 import { API_VERSION } from '../src/app/shared/constants/api-version';
@@ -209,8 +208,10 @@ export class ModalMock {
   present(options?: any) { }
   dismiss() { }
   dismissAll() { }
-  onDidDismiss(cb) {
-    cb(this._callbackData);
+  onDidDismiss(cb?) {
+    if (cb) {
+      cb(this._callbackData);
+    }
   }
 }
 
@@ -435,7 +436,7 @@ export class PlatformMockDev extends PlatformMock {
 
 
 export class RouterMock {
-  
+
 }
 
 
@@ -518,94 +519,4 @@ export class ViewControllerMock {
   public _setNavbar() { }
   public _setIONContent() { }
   public _setIONContentRef() { }
-}
-
-
-/***** Pipe Mocks *****/
-
-
-@Pipe({name: 'calculate'})
-export class CalculatePipeMock implements PipeTransform {
-  transform(inputSource: any, calculation: any, dataset: any): string {
-    return 'ok';
-  }
-}
-
-
-@Pipe({name: 'formatStock'})
-export class FormatStockPipeMock implements PipeTransform {
-  transform(item: any, type: any): string {
-    return 'ok';
-  }
-}
-
-
-
-@Pipe({name: 'formatTime'})
-export class FormatTimePipeMock implements PipeTransform {
-  transform(value: any, formatType: any): string {
-    return 'ok';
-  }
-}
-
-
-@Pipe({name: 'moment'})
-export class MomentPipeMock implements PipeTransform {
-  transform(moment: any, fName: string, ...options: any[]): string {
-    return 'ok';
-  }
-}
-
-
-@Pipe({name: 'parseError'})
-export class ParseErrorPipeMock implements PipeTransform {
-  transform(errors: any, formName: string, controlName: string): string {
-    return 'ok';
-  }
-}
-
-
-@Pipe({name: 'ratio'})
-export class RatioPipeMock implements PipeTransform {
-  transform(item: any, key: string, group: any[], refresh?: boolean): string {
-    return 'ok';
-  }
-}
-
-
-@Pipe({name: 'round'})
-export class RoundPipeMock implements PipeTransform {
-  transform(value: any): number {
-    return 1;
-  }
-}
-
-
-@Pipe({name: 'sort'})
-export class SortPipeMock implements PipeTransform {
-  transform(arr: any[], sortBy: string): any[] {
-    return arr;
-  }
-}
-
-
-@Pipe({name: 'truncate'})
-export class TruncatePipeMock implements PipeTransform {
-  transform(value: any, places: any): string {
-    return '10';
-  }
-}
-
-
-@Pipe({name: 'unitConversion'})
-export class UnitConversionPipeMock implements PipeTransform {
-  transform(
-    value: any,
-    unitType: any,
-    showSymbol?: boolean,
-    refresh?: boolean,
-    reformat?: boolean
-  ): string {
-    return 'ok';
-  }
 }
