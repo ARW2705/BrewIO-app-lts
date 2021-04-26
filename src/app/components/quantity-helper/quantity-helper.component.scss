@@ -1,0 +1,34 @@
+.item {
+  /* Display */
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+header {
+  /* Text */
+  font-size: 1.75rem;
+  text-align: center;
+}
+
+section {
+  /* Display */
+  width: 100%;
+  margin-bottom: 8%;
+}
+
+ion-grid {
+  /* Display */
+  margin: 5%;
+}
+
+ion-item {
+  /* Display */
+  --padding-start: 0;
+  --inner-padding-start: 0;
+  --padding-end: 0;
+  --inner-padding-end: 0;
+  --highlight-color-valid: var(--ion-color-primary);
+  --highlight-color-invalid: transparent;
+  --highlight-color-focused: transparent;
+  --border-color: var(--ion-color-light);
+}
