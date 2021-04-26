@@ -1,8 +1,8 @@
 /* Module imports */
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup } from '@angular/forms';
-import { Subject, throwError } from 'rxjs';
-import { map, take } from 'rxjs/operators';
+import { Observable, Subject, of, throwError } from 'rxjs';
+import { map, mergeMap, take } from 'rxjs/operators';
 
 /* Constant imports */
 import { BRIX, PLATO, SPECIFIC_GRAVITY } from '../../shared/constants/units';
@@ -57,15 +57,15 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     this.userService.getUser()
       .pipe(
         take(1),
-        map((user: User): void => {
+        mergeMap((user: User): Observable<boolean> => {
           this.user = user;
           this.preferredUnits = this.preferenceService.getPreferredUnitSystemName();
           this.setUnits = this.preferenceService.getSelectedUnits();
           this.mapDisplayUnits();
-
           if (this.preferredUnits.length === 0 || this.setUnits === null) {
-            throwError('Error loading preferences');
+            return throwError('Error loading preferences');
           }
+          return of(true);
         })
       )
       .subscribe(
@@ -155,8 +155,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
       ],
       density: []
     });
-    const controls: { [key: string]: AbstractControl }
-      = this.preferencesForm.controls;
+    const controls: { [key: string]: AbstractControl } = this.preferencesForm.controls;
 
     controls.preferredUnitSystem.setValue(this.setUnits.system);
     controls.density.setValue(this.setUnits.density.longName);
@@ -232,16 +231,11 @@ export class PreferencesComponent implements OnInit, OnDestroy {
    */
   onSystemChange(event: CustomEvent): void {
     if (event.detail.value !== 'none') {
-      this.preferencesForm.controls.weightSmall
-        .setValue(event.detail.value === 'englishStandard');
-      this.preferencesForm.controls.weightLarge
-        .setValue(event.detail.value === 'englishStandard');
-      this.preferencesForm.controls.volumeSmall
-        .setValue(event.detail.value === 'englishStandard');
-      this.preferencesForm.controls.volumeLarge
-        .setValue(event.detail.value === 'englishStandard');
-      this.preferencesForm.controls.temperature
-        .setValue(event.detail.value === 'englishStandard');
+      this.preferencesForm.controls.weightSmall.setValue(event.detail.value === 'englishStandard');
+      this.preferencesForm.controls.weightLarge.setValue(event.detail.value === 'englishStandard');
+      this.preferencesForm.controls.volumeSmall.setValue(event.detail.value === 'englishStandard');
+      this.preferencesForm.controls.volumeLarge.setValue(event.detail.value === 'englishStandard');
+      this.preferencesForm.controls.temperature.setValue(event.detail.value === 'englishStandard');
     }
   }
 
@@ -314,11 +308,9 @@ export class PreferencesComponent implements OnInit, OnDestroy {
       },
       (error: string): void => {
         console.log(`Preferences submit error: ${error}`);
-        this.toastService.presentToast(
+        this.toastService.presentErrorToast(
           error,
-          5000,
-          'middle',
-          'toast-error'
+          5000
         );
       }
     );
