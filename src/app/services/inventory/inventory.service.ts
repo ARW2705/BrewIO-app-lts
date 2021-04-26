@@ -896,6 +896,18 @@ export class InventoryService {
   }
 
   /**
+   * Check if inventory stock type is based on capacity instead of discrete units
+   *
+   * @params: item - item with stock data
+   *
+   * @return: true if stock type is 'growler' or 'keg'
+   */
+  isCapacityBased(item: InventoryItem): boolean {
+    const stockType: string = item.stockType.toLowerCase();
+    return stockType === 'growler' || stockType === 'keg';
+  }
+
+  /**
    * Map any optional data to an item
    *
    * @params: item - the target item

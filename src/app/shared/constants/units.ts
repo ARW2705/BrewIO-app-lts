@@ -85,3 +85,17 @@ export const PLATO: Unit = {
   shortName: 'p',
   symbol: '°P'
 };
+
+export const PINT: Unit = {
+  system: 'englishStandard',
+  longName: 'pint',
+  shortName: 'pt',
+  symbol: 'pt'
+};
+
+export const CENTILITER: Unit = {
+  system: 'metric',
+  longName: 'centiliter',
+  shortName: 'cL',
+  symbol: 'cL'
+};

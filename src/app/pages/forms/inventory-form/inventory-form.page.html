@@ -486,7 +486,7 @@
 
           <ion-label  class="required"
                       position="floating">
-            Initial Quantity
+            Initial Quantity {{ quantityHint | titlecase }}
           </ion-label>
 
           <ion-input  formControlName="initialQuantity"
@@ -494,6 +494,16 @@
                       autocomplete="off"
                       required="true">
           </ion-input>
+
+          <ion-button *ngIf="allowHelper"
+                      color="primary"
+                      slot="end"
+                      (click)="openQuantityHelper('initialQuantity')"
+                      class="form-button modal-button">
+
+            <ion-icon name="open-outline"></ion-icon>
+
+          </ion-button>
 
         </ion-item>
 
@@ -519,7 +529,7 @@
 
             <ion-label  class="required"
                         position="floating">
-              Current Quantity
+              Current Quantity {{ quantityHint | titlecase }}
             </ion-label>
 
             <ion-input  formControlName="currentQuantity"
@@ -527,6 +537,16 @@
                         autocomplete="off"
                         required="true">
             </ion-input>
+
+            <ion-button *ngIf="allowHelper"
+                        color="primary"
+                        slot="end"
+                        (click)="openQuantityHelper('currentQuantity')"
+                        class="form-button modal-button">
+
+              <ion-icon name="open-outline"></ion-icon>
+
+            </ion-button>
 
           </ion-item>
 

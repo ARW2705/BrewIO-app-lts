@@ -12,6 +12,7 @@ import { TruncatePipeModule } from '../../pipes/truncate/truncate.module';
 
 /* Component imports */
 import { InventoryComponent } from './inventory.component';
+import { QuantityHelperComponentModule } from '../quantity-helper/quantity-helper.module';
 
 @NgModule({
   imports: [
@@ -21,7 +22,8 @@ import { InventoryComponent } from './inventory.component';
     RoundPipeModule,
     TruncatePipeModule,
     AccordionComponentModule,
-    ImageFormPageModule
+    ImageFormPageModule,
+    QuantityHelperComponentModule
   ],
   declarations: [
     InventoryComponent

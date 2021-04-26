@@ -1,12 +1,13 @@
 /* Module imports */
 import { Component, OnInit, Input } from '@angular/core';
 import { LoadingController, ModalController } from '@ionic/angular';
-import { FormGroup, FormBuilder, FormControl, Validators } from '@angular/forms';
+import { AbstractControl, FormGroup, FormBuilder, FormControl, Validators } from '@angular/forms';
 import { Observable, forkJoin, from, of } from 'rxjs';
 
 /* Contants imports */
 import { OPTIONAL_INVENTORY_DATA_KEYS } from '../../../shared/constants/optional-inventory-data-keys';
 import { STOCK_TYPES } from '../../../shared/constants/stock-types';
+import { PINT } from '../../../shared/constants/units';
 
 /* Default imports */
 import { defaultImage } from '../../../shared/defaults/default-image';
@@ -20,15 +21,19 @@ import { Author } from '../../../shared/interfaces/author';
 import { Batch } from '../../../shared/interfaces/batch';
 import { Image } from '../../../shared/interfaces/image';
 import { InventoryItem } from '../../../shared/interfaces/inventory-item';
+import { SelectedUnits, Unit } from '../../../shared/interfaces/units';
 import { StockType } from '../../../shared/interfaces/stocktype';
 import { Style } from '../../../shared/interfaces/library';
 
 /* Page imports */
 import { ImageFormPage } from '../image-form/image-form.page';
+import { QuantityHelperComponent } from '../../../components/quantity-helper/quantity-helper.component';
 
 /* Service imports */
+import { CalculationsService } from '../../../services/calculations/calculations.service';
 import { ImageService } from '../../../services/image/image.service';
 import { LibraryService } from '../../../services/library/library.service';
+import { PreferencesService } from '../../../services/preferences/preferences.service';
 import { RecipeService } from '../../../services/recipe/recipe.service';
 import { ToastService } from '../../../services/toast/toast.service';
 import { UserService } from '../../../services/user/user.service';
@@ -43,6 +48,7 @@ export class InventoryFormPage implements OnInit {
   @Input() isRequired: boolean = false;
   @Input() options: { item?: InventoryItem, batch?: Batch };
   _defaultImage: Image = defaultImage();
+  allowHelper: boolean = false;
   author: Author = null;
   batch: Batch = null;
   compareWithFn: (o1: any, o2: any) => boolean = compareWith;
@@ -57,6 +63,7 @@ export class InventoryFormPage implements OnInit {
     'itemSRM'
   ];
   onBackClick: () => void;
+  quantityHint: string = '';
   selectOptions: object = { cssClass: 'select-popover' };
   sourceTouched: boolean = false;
   stockTouched: boolean = false;
@@ -68,11 +75,13 @@ export class InventoryFormPage implements OnInit {
   title: string = '';
 
   constructor(
+    public calculator: CalculationsService,
     public formBuilder: FormBuilder,
     public imageService: ImageService,
     public libraryService: LibraryService,
     public loadingCtrl: LoadingController,
     public modalCtrl: ModalController,
+    public preferencesService: PreferencesService,
     public recipeService: RecipeService,
     public toastService: ToastService,
     public userService: UserService
@@ -208,6 +217,7 @@ export class InventoryFormPage implements OnInit {
    */
   onStockSelect(): void {
     this.stockTouched = !this.inventoryForm.controls.stockType.value;
+    this.updateQuantityHint();
   }
 
   /***** End IonSelect Functions *****/
@@ -304,6 +314,7 @@ export class InventoryFormPage implements OnInit {
     });
     this.initSelectionControl();
     this.initOptionalFieldControls();
+    this.updateQuantityHint();
   }
 
   /**
@@ -348,9 +359,7 @@ export class InventoryFormPage implements OnInit {
     const formValues: object = this.convertFormValuesToNumbers();
     const style: Style = formValues['itemStyleId'] !== undefined
       ? formValues['itemStyleId']
-      : this.styles.find((_style: Style): boolean => {
-          return hasId(_style, this.batch.annotations.styleId);
-        });
+      : this.styles.find((_style: Style): boolean => hasId(_style, this.batch.annotations.styleId));
     formValues['itemStyleId'] = style._id;
     formValues['itemStyleName'] = style.name;
     formValues['itemLabelImage'] = this.itemLabelImage;
@@ -382,6 +391,40 @@ export class InventoryFormPage implements OnInit {
    */
   dismiss(): void {
     this.modalCtrl.dismiss();
+  }
+
+  async openQuantityHelper(quantityType: string): Promise<void> {
+    const quantityControl: AbstractControl = this.inventoryForm.controls[quantityType];
+    if (!quantityControl) {
+      console.log('Invalid quantity type', quantityType);
+      this.toastService.presentErrorToast('Error: invalid quantity type');
+      return;
+    }
+
+    const modal: HTMLIonModalElement = await this.modalCtrl.create({
+      component: QuantityHelperComponent,
+      componentProps: {
+        headerText: `select ${quantityType.split('Q')[0]} quantity`,
+        quantity: quantityControl.value
+      }
+    });
+
+    from(modal.onDidDismiss())
+      .subscribe(
+        (data: object): void => {
+          const _data: number = data['data'];
+          console.log('on dismiss', _data);
+          if (!isNaN(_data)) {
+            quantityControl.setValue(_data);
+          }
+        },
+        (error: string): void => {
+          console.log('modal dismiss error', error);
+          this.toastService.presentErrorToast('Error selecting quantity');
+        }
+      );
+
+    await modal.present();
   }
 
   /**
@@ -424,5 +467,26 @@ export class InventoryFormPage implements OnInit {
   }
 
   /***** End Modal Methods *****/
+
+
+  /***** Other *****/
+
+
+  updateQuantityHint(): void {
+    let stockTypeFormValue: string = this.inventoryForm.controls.stockType.value;
+    if (stockTypeFormValue) {
+      stockTypeFormValue = stockTypeFormValue.toLowerCase();
+    }
+
+    if (stockTypeFormValue === 'keg' || stockTypeFormValue === 'growler') {
+      this.allowHelper = true;
+      this.quantityHint = `(${PINT.longName}s)`;
+    } else {
+      this.allowHelper = false;
+      this.quantityHint = '';
+    }
+  }
+
+  /***** End Other *****/
 
 }

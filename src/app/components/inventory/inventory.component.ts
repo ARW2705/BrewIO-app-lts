@@ -24,6 +24,9 @@ import { defaultImage } from '../../shared/defaults/default-image';
 /* Page imports */
 import { InventoryFormPage } from '../../pages/forms/inventory-form/inventory-form.page';
 
+/* Component imports */
+import { QuantityHelperComponent } from '../quantity-helper/quantity-helper.component';
+
 /* Service imports */
 import { EventService } from '../../services/event/event.service';
 import { ImageService } from '../../services/image/image.service';
@@ -181,29 +184,11 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy {
    */
   decrementCount(item: InventoryItem): void {
     // TODO open dec type form if not a bottle/can type
-    this.inventoryService.updateItem(
-      item.cid,
-      { currentQuantity: item.currentQuantity - 1 }
-    )
-    .pipe(take(1))
-    .subscribe(
-      (updatedItem: InventoryItem): void => {
-        let message: string = '';
-        let customClass: string = '';
-        if (updatedItem === null) {
-          message = `${toTitleCase(item.itemName)} Out of Stock!`;
-          customClass = 'toast-warn';
-        } else {
-          const count: number = updatedItem.currentQuantity;
-          message = `${count} ${updatedItem.stockType}${count > 1 ? 's' : ''} remaining`;
-        }
-        this.toastService.presentToast(message, 1500, 'bottom', customClass);
-      },
-      (error: string): void => {
-        console.log('Item decrement error', error);
-        this.toastService.presentErrorToast('Failed to decrement item count');
-      }
-    );
+    if (this.inventoryService.isCapacityBased(item)) {
+      this.openQuantityHelper(item);
+    } else {
+      this.handleItemCountDecrement(item, 1);
+    }
   }
 
   /**
@@ -227,6 +212,54 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy {
           this.toastService.presentErrorToast('Failed to create item from batch');
         }
       );
+  }
+
+  /**
+   * Format the toast message to display after count decrement
+   *
+   * @params: item - inventory item that was updated or null if out of stock
+   *
+   * @return: the toast message to display
+   */
+  formatDecrementMessage(item: InventoryItem): string {
+    if (item === null) {
+      return 'Out of Stock!';
+    } else {
+      const count: number = item.currentQuantity;
+      const name: string = this.inventoryService.isCapacityBased(item) ? 'Pint' : item.stockType;
+      return `${count} ${name}${count > 1 ? 's' : ''} remaining`;
+    }
+  }
+
+  /**
+   * Decrement the item count by 1; display confirmation message
+   * with new remaining total
+   *
+   * @params: item - the item instance to lower its count
+   * @params: decrementCount - number to decrease count by
+   *
+   * @return: none
+   */
+  handleItemCountDecrement(item: InventoryItem, decrementCount: number): void {
+    let newCount: number = item.currentQuantity - decrementCount;
+    newCount = newCount < 0 ? 0 : newCount;
+
+    this.inventoryService.updateItem(
+      item.cid,
+      { currentQuantity: newCount }
+    )
+    .pipe(take(1))
+    .subscribe(
+      (updatedItem: InventoryItem): void => {
+        const message: string = this.formatDecrementMessage(updatedItem);
+        const cssClass: string = updatedItem === null ? 'toast-warn' : '';
+        this.toastService.presentToast(message, 1500, 'bottom', cssClass);
+      },
+      (error: string): void => {
+        console.log('Item decrement error', error);
+        this.toastService.presentErrorToast('Failed to decrement item count');
+      }
+    );
   }
 
   /**
@@ -301,6 +334,39 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy {
 
 
   /***** Modals *****/
+
+  /**
+   * Open the quatity helper modal
+   *
+   * @params: item - inventory item with quantity data
+   *
+   * @return: none
+   */
+  async openQuantityHelper(item: InventoryItem): Promise<void> {
+    const modal: HTMLIonModalElement = await this.modalCtrl.create({
+      component: QuantityHelperComponent,
+      componentProps: {
+        headerText: 'reduce quantity by',
+        quantity: 1
+      }
+    });
+
+    from(modal.onDidDismiss())
+      .subscribe(
+        (data: object): void => {
+          const _data: number = data['data'];
+          if (!isNaN(_data)) {
+            this.handleItemCountDecrement(item, _data);
+          }
+        },
+        (error: string): void => {
+          console.log('modal dismiss error', error);
+          this.toastService.presentErrorToast('Error selecting quantity');
+        }
+      );
+
+    await modal.present();
+  }
 
   /**
    * Open the inventory form modal

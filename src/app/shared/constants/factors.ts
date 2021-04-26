@@ -28,3 +28,7 @@ export const FL_TO_ML: number = 29.57353;
 // Plato <-> Specific Gravity
 export const PLATO_TO_SG: number[] = [258.6, 227.1, 258.2];
 export const SG_TO_PLATO: number[] = [135.997, 630.272, 1111.14, 616.868];
+
+/* Pint/FlOz/cL conversions */
+export const FLOZ_TO_PINT: number = 16;
+export const CL_TO_FLOZ: number = 0.338140227;

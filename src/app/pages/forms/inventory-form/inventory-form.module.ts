@@ -7,6 +7,7 @@ import { IonicModule } from '@ionic/angular';
 /* Component imports */
 import { FormErrorComponentModule } from '../../../components/form-error/form-error.module';
 import { HeaderComponentModule } from '../../../components/header/header.module';
+import { QuantityHelperComponentModule } from '../../../components/quantity-helper/quantity-helper.module';
 
 /* Page imports */
 import { InventoryFormPage } from './inventory-form.page';
@@ -18,7 +19,8 @@ import { InventoryFormPage } from './inventory-form.page';
     ReactiveFormsModule,
     IonicModule,
     FormErrorComponentModule,
-    HeaderComponentModule
+    HeaderComponentModule,
+    QuantityHelperComponentModule
   ],
   declarations: [
     InventoryFormPage
