@@ -2,8 +2,8 @@ import { Alert } from '../../src/app/shared/interfaces/alert';
 
 export const mockAlert: () => Alert = (): Alert => {
   const mock: Alert = {
-    title: 'mock-alert',
-    description: 'a present step',
+    title: 'Mash out / Heat to boil',
+    description: 'match mock batch current step',
     datetime: (new Date()).toISOString()
   };
   return mock;
@@ -19,18 +19,20 @@ export const mockAlertPast: () => Alert = (): Alert => {
 };
 
 export const mockAlertFuture: () => Alert = (): Alert => {
+  const future: Date = new Date();
+  future.setFullYear(future.getFullYear() + 1);
   const mock: Alert = {
     title: 'mock-alert',
     description: 'a future step',
-    datetime: '2021-02-20T12:00:00Z'
+    datetime: future.toISOString()
   };
   return mock;
 };
 
-export const mockAlertCurrent: () => Alert = (): Alert => {
+export const mockAlertPresent: () => Alert = (): Alert => {
   const mock: Alert = {
-    title: 'Mash out / Heat to boil',
-    description: 'match mock batch current step',
+    title: 'mock-alert',
+    description: 'a present step',
     datetime: (new Date()).toISOString()
   };
   return mock;
