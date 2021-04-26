@@ -5,6 +5,7 @@ import { mockImage } from './mock-image';
 import { mockGrainBill } from './mock-grains';
 import { mockHopsSchedule } from './mock-hops';
 import { mockYeastBatch } from './mock-yeast';
+import { mockOtherIngredients } from './mock-other-ingredients';
 import { mockProcessSchedule } from './mock-process-schedule';
 import { mockStyles } from './mock-styles';
 
@@ -71,7 +72,7 @@ export const mockRecipeVariantComplete: () => RecipeVariant = () => {
     grains: mockGrainBill(),
     hops: mockHopsSchedule(),
     yeast: mockYeastBatch(),
-    otherIngredients: [],
+    otherIngredients: mockOtherIngredients(),
     processSchedule: mockProcessSchedule()
   };
   return mock;
