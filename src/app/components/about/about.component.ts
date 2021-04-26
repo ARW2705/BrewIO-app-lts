@@ -12,7 +12,7 @@ import { APP_VERSION } from '../../shared/constants/app-version';
   styleUrls: ['./about.component.scss']
 })
 export class AboutComponent {
-  appDescription: string = `BrewIO is a multi-purpose tool to design homebrews, organize production, and track inventory.`;
+  appDescription: string = 'BrewIO is a multi-purpose tool to design homebrews, organize production, and track inventory.';
   apiVersion: string = API_VERSION.split('v')[1];
   appVersion: string = APP_VERSION;
   githubURL: string = 'https://github.com/ARW2705/BrewIO-App';
