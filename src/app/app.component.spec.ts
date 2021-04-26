@@ -29,7 +29,7 @@ describe('AppComponent', () => {
   let appComponent: AppComponent;
   configureTestBed();
 
-  beforeAll((done: any) => (async () => {
+  beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
       declarations: [ AppComponent ],
       providers: [
