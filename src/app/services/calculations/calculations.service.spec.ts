@@ -129,10 +129,10 @@ describe('CalculationsService', () => {
     }); // end 'should convert weight to english standard' test
 
     test('should check if a density unit long name is valid', () => {
-      expect(calculator.isValidUnit(Units.SPECIFIC_GRAVITY.longName)).toBe(true);
-      expect(calculator.isValidUnit(Units.PLATO.longName)).toBe(true);
-      expect(calculator.isValidUnit(Units.BRIX.longName)).toBe(true);
-      expect(calculator.isValidUnit('unknown')).toBe(false);
+      expect(calculator.isValidDensityUnit(Units.SPECIFIC_GRAVITY.longName)).toBe(true);
+      expect(calculator.isValidDensityUnit(Units.PLATO.longName)).toBe(true);
+      expect(calculator.isValidDensityUnit(Units.BRIX.longName)).toBe(true);
+      expect(calculator.isValidDensityUnit('unknown')).toBe(false);
     }); // end 'should check if a density unit long name is valid' test
 
     test('should check if a unit requires conversion', () => {

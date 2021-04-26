@@ -69,7 +69,7 @@ export class CalculationsService {
       )
     ) {
       return ((density / (Constant.PLATO_TO_SG[0] - (density * Constant.PLATO_TO_SG[1] / Constant.PLATO_TO_SG[2]))) + 1);
-    } else if (this.isValidUnit(inputUnit) && this.isValidUnit(outputUnit)) {
+    } else if (this.isValidDensityUnit(inputUnit) && this.isValidDensityUnit(outputUnit)) {
       return density;
     }
 
@@ -133,7 +133,7 @@ export class CalculationsService {
    *
    * @return: true if unitName matches SPECIFIC_GRAVITY, PLATO, or BRIX longName
    */
-  isValidUnit(unitName: string): boolean {
+  isValidDensityUnit(unitName: string): boolean {
     return unitName === Units.SPECIFIC_GRAVITY.longName
       || unitName === Units.PLATO.longName
       || unitName === Units.BRIX.longName;
