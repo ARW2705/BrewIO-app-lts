@@ -3,7 +3,7 @@ import { Observable, of } from 'rxjs';
 
 @Injectable()
 export class ActionSheetServiceMock {
-  
+
 }
 
 @Injectable()
@@ -307,6 +307,11 @@ export class SyncServiceMock {
 export class ToastServiceMock {
   public presentToast(...options) {}
   public presentErrorToast(...options) {}
+}
+
+@Injectable()
+export class TimerServiceMock {
+  
 }
 
 @Injectable()
