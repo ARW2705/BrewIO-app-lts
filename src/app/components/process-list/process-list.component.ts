@@ -32,11 +32,7 @@ export class ProcessListComponent {
    *
    * @return: none
    */
-  openProcessModal(
-    processType: string,
-    toUpdate: Process,
-    index: number
-  ): void {
+  openProcessModal(processType: string, toUpdate: Process, index: number): void {
     this.onRecipeAction('openProcessModal', [processType, toUpdate, index]);
   }
 
