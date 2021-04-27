@@ -59,14 +59,12 @@ export class ProcessTimerComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnChanges(changes: SimpleChanges) {
     console.log('process timer component changes', changes);
-    if (
-      changes.stepData !== undefined
-      && changes.stepData.currentValue !== undefined
-    ) {
-      if (changes.stepData.currentValue[0].type !== 'timer') {
+    const stepChange: SimpleChange = changes.stepData;
+    if (stepChange !== undefined && stepChange.currentValue !== undefined) {
+      if (stepChange.currentValue[0].type !== 'timer') {
         this.destroy$.next(true);
-      } else if (this.hasChanges(changes.stepData)) {
-        this.stepData = changes.stepData.currentValue;
+      } else if (this.hasChanges(stepChange)) {
+        this.stepData = stepChange.currentValue;
         this.destroy$.next(true);
         this.initTimers();
       }
@@ -233,7 +231,10 @@ export class ProcessTimerComponent implements OnInit, OnChanges, OnDestroy {
     const timers: BehaviorSubject<Timer>[] = this.timerService
       .getTimersByProcessId(this.batchId, this.stepData[0].cid);
 
-    if (timers === undefined) return;
+    if (timers === undefined) {
+      this.isConcurrent = false;
+      return;
+    }
 
     this.isConcurrent = timers.length > 1;
     timers.forEach(
@@ -277,8 +278,7 @@ export class ProcessTimerComponent implements OnInit, OnChanges, OnDestroy {
    * @return: true if current values are different than previous values
    */
   hasChanges(changes: SimpleChange): boolean {
-    return JSON.stringify(changes.currentValue)
-      !== JSON.stringify(changes.previousValue);
+    return JSON.stringify(changes.currentValue) !== JSON.stringify(changes.previousValue);
   }
 
   /**
