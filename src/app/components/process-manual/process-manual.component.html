@@ -1,8 +1,9 @@
-<div id="manual-container">
+<div  *ngIf="stepData"
+      id="manual-container">
 
   <ion-grid>
 
-    <ion-row class="manual-preview">
+    <ion-row class="manual-data">
 
       <!-- Step name -->
       <ion-col size="12">
@@ -15,14 +16,14 @@
 
       <!-- Step description -->
       <ion-col  size="12"
-                class="preview-info-container">
+                class="manual-content">
 
         <p>
           Description: {{ stepData.description }}
         </p>
 
         <p *ngIf="stepData.expectedDuration">
-          Expected Duration: {{ stepData.expectedDuration }}
+          Expected Duration: {{ stepData.expectedDuration }} minutes
         </p>
 
       </ion-col>

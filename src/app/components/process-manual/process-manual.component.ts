@@ -11,7 +11,6 @@ import { Process } from '../../shared/interfaces/process';
   styleUrls: ['./process-manual.component.scss']
 })
 export class ProcessManualComponent {
-  @Input() isPreview: boolean;
   @Input() stepData: Process;
 
   constructor() { }
