@@ -3,6 +3,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({name: 'unitConversion'})
 export class UnitConversionPipeMock implements PipeTransform {
+  static _returnValue: string = '';
   transform(
     value: any,
     unitType: any,
@@ -10,6 +11,6 @@ export class UnitConversionPipeMock implements PipeTransform {
     refresh?: boolean,
     reformat?: boolean
   ): string {
-    return 'ok';
+    return UnitConversionPipeMock._returnValue;
   }
 }
