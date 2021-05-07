@@ -9,8 +9,8 @@ import { StatusBar } from '@ionic-native/status-bar/ngx';
 import { configureTestBed } from '../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { RecipeServiceMock, InventoryServiceMock, LibraryServiceMock, ProcessServiceMock, UserServiceMock } from '../../test-config/mocks-app';
-import { DomMock, PlatformMockDev, StatusBarMock, SplashScreenMock, StorageMock } from '../../test-config/mocks-ionic';
+import { RecipeServiceStub, InventoryServiceStub, LibraryServiceStub, ProcessServiceStub, UserServiceStub } from '../../test-config/service-stubs';
+import { DomStub, PlatformDevStub, StatusBarStub, SplashScreenStub, StorageStub } from '../../test-config/ionic-stubs';
 
 /* Service imports */
 import { InventoryService } from './services/inventory/inventory.service';
@@ -33,16 +33,16 @@ describe('AppComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ AppComponent ],
       providers: [
-        { provide: LibraryService, useClass: LibraryServiceMock },
-        { provide: UserService, useClass: UserServiceMock },
-        { provide: Document, useClass: DomMock },
-        { provide: InventoryService, useClass: InventoryServiceMock },
-        { provide: ProcessService, useClass: ProcessServiceMock },
-        { provide: RecipeService, useClass: RecipeServiceMock },
-        { provide: StatusBar, useClass: StatusBarMock },
-        { provide: SplashScreen, useClass: SplashScreenMock },
-        { provide: Platform, useClass: PlatformMockDev },
-        { provide: Storage, useClass: StorageMock }
+        { provide: LibraryService, useClass: LibraryServiceStub },
+        { provide: UserService, useClass: UserServiceStub },
+        { provide: Document, useClass: DomStub },
+        { provide: InventoryService, useClass: InventoryServiceStub },
+        { provide: ProcessService, useClass: ProcessServiceStub },
+        { provide: RecipeService, useClass: RecipeServiceStub },
+        { provide: StatusBar, useClass: StatusBarStub },
+        { provide: SplashScreen, useClass: SplashScreenStub },
+        { provide: Platform, useClass: PlatformDevStub },
+        { provide: Storage, useClass: StorageStub }
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
@@ -92,6 +92,30 @@ describe('AppComponent', () => {
     expect(appComponent.isSelectOptionChecked(<HTMLElement>mockNotOptionElem)).toBe(false);
   });
 
-  // TODO: figure out how to test hostlistener with document element
+  test('should handle alert present event', (): void => {
+    const mockHTMLElement: HTMLElement = global.document.createElement('ion-select-option');
+
+    mockHTMLElement.scrollIntoView = jest
+      .fn();
+
+    global.document.querySelector = jest
+      .fn()
+      .mockReturnValue(mockHTMLElement);
+
+    appComponent.isSelectOptionChecked = jest
+      .fn()
+      .mockReturnValueOnce(false)
+      .mockReturnValueOnce(true);
+
+    const scrollSpy: jest.SpyInstance = jest.spyOn(mockHTMLElement, 'scrollIntoView');
+
+    fixture.detectChanges();
+
+    appComponent.onAlertOpen();
+    expect(scrollSpy).not.toHaveBeenCalled();
+
+    appComponent.onAlertOpen();
+    expect(scrollSpy).toHaveBeenCalled();
+  });
 
 });
