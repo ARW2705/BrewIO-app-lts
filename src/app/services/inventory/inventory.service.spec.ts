@@ -9,16 +9,9 @@ import { BehaviorSubject, Subject, concat, forkJoin, of, throwError } from 'rxjs
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockAuthor } from '../../../../test-config/mock-models/mock-author';
-import { mockBatch } from '../../../../test-config/mock-models/mock-batch';
-import { mockImage, mockImageRequestMetadata } from '../../../../test-config/mock-models/mock-image';
-import { mockInventoryItem, mockOptionalItemData } from '../../../../test-config/mock-models/mock-inventory';
-import { mockRecipeMasterActive } from '../../../../test-config/mock-models/mock-recipe';
-import { mockErrorResponse } from '../../../../test-config/mock-models/mock-response';
-import { mockStyles } from '../../../../test-config/mock-models/mock-styles';
-import { mockSyncMetadata, mockSyncError, mockSyncResponse } from '../../../../test-config/mock-models/mock-sync';
-import { ClientIdServiceMock, ConnectionServiceMock, EventServiceMock, ImageServiceMock, LibraryServiceMock, HttpErrorServiceMock, ProcessServiceMock, RecipeServiceMock, StorageServiceMock, SyncServiceMock, ToastServiceMock, UserServiceMock } from '../../../../test-config/mocks-app';
-import { SplashScreenMock } from '../../../../test-config/mocks-ionic';
+import { mockAuthor, mockBatch, mockImage, mockImageRequestMetadata, mockInventoryItem, mockOptionalItemData, mockRecipeMasterActive, mockErrorResponse, mockStyles, mockSyncMetadata, mockSyncError, mockSyncResponse } from '../../../../test-config/mock-models';
+import { ClientIdServiceStub, ConnectionServiceStub, EventServiceStub, ImageServiceStub, LibraryServiceStub, HttpErrorServiceStub, ProcessServiceStub, RecipeServiceStub, StorageServiceStub, SyncServiceStub, ToastServiceStub, UserServiceStub } from '../../../../test-config/service-stubs';
+import { SplashScreenStub } from '../../../../test-config/ionic-stubs';
 
 /* Constants imports */
 import { API_VERSION } from '../../shared/constants/api-version';
@@ -65,19 +58,19 @@ describe('InventoryService', (): void => {
       ],
       providers: [
         InventoryService,
-        { provide: ClientIdService, useClass: ClientIdServiceMock },
-        { provide: ConnectionService, useClass: ConnectionServiceMock },
-        { provide: EventService, useClass: EventServiceMock },
-        { provide: HttpErrorService, useClass: HttpErrorServiceMock },
-        { provide: ImageService, useClass: ImageServiceMock },
-        { provide: LibraryService, useClass: LibraryServiceMock },
-        { provide: ProcessService, useClass: ProcessServiceMock },
-        { provide: RecipeService, useClass: RecipeServiceMock },
-        { provide: StorageService, useClass: StorageServiceMock },
-        { provide: SyncService, useClass: SyncServiceMock },
-        { provide: ToastService, useClass: ToastServiceMock },
-        { provide: UserService, useClass: UserServiceMock },
-        { provide: SplashScreen, useClass: SplashScreenMock }
+        { provide: ClientIdService, useClass: ClientIdServiceStub },
+        { provide: ConnectionService, useClass: ConnectionServiceStub },
+        { provide: EventService, useClass: EventServiceStub },
+        { provide: HttpErrorService, useClass: HttpErrorServiceStub },
+        { provide: ImageService, useClass: ImageServiceStub },
+        { provide: LibraryService, useClass: LibraryServiceStub },
+        { provide: ProcessService, useClass: ProcessServiceStub },
+        { provide: RecipeService, useClass: RecipeServiceStub },
+        { provide: StorageService, useClass: StorageServiceStub },
+        { provide: SyncService, useClass: SyncServiceStub },
+        { provide: ToastService, useClass: ToastServiceStub },
+        { provide: UserService, useClass: UserServiceStub },
+        { provide: SplashScreen, useClass: SplashScreenStub }
       ]
     });
   }));
@@ -1504,6 +1497,20 @@ describe('InventoryService', (): void => {
 
     expect(inventoryService.hasMappableKey('itemIBU', _mockOptionalItemData)).toBe(true);
     expect(inventoryService.hasMappableKey('none', _mockOptionalItemData)).toBe(false);
+  });
+
+  test('should check if item stock type is capacity based', (): void => {
+    const _mockInventoryItem: InventoryItem = mockInventoryItem();
+
+    expect(inventoryService.isCapacityBased(_mockInventoryItem)).toBe(false);
+
+    _mockInventoryItem.stockType = 'Keg';
+
+    expect(inventoryService.isCapacityBased(_mockInventoryItem)).toBe(true);
+
+    _mockInventoryItem.stockType = 'Growler';
+
+    expect(inventoryService.isCapacityBased(_mockInventoryItem)).toBe(true);
   });
 
   test('should map optional data to item', (): void => {

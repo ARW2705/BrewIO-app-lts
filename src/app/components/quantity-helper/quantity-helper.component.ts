@@ -22,7 +22,6 @@ export class QuantityHelperComponent implements OnInit {
   @Input() headerText: string;
   @Input() quantity: number;
   commonContainers: Container[] = COMMON_CONTAINERS;
-  focusElement: string = '';
   quantityPints: number;
   quantityOunces: number;
   quantityCentiliters: number;

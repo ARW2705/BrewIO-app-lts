@@ -11,7 +11,7 @@ import { YeastBatch } from '../../shared/interfaces/yeast-batch';
   styleUrls: ['./yeast-batch.component.scss'],
 })
 export class YeastBatchComponent {
-  @Input() yeastBatch: YeastBatch;
+  @Input() yeastBatch: YeastBatch[];
   @Input() onRecipeAction: (actionName: string, options?: object) => void;
 
   constructor() { }

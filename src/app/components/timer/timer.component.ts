@@ -26,7 +26,9 @@ export class TimerComponent implements OnInit {
   constructor() { }
 
   ngOnInit() {
-    this.setChevron();
+    if (this.timer) {
+      this.setChevron();
+    }
   }
 
   /**

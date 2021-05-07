@@ -9,11 +9,10 @@ import { BehaviorSubject } from 'rxjs';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockUser } from '../../../../test-config/mock-models/mock-user';
-import { LoginPageStub } from '../../../../test-config/component-stubs/login-stub.component';
-import { SignupPageStub } from '../../../../test-config/component-stubs/signup-stub.component';
-import { ModalControllerMock, ModalMock } from '../../../../test-config/mocks-ionic';
-import { ActionSheetServiceMock, UserServiceMock } from '../../../../test-config/mocks-app';
+import { mockUser } from '../../../../test-config/mock-models';
+import { LoginPageStub, SignupPageStub } from '../../../../test-config/component-stubs';
+import { ModalControllerStub, ModalStub } from '../../../../test-config/ionic-stubs';
+import { ActionSheetServiceStub, UserServiceStub } from '../../../../test-config/service-stubs';
 
 /* Interface imports */
 import { User } from '../../shared/interfaces/user';
@@ -46,9 +45,9 @@ describe('HeaderComponent', (): void => {
       ],
       imports: [ RouterTestingModule ],
       providers: [
-        { provide: ActionSheetService, useClass: ActionSheetServiceMock },
-        { provide: UserService, useClass: UserServiceMock },
-        { provide: ModalController, useClass: ModalControllerMock }
+        { provide: ActionSheetService, useClass: ActionSheetServiceStub },
+        { provide: UserService, useClass: UserServiceStub },
+        { provide: ModalController, useClass: ModalControllerStub }
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
@@ -108,14 +107,14 @@ describe('HeaderComponent', (): void => {
   });
 
   test('should open the login modal', (done: jest.DoneCallback): void => {
-    const _mockModal = new ModalMock();
+    const _stubModal = new ModalStub();
 
     headerCmp.modalCtrl.create = jest
       .fn()
-      .mockReturnValue(Promise.resolve(_mockModal));
+      .mockReturnValue(Promise.resolve(_stubModal));
 
     const createSpy: jest.SpyInstance = jest.spyOn(headerCmp.modalCtrl, 'create');
-    const presentSpy: jest.SpyInstance = jest.spyOn(_mockModal, 'present');
+    const presentSpy: jest.SpyInstance = jest.spyOn(_stubModal, 'present');
 
     fixture.detectChanges();
 
@@ -129,14 +128,14 @@ describe('HeaderComponent', (): void => {
   });
 
   test('should open the signup modal', (done: jest.DoneCallback): void => {
-    const _mockModal = new ModalMock();
+    const _stubModal = new ModalStub();
 
     headerCmp.modalCtrl.create = jest
       .fn()
-      .mockReturnValue(Promise.resolve(_mockModal));
+      .mockReturnValue(Promise.resolve(_stubModal));
 
     const createSpy: jest.SpyInstance = jest.spyOn(headerCmp.modalCtrl, 'create');
-    const presentSpy: jest.SpyInstance = jest.spyOn(_mockModal, 'present');
+    const presentSpy: jest.SpyInstance = jest.spyOn(_stubModal, 'present');
 
     fixture.detectChanges();
 
@@ -186,6 +185,34 @@ describe('HeaderComponent', (): void => {
     headerCmp.openLoginSignup();
 
     expect(actionSpy).toHaveBeenCalled();
+  });
+
+  test('should render the template with a user logged in', (): void => {
+    const _mockUser: User = mockUser();
+
+    headerCmp.user = _mockUser;
+    headerCmp.title = 'test-title';
+    headerCmp.rootURL = 'url';
+
+    fixture.detectChanges();
+
+    const backButton: HTMLElement = fixture.nativeElement.querySelector('.back-button');
+    expect(backButton.children[0].getAttribute('name')).toMatch('chevron-back-outline');
+
+    const title: HTMLElement = fixture.nativeElement.querySelector('ion-title');
+    expect(title.textContent).toMatch('test-title');
+
+    const userName: HTMLElement = fixture.nativeElement.querySelector('.login-header-text');
+    expect(userName.children[1].textContent).toMatch(_mockUser.username);
+  });
+
+  test('should render the template without a user', (): void => {
+    headerCmp.title = 'test-title';
+
+    fixture.detectChanges();
+
+    const loginButton: HTMLElement = fixture.nativeElement.querySelector('ion-button');
+    expect(loginButton.children[0].getAttribute('name')).toMatch('log-in-outline');
   });
 
 });

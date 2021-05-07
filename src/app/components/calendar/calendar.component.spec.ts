@@ -7,8 +7,8 @@ import * as moment from 'moment';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockCalendarStep, mockCalendarDate } from '../../../../test-config/mock-models/mock-calendar';
-import { MomentPipeMock } from '../../../../test-config/mock-pipes/mock-moment-pipe';
+import { mockCalendarStep, mockCalendarDate } from '../../../../test-config/mock-models';
+import { MomentPipeStub } from '../../../../test-config/pipe-stubs';
 
 /* Interface imports*/
 import { Alert } from '../../shared/interfaces/alert';
@@ -31,7 +31,7 @@ describe('CalendarComponent', (): void => {
     TestBed.configureTestingModule({
       declarations: [
         CalendarComponent,
-        MomentPipeMock
+        MomentPipeStub
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
@@ -451,6 +451,119 @@ describe('CalendarComponent', (): void => {
       expect(calCmp.month[1][0].isMonth).toBe(true);
       expect(calCmp.month[1][0].isProjected).toBe(true);
       expect(calCmp.month[5][6].isMonth).toBe(false);
+    });
+
+  });
+
+  describe('View Render', (): void => {
+
+    test('should render the template', (): void => {
+      const _mockCalendarStep: Process = mockCalendarStep();
+      const now: Date = new Date();
+      const month: string = now.toLocaleString('default', { month: 'long' });
+
+      calCmp.stepData = _mockCalendarStep;
+      calCmp.ngOnInit = originalOnInit;
+
+      MomentPipeStub._returnValue = (): string => {
+        return month;
+      };
+
+      fixture.detectChanges();
+
+      const monthElem: HTMLElement = fixture.nativeElement.querySelector('.month-header');
+      expect(monthElem.textContent).toMatch(month);
+
+      const weekRows: NodeList = fixture.nativeElement.querySelectorAll('.week-row');
+      expect(weekRows.length).toEqual(6);
+    });
+
+    test('should render select buttons', (): void => {
+      const _mockCalendarStep: Process = mockCalendarStep();
+
+      calCmp.stepData = _mockCalendarStep;
+      calCmp.ngOnInit = originalOnInit;
+
+      fixture.detectChanges();
+
+      const buttons: NodeList = fixture.nativeElement.querySelectorAll('ion-button');
+      expect(buttons.length).toEqual(2);
+      expect(buttons.item(0).textContent).toMatch('Select Start');
+      expect(buttons.item(1).textContent).toMatch('Select Alerts');
+    });
+
+    test('should render days header', (): void => {
+      const _mockCalendarStep: Process = mockCalendarStep();
+
+      calCmp.stepData = _mockCalendarStep;
+      calCmp.ngOnInit = originalOnInit;
+
+      fixture.detectChanges();
+
+      const dayHeader: HTMLElement = fixture.nativeElement.querySelector('.day-header');
+      Array.from(dayHeader.children).forEach((col: Element, index: number): void => {
+        expect(col.textContent).toMatch(calCmp.weekdays[index]);
+      });
+    });
+
+    test('should render the calendar dates', (): void => {
+      const _mockCalendarStep: Process = mockCalendarStep();
+
+      calCmp.stepData = _mockCalendarStep;
+      calCmp.ngOnInit = originalOnInit;
+      calCmp.editType = '';
+
+      fixture.detectChanges();
+
+      const selectSpy: jest.SpyInstance = jest.spyOn(calCmp, 'selectStartDate');
+      const toggleSpy: jest.SpyInstance = jest.spyOn(calCmp, 'toggleProjectedDate');
+
+      const dateButtons: NodeList = fixture.debugElement.nativeElement.querySelectorAll('date-button');
+      const jan1: HTMLElement = <HTMLElement>dateButtons[3];
+      expect(jan1['isStart']).toBe(true);
+      jan1.click();
+      expect(selectSpy).not.toHaveBeenCalled();
+      expect(toggleSpy).not.toHaveBeenCalled();
+    });
+
+    test('should render the calendar dates and select start date', (): void => {
+      const _mockCalendarStep: Process = mockCalendarStep();
+
+      calCmp.stepData = _mockCalendarStep;
+      calCmp.ngOnInit = originalOnInit;
+      calCmp.editType = 'start';
+
+      fixture.detectChanges();
+
+      const selectSpy: jest.SpyInstance = jest.spyOn(calCmp, 'selectStartDate');
+      const toggleSpy: jest.SpyInstance = jest.spyOn(calCmp, 'toggleProjectedDate');
+
+      const dateButtons: NodeList = fixture.debugElement.nativeElement.querySelectorAll('date-button');
+      const jan1: HTMLElement = <HTMLElement>dateButtons[3];
+      expect(jan1['isStart']).toBe(true);
+      jan1.click();
+      expect(selectSpy).toHaveBeenCalled();
+      expect(toggleSpy).not.toHaveBeenCalled();
+    });
+
+    test('should render the calendar dates and select projected date', (): void => {
+      const _mockCalendarStep: Process = mockCalendarStep();
+
+      calCmp.stepData = _mockCalendarStep;
+      calCmp.ngOnInit = originalOnInit;
+      calCmp.editType = 'start';
+
+      fixture.detectChanges();
+
+      const selectSpy: jest.SpyInstance = jest.spyOn(calCmp, 'selectStartDate');
+      const toggleSpy: jest.SpyInstance = jest.spyOn(calCmp, 'toggleProjectedDate');
+
+      const dateButtons: NodeList = fixture.debugElement.nativeElement.querySelectorAll('date-button');
+      const jan2: HTMLElement = <HTMLElement>dateButtons[4];
+      expect(jan2['isStart']).toBe(false);
+      jan2.click();
+      expect(selectSpy).toHaveBeenCalled();
+      expect(toggleSpy).not.toHaveBeenCalled();
     });
 
   });

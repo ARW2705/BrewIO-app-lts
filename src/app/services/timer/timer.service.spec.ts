@@ -1,22 +1,19 @@
 /* Module imports */
 import { TestBed, getTestBed, async } from '@angular/core/testing';
 import { Platform } from '@ionic/angular';
-import { BehaviorSubject, concat, forkJoin, of } from 'rxjs';
+import { BehaviorSubject, concat, of } from 'rxjs';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockBatch } from '../../../../test-config/mock-models/mock-batch';
-import { mockProcessSchedule } from '../../../../test-config/mock-models/mock-process-schedule';
-import { mockTimer, mockConcurrentTimers, mockBatchTimer } from '../../../../test-config/mock-models/mock-timer';
-import { BackgroundModeServiceMock, ClientIdServiceMock, LocalNotificationServiceMock } from '../../../../test-config/mocks-app';
-import { PlatformMock } from '../../../../test-config/mocks-ionic';
+import { mockBatch, mockProcessSchedule, mockTimer, mockConcurrentTimers, mockBatchTimer } from '../../../../test-config/mock-models';
+import { PlatformStub } from '../../../../test-config/ionic-stubs';
+import { BackgroundModeServiceStub, ClientIdServiceStub, LocalNotificationServiceStub } from '../../../../test-config/service-stubs';
 
 /* Interface imports */
 import { Batch } from '../../shared/interfaces/batch';
 import { Process } from '../../shared/interfaces/process';
-import { ProgressCircleSettings } from '../../shared/interfaces/progress-circle';
 import { Timer, BatchTimer } from '../../shared/interfaces/timer';
 
 /* Service imports */
@@ -35,10 +32,10 @@ describe('TimerService', (): void => {
     TestBed.configureTestingModule({
       providers: [
         TimerService,
-        { provide: Platform, useClass: PlatformMock },
-        { provide: BackgroundModeService, useClass: BackgroundModeServiceMock },
-        { provide: ClientIdService, useClass: ClientIdServiceMock },
-        { provide: LocalNotificationService, useClass: LocalNotificationServiceMock }
+        { provide: Platform, useClass: PlatformStub },
+        { provide: BackgroundModeService, useClass: BackgroundModeServiceStub },
+        { provide: ClientIdService, useClass: ClientIdServiceStub },
+        { provide: LocalNotificationService, useClass: LocalNotificationServiceStub }
       ]
     });
     global.setInterval = jest

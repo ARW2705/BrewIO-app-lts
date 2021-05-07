@@ -75,6 +75,23 @@ export class ProfileComponent implements OnInit, OnDestroy {
   /***** Form Methods *****/
 
   /**
+   * Get image data to pass to modal
+   *
+   * @params: imageType - the type of image to add, either 'user' or 'brewery'
+   *
+   * @return: modal options object or null if image is the default image
+   */
+  getImageModalOptions(imageType: string): object {
+    let options: { image: Image } = null;
+    if (imageType === 'user' && !this.imageService.hasDefaultImage(this.userImage)) {
+      options = { image: this.userImage };
+    } else if (imageType === 'brewery' && !this.imageService.hasDefaultImage(this.breweryLabelImage)) {
+      options = { image: this.breweryLabelImage };
+    }
+    return options;
+  }
+
+  /**
    * Create form with profile values in form fields
    *
    * @params: user - user profile object
@@ -105,6 +122,38 @@ export class ProfileComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Handle image modal error
+   *
+   * @params: none
+   *
+   * @return: modal error handling function
+   */
+  onImageModalError(): (error: string) => void {
+    return (error: string): void => {
+      console.log('modal dismiss error', error);
+      this.toastService.presentErrorToast('Error selecting image');
+    };
+  }
+
+  /**
+   * Handle image modal success
+   *
+   * @params: imageType - the type of image, either 'user' or 'brewery'
+   *
+   * @return: modal success handling function
+   */
+  onImageModalSuccess(imageType: string): (data: object) => void {
+    return (data: object): void => {
+      const _data: Image = data['data'];
+      if (imageType === 'user' && _data) {
+        this.userImage = _data;
+      } else if (imageType === 'brewery' && _data) {
+        this.breweryLabelImage = _data;
+      }
+    };
+  }
+
+  /**
    * Open image selection modal
    *
    * @params: imageType - identifies image as either userImage or breweryLabelImage
@@ -112,32 +161,15 @@ export class ProfileComponent implements OnInit, OnDestroy {
    * @return: none
    */
   async openImageModal(imageType: string): Promise<void> {
-    let options: { image: Image } = null;
-    if (imageType === 'user' && !this.imageService.hasDefaultImage(this.userImage)) {
-      options = { image: this.userImage };
-    } else if (imageType === 'brewery' && !this.imageService.hasDefaultImage(this.breweryLabelImage)) {
-      options = { image: this.breweryLabelImage };
-    }
-
     const modal: HTMLIonModalElement = await this.modalCtrl.create({
       component: ImageFormPage,
-      componentProps: options
+      componentProps: this.getImageModalOptions(imageType)
     });
 
     from(modal.onDidDismiss())
       .subscribe(
-        (data: object): void => {
-          const _data: Image = data['data'];
-          if (imageType === 'user' && _data) {
-            this.userImage = _data;
-          } else if (imageType === 'brewery' && _data) {
-            this.breweryLabelImage = _data;
-          }
-        },
-        (error: string): void => {
-          console.log('modal dismiss error', error);
-          this.toastService.presentErrorToast('Error selecting image');
-        }
+        this.onImageModalSuccess(imageType),
+        this.onImageModalError()
       );
 
     await modal.present();
@@ -166,7 +198,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         },
         (error: string): void => {
           console.log('profile update error', error);
-          this.toastService.presentToast('Error updating profile');
+          this.toastService.presentErrorToast('Error updating profile');
         }
       );
   }

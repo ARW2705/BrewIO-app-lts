@@ -8,17 +8,8 @@ import { BehaviorSubject, Observable, Subject, forkJoin, of, throwError } from '
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockAuthor } from '../../../../test-config/mock-models/mock-author';
-import { mockHopsSchedule } from '../../../../test-config/mock-models/mock-hops';
-import { mockOtherIngredients } from '../../../../test-config/mock-models/mock-other-ingredients';
-import { mockImage, mockImageRequestMetadata } from '../../../../test-config/mock-models/mock-image';
-import { mockRecipeMasterActive, mockRecipeMasterInactive, mockRecipeVariantComplete, mockRecipeVariantIncomplete } from '../../../../test-config/mock-models/mock-recipe';
-import { mockErrorResponse } from '../../../../test-config/mock-models/mock-response';
-import { mockProcessSchedule } from '../../../../test-config/mock-models/mock-process-schedule';
-import { mockStyles } from '../../../../test-config/mock-models/mock-styles';
-import { mockUser } from '../../../../test-config/mock-models/mock-user';
-import { mockSyncError, mockSyncMetadata, mockSyncResponse } from '../../../../test-config/mock-models/mock-sync';
-import { ClientIdServiceMock, ConnectionServiceMock, EventServiceMock, HttpErrorServiceMock, ImageServiceMock, StorageServiceMock, SyncServiceMock, ToastServiceMock, UserServiceMock } from '../../../../test-config/mocks-app';
+import { mockAuthor, mockHopsSchedule, mockOtherIngredients, mockImage, mockImageRequestMetadata, mockRecipeMasterActive, mockRecipeMasterInactive, mockRecipeVariantComplete, mockRecipeVariantIncomplete, mockErrorResponse, mockProcessSchedule, mockStyles, mockUser, mockSyncError, mockSyncMetadata, mockSyncResponse } from '../../../../test-config/mock-models';
+import { ClientIdServiceStub, ConnectionServiceStub, EventServiceStub, HttpErrorServiceStub, ImageServiceStub, StorageServiceStub, SyncServiceStub, ToastServiceStub, UserServiceStub } from '../../../../test-config/service-stubs';
 
 /* Constants imports */
 import { API_VERSION } from '../../shared/constants/api-version';
@@ -67,15 +58,15 @@ describe('RecipeService', (): void => {
       imports: [ HttpClientTestingModule ],
       providers: [
         RecipeService,
-        { provide: ClientIdService, useClass: ClientIdServiceMock },
-        { provide: ConnectionService, useClass: ConnectionServiceMock },
-        { provide: EventService, useClass: EventServiceMock },
-        { provide: HttpErrorService, useClass: HttpErrorServiceMock },
-        { provide: ImageService, useClass: ImageServiceMock },
-        { provide: StorageService, useClass: StorageServiceMock },
-        { provide: SyncService, useClass: SyncServiceMock },
-        { provide: ToastService, useClass: ToastServiceMock },
-        { provide: UserService, useClass: UserServiceMock }
+        { provide: ClientIdService, useClass: ClientIdServiceStub },
+        { provide: ConnectionService, useClass: ConnectionServiceStub },
+        { provide: EventService, useClass: EventServiceStub },
+        { provide: HttpErrorService, useClass: HttpErrorServiceStub },
+        { provide: ImageService, useClass: ImageServiceStub },
+        { provide: StorageService, useClass: StorageServiceStub },
+        { provide: SyncService, useClass: SyncServiceStub },
+        { provide: ToastService, useClass: ToastServiceStub },
+        { provide: UserService, useClass: UserServiceStub }
       ]
     });
     injector = getTestBed();

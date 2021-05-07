@@ -7,7 +7,7 @@ import { ModalController } from '@ionic/angular';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { ModalControllerMock } from '../../../../test-config/mocks-ionic';
+import { ModalControllerStub } from '../../../../test-config/ionic-stubs';
 
 /* Component imports */
 import { ConfirmationComponent } from './confirmation.component';
@@ -22,7 +22,7 @@ describe('ConfirmationComponent', (): void => {
     TestBed.configureTestingModule({
       declarations: [ ConfirmationComponent ],
       providers: [
-        { provide: ModalController, useClass: ModalControllerMock }
+        { provide: ModalController, useClass: ModalControllerStub }
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
@@ -42,24 +42,6 @@ describe('ConfirmationComponent', (): void => {
     expect(confirmCmp).toBeDefined();
   });
 
-  test('should display confirmation message', (): void => {
-    expect(confirmCmp.message.length).toEqual(0);
-    expect(confirmCmp.subMessage).toBeNull();
-
-    confirmCmp.message = 'test-message';
-    confirmCmp.subMessage = 'test-sub-message';
-
-    fixture.detectChanges();
-
-    expect(confirmCmp.message).toMatch('test-message');
-    expect(confirmCmp.subMessage).toMatch('test-sub-message');
-
-    const message: HTMLElement = fixture.nativeElement.querySelector('#message > span');
-    expect(message.textContent).toMatch('test-message');
-    const subMessage: HTMLElement = fixture.nativeElement.querySelector('#subMessage');
-    expect(subMessage.textContent).toMatch('test-sub-message');
-  });
-
   test('should assign back click handler', (): void => {
     fixture.detectChanges();
 
@@ -77,6 +59,23 @@ describe('ConfirmationComponent', (): void => {
     confirmCmp.submit(true);
 
     expect(dismissSpy).toHaveBeenCalledWith(true);
+  });
+
+  test('should render the template', (): void => {
+    confirmCmp.message = 'test message';
+    confirmCmp.subMessage = 'test sub message';
+
+    fixture.detectChanges();
+
+    const message: HTMLElement = fixture.nativeElement.querySelector('span');
+    expect(message.textContent).toMatch('test message');
+
+    const buttons: NodeList = fixture.nativeElement.querySelectorAll('ion-button');
+    expect(buttons.item(0).textContent).toMatch('Cancel');
+    expect(buttons.item(1).textContent).toMatch('Confirm');
+
+    const subMessage: HTMLElement = fixture.nativeElement.querySelector('#sub-message');
+    expect(subMessage.textContent).toMatch('test sub message');
   });
 
 });

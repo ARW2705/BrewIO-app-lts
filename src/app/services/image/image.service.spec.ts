@@ -10,11 +10,9 @@ import { Observable, of } from 'rxjs';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockImage, mockImageRequestFormData } from '../../../../test-config/mock-models/mock-image';
-import { mockEntry } from '../../../../test-config/mock-models/mock-entry';
-import { mockFileMetadata } from '../../../../test-config/mock-models/mock-file-metadata';
-import { CameraMock, CropMock, ImageResizerMock } from '../../../../test-config/mocks-ionic';
-import { ClientIdServiceMock, FileServiceMock } from '../../../../test-config/mocks-app';
+import { mockImage, mockImageRequestFormData, mockEntry, mockFileMetadata  } from '../../../../test-config/mock-models';
+import { CameraStub, CropStub, ImageResizerStub } from '../../../../test-config/ionic-stubs';
+import { ClientIdServiceStub, FileServiceStub } from '../../../../test-config/service-stubs';
 
 /* Default imports */
 import { defaultImage } from '../../shared/defaults/default-image';
@@ -37,11 +35,11 @@ describe('ImageService', (): void => {
     TestBed.configureTestingModule({
       providers: [
         ImageService,
-        { provide: ClientIdService, useClass: ClientIdServiceMock },
-        { provide: FileService, useClass: FileServiceMock },
-        { provide: Camera, useClass: CameraMock },
-        { provide: Crop, useClass: CropMock },
-        { provide: ImageResizer, useClass: ImageResizerMock }
+        { provide: ClientIdService, useClass: ClientIdServiceStub },
+        { provide: FileService, useClass: FileServiceStub },
+        { provide: Camera, useClass: CameraStub },
+        { provide: Crop, useClass: CropStub },
+        { provide: ImageResizer, useClass: ImageResizerStub }
       ]
     });
   }));

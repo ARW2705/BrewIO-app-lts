@@ -7,12 +7,10 @@ import { BehaviorSubject, of, throwError } from 'rxjs';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockTimer, mockConcurrentTimers } from '../../../../test-config/mock-models/mock-timer';
-import { mockProcessSchedule } from '../../../../test-config/mock-models/mock-process-schedule';
-import { TimerComponentStub } from '../../../../test-config/component-stubs/timer-stub.component';
-import { TimerServiceMock, ToastServiceMock } from '../../../../test-config/mocks-app';
-import { FormatTimePipeMock } from '../../../../test-config/mock-pipes/mock-format-pipe';
-import { UnitConversionPipeMock } from '../../../../test-config/mock-pipes/mock-unit-conversion-pipe';
+import { mockTimer, mockConcurrentTimers, mockProcessSchedule } from '../../../../test-config/mock-models';
+import { TimerComponentStub } from '../../../../test-config/component-stubs';
+import { TimerServiceStub, ToastServiceStub } from '../../../../test-config/service-stubs';
+import { FormatTimePipeStub, UnitConversionPipeStub } from '../../../../test-config/pipe-stubs';
 
 /* Interface imports */
 import { Process } from '../../shared/interfaces/process';
@@ -38,12 +36,12 @@ describe('ProcessTimerComponent', (): void => {
       declarations: [
         ProcessTimerComponent,
         TimerComponentStub,
-        FormatTimePipeMock,
-        UnitConversionPipeMock
+        FormatTimePipeStub,
+        UnitConversionPipeStub
       ],
       providers: [
-        { provide: TimerService, useClass: TimerServiceMock },
-        { provide: ToastService, useClass: ToastServiceMock }
+        { provide: TimerService, useClass: TimerServiceStub },
+        { provide: ToastService, useClass: ToastServiceStub }
       ],
       schemas: [ NO_ERRORS_SCHEMA ]
     });

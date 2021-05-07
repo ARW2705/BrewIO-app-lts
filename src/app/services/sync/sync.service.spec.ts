@@ -1,21 +1,18 @@
 /* Module imports */
 import { TestBed, getTestBed, async } from '@angular/core/testing';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Storage } from '@ionic/storage';
 import { of, throwError } from 'rxjs';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockErrorResponse } from '../../../../test-config/mock-models/mock-response';
-import { mockInventoryItem } from '../../../../test-config/mock-models/mock-inventory';
-import { mockSyncMetadata, mockSyncResponse } from '../../../../test-config/mock-models/mock-sync';
-import { StorageServiceMock } from '../../../../test-config/mocks-app';
+import { mockErrorResponse, mockInventoryItem, mockSyncMetadata } from '../../../../test-config/mock-models';
+import { StorageServiceStub } from '../../../../test-config/service-stubs';
 
 /* Interface imports */
 import { InventoryItem } from '../../shared/interfaces/inventory-item';
-import { SyncError, SyncData, SyncMetadata, SyncResponse } from '../../shared/interfaces/sync';
+import { SyncError, SyncMetadata, SyncResponse } from '../../shared/interfaces/sync';
 
 /* Service imports */
 import { SyncService } from './sync.service';
@@ -31,10 +28,10 @@ describe('SyncService', (): void => {
     TestBed.configureTestingModule({
       providers: [
         SyncService,
-        { provide: StorageService, useClass: StorageServiceMock }
+        { provide: StorageService, useClass: StorageServiceStub }
       ]
     });
-    StorageServiceMock._body = of([]);
+    StorageServiceStub._body = of([]);
     injector = getTestBed();
     syncService = injector.get(SyncService);
   }));

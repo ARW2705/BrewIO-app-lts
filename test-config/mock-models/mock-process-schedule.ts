@@ -1,6 +1,7 @@
+/* Interface imports */
 import { Process } from '../../src/app/shared/interfaces/process';
 
-export const mockProcessSchedule = () => {
+export const mockProcessSchedule: () => Process[] = (): Process[] => {
   const mock: Process[] = [
     {
       splitInterval: 1,

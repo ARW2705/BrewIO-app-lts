@@ -6,9 +6,8 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockGrainBill } from '../../../../test-config/mock-models/mock-grains';
-import { RatioPipeMock } from '../../../../test-config/mock-pipes/mock-ratio-pipe';
-import { UnitConversionPipeMock } from '../../../../test-config/mock-pipes/mock-unit-conversion-pipe';
+import { mockGrainBill } from '../../../../test-config/mock-models';
+import { RatioPipeStub, UnitConversionPipeStub } from '../../../../test-config/pipe-stubs';
 
 /* Interface imports */
 import { GrainBill } from '../../shared/interfaces/grain-bill';
@@ -26,8 +25,8 @@ describe('GrainBillComponent', (): void => {
     TestBed.configureTestingModule({
       declarations: [
         GrainBillComponent,
-        RatioPipeMock,
-        UnitConversionPipeMock
+        RatioPipeStub,
+        UnitConversionPipeStub
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });

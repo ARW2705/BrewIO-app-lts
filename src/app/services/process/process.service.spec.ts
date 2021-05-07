@@ -8,14 +8,8 @@ import { BehaviorSubject, Observable, Subject, forkJoin, of, throwError } from '
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockAlert } from '../../../../test-config/mock-models/mock-alert';
-import { mockBatch, mockGeneratedBatch } from '../../../../test-config/mock-models/mock-batch';
-import { mockSyncError, mockSyncMetadata, mockSyncResponse } from '../../../../test-config/mock-models/mock-sync';
-import { mockRecipeMasterActive } from '../../../../test-config/mock-models/mock-recipe';
-import { mockPrimaryValues } from '../../../../test-config/mock-models/mock-primary-values';
-import { mockErrorResponse } from '../../../../test-config/mock-models/mock-response';
-import { mockUser } from '../../../../test-config/mock-models/mock-user';
-import { CalculationsServiceMock, ClientIdServiceMock, ConnectionServiceMock, EventServiceMock, HttpErrorServiceMock, RecipeServiceMock, StorageServiceMock, SyncServiceMock, ToastServiceMock, UserServiceMock } from '../../../../test-config/mocks-app';
+import { mockAlert, mockBatch, mockGeneratedBatch, mockSyncError, mockSyncMetadata, mockSyncResponse, mockRecipeMasterActive, mockPrimaryValues, mockErrorResponse, mockUser } from '../../../../test-config/mock-models';
+import { CalculationsServiceStub, ClientIdServiceStub, ConnectionServiceStub, EventServiceStub, HttpErrorServiceStub, RecipeServiceStub, StorageServiceStub, SyncServiceStub, ToastServiceStub, UserServiceStub } from '../../../../test-config/service-stubs';
 
 /* Constants imports */
 import { API_VERSION } from '../../shared/constants/api-version';
@@ -55,16 +49,16 @@ describe('ProcessService', (): void => {
       imports: [ HttpClientTestingModule ],
       providers: [
         ProcessService,
-        { provide: CalculationsService, useClass: CalculationsServiceMock },
-        { provide: ClientIdService, useClass: ClientIdServiceMock },
-        { provide: ConnectionService, useClass: ConnectionServiceMock },
-        { provide: EventService, useClass: EventServiceMock },
-        { provide: HttpErrorService, useClass: HttpErrorServiceMock },
-        { provide: RecipeService, useClass: RecipeServiceMock },
-        { provide: StorageService, useClass: StorageServiceMock },
-        { provide: SyncService, useClass: SyncServiceMock },
-        { provide: ToastService, useClass: ToastServiceMock },
-        { provide: UserService, useClass: UserServiceMock }
+        { provide: CalculationsService, useClass: CalculationsServiceStub },
+        { provide: ClientIdService, useClass: ClientIdServiceStub },
+        { provide: ConnectionService, useClass: ConnectionServiceStub },
+        { provide: EventService, useClass: EventServiceStub },
+        { provide: HttpErrorService, useClass: HttpErrorServiceStub },
+        { provide: RecipeService, useClass: RecipeServiceStub },
+        { provide: StorageService, useClass: StorageServiceStub },
+        { provide: SyncService, useClass: SyncServiceStub },
+        { provide: ToastService, useClass: ToastServiceStub },
+        { provide: UserService, useClass: UserServiceStub }
       ]
     });
 

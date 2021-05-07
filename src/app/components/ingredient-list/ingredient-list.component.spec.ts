@@ -6,8 +6,8 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockRecipeVariantComplete } from '../../../../test-config/mock-models/mock-recipe';
-import { UnitConversionPipeMock } from '../../../../test-config/mock-pipes/mock-unit-conversion-pipe';
+import { mockRecipeVariantComplete } from '../../../../test-config/mock-models';
+import { UnitConversionPipeStub } from '../../../../test-config/pipe-stubs';
 
 /* Interface imports */
 import { RecipeVariant } from '../../shared/interfaces/recipe-variant';
@@ -25,7 +25,7 @@ describe('IngredientListComponent', (): void => {
     TestBed.configureTestingModule({
       declarations: [
         IngredientListComponent,
-        UnitConversionPipeMock
+        UnitConversionPipeStub
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
@@ -50,7 +50,6 @@ describe('IngredientListComponent', (): void => {
     const grainsCount: number = _mockRecipeVariant.grains.length;
     const hopsCount: number = _mockRecipeVariant.hops.length;
     const yeastCount: number = _mockRecipeVariant.yeast.length;
-    const otherCount: number = _mockRecipeVariant.otherIngredients.length;
 
     ilCmp.recipeVariant = _mockRecipeVariant;
 

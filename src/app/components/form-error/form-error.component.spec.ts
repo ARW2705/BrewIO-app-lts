@@ -51,6 +51,7 @@ describe('FormErrorComponent', (): void => {
     formErrorCmp.ngOnChanges();
 
     fixture.detectChanges();
+
     const ingredientErrors: NodeList = fixture.nativeElement.querySelectorAll('.form-error');
     const requiredText: string = FORM_ERROR_MESSAGES['ingredient']['quantity']['required'];
     const minText: string = FORM_ERROR_MESSAGES['ingredient']['quantity']['min'];
@@ -69,6 +70,7 @@ describe('FormErrorComponent', (): void => {
     formErrorCmp.ngOnChanges();
 
     fixture.detectChanges();
+    
     const signupErrors: NodeList = fixture.nativeElement.querySelectorAll('.form-error');
     const requiredPasswordText: string = FORM_ERROR_MESSAGES['signup']['password']['required'];
     const passwordInvalidText: string = FORM_ERROR_MESSAGES['signup']['password']['passwordInvalid'];

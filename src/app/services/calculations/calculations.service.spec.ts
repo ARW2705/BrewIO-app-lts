@@ -5,12 +5,8 @@ import { TestBed, getTestBed, async } from '@angular/core/testing';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockEnglishUnits, mockMetricUnits } from '../../../../test-config/mock-models/mock-units';
-import { mockGrainBill } from '../../../../test-config/mock-models/mock-grains';
-import { mockHopsSchedule } from '../../../../test-config/mock-models/mock-hops';
-import { mockRecipeVariantComplete } from '../../../../test-config/mock-models/mock-recipe';
-import { mockYeastBatch } from '../../../../test-config/mock-models/mock-yeast';
-import { PreferencesServiceMock } from '../../../../test-config/mocks-app';
+import { mockEnglishUnits, mockMetricUnits, mockGrainBill, mockHopsSchedule, mockYeastBatch, mockRecipeVariantComplete } from '../../../../test-config/mock-models';
+import { PreferencesServiceStub } from '../../../../test-config/service-stubs';
 
 /* Constant imports */
 import * as Units from '../../shared/constants/units';
@@ -40,7 +36,7 @@ describe('CalculationsService', () => {
     TestBed.configureTestingModule({
       providers: [
         CalculationsService,
-        { provide: PreferencesService, useClass: PreferencesServiceMock }
+        { provide: PreferencesService, useClass: PreferencesServiceStub }
       ]
     });
     injector = getTestBed();

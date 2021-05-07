@@ -9,12 +9,8 @@ import { mergeMap } from 'rxjs/operators';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockGrains } from '../../../../test-config/mock-models/mock-grains';
-import { mockHops } from '../../../../test-config/mock-models/mock-hops';
-import { mockYeast } from '../../../../test-config/mock-models/mock-yeast';
-import { mockStyles } from '../../../../test-config/mock-models/mock-styles';
-import { mockErrorResponse } from '../../../../test-config/mock-models/mock-response';
-import { HttpErrorServiceMock, StorageServiceMock } from '../../../../test-config/mocks-app';
+import { mockGrains, mockHops, mockYeast, mockStyles, mockErrorResponse } from '../../../../test-config/mock-models';
+import { HttpErrorServiceStub, StorageServiceStub } from '../../../../test-config/service-stubs';
 
 /* Constants imports */
 import { API_VERSION } from '../../shared/constants/api-version';
@@ -40,8 +36,8 @@ describe('LibraryService', (): void => {
       imports: [ HttpClientTestingModule ],
       providers: [
         LibraryService,
-        { provide: HttpErrorService, useClass: HttpErrorServiceMock },
-        { provide: StorageService, useClass: StorageServiceMock }
+        { provide: HttpErrorService, useClass: HttpErrorServiceStub },
+        { provide: StorageService, useClass: StorageServiceStub }
       ]
     });
   }));

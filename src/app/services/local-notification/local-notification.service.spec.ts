@@ -6,7 +6,7 @@ import { LocalNotifications } from '@ionic-native/local-notifications/ngx';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { LocalNotificationsMock } from '../../../../test-config/mocks-ionic';
+import { LocalNotificationsStub } from '../../../../test-config/ionic-stubs';
 
 /* Service imports */
 import { LocalNotificationService } from './local-notification.service';
@@ -21,7 +21,7 @@ describe('LocalNotificationService', (): void => {
     TestBed.configureTestingModule({
       providers: [
         LocalNotificationService,
-        { provide: LocalNotifications, useClass: LocalNotificationsMock }
+        { provide: LocalNotifications, useClass: LocalNotificationsStub }
       ]
     });
 

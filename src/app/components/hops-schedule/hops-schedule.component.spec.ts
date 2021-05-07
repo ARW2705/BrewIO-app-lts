@@ -6,10 +6,8 @@ import { CUSTOM_ELEMENTS_SCHEMA, SimpleChange, SimpleChanges } from '@angular/co
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockHopsSchedule } from '../../../../test-config/mock-models/mock-hops';
-import { mockRecipeVariantComplete } from '../../../../test-config/mock-models/mock-recipe';
-import { CalculatePipeMock } from '../../../../test-config/mock-pipes/mock-calculate-pipe';
-import { UnitConversionPipeMock } from '../../../../test-config/mock-pipes/mock-unit-conversion-pipe';
+import { mockHopsSchedule, mockRecipeVariantComplete } from '../../../../test-config/mock-models';
+import { CalculatePipeStub, UnitConversionPipeStub } from '../../../../test-config/pipe-stubs';
 
 /* Interface imports */
 import { HopsSchedule } from '../../shared/interfaces/hops-schedule';
@@ -27,8 +25,8 @@ describe('HopsSchedule', (): void => {
     TestBed.configureTestingModule({
       declarations: [
         HopsScheduleComponent,
-        CalculatePipeMock,
-        UnitConversionPipeMock
+        CalculatePipeStub,
+        UnitConversionPipeStub
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
@@ -77,6 +75,72 @@ describe('HopsSchedule', (): void => {
     hsCmp.openIngredientFormModal(_mockHopsSchedule);
 
     expect(actionSpy).toHaveBeenCalledWith('openIngredientFormModal', ['hops', _mockHopsSchedule]);
+  });
+
+  test('should render template with hops schedule', (): void => {
+    const _mockHopsSchedule: HopsSchedule[] = mockHopsSchedule();
+
+    CalculatePipeStub._returnValue = (): string => {
+      return '10';
+    };
+
+    UnitConversionPipeStub._returnValue = (value: number): string => {
+      return value.toString();
+    };
+
+    hsCmp.hopsSchedule = _mockHopsSchedule;
+
+    fixture.detectChanges();
+
+    const items: NodeList = fixture.nativeElement.querySelectorAll('ion-item');
+    expect(items.length).toEqual(_mockHopsSchedule.length);
+
+    const hopsContainer: HTMLElement = <HTMLElement>items.item(0);
+
+    const hopsRow: Element = hopsContainer.children[0].children[0].children[0];
+
+    const icon: Element = hopsRow.children[0];
+    expect(icon.children[0].getAttribute('name')).toMatch('create-outline');
+
+    const name: Element = hopsRow.children[1].children[0].children[0];
+    expect(name.textContent).toMatch(_mockHopsSchedule[0].hopsType.name);
+
+    const quantity: Element = hopsRow.children[1].children[0].children[1];
+    expect(quantity.textContent).toMatch(_mockHopsSchedule[0].quantity.toString());
+
+    const alphaAcid: Element = hopsRow.children[1].children[1].children[0];
+    expect(alphaAcid.textContent).toMatch(`${_mockHopsSchedule[0].hopsType.alphaAcid}% AA`);
+
+    const ibu: Element = hopsRow.children[1].children[1].children[1];
+    expect(ibu.textContent).toMatch('10');
+
+    const duration: Element = hopsRow.children[1].children[1].children[2];
+    expect(duration.textContent).toMatch(`${_mockHopsSchedule[0].duration}min`);
+  });
+
+  test('should render template with dry hops', (): void => {
+    const _mockHopsSchedule: HopsSchedule[] = mockHopsSchedule();
+    _mockHopsSchedule[0].dryHop = true;
+
+    UnitConversionPipeStub._returnValue = (value: number): string => {
+      return value.toString();
+    };
+
+    hsCmp.hopsSchedule = _mockHopsSchedule;
+
+    fixture.detectChanges();
+
+    const items: NodeList = fixture.nativeElement.querySelectorAll('ion-item');
+
+    const hopsContainer: HTMLElement = <HTMLElement>items.item(0);
+
+    const hopsRow: Element = hopsContainer.children[0].children[0].children[0];
+
+    const dryHopRow: Element = hopsRow.children[1].children[1];
+
+    expect(dryHopRow.children[0].textContent).toMatch('0% AA');
+    expect(dryHopRow.children[1].textContent).toMatch('0 IBU');
+    expect(dryHopRow.children[2].textContent).toMatch('Dry Hop');
   });
 
 });

@@ -15,10 +15,9 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 import { User } from '../../shared/interfaces/user';
 
 /* Mock imports */
-import { ToastServiceMock, UserServiceMock } from '../../../../test-config/mocks-app';
-import { HttpMock } from '../../../../test-config/mocks-ionic';
-import { mockUser } from '../../../../test-config/mock-models/mock-user';
-import { mockErrorResponse } from '../../../../test-config/mock-models/mock-response';
+import { mockErrorResponse, mockUser } from '../../../../test-config/mock-models';
+import { HttpStub } from '../../../../test-config/ionic-stubs';
+import { ToastServiceStub, UserServiceStub } from '../../../../test-config/service-stubs';
 
 /* Provider imports */
 import { AuthorizedInterceptor, UnauthorizedInterceptor } from './interceptor.service';
@@ -30,7 +29,7 @@ describe('InterceptorService', (): void => {
   let injector: TestBed;
   let httpMock: HttpTestingController;
   let userService: UserService;
-  let mockHttpService: HttpMock;
+  let mockHttpService: HttpStub;
   let toastService: ToastService;
   configureTestBed();
 
@@ -40,9 +39,9 @@ describe('InterceptorService', (): void => {
         HttpClientTestingModule
       ],
       providers: [
-        HttpMock,
-        { provide: UserService, useClass: UserServiceMock },
-        { provide: ToastService, useClass: ToastServiceMock },
+        HttpStub,
+        { provide: UserService, useClass: UserServiceStub },
+        { provide: ToastService, useClass: ToastServiceStub },
         {
           provide: HTTP_INTERCEPTORS,
           useClass: AuthorizedInterceptor,
@@ -61,7 +60,7 @@ describe('InterceptorService', (): void => {
     injector = getTestBed();
     httpMock = injector.get(HttpTestingController);
     userService = injector.get(UserService);
-    mockHttpService = injector.get(HttpMock);
+    mockHttpService = injector.get(HttpStub);
     toastService = injector.get(ToastService);
 
     toastService.presentToast = jest

@@ -1,0 +1,12 @@
+export { AccordionComponentStub } from './component-stubs/accordion-stub.component';
+export { CalendarComponentStub } from './component-stubs/calendar-stub.component';
+export { InventoryFormPageStub } from './component-stubs/inventory-form-stub.component';
+export { LoginPageStub } from './component-stubs/login-stub.component';
+export { SignupPageStub } from './component-stubs/signup-stub.component';
+export { TimerComponentStub } from './component-stubs/timer-stub.component';
+export { FriendsComponentStub } from './component-stubs/friends-stub.component';
+export { ProfileComponentStub } from './component-stubs/profile-stub.component';
+export { ConfirmationComponentStub } from './component-stubs/confirmation-stub.component';
+export { HeaderComponentStub } from './component-stubs/header-stub.component';
+export { NoteListComponentStub } from './component-stubs/note-list-stub.component';
+export { IngredientListComponentStub } from './component-stubs/ingredient-list-stub.component';

@@ -1,9 +1,12 @@
+/* Constant imports */
 import { STOCK_TYPES } from '../../src/app/shared/constants/stock-types';
 
-import { InventoryItem, OptionalItemData } from '../../src/app/shared/interfaces/inventory-item';
+/* Interface imports */
+import { InventoryItem } from '../../src/app/shared/interfaces/inventory-item';
 import { Style } from '../../src/app/shared/interfaces/library';
 
-import { mockImage } from './mock-image';
+/* Mock imports */
+import { mockOptionalItemData } from './mock-optional-item-data';
 import { mockStyles } from './mock-styles';
 
 export const mockInventoryItem: () => InventoryItem = (): InventoryItem => {
@@ -22,22 +25,6 @@ export const mockInventoryItem: () => InventoryItem = (): InventoryItem => {
     itemABV: 5.5,
     sourceType: 'self',
     optionalItemData: mockOptionalItemData()
-  };
-  return mock;
-};
-
-export const mockOptionalItemData = () => {
-  const mock: OptionalItemData = {
-    batchId: '0123456789012',
-    itemLabelImage: mockImage(),
-    itemIBU: 30,
-    itemSRM: 20,
-    itemSubname: 'mock subname',
-    packagingDate: 'mockdate',
-    originalRecipe: 'originalid',
-    remainingColor: '#fd4855',
-    srmColor: '#963500',
-    supplierLabelImage: mockImage()
   };
   return mock;
 };

@@ -2,19 +2,15 @@
 import { TestBed, getTestBed, async } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController, TestRequest } from '@angular/common/http/testing';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Router } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockImage, mockImageRequestMetadata } from '../../../../test-config/mock-models/mock-image';
-import { mockErrorResponse, mockLoginResponse, mockJWTSuccess } from '../../../../test-config/mock-models/mock-response';
-import { mockUser, mockUserUpdate, mockUserLogin } from '../../../../test-config/mock-models/mock-user';
-import { mockSyncMetadata, mockSyncResponse } from '../../../../test-config/mock-models/mock-sync';
-import { ConnectionServiceMock, EventServiceMock, HttpErrorServiceMock, ImageServiceMock, PreferencesServiceMock, StorageServiceMock, SyncServiceMock, ToastServiceMock } from '../../../../test-config/mocks-app';
-import { RouterMock } from '../../../../test-config/mocks-ionic';
+import { mockImage, mockImageRequestMetadata, mockErrorResponse, mockLoginResponse, mockJWTSuccess, mockUser, mockUserUpdate, mockUserLogin, mockSyncMetadata, mockSyncResponse } from '../../../../test-config/mock-models';
+import { ConnectionServiceStub, EventServiceStub, HttpErrorServiceStub, ImageServiceStub, PreferencesServiceStub, StorageServiceStub, SyncServiceStub, ToastServiceStub } from '../../../../test-config/service-stubs';
 
 /* Constants imports */
 import { BASE_URL } from '../../shared/constants/base-url';
@@ -53,19 +49,19 @@ describe('UserService', (): void => {
   beforeAll(async((): void => {
     TestBed.configureTestingModule({
       imports: [
-        HttpClientTestingModule
+        HttpClientTestingModule,
+        RouterTestingModule
       ],
       providers: [
         UserService,
-        { provide: Router, useClass: RouterMock },
-        { provide: EventService, useClass: EventServiceMock },
-        { provide: ImageService, useClass: ImageServiceMock },
-        { provide: HttpErrorService, useClass: HttpErrorServiceMock },
-        { provide: StorageService, useClass: StorageServiceMock },
-        { provide: ConnectionService, useClass: ConnectionServiceMock },
-        { provide: PreferencesService, useClass: PreferencesServiceMock },
-        { provide: SyncService, useClass: SyncServiceMock },
-        { provide: ToastService, useClass: ToastServiceMock }
+        { provide: EventService, useClass: EventServiceStub },
+        { provide: ImageService, useClass: ImageServiceStub },
+        { provide: HttpErrorService, useClass: HttpErrorServiceStub },
+        { provide: StorageService, useClass: StorageServiceStub },
+        { provide: ConnectionService, useClass: ConnectionServiceStub },
+        { provide: PreferencesService, useClass: PreferencesServiceStub },
+        { provide: SyncService, useClass: SyncServiceStub },
+        { provide: ToastService, useClass: ToastServiceStub }
       ]
     });
   }));

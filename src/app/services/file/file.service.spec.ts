@@ -9,12 +9,8 @@ import { of } from 'rxjs';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockArrayBuffer } from '../../../../test-config/mock-models/mock-array-buffer';
-import { mockIFile, mockFileError } from '../../../../test-config/mock-models/mock-file';
-import { mockFileReader } from '../../../../test-config/mock-models/mock-file-reader';
-import { mockFileMetadata } from '../../../../test-config/mock-models/mock-file-metadata';
-import { mockEntry, mockFileEntry } from '../../../../test-config/mock-models/mock-entry';
-import { FileMock, FilePathMock, WebViewMock } from '../../../../test-config/mocks-ionic';
+import { mockArrayBuffer, mockIFile, mockFileError, mockFileReader, mockFileMetadata, mockEntry, mockFileEntry } from '../../../../test-config/mock-models';
+import { FileStub, FilePathStub, WebViewStub } from '../../../../test-config/ionic-stubs';
 
 /* Service imports */
 import { FileService } from './file.service';
@@ -29,9 +25,9 @@ describe('FileService', (): void => {
     TestBed.configureTestingModule({
       providers: [
         FileService,
-        { provide: File, useClass: FileMock },
-        { provide: FilePath, useClass: FilePathMock },
-        { provide: WebView, useClass: WebViewMock }
+        { provide: File, useClass: FileStub },
+        { provide: FilePath, useClass: FilePathStub },
+        { provide: WebView, useClass: WebViewStub }
       ]
     });
   }));

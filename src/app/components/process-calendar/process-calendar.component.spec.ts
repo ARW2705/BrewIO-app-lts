@@ -6,11 +6,10 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { CalendarComponentStub } from '../../../../test-config/component-stubs/calendar-stub.component';
-import { mockAlertPast, mockAlertFuture, mockAlertPresent } from '../../../../test-config/mock-models/mock-alert';
-import { mockProcessSchedule } from '../../../../test-config/mock-models/mock-process-schedule';
-import { EventServiceMock } from '../../../../test-config/mocks-app';
-import { SortPipeMock } from '../../../../test-config/mock-pipes/mock-sort-pipe';
+import { mockAlertPast, mockAlertFuture, mockAlertPresent, mockProcessSchedule } from '../../../../test-config/mock-models';
+import { CalendarComponentStub } from '../../../../test-config/component-stubs';
+import { EventServiceStub } from '../../../../test-config/service-stubs';
+import { SortPipeStub } from '../../../../test-config/pipe-stubs';
 
 /* Interface imports */
 import { Alert } from '../../shared/interfaces/alert';
@@ -33,10 +32,10 @@ describe('ProcessCalendarComponent', (): void => {
     TestBed.configureTestingModule({
       declarations: [
         ProcessCalendarComponent,
-        SortPipeMock
+        SortPipeStub
       ],
       providers: [
-        { provide: EventService, useClass: EventServiceMock }
+        { provide: EventService, useClass: EventServiceStub }
       ],
       schemas: [ NO_ERRORS_SCHEMA ]
     });
@@ -202,11 +201,15 @@ describe('ProcessCalendarComponent', (): void => {
     const _mockAlertFuture: Alert = mockAlertFuture();
     _mockAlertFuture.datetime = future;
 
-    processCmp.alerts = [ _mockAlertPresent, _mockAlertFuture ];
+    processCmp.alerts = [ _mockAlertFuture, _mockAlertPresent ];
     processCmp.isPreview = false;
     processCmp.stepData = _mockCalendarProcess;
     processCmp.calendarRef = <CalendarComponent>(new CalendarComponentStub());
     processCmp.closestAlert = _mockAlertPresent;
+
+    SortPipeStub._returnValue = (): any[] => {
+      return [ _mockAlertPresent, _mockAlertFuture ];
+    };
 
     fixture.detectChanges();
 

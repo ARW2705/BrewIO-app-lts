@@ -6,7 +6,7 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockProcessSchedule } from '../../../../test-config/mock-models/mock-process-schedule';
+import { mockProcessSchedule } from '../../../../test-config/mock-models';
 
 /* Interface imports */
 import { Process } from '../../shared/interfaces/process';

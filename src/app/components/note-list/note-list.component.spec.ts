@@ -8,10 +8,9 @@ import { of, throwError } from 'rxjs';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockRecipeMasterInactive } from '../../../../test-config/mock-models/mock-recipe';
-import { mockRecipeVariantIncomplete } from '../../../../test-config/mock-models/mock-recipe';
-import { RecipeServiceMock, ToastServiceMock } from '../../../../test-config/mocks-app';
-import { ModalControllerMock, ModalMock } from '../../../../test-config/mocks-ionic';
+import { mockRecipeMasterInactive, mockRecipeVariantIncomplete } from '../../../../test-config/mock-models';
+import { RecipeServiceStub, ToastServiceStub } from '../../../../test-config/service-stubs';
+import { ModalControllerStub, ModalStub } from '../../../../test-config/ionic-stubs';
 
 /* Interface imports */
 import { RecipeMaster } from '../../shared/interfaces/recipe-master';
@@ -39,9 +38,9 @@ describe('NoteListComponent', (): void => {
     TestBed.configureTestingModule({
       declarations: [ NoteListComponent ],
       providers: [
-        { provide: ModalController, useClass: ModalControllerMock },
-        { provide: RecipeService, useClass: RecipeServiceMock },
-        { provide: ToastService, useClass: ToastServiceMock }
+        { provide: ModalController, useClass: ModalControllerStub },
+        { provide: RecipeService, useClass: RecipeServiceStub },
+        { provide: ToastService, useClass: ToastServiceStub }
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
@@ -107,20 +106,20 @@ describe('NoteListComponent', (): void => {
   });
 
   test('should open a note modal with default dismiss', (done: jest.DoneCallback): void => {
-    const _mockModal: ModalMock = new ModalMock();
+    const _stubModal: ModalStub = new ModalStub();
     const _mockNoteDismissFn: (index?: number) => (data: object) => void = (index?: number) => (data: object) => {};
 
     noteCmp.notes = [ 'a', 'b', 'c' ];
 
     noteCmp.modalCtrl.create = jest
       .fn()
-      .mockReturnValue(Promise.resolve(_mockModal));
+      .mockReturnValue(Promise.resolve(_stubModal));
 
     noteCmp.onNoteModalDismiss = jest
       .fn()
       .mockReturnValue(_mockNoteDismissFn);
 
-    _mockModal.onDidDismiss = jest
+    _stubModal.onDidDismiss = jest
       .fn()
       .mockReturnValue(Promise.resolve());
 
@@ -131,7 +130,7 @@ describe('NoteListComponent', (): void => {
 
     noteCmp.openNoteModal(1);
 
-    _mockModal.onDidDismiss();
+    _stubModal.onDidDismiss();
 
     setTimeout((): void => {
       expect(createSpy).toHaveBeenCalledWith({
@@ -148,7 +147,7 @@ describe('NoteListComponent', (): void => {
   });
 
   test('should open a note modal with custom dismiss', (done: jest.DoneCallback): void => {
-    const _mockModal: ModalMock = new ModalMock();
+    const _stubModal: ModalStub = new ModalStub();
     const _mockDismissFn: (index?: number) => (data: object) => void = (index?: number) => (data: object) => {};
     const _mockNoteDismissFn: (index?: number) => (data: object) => void = (index?: number) => (data: object) => {};
 
@@ -157,13 +156,13 @@ describe('NoteListComponent', (): void => {
 
     noteCmp.modalCtrl.create = jest
       .fn()
-      .mockReturnValue(Promise.resolve(_mockModal));
+      .mockReturnValue(Promise.resolve(_stubModal));
 
     noteCmp.onNoteModalDismiss = jest
       .fn()
       .mockReturnValue(_mockNoteDismissFn);
 
-    _mockModal.onDidDismiss = jest
+    _stubModal.onDidDismiss = jest
       .fn()
       .mockReturnValue(Promise.resolve());
 
@@ -175,7 +174,7 @@ describe('NoteListComponent', (): void => {
 
     noteCmp.openNoteModal();
 
-    _mockModal.onDidDismiss();
+    _stubModal.onDidDismiss();
 
     setTimeout((): void => {
       expect(createSpy).toHaveBeenCalledWith({

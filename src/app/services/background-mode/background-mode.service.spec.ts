@@ -7,7 +7,7 @@ import { BackgroundMode } from '@ionic-native/background-mode/ngx';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { BackgroundModeMock, PlatformMockDev, PlatformMockCordova } from '../../../../test-config/mocks-ionic';
+import { BackgroundModeStub, PlatformDevStub, PlatformCordovaStub } from '../../../../test-config/ionic-stubs';
 
 /* Service imports */
 import { BackgroundModeService } from './background-mode.service';
@@ -24,8 +24,8 @@ describe('BackgroundModeService', () => {
       TestBed.configureTestingModule({
         providers: [
           BackgroundModeService,
-          { provide: Platform, useClass: PlatformMockDev },
-          { provide: BackgroundMode, useClass: BackgroundModeMock }
+          { provide: Platform, useClass: PlatformDevStub },
+          { provide: BackgroundMode, useClass: BackgroundModeStub }
         ]
       });
     }));
@@ -80,8 +80,8 @@ describe('BackgroundModeService', () => {
         imports: [],
         providers: [
           BackgroundModeService,
-          { provide: Platform, useClass: PlatformMockCordova },
-          { provide: BackgroundMode, useClass: BackgroundModeMock }
+          { provide: Platform, useClass: PlatformCordovaStub },
+          { provide: BackgroundMode, useClass: BackgroundModeStub }
         ]
       });
     }));

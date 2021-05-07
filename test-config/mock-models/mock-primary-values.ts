@@ -1,3 +1,4 @@
+/* Interface imports */
 import { PrimaryValues } from '../../src/app/shared/interfaces/primary-values';
 
 export const mockPrimaryValues: () => PrimaryValues = (): PrimaryValues => {

@@ -10,9 +10,6 @@ import { API_VERSION } from '../../shared/constants/api-version';
 import { MISSING_IMAGE_URL } from '../../shared/constants/missing-image-url';
 import { SELECT_OPTIONS } from '../../shared/constants/select-options';
 
-/* Utility imports */
-import { toTitleCase } from '../../shared/utility-functions/utilities';
-
 /* Interface imports */
 import { Batch } from '../../shared/interfaces/batch';
 import { Image } from '../../shared/interfaces/image';
@@ -336,6 +333,36 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy {
   /***** Modals *****/
 
   /**
+   * Get quantity helper modal error handler
+   *
+   * @params: none
+   *
+   * @return: modal error handling function
+   */
+  onQuantityHelperModalError(): (error: string) => void {
+    return (error: string): void => {
+      console.log('modal dismiss error', error);
+      this.toastService.presentErrorToast('Error selecting quantity');
+    };
+  }
+
+  /**
+   * Get quantity helper modal success handler
+   *
+   * @params: none
+   *
+   * @return: modal success handling function
+   */
+  onQuantityHelperModalSuccess(item: InventoryItem): (data: object) => void {
+    return (data: object): void => {
+      const _data: number = data['data'];
+      if (!isNaN(_data)) {
+        this.handleItemCountDecrement(item, _data);
+      }
+    };
+  }
+
+  /**
    * Open the quatity helper modal
    *
    * @params: item - inventory item with quantity data
@@ -353,19 +380,49 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy {
 
     from(modal.onDidDismiss())
       .subscribe(
-        (data: object): void => {
-          const _data: number = data['data'];
-          if (!isNaN(_data)) {
-            this.handleItemCountDecrement(item, _data);
-          }
-        },
-        (error: string): void => {
-          console.log('modal dismiss error', error);
-          this.toastService.presentErrorToast('Error selecting quantity');
-        }
+        this.onQuantityHelperModalSuccess(item),
+        this.onQuantityHelperModalError()
       );
 
     await modal.present();
+  }
+
+  /**
+   * Get inventory form modal error handler
+   *
+   * @params: none
+   *
+   * @return: modal error handling function
+   */
+  onInventoryFormModalError(): (error: string) => void {
+    return (error: string): void => {
+      console.log('modal dismiss error', error);
+      this.toastService.presentErrorToast('An error occurred on inventory form exit');
+    };
+  }
+
+  /**
+   * Get quantity helper modal success handler
+   *
+   * @params: none
+   *
+   * @return: modal success handling function
+   */
+  onInventoryFormModalSuccess(
+    options: { item?: InventoryItem, batch?: Batch }
+  ): (data: object) => void {
+    return (data: object): void => {
+      const itemFormValues: object = data['data'];
+      if (itemFormValues) {
+        if (options.batch !== undefined) {
+          this.createItemFromBatch(options.batch, itemFormValues);
+        } else if (options.item !== undefined) {
+          this.updateItem(options.item, itemFormValues);
+        } else {
+          this.createItem(itemFormValues);
+        }
+      }
+    };
   }
 
   /**
@@ -389,22 +446,8 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy {
 
     from(modal.onDidDismiss())
       .subscribe(
-        (data: object): void => {
-          const itemFormValues: object = data['data'];
-          if (itemFormValues) {
-            if (options.batch !== undefined) {
-              this.createItemFromBatch(options.batch, itemFormValues);
-            } else if (options.item !== undefined) {
-              this.updateItem(options.item, itemFormValues);
-            } else {
-              this.createItem(itemFormValues);
-            }
-          }
-        },
-        (error: string): void => {
-          console.log('modal dismiss error', error);
-          this.toastService.presentErrorToast('An error occurred on inventory form exit');
-        }
+        this.onInventoryFormModalSuccess(options),
+        this.onInventoryFormModalError()
       );
 
     await modal.present();

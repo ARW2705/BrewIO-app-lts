@@ -6,8 +6,8 @@ import { ToastController } from '@ionic/angular';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockToastButtons, mockToastElement } from '../../../../test-config/mock-models/mock-toast';
-import { ToastControllerMock } from '../../../../test-config/mocks-ionic';
+import { mockToastButtons, mockToastElement } from '../../../../test-config/mock-models';
+import { ToastControllerStub } from '../../../../test-config/ionic-stubs';
 
 /* Interface imports */
 import { ToastButton } from '../../shared/interfaces/toast-button';
@@ -29,7 +29,7 @@ describe('ToastService', (): void => {
     TestBed.configureTestingModule({
       providers: [
         ToastService,
-        { provide: ToastController, useClass: ToastControllerMock}
+        { provide: ToastController, useClass: ToastControllerStub }
       ]
     });
 

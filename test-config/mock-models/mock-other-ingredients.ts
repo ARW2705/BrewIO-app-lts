@@ -1,3 +1,4 @@
+/* Interface imports */
 import { OtherIngredients } from '../../src/app/shared/interfaces/other-ingredients';
 
 export const mockOtherIngredients: () => OtherIngredients[] = (): OtherIngredients[] => {

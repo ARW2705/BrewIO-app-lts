@@ -8,14 +8,11 @@ import { BehaviorSubject, of, throwError } from 'rxjs';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockBatch } from '../../../../test-config/mock-models/mock-batch';
-import { mockInventoryItem } from '../../../../test-config/mock-models/mock-inventory';
-import { AccordionComponentStub } from '../../../../test-config/component-stubs/accordion-stub.component';
-import { EventServiceMock, ImageServiceMock, InventoryServiceMock, ProcessServiceMock, ToastServiceMock } from '../../../../test-config/mocks-app';
-import { ModalControllerMock, ModalMock } from '../../../../test-config/mocks-ionic';
-import { FormatStockPipeMock } from '../../../../test-config/mock-pipes/mock-format-pipe';
-import { RoundPipeMock } from '../../../../test-config/mock-pipes/mock-round-pipe';
-import { TruncatePipeMock } from '../../../../test-config/mock-pipes/mock-truncate-pipe';
+import { mockBatch, mockInventoryItem } from '../../../../test-config/mock-models';
+import { AccordionComponentStub } from '../../../../test-config/component-stubs';
+import { EventServiceStub, ImageServiceStub, InventoryServiceStub, ProcessServiceStub, ToastServiceStub } from '../../../../test-config/service-stubs';
+import { FormatStockPipeStub, RoundPipeStub, TruncatePipeStub } from '../../../../test-config/pipe-stubs';
+import { ModalControllerStub, ModalStub } from '../../../../test-config/ionic-stubs';
 
 /* Interface imports */
 import { Batch } from '../../shared/interfaces/batch';
@@ -32,7 +29,7 @@ import { ToastService } from '../../services/toast/toast.service';
 import { InventoryComponent } from './inventory.component';
 
 
-describe('IngredientListComponent', (): void => {
+describe('InventoryComponent', (): void => {
   let fixture: ComponentFixture<InventoryComponent>;
   let inventoryCmp: InventoryComponent;
   let originalOnInit: any;
@@ -43,18 +40,18 @@ describe('IngredientListComponent', (): void => {
     TestBed.configureTestingModule({
       declarations: [
         InventoryComponent,
-        FormatStockPipeMock,
-        RoundPipeMock,
-        TruncatePipeMock,
+        FormatStockPipeStub,
+        RoundPipeStub,
+        TruncatePipeStub,
         AccordionComponentStub
       ],
       providers: [
-        { provide: EventService, useClass: EventServiceMock },
-        { provide: ImageService, useClass: ImageServiceMock },
-        { provide: InventoryService, useClass: InventoryServiceMock },
-        { provide: ModalController, useClass: ModalControllerMock },
-        { provide: ProcessService, useClass: ProcessServiceMock },
-        { provide: ToastService, useClass: ToastServiceMock }
+        { provide: EventService, useClass: EventServiceStub },
+        { provide: ImageService, useClass: ImageServiceStub },
+        { provide: InventoryService, useClass: InventoryServiceStub },
+        { provide: ModalController, useClass: ModalControllerStub },
+        { provide: ProcessService, useClass: ProcessServiceStub },
+        { provide: ToastService, useClass: ToastServiceStub }
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
@@ -263,48 +260,32 @@ describe('IngredientListComponent', (): void => {
       }, 10);
     });
 
-    test('should decrement the inventory item count', (done: jest.DoneCallback): void => {
-      const _mockInventoryItem: InventoryItem = mockInventoryItem();
-      _mockInventoryItem.currentQuantity = 2;
-
-      inventoryCmp.inventoryService.updateItem = jest
-        .fn()
-        .mockReturnValueOnce(of(_mockInventoryItem))
-        .mockReturnValueOnce(of(null));
-
-      const toastSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.toastService, 'presentToast');
-
-      fixture.detectChanges();
-
-      inventoryCmp.decrementCount(_mockInventoryItem);
-      inventoryCmp.decrementCount(_mockInventoryItem);
-
-      setTimeout((): void => {
-        expect(toastSpy.mock.calls[0][0]).toMatch(`${_mockInventoryItem.currentQuantity} ${_mockInventoryItem.stockType}s`);
-        expect(toastSpy.mock.calls[0][3].length).toEqual(0);
-        expect(toastSpy.mock.calls[1][0]).toMatch(`${_mockInventoryItem.itemName} Out of Stock!`);
-        expect(toastSpy.mock.calls[1][3]).toMatch('toast-warn');
-        done();
-      }, 10);
-    });
-
-    test('should get an error decrementing item count', (done: jest.DoneCallback): void => {
+    test('should handle item decrement count routing', (): void => {
       const _mockInventoryItem: InventoryItem = mockInventoryItem();
 
-      inventoryCmp.inventoryService.updateItem = jest
+      inventoryCmp.inventoryService.isCapacityBased = jest
         .fn()
-        .mockReturnValue(throwError('test-error'));
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
 
-      const toastSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.toastService, 'presentErrorToast');
+      inventoryCmp.openQuantityHelper = jest
+        .fn();
+
+      inventoryCmp.handleItemCountDecrement = jest
+        .fn();
+
+      const openSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'openQuantityHelper');
+      const handleSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'handleItemCountDecrement');
 
       fixture.detectChanges();
 
       inventoryCmp.decrementCount(_mockInventoryItem);
 
-      setTimeout((): void => {
-        expect(toastSpy).toHaveBeenCalledWith('Failed to decrement item count');
-        done();
-      }, 10);
+      expect(openSpy).toHaveBeenCalledWith(_mockInventoryItem);
+
+      inventoryCmp.decrementCount(_mockInventoryItem);
+
+      expect(handleSpy).toHaveBeenCalledWith(_mockInventoryItem, 1);
     });
 
     test('should create an item based on given batch', (done: jest.DoneCallback): void => {
@@ -349,6 +330,71 @@ describe('IngredientListComponent', (): void => {
 
       setTimeout((): void => {
         expect(toastSpy).toHaveBeenCalledWith('Failed to create item from batch');
+        done();
+      }, 10);
+    });
+
+    test('should format a count decrement toast message', (): void => {
+      const _mockInventoryItem: InventoryItem = mockInventoryItem();
+      _mockInventoryItem.currentQuantity = 2;
+
+      inventoryCmp.inventoryService.isCapacityBased = jest
+        .fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+
+      fixture.detectChanges();
+
+      expect(inventoryCmp.formatDecrementMessage(_mockInventoryItem)).toMatch('2 Pints remaining');
+      _mockInventoryItem.currentQuantity--;
+      expect(inventoryCmp.formatDecrementMessage(_mockInventoryItem)).toMatch(`1 ${_mockInventoryItem.stockType} remaining`);
+      expect(inventoryCmp.formatDecrementMessage(null)).toMatch('Out of Stock!');
+    });
+
+    test('should handle decrement the inventory item count', (done: jest.DoneCallback): void => {
+      const _mockInventoryItem: InventoryItem = mockInventoryItem();
+      _mockInventoryItem.currentQuantity = 2;
+
+      inventoryCmp.inventoryService.updateItem = jest
+        .fn()
+        .mockReturnValueOnce(of(_mockInventoryItem))
+        .mockReturnValueOnce(of(null));
+
+      inventoryCmp.formatDecrementMessage = jest
+        .fn()
+        .mockReturnValue('test-message');
+
+      const toastSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.toastService, 'presentToast');
+
+      fixture.detectChanges();
+
+      inventoryCmp.handleItemCountDecrement(_mockInventoryItem, 1);
+      inventoryCmp.handleItemCountDecrement(_mockInventoryItem, 1);
+
+      setTimeout((): void => {
+        expect(toastSpy.mock.calls[0][0]).toMatch('test-message');
+        expect(toastSpy.mock.calls[0][3].length).toEqual(0);
+        expect(toastSpy.mock.calls[1][0]).toMatch('test-message');
+        expect(toastSpy.mock.calls[1][3]).toMatch('toast-warn');
+        done();
+      }, 10);
+    });
+
+    test('should get an error decrementing item count', (done: jest.DoneCallback): void => {
+      const _mockInventoryItem: InventoryItem = mockInventoryItem();
+
+      inventoryCmp.inventoryService.updateItem = jest
+        .fn()
+        .mockReturnValue(throwError('test-error'));
+
+      const toastSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.toastService, 'presentErrorToast');
+
+      fixture.detectChanges();
+
+      inventoryCmp.handleItemCountDecrement(_mockInventoryItem, 1);
+
+      setTimeout((): void => {
+        expect(toastSpy).toHaveBeenCalledWith('Failed to decrement item count');
         done();
       }, 10);
     });
@@ -482,15 +528,115 @@ describe('IngredientListComponent', (): void => {
 
   describe('Modals', (): void => {
 
-    test('should open the inventory form modal with batch', (done: jest.DoneCallback): void => {
-      const _mockModal: ModalMock = new ModalMock();
+    test('should handle quantity helper modal error', (): void => {
+      const toastSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.toastService, 'presentErrorToast');
+
+      fixture.detectChanges();
+
+      const errorHandler: (error: string) => void = inventoryCmp.onQuantityHelperModalError();
+
+      errorHandler('test-error');
+
+      expect(toastSpy).toHaveBeenCalledWith('Error selecting quantity');
+    });
+
+    test('should handle quantity helper modal success', (): void => {
+      const _mockInventoryItem: InventoryItem = mockInventoryItem();
+
+      inventoryCmp.handleItemCountDecrement = jest
+        .fn();
+
+      const handleSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'handleItemCountDecrement');
+
+      fixture.detectChanges();
+
+      const successHandler: (data: object) => void = inventoryCmp.onQuantityHelperModalSuccess(_mockInventoryItem);
+      successHandler({ data: 1 });
+
+      expect(handleSpy).toHaveBeenCalledWith(_mockInventoryItem, 1);
+    });
+
+    test('should open quantity helper modal with success', (done: jest.DoneCallback): void => {
+      const _stubModal: ModalStub = new ModalStub();
+      const _mockInventoryItem: InventoryItem = mockInventoryItem();
+
+      inventoryCmp.modalCtrl.create = jest
+        .fn()
+        .mockReturnValue(Promise.resolve(_stubModal));
+
+      _stubModal.onDidDismiss = jest
+        .fn()
+        .mockReturnValue(Promise.resolve({ data: {} }));
+
+      inventoryCmp.onQuantityHelperModalSuccess = jest
+        .fn()
+        .mockReturnValue(() => {});
+
+      const successSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'onQuantityHelperModalSuccess');
+
+      fixture.detectChanges();
+
+      inventoryCmp.openQuantityHelper(_mockInventoryItem);
+
+      _stubModal.onDidDismiss();
+
+      setTimeout((): void => {
+        expect(successSpy).toHaveBeenCalledWith(_mockInventoryItem);
+        done();
+      });
+    });
+
+    test('should handle error response from modal', (done: jest.DoneCallback): void => {
+      const _mockInventoryItem: InventoryItem = mockInventoryItem();
+      const _stubModal: ModalStub = new ModalStub();
+
+      inventoryCmp.modalCtrl.create = jest
+        .fn()
+        .mockReturnValue(Promise.resolve(_stubModal));
+
+      inventoryCmp.onQuantityHelperModalError = jest
+        .fn()
+        .mockReturnValue(() => {});
+
+      _stubModal.onDidDismiss = jest
+        .fn()
+        .mockReturnValue(Promise.reject('test-error'));
+
+      const errorSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'onQuantityHelperModalError');
+
+      fixture.detectChanges();
+
+      inventoryCmp.openQuantityHelper(_mockInventoryItem);
+
+      _stubModal.onDidDismiss();
+
+      setTimeout((): void => {
+        expect(errorSpy).toHaveBeenCalled();
+        done();
+      }, 10);
+    });
+
+    test('should handle inventory form modal error', (): void => {
+      const toastSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.toastService, 'presentErrorToast');
+
+      fixture.detectChanges();
+
+      const errorHandler: (error: string) => void = inventoryCmp.onInventoryFormModalError();
+
+      errorHandler('test-error');
+
+      expect(toastSpy).toHaveBeenCalledWith('An error occurred on inventory form exit');
+    });
+
+    test('should handle inventory form modal success with batch', (): void => {
+      const _stubModal: ModalStub = new ModalStub();
       const _mockBatch: Batch = mockBatch();
 
       inventoryCmp.modalCtrl.create = jest
         .fn()
-        .mockReturnValue(Promise.resolve(_mockModal));
+        .mockReturnValue(Promise.resolve(_stubModal));
 
-      _mockModal.onDidDismiss = jest
+      _stubModal.onDidDismiss = jest
         .fn()
         .mockReturnValue(Promise.resolve({ data: {} }));
 
@@ -501,25 +647,21 @@ describe('IngredientListComponent', (): void => {
 
       fixture.detectChanges();
 
-      inventoryCmp.openInventoryFormModal({ batch: _mockBatch });
+      const successHandler: (data: object) => void = inventoryCmp.onInventoryFormModalSuccess({ batch: _mockBatch });
+      successHandler({ data: { test: true } });
 
-      _mockModal.onDidDismiss();
-
-      setTimeout((): void => {
-        expect(createSpy).toHaveBeenCalledWith(_mockBatch, {});
-        done();
-      });
+      expect(createSpy).toHaveBeenCalledWith(_mockBatch, { test: true });
     });
 
-    test('should open the inventory form modal with item', (done: jest.DoneCallback): void => {
-      const _mockModal: ModalMock = new ModalMock();
+    test('should handle inventory form modal success with item', (): void => {
+      const _stubModal: ModalStub = new ModalStub();
       const _mockInventoryItem: InventoryItem = mockInventoryItem();
 
       inventoryCmp.modalCtrl.create = jest
         .fn()
-        .mockReturnValue(Promise.resolve(_mockModal));
+        .mockReturnValue(Promise.resolve(_stubModal));
 
-      _mockModal.onDidDismiss = jest
+      _stubModal.onDidDismiss = jest
         .fn()
         .mockReturnValue(Promise.resolve({ data: {} }));
 
@@ -530,24 +672,20 @@ describe('IngredientListComponent', (): void => {
 
       fixture.detectChanges();
 
-      inventoryCmp.openInventoryFormModal({ item: _mockInventoryItem });
+      const successHandler: (data: object) => void = inventoryCmp.onInventoryFormModalSuccess({ item: _mockInventoryItem });
+      successHandler({ data: { test: true } });
 
-      _mockModal.onDidDismiss();
-
-      setTimeout((): void => {
-        expect(updateSpy).toHaveBeenCalledWith(_mockInventoryItem, {});
-        done();
-      });
+      expect(updateSpy).toHaveBeenCalledWith(_mockInventoryItem, { test: true });
     });
 
-    test('should open the inventory form modal with no options', (done: jest.DoneCallback): void => {
-      const _mockModal: any = new ModalMock();
+    test('should open the inventory form modal with no options', (): void => {
+      const _stubModal: ModalStub = new ModalStub();
 
       inventoryCmp.modalCtrl.create = jest
         .fn()
-        .mockReturnValue(Promise.resolve(_mockModal));
+        .mockReturnValue(Promise.resolve(_stubModal));
 
-      _mockModal.onDidDismiss = jest
+      _stubModal.onDidDismiss = jest
         .fn()
         .mockReturnValue(Promise.resolve({ data: { test: true } }));
 
@@ -558,37 +696,67 @@ describe('IngredientListComponent', (): void => {
 
       fixture.detectChanges();
 
-      inventoryCmp.openInventoryFormModal({});
+      const successHandler: (data: object) => void = inventoryCmp.onInventoryFormModalSuccess({});
+      successHandler({ data: { test: true } });
 
-      _mockModal.onDidDismiss();
+      expect(createSpy).toHaveBeenCalledWith({ test: true });
+    });
+
+    test('should open the inventory form modal with success', (done: jest.DoneCallback): void => {
+      const _stubModal: ModalStub = new ModalStub();
+      const _mockBatch: Batch = mockBatch();
+
+      inventoryCmp.modalCtrl.create = jest
+        .fn()
+        .mockReturnValue(Promise.resolve(_stubModal));
+
+      _stubModal.onDidDismiss = jest
+        .fn()
+        .mockReturnValue(Promise.resolve({ data: {} }));
+
+      inventoryCmp.onInventoryFormModalSuccess = jest
+        .fn()
+        .mockReturnValue(() => {});
+
+      const successSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'onInventoryFormModalSuccess');
+
+      fixture.detectChanges();
+
+      inventoryCmp.openInventoryFormModal({ batch: _mockBatch });
+
+      _stubModal.onDidDismiss();
 
       setTimeout((): void => {
-        expect(createSpy).toHaveBeenCalledWith({ test: true });
+        expect(successSpy).toHaveBeenCalledWith({ batch: _mockBatch });
         done();
       });
     });
 
     test('should handle error response from modal', (done: jest.DoneCallback): void => {
-      const _mockModal: any = new ModalMock();
+      const _stubModal: ModalStub = new ModalStub();
 
       inventoryCmp.modalCtrl.create = jest
         .fn()
-        .mockReturnValue(Promise.resolve(_mockModal));
+        .mockReturnValue(Promise.resolve(_stubModal));
 
-      _mockModal.onDidDismiss = jest
+      inventoryCmp.onInventoryFormModalError = jest
+        .fn()
+        .mockReturnValue(() => {});
+
+      _stubModal.onDidDismiss = jest
         .fn()
         .mockReturnValue(Promise.reject('test-error'));
 
-      const toastSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.toastService, 'presentErrorToast');
+      const errorSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'onInventoryFormModalError');
 
       fixture.detectChanges();
 
       inventoryCmp.openInventoryFormModal({});
 
-      _mockModal.onDidDismiss();
+      _stubModal.onDidDismiss();
 
       setTimeout((): void => {
-        expect(toastSpy).toHaveBeenCalledWith('An error occurred on inventory form exit');
+        expect(errorSpy).toHaveBeenCalled();
         done();
       }, 10);
     });

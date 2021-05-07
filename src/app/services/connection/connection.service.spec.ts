@@ -7,7 +7,7 @@ import { Network } from '@ionic-native/network/ngx';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { NetworkMockDev, NetworkMockCordova, PlatformMockDev, PlatformMockCordova } from '../../../../test-config/mocks-ionic';
+import { NetworkDevStub, NetworkCordovaStub, PlatformDevStub, PlatformCordovaStub } from '../../../../test-config/ionic-stubs';
 
 /* Provider imports */
 import { ConnectionService } from './connection.service';
@@ -24,8 +24,8 @@ describe('Connection Provider', (): void => {
       TestBed.configureTestingModule({
         providers: [
           ConnectionService,
-          { provide: Platform, useClass: PlatformMockDev },
-          { provide: Network, useClass: NetworkMockDev }
+          { provide: Platform, useClass: PlatformDevStub },
+          { provide: Network, useClass: NetworkDevStub }
         ]
       });
     }));
@@ -67,8 +67,8 @@ describe('Connection Provider', (): void => {
         imports: [],
         providers: [
           ConnectionService,
-          { provide: Platform, useClass: PlatformMockCordova },
-          { provide: Network, useClass: NetworkMockCordova }
+          { provide: Platform, useClass: PlatformCordovaStub },
+          { provide: Network, useClass: NetworkCordovaStub }
         ]
       });
     }));

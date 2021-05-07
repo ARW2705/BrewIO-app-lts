@@ -24,12 +24,12 @@ export class ConnectionService {
   }
 
   // For testing purposes only
-  toggleConnection(): void {
-    this.connection = !this.connection;
-    // if (this.connection) {
-    //   this.events.publish('connected');
-    // }
-  }
+  // toggleConnection(): void {
+  //   this.connection = !this.connection;
+  //   if (this.connection) {
+  //     this.events.publish('connected');
+  //   }
+  // }
 
   /**
    * Check if device is connected to a network

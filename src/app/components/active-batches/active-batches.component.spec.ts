@@ -1,16 +1,15 @@
 /* Module imorts */
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { Router } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
 import { BehaviorSubject, throwError } from 'rxjs';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockBatch } from '../../../../test-config/mock-models/mock-batch';
-import { RouterMock } from '../../../../test-config/mocks-ionic';
-import { ProcessServiceMock, ToastServiceMock } from '../../../../test-config/mocks-app';
+import { mockBatch } from '../../../../test-config/mock-models';
+import { ProcessServiceStub, ToastServiceStub } from '../../../../test-config/service-stubs';
 
 import * as subjectHelpers from '../../shared/utility-functions/subject-helpers';
 
@@ -35,10 +34,10 @@ describe('ActiveBatchesComponent', (): void => {
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
       declarations: [ ActiveBatchesComponent ],
+      imports: [ RouterTestingModule ],
       providers: [
-        { provide: Router, useClass: RouterMock },
-        { provide: ProcessService, useClass: ProcessServiceMock },
-        { provide: ToastService, useClass: ToastServiceMock }
+        { provide: ProcessService, useClass: ProcessServiceStub },
+        { provide: ToastService, useClass: ToastServiceStub }
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });

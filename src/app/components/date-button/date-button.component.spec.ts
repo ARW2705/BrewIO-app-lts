@@ -7,7 +7,7 @@ import * as moment from 'moment';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { MomentPipeMock } from '../../../../test-config/mock-pipes/mock-moment-pipe';
+import { MomentPipeStub } from '../../../../test-config/pipe-stubs';
 
 /* Component imports */
 import { DateButtonComponent } from './date-button.component';
@@ -22,7 +22,7 @@ describe('DateButtonComponent', (): void => {
     TestBed.configureTestingModule({
       declarations: [
         DateButtonComponent,
-        MomentPipeMock
+        MomentPipeStub
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
@@ -67,6 +67,10 @@ describe('DateButtonComponent', (): void => {
   test('should display the date', (): void => {
     const testMoment: moment.Moment = moment('2020-01-01');
     dbCmp.date = testMoment;
+
+    MomentPipeStub._returnValue = (): string => {
+      return testMoment.toISOString();
+    };
 
     fixture.detectChanges();
 

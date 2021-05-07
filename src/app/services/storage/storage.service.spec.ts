@@ -6,13 +6,8 @@ import { Storage } from '@ionic/storage';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockBatch } from '../../../../test-config/mock-models/mock-batch';
-import { mockInventoryItem } from '../../../../test-config/mock-models/mock-inventory';
-import { mockLibraryStorage } from '../../../../test-config/mock-models/mock-library';
-import { mockRecipeMasterActive } from '../../../../test-config/mock-models/mock-recipe';
-import { mockSyncMetadata } from '../../../../test-config/mock-models/mock-sync';
-import { mockUser } from '../../../../test-config/mock-models/mock-user';
-import { StorageMock } from '../../../../test-config/mocks-ionic';
+import { mockBatch, mockInventoryItem, mockLibraryStorage, mockRecipeMasterActive, mockSyncMetadata, mockUser } from '../../../../test-config/mock-models';
+import { StorageStub } from '../../../../test-config/ionic-stubs';
 
 /* Interface imports */
 import { Batch } from '../../shared/interfaces/batch';
@@ -39,7 +34,7 @@ describe('StorageService', (): void => {
     TestBed.configureTestingModule({
       providers: [
         StorageService,
-        { provide: Storage, useClass: StorageMock }
+        { provide: Storage, useClass: StorageStub }
       ]
     });
   }));

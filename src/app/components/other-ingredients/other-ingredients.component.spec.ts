@@ -6,7 +6,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockOtherIngredients } from '../../../../test-config/mock-models/mock-other-ingredients';
+import { mockOtherIngredients } from '../../../../test-config/mock-models';
 
 /* Interface imports */
 import { OtherIngredients } from '../../shared/interfaces/other-ingredients';

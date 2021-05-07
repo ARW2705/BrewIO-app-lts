@@ -10,9 +10,8 @@ import { BehaviorSubject, of, throwError } from 'rxjs';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockEnglishUnits, mockMetricUnits } from '../../../../test-config/mock-models/mock-units';
-import { mockUser } from '../../../../test-config/mock-models/mock-user';
-import { PreferencesServiceMock, ToastServiceMock, UserServiceMock } from '../../../../test-config/mocks-app';
+import { mockEnglishUnits, mockMetricUnits, mockUser } from '../../../../test-config/mock-models';
+import { PreferencesServiceStub, ToastServiceStub, UserServiceStub } from '../../../../test-config/service-stubs';
 
 /* Default imports */
 import { defaultEnglish } from '../../shared/defaults/default-units';
@@ -46,9 +45,9 @@ describe('PreferencesComponent', (): void => {
         ReactiveFormsModule
       ],
       providers: [
-        { provide: PreferencesService, useClass: PreferencesServiceMock },
-        { provide: ToastService, useClass: ToastServiceMock },
-        { provide: UserService, useClass: UserServiceMock }
+        { provide: PreferencesService, useClass: PreferencesServiceStub },
+        { provide: ToastService, useClass: ToastServiceStub },
+        { provide: UserService, useClass: UserServiceStub }
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
