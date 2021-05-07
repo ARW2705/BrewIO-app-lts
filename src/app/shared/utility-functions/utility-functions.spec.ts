@@ -2,12 +2,11 @@
 import { BehaviorSubject } from 'rxjs';
 
 /* Mock imports */
-import { mockNestedObject, mockObjectArray, mockSubjectArray } from '../../../../test-config/mock-models/mock-generics';
+import { mockNestedObject, mockObjectArray, mockSubjectArray } from '../../../../test-config/mock-models';
 
 /* Constant imports */
 import { SHARED_PROPERTIES } from '../constants/shared-properties';
 import { STATIC_LIBRARY_PROPERTIES } from '../constants/static-library-properties';
-
 
 /* Utility imports */
 import { clone } from './clone';
