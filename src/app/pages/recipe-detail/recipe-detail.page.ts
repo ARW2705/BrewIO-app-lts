@@ -69,7 +69,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
           (error: string): void => {
             console.log('Recipe details error', this.recipeMasterId, error);
             this.toastService.presentErrorToast(
-              'Recipe error',
+              'Recipe Error',
               this.navToRoot.bind(this)
             );
           }
@@ -94,9 +94,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
     // Close all sliding items on view exit
     this.slidingItemsList.closeSlidingItems()
       .then((): void => console.log('sliding items closed'))
-      .catch((error: any): void => {
-        console.log('error closing sliding items', error);
-      });
+      .catch((error: any): void => console.log('error closing sliding items', error));
   }
 
   /***** End lifecycle hooks *****/
@@ -146,8 +144,8 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
 
     if (formType === 'variant') {
       if (variant) {
-        options['variantData'] = this.recipeMaster.variants.find(
-          (recipeVariant: RecipeVariant): boolean => {
+        options['variantData'] = this.recipeMaster.variants
+          .find((recipeVariant: RecipeVariant): boolean => {
             return hasId(recipeVariant, getId(variant));
           });
       } else {
@@ -190,9 +188,26 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
     });
 
     from(modal.onDidDismiss())
-      .subscribe(this.onConfirmDeleteModalDismiss(index));
+      .subscribe(
+        this.onConfirmDeleteModalSuccessDismiss(index),
+        this.onConfirmDeleteModalErrorDismiss()
+      );
 
     return await modal.present();
+  }
+
+  /**
+   * Handle deletion confirmation modal dismiss error
+   *
+   * @params: none
+   *
+   * @return: callback function to handle erro
+   */
+  onConfirmDeleteModalErrorDismiss(): (error: string) => void {
+    return (error: string): void => {
+      console.log('confirmation modal error', error);
+      this.toastService.presentErrorToast('Confirmation Error');
+    };
   }
 
   /**
@@ -202,7 +217,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
    *
    * @return: callback function to handle dimissal
    */
-  onConfirmDeleteModalDismiss(index: number): (confirmation: object) => void {
+  onConfirmDeleteModalSuccessDismiss(index: number): (confirmation: object) => void {
     return (confirmation: object): void => {
       const confirmed: boolean = confirmation['data'];
 
@@ -244,9 +259,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
     if (this.showNotes) {
       this.ionContent.scrollToPoint(
         0,
-        this.getTotalOffsetTop(
-          this.noteContainerScrollLandmark.container.nativeElement
-        ),
+        this.getTotalOffsetTop(this.noteContainerScrollLandmark.container.nativeElement),
         1000
       );
     }
@@ -272,9 +285,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
       this.recipeIndex = index;
       this.ionContent.scrollToPoint(
         0,
-        this.getTotalOffsetTop(
-          this.ingredientScrollLandmarks.toArray()[index]['el']
-        ),
+        this.getTotalOffsetTop(this.ingredientScrollLandmarks.toArray()[index]['el']),
         1000
       );
     }
@@ -291,6 +302,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
   getTotalOffsetTop(currentLevel: Element): number {
     try {
       let total: number = 0;
+
       while (currentLevel['offsetParent']['nodeName'] !== 'ION-CONTENT') {
         total += currentLevel['offsetTop'];
         currentLevel = currentLevel['offsetParent'];
@@ -348,7 +360,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
       (error: string): void => {
         console.log('Favorite error', error);
         this.toastService.presentErrorToast(
-          `Unable to ${ !variant.isFavorite ? 'add to' : 'remove from'} favorites`,
+          `Unable to ${ !variant.isFavorite ? 'add to' : 'remove from'} favorites`
         );
       }
     );
