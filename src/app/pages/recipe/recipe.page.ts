@@ -118,9 +118,16 @@ export class RecipePage implements OnInit, OnDestroy {
   listenForUser(): void {
     this.userService.getUser()
       .pipe(takeUntil(this.destroy$))
-      .subscribe((): void => {
-        this.isLoggedIn = this.userService.isLoggedIn();
-      });
+      .subscribe(
+        (): void => {
+          this.isLoggedIn = this.userService.isLoggedIn();
+        },
+        (error: string): void => {
+          console.log('user subject error', error);
+          this.isLoggedIn = false;
+          this.toastService.presentErrorToast('User Error');
+        }
+      );
   }
 
   /***** End Listeners *****/
@@ -197,6 +204,36 @@ export class RecipePage implements OnInit, OnDestroy {
   /***** Modals *****/
 
   /**
+   * Handle confirmation modal success
+   *
+   * @params: index = the index to apply deletion if confirmed
+   *
+   * @return: success handler function
+   */
+  onConfirmDeleteSuccess(index: number): (data: object) => void {
+    return (confirmation: object): void => {
+      const confirmed: boolean = confirmation['data'];
+      if (confirmed) {
+        this.deleteMaster(index);
+      }
+    };
+  }
+
+  /**
+   * Handle confirmation modal error
+   *
+   * @params: none
+   *
+   * @return: error handler function
+   */
+  onConfirmDeleteError(): (error: string) => void {
+    return (error: string): void => {
+      console.log('recipe master deletion error', error);
+      this.toastService.presentErrorToast('Unable to delete recipe master');
+    };
+  }
+
+  /**
    * Open confirmation modal prior to deletion
    *
    * @params: index - index of recipe master to delete
@@ -214,16 +251,8 @@ export class RecipePage implements OnInit, OnDestroy {
 
     from(modal.onDidDismiss())
       .subscribe(
-        (confirmation: object): void => {
-          const confirmed: boolean = confirmation['data'];
-          if (confirmed) {
-            this.deleteMaster(index);
-          }
-        },
-        (error: string): void => {
-          console.log('recipe master deletion error', error);
-          this.toastService.presentErrorToast('Unable to delete recipe master');
-        }
+        this.onConfirmDeleteSuccess(index),
+        this.onConfirmDeleteError()
       );
 
     return await modal.present();
@@ -272,8 +301,7 @@ export class RecipePage implements OnInit, OnDestroy {
       this.masterIndex = -1;
     } else {
       this.masterIndex = index;
-      const accordionElement: HTMLElement
-        = document.querySelector(`#scroll-landmark-${index}`);
+      const accordionElement: HTMLElement = document.querySelector(`#scroll-landmark-${index}`);
       this.ionContent.scrollToPoint(0, accordionElement.offsetTop, 1000);
     }
   }
@@ -295,9 +323,7 @@ export class RecipePage implements OnInit, OnDestroy {
               })
             );
 
-          selected.hops
-            = this.recipeService.getCombinedHopsSchedule(selected.hops);
-
+          selected.hops = this.recipeService.getCombinedHopsSchedule(selected.hops);
           return selected;
           }
         )
