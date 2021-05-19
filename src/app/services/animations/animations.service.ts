@@ -1,5 +1,7 @@
+/* Module imports */
 import { Injectable } from '@angular/core';
 import { Animation, AnimationController } from '@ionic/angular';
+
 
 @Injectable({
   providedIn: 'root'
@@ -24,7 +26,7 @@ export class AnimationsService {
       .fromTo('opacity', 1, 0);
   }
 
-  expand(element: HTMLElement, options?: object): Animation {
+  expand(element: HTMLElement): Animation {
     const opacityAnimation = this.animationCtrl.create()
       .duration(150)
       .fromTo('opacity', 0, 1);
@@ -40,7 +42,7 @@ export class AnimationsService {
       .addAnimation([opacityAnimation, transformAnimation]);
   }
 
-  collapse(element: HTMLElement, options?: object): Animation {
+  collapse(element: HTMLElement): Animation {
     return this.animationCtrl.create()
       .addElement(element)
       .duration(350)
