@@ -21,7 +21,6 @@ import { Author } from '../../../shared/interfaces/author';
 import { Batch } from '../../../shared/interfaces/batch';
 import { Image } from '../../../shared/interfaces/image';
 import { InventoryItem } from '../../../shared/interfaces/inventory-item';
-import { SelectedUnits, Unit } from '../../../shared/interfaces/units';
 import { StockType } from '../../../shared/interfaces/stocktype';
 import { Style } from '../../../shared/interfaces/library';
 
@@ -103,9 +102,7 @@ export class InventoryFormPage implements OnInit {
     )
     .subscribe(
       ([styles, author]): void => {
-        this.onBackClick = this.isRequired
-          ? undefined
-          : this.dismiss.bind(this);
+        this.onBackClick = this.isRequired ? undefined : this.dismiss.bind(this);
         this.styles = styles;
         this.author = author;
         this.initForm();
@@ -267,21 +264,15 @@ export class InventoryFormPage implements OnInit {
       description: ['', [Validators.maxLength(500)]],
       initialQuantity: [null, [Validators.required, Validators.min(1)]],
       itemABV: [null, [Validators.required, Validators.min(0)]],
-      itemIBU: null,
-      itemName: [
-        '',
-        [Validators.required, Validators.minLength(2), Validators.maxLength(50)]
-      ],
-      itemSRM: null,
+      itemIBU: [null, [Validators.min(0)]],
+      itemName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
+      itemSRM: [null, [Validators.min(0)]],
       itemStyleId: [null, [Validators.required]],
       itemSubname: ['', [Validators.minLength(2), Validators.maxLength(50)]],
       sourceType: ['', [Validators.required]],
       stockType: ['', [Validators.required]],
-      supplierName: [
-        '',
-        [Validators.required, Validators.minLength(2), Validators.maxLength(50)]
-      ],
-      supplierURL: ''
+      supplierName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
+      supplierURL: ['', [Validators.maxLength(2000)]]
     });
   }
 
@@ -295,10 +286,7 @@ export class InventoryFormPage implements OnInit {
     this.inventoryForm = this.formBuilder.group({
       currentQuantity: [this.item.currentQuantity, [Validators.required]],
       description: [this.item.description, [Validators.maxLength(500)]],
-      initialQuantity: [
-        this.item.initialQuantity,
-        [Validators.required, Validators.min(1)]
-      ],
+      initialQuantity: [this.item.initialQuantity, [Validators.required, Validators.min(1)]],
       itemABV: [this.item.itemABV, [Validators.required, Validators.min(0)]],
       itemName: [
         this.item.itemName,
@@ -393,7 +381,60 @@ export class InventoryFormPage implements OnInit {
     this.modalCtrl.dismiss();
   }
 
-  async openQuantityHelper(quantityType: string): Promise<void> {
+  /**
+   * Get modal options object
+   *
+   * @params: quantityType - name of the  type of quantity; either 'initialQuantity' or 'currentQuantity'
+   * @params: quantityValue - current value to import to modal
+   *
+   * @return: modal options object
+   */
+  getQuanityHelperModalOptions(quantityType: string, quantityValue: number): object {
+    return {
+      headerText: `select ${quantityType.split('Q')[0]} quantity`,
+      quantity: quantityValue
+    };
+  }
+
+  /**
+   * Get quantity helper modal error handler
+   *
+   * @params: none
+   *
+   * @return: error handler function
+   */
+  onQuantityHelperModalError(): (error: string) => void {
+    return (error: string): void => {
+      console.log('modal dismiss error', error);
+      this.toastService.presentErrorToast('Error selecting quantity');
+    };
+  }
+
+  /**
+   * Get quantity helper modal success handler
+   *
+   * @params: control - form control to update
+   *
+   * @return: success handler function
+   */
+  onQuantityHelperModalSuccess(control: AbstractControl): (data: object) => void {
+    return (data: object): void => {
+      const _data: number = data['data'];
+      console.log('on dismiss', _data);
+      if (!isNaN(_data)) {
+        control.setValue(_data);
+      }
+    };
+  }
+
+  /**
+   * Open quantity helper modal
+   *
+   * @params: quantityType - name of the  type of quantity; either 'initialQuantity' or 'currentQuantity'
+   *
+   * @return: none
+   */
+  async openQuantityHelperModal(quantityType: string): Promise<void> {
     const quantityControl: AbstractControl = this.inventoryForm.controls[quantityType];
     if (!quantityControl) {
       console.log('Invalid quantity type', quantityType);
@@ -403,28 +444,66 @@ export class InventoryFormPage implements OnInit {
 
     const modal: HTMLIonModalElement = await this.modalCtrl.create({
       component: QuantityHelperComponent,
-      componentProps: {
-        headerText: `select ${quantityType.split('Q')[0]} quantity`,
-        quantity: quantityControl.value
-      }
+      componentProps: this.getQuanityHelperModalOptions(quantityType, quantityControl.value)
     });
 
     from(modal.onDidDismiss())
       .subscribe(
-        (data: object): void => {
-          const _data: number = data['data'];
-          console.log('on dismiss', _data);
-          if (!isNaN(_data)) {
-            quantityControl.setValue(_data);
-          }
-        },
-        (error: string): void => {
-          console.log('modal dismiss error', error);
-          this.toastService.presentErrorToast('Error selecting quantity');
-        }
+        this.onQuantityHelperModalSuccess(quantityControl),
+        this.onQuantityHelperModalError()
       );
 
     await modal.present();
+  }
+
+  /**
+   * Get modal options object
+   *
+   * @params: quantityType - name of the  type of quantity; either 'initialQuantity' or 'currentQuantity'
+   * @params: quantityValue - current value to import to modal
+   *
+   * @return: modal options object
+   */
+  getImageModalOptions(imageType: string): object {
+    let options: { image: Image } = null;
+    if (imageType === 'item' && !this.imageService.hasDefaultImage(this.itemLabelImage)) {
+      options = { image: this.itemLabelImage };
+    } else if (imageType === 'supplier' && !this.imageService.hasDefaultImage(this.supplierLabelImage)) {
+      options = { image: this.supplierLabelImage };
+    }
+    return options;
+  }
+
+  /**
+   * Get image modal error handler
+   *
+   * @params: none
+   *
+   * @return: error handler function
+   */
+  onImageModalError(): (error: string) => void {
+    return (error: string): void => {
+      console.log('modal dismiss error', error);
+      this.toastService.presentErrorToast('Error selecting image');
+    };
+  }
+
+  /**
+   * Get image modal success handler
+   *
+   * @params: imageType - the image type to update; either 'item' or 'supplier'
+   *
+   * @return: success handler function
+   */
+  onImageModalSuccess(imageType: string): (data: object) => void {
+    return (data: object): void => {
+      const _data: Image = data['data'];
+      if (imageType === 'item' && _data) {
+        this.itemLabelImage = _data;
+      } else if (imageType === 'supplier' && _data) {
+        this.supplierLabelImage = _data;
+      }
+    };
   }
 
   /**
@@ -435,32 +514,15 @@ export class InventoryFormPage implements OnInit {
    * @return: none
    */
   async openImageModal(imageType: string): Promise<void> {
-    let options: { image: Image } = null;
-    if (imageType === 'item' && !this.imageService.hasDefaultImage(this.itemLabelImage)) {
-      options = { image: this.itemLabelImage };
-    } else if (imageType === 'supplier' && !this.imageService.hasDefaultImage(this.supplierLabelImage)) {
-      options = { image: this.supplierLabelImage };
-    }
-
     const modal: HTMLIonModalElement = await this.modalCtrl.create({
       component: ImageFormPage,
-      componentProps: options
+      componentProps: this.getImageModalOptions(imageType)
     });
 
     from(modal.onDidDismiss())
       .subscribe(
-        (data: object): void => {
-          const _data: Image = data['data'];
-          if (imageType === 'item' && _data) {
-            this.itemLabelImage = _data;
-          } else if (imageType === 'supplier' && _data) {
-            this.supplierLabelImage = _data;
-          }
-        },
-        (error: string): void => {
-          console.log('modal dismiss error', error);
-          this.toastService.presentErrorToast('Error selecting image');
-        }
+        this.onImageModalSuccess(imageType),
+        this.onImageModalError()
       );
 
     await modal.present();
@@ -471,7 +533,13 @@ export class InventoryFormPage implements OnInit {
 
   /***** Other *****/
 
-
+  /**
+   * Set quantity helper modal button display and hint based on stock type;
+   * Quantity helper button and hint should be visible if stock type is capacity based (eg 'keg')
+   *
+   * @params: none
+   * @return: none
+   */
   updateQuantityHint(): void {
     let stockTypeFormValue: string = this.inventoryForm.controls.stockType.value;
     if (stockTypeFormValue) {
