@@ -84,8 +84,7 @@ export class HomePage implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((data: object): void => {
         if (data['subComponent'] === 'inventory' && data['offset']) {
-          const scrollElement: HTMLElement
-            = document.querySelector('#inventory-scroll-landmark');
+          const scrollElement: HTMLElement = document.querySelector('#inventory-scroll-landmark');
           if (scrollElement) {
             this.ionContent.scrollToPoint(
               0,
@@ -105,8 +104,7 @@ export class HomePage implements OnInit, OnDestroy {
    * @return: none
    */
   scrollToId(idName: string): void {
-    const accordionElement: HTMLElement
-      = document.querySelector(`#${idName}`);
+    const accordionElement: HTMLElement = document.querySelector(`#${idName}`);
     if (accordionElement) {
       this.ionContent.scrollToPoint(0, accordionElement.offsetTop, 1000);
     }
