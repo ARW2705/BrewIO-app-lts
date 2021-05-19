@@ -184,11 +184,9 @@ export class GeneralFormPage implements OnInit {
         if (this.hasMappableValue(key)) {
           if (this.controlsToConvertUnits.includes(key)) {
             if (this.calculator.requiresConversion('volumeLarge', this.units)) {
-              this.data[key] = this.calculator
-                .convertVolume(this.data[key], true, false);
+              this.data[key] = this.calculator.convertVolume(this.data[key], true, false);
             }
-            this.generalForm.controls[key]
-              .setValue(roundToDecimalPlace(this.data[key], 2));
+            this.generalForm.controls[key].setValue(roundToDecimalPlace(this.data[key], 2));
           } else {
             this.generalForm.controls[key].setValue(this.data[key]);
           }
@@ -199,6 +197,47 @@ export class GeneralFormPage implements OnInit {
     }
   }
 
+  /**
+   * Get image modal error handler
+   *
+   * @params: none
+   *
+   * @return: modal error handler function
+   */
+  onImageModalError(): (error: string) => void {
+    return (error: string): void => {
+      console.log('modal dismiss error', error);
+      this.toastService.presentErrorToast('Error selecting image');
+    };
+  }
+
+  /**
+   * Get image modal success handler
+   *
+   * @params: none
+   *
+   * @return: modal success handler function
+   */
+  onImageModalSuccess(): (data: object) => void {
+    return (data: object): void => {
+      const _data: Image = data['data'];
+      if (_data) {
+        let previousServerFilename: string;
+        if (this.labelImage && this.labelImage.serverFilename) {
+          previousServerFilename = this.labelImage.serverFilename;
+        }
+        this.labelImage = _data;
+        this.labelImage.serverFilename = previousServerFilename;
+      }
+    };
+  }
+
+  /**
+   * Open image modal
+   *
+   * @params: none
+   * @return: none
+   */
   async openImageModal(): Promise<void> {
     const modal: HTMLIonModalElement = await this.modalCtrl.create({
       component: ImageFormPage,
@@ -207,21 +246,8 @@ export class GeneralFormPage implements OnInit {
 
     from(modal.onDidDismiss())
       .subscribe(
-        (data: object): void => {
-          const _data: Image = data['data'];
-          if (_data) {
-            let previousServerFilename: string;
-            if (this.labelImage && this.labelImage.serverFilename) {
-              previousServerFilename = this.labelImage.serverFilename;
-            }
-            this.labelImage = _data;
-            this.labelImage.serverFilename = previousServerFilename;
-          }
-        },
-        (error: string): void => {
-          console.log('modal dismiss error', error);
-          this.toastService.presentErrorToast('Error selecting image');
-        }
+        this.onImageModalSuccess(),
+        this.onImageModalError()
       );
 
     await modal.present();
