@@ -450,7 +450,7 @@
             <ion-button (click)="onSubmit()"
                         color="primary"
                         class="form-button"
-                        [disabled]="!ingredientForm.valid">
+                        [disabled]="!ingredientForm || !ingredientForm.valid">
               Submit
             </ion-button>
 
