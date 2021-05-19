@@ -416,7 +416,7 @@
         <ion-item>
 
           <ion-label>
-            Set as favorite
+            Set as Favorite
           </ion-label>
 
           <ion-toggle formControlName="isFavorite"
@@ -429,7 +429,7 @@
         <ion-item>
 
           <ion-label>
-            Set as recipe master
+            Set as Master
           </ion-label>
 
           <ion-toggle formControlName="isMaster"
@@ -460,7 +460,7 @@
             <ion-button color="primary"
                         (click)="onSubmit()"
                         class="form-button"
-                        [disabled]="!generalForm.valid">
+                        [disabled]="!generalForm || !generalForm.valid">
               Submit
             </ion-button>
 
