@@ -29,4 +29,5 @@ export interface OptionalItemData {
   remainingColor?: string;
   srmColor?: string;
   supplierLabelImage?: Image;
+  supplierURL?: string;
 }
