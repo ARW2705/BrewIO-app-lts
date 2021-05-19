@@ -1,9 +1,9 @@
 /* Module imports */
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute, Navigation } from '@angular/router';
-import { ModalController, Platform } from '@ionic/angular';
+import { ModalController } from '@ionic/angular';
 import { BehaviorSubject, Observable, Subject, from, of, throwError } from 'rxjs';
-import { map, mergeMap, takeUntil, tap } from 'rxjs/operators';
+import { mergeMap, takeUntil, tap } from 'rxjs/operators';
 
 /* Interface imports */
 import { Alert } from '../../shared/interfaces/alert';
@@ -68,7 +68,6 @@ export class ProcessPage implements OnInit, OnDestroy {
   constructor(
     public event: EventService,
     public modalCtrl: ModalController,
-    public platform: Platform,
     public processService: ProcessService,
     public route: ActivatedRoute,
     public router: Router,
@@ -140,7 +139,7 @@ export class ProcessPage implements OnInit, OnDestroy {
     this.route.queryParams
       .pipe(
         takeUntil(this.destroy$),
-        map((): Observable<never> => {
+        mergeMap((): Observable<null> => {
           console.log('route change detected');
           try {
             const nav: Navigation = this.router.getCurrentNavigation();
@@ -152,8 +151,9 @@ export class ProcessPage implements OnInit, OnDestroy {
             this.recipeVariantId = configData['recipeVariantId'];
             this.selectedBatchId = configData['selectedBatchId'];
           } catch (error) {
-            return throwError(error);
+            return throwError(error.message);
           }
+          return of(null);
         })
       )
       .subscribe(
@@ -192,13 +192,13 @@ export class ProcessPage implements OnInit, OnDestroy {
       this.recipeMasterId,
       this.recipeVariantId
     )
-    .pipe(map((newBatch: Batch): Observable<never> => {
+    .pipe(mergeMap((newBatch: Batch): Observable<null> => {
       this.selectedBatch$ = this.processService.getBatchById(getId(newBatch));
-      console.log('start pipe', this.selectedBatch$);
 
       if (!this.selectedBatch$) {
         return throwError('Internal error: Batch not found');
       }
+      return of(null);
     }))
     .subscribe(
       (): void => this.listenForBatchChanges(false),
@@ -416,9 +416,7 @@ export class ProcessPage implements OnInit, OnDestroy {
    */
   getStep(onComplete: boolean , direction: string): number {
     const process: BatchProcess = this.selectedBatch.process;
-    const viewIndex: number = onComplete
-      ? process.currentStep
-      : this.viewStepIndex;
+    const viewIndex: number = onComplete ? process.currentStep : this.viewStepIndex;
 
     if (direction === 'next') {
       if (viewIndex < process.schedule.length - 1) {
@@ -489,11 +487,7 @@ export class ProcessPage implements OnInit, OnDestroy {
    * @return: none
    */
   changeDateEventHandler(): void {
-    this.toastService.presentToast(
-      'Select new dates',
-      1500,
-      'middle'
-    );
+    this.toastService.presentToast('Select new dates', 1500, 'middle');
     delete this.selectedBatch
       .process
       .schedule[this.selectedBatch.process.currentStep]
@@ -543,13 +537,19 @@ export class ProcessPage implements OnInit, OnDestroy {
   startCalendar(): void {
     const values: object = this.calendarRef.startCalendar();
     this.processService.updateStepById(getId(this.selectedBatch), values)
-      .subscribe((): void => console.log('Started calendar'));
+      .subscribe(
+        (): void => console.log('Started calendar'),
+        (error: string): void => {
+          console.log('Calendar start error', error);
+          this.toastService.presentErrorToast('Error starting calendar step');
+        }
+      );
   }
 
   /***** End Calendar Specific Methods *****/
 
 
-  /***** Other *****/
+  /***** Navigation *****/
 
   /**
    * Navigate to inventory page with id of batch
@@ -571,6 +571,18 @@ export class ProcessPage implements OnInit, OnDestroy {
     );
   }
 
+  /***** End Navigation ****/
+
+
+  /***** Modal *****/
+
+  /**
+   * Handle measurement update on form dismiss
+   *
+   * @params: onBatchComplete - true if measurements are final
+   *
+   * @return: handler function to update measured values of batch
+   */
   onMeasurementFormModalDismiss(onBatchComplete: boolean): (update: object) => Observable<Batch> {
     return (update: object): Observable<Batch> => {
       const _update: PrimaryValues = <PrimaryValues>update['data'];
@@ -582,6 +594,38 @@ export class ProcessPage implements OnInit, OnDestroy {
         );
       }
       return of(null);
+    };
+  }
+
+  /**
+   * Handle measurement form modal error
+   *
+   * @params: none
+   *
+   * @return: error handler function
+   */
+  onMeasurementFormModalError(): (error: string) => void {
+    return (error: string): void => {
+      console.log('Measurement form error', error);
+      this.toastService.presentErrorToast('Error updating batch');
+    };
+  }
+
+  /**
+   * Handle measurement form modal success
+   *
+   * @params: onBatchComplete - true if batch is complete
+   *
+   * @return: success handler function
+   */
+  onMeasurementFormModalSuccess(onBatchComplete: boolean): (updatedBatch: Batch) => void {
+    return (updated: Batch): void => {
+      if (updated) {
+        this.toastService.presentToast('Measured Values Updated', 1000, 'bottom');
+      }
+      if (onBatchComplete) {
+        this.navToInventory(updated);
+      }
     };
   }
 
@@ -608,27 +652,13 @@ export class ProcessPage implements OnInit, OnDestroy {
         tap(() => { this.hideButton = true; }),
         mergeMap(this.onMeasurementFormModalDismiss(onBatchComplete)))
       .subscribe(
-        (updated: Batch): void => {
-          if (updated) {
-            this.toastService.presentToast(
-              'Measured Values Updated',
-              1000,
-              'bottom'
-            );
-          }
-          if (onBatchComplete) {
-            this.navToInventory(updated);
-          }
-        },
-        (error: string): void => {
-          console.log('Measurement form error', error);
-          this.toastService.presentErrorToast('Error updating batch');
-        }
+        this.onMeasurementFormModalSuccess(onBatchComplete),
+        this.onMeasurementFormModalError()
       );
 
     return await modal.present();
   }
 
-  /***** End Other *****/
+  /***** End Modal *****/
 
 }
