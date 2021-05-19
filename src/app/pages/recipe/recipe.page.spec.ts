@@ -11,7 +11,7 @@ import { BehaviorSubject, of, throwError } from 'rxjs';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockRecipeMasterActive, mockRecipeMasterInactive, mockRecipeVariantComplete, mockUser } from '../../../../test-config/mock-models';
+import { mockRecipeMasterActive, mockRecipeVariantComplete, mockUser } from '../../../../test-config/mock-models';
 import { RecipeServiceStub, ToastServiceStub, UserServiceStub } from '../../../../test-config/service-stubs';
 import { AccordionComponentStub, ConfirmationComponentStub, HeaderComponentStub, IngredientListComponentStub } from '../../../../test-config/component-stubs';
 import { RoundPipeStub, TruncatePipeStub, UnitConversionPipeStub } from '../../../../test-config/pipe-stubs';
