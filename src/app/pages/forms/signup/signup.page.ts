@@ -103,6 +103,55 @@ export class SignupPage implements OnInit {
   }
 
   /**
+   * Generate options for image modal
+   *
+   * @params: imageType - the image type as either 'user' or 'brewery'
+   *
+   * @return: options object
+   */
+  getImageModalOptions(imageType: string): object {
+    let options: { image: Image } = null;
+    if (imageType === 'user' && !this.imageService.hasDefaultImage(this.userImage)) {
+      options = { image: this.userImage };
+    } else if (imageType === 'brewery' && !this.imageService.hasDefaultImage(this.breweryLabelImage)) {
+      options = { image: this.breweryLabelImage };
+    }
+    return options;
+  }
+
+  /**
+   * Get image modal error handler
+   *
+   * @params: none
+   *
+   * @return: error handler function
+   */
+  onImageModalError(): (error: string) => void {
+    return (error: string): void => {
+      console.log('modal dismiss error', error);
+      this.toastService.presentErrorToast('Error selecting image');
+    };
+  }
+
+  /**
+   * Get image modal error handler
+   *
+   * @params: none
+   *
+   * @return: error handler function
+   */
+  onImageModalSuccess(imageType: string): (data: object) => void {
+    return (data: object): void => {
+      const _data: Image = data['data'];
+      if (imageType === 'user' && _data) {
+        this.userImage = _data;
+      } else if (imageType === 'brewery' && _data) {
+        this.breweryLabelImage = _data;
+      }
+    };
+  }
+
+  /**
    * Open image selection modal
    *
    * @params: imageType - identifies image as either userImage or breweryLabelImage
@@ -110,32 +159,15 @@ export class SignupPage implements OnInit {
    * @return: none
    */
   async openImageModal(imageType: string): Promise<void> {
-    let options: { image: Image } = null;
-    if (imageType === 'user' && !this.imageService.hasDefaultImage(this.userImage)) {
-      options = { image: this.userImage };
-    } else if (imageType === 'brewery' && !this.imageService.hasDefaultImage(this.breweryLabelImage)) {
-      options = { image: this.breweryLabelImage };
-    }
-
     const modal: HTMLIonModalElement = await this.modalCtrl.create({
       component: ImageFormPage,
-      componentProps: options
+      componentProps: this.getImageModalOptions(imageType)
     });
 
     from(modal.onDidDismiss())
       .subscribe(
-        (data: object): void => {
-          const _data: Image = data['data'];
-          if (imageType === 'user' && _data) {
-            this.userImage = _data;
-          } else if (imageType === 'brewery' && _data) {
-            this.breweryLabelImage = _data;
-          }
-        },
-        (error: string): void => {
-          console.log('modal dismiss error', error);
-          this.toastService.presentErrorToast('Error selecting image');
-        }
+        this.onImageModalSuccess(imageType),
+        this.onImageModalError()
       );
 
     await modal.present();
@@ -168,12 +200,7 @@ export class SignupPage implements OnInit {
       }))
       .subscribe(
         (): void => {
-          this.toastService.presentToast(
-            'Sign up complete!',
-            1500,
-            'middle',
-            'toast-bright'
-          );
+          this.toastService.presentToast('Sign up complete!', 1500, 'middle', 'toast-bright');
           this.dismiss();
         },
         (error: string): void => this.toastService.presentErrorToast(error, this.dismiss.bind(this))
