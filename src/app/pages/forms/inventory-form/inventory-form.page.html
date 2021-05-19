@@ -359,6 +359,20 @@
 
           </ion-item>
 
+          <!-- Error messages -->
+          <div class="form-error-container">
+
+            <form-error *ngIf="
+              inventoryForm.controls['supplierURL'].touched
+              && inventoryForm.controls['supplierURL'].errors
+            "
+                        formName="inventory"
+                        controlName="supplierURL"
+                        [controlErrors]="inventoryForm.controls['supplierURL'].errors">
+            </form-error>
+
+          </div>
+
         </ng-container>
 
 
@@ -498,7 +512,7 @@
           <ion-button *ngIf="allowHelper"
                       color="primary"
                       slot="end"
-                      (click)="openQuantityHelper('initialQuantity')"
+                      (click)="openQuantityHelperModal('initialQuantity')"
                       class="form-button modal-button">
 
             <ion-icon name="open-outline"></ion-icon>
@@ -541,7 +555,7 @@
             <ion-button *ngIf="allowHelper"
                         color="primary"
                         slot="end"
-                        (click)="openQuantityHelper('currentQuantity')"
+                        (click)="openQuantityHelperModal('currentQuantity')"
                         class="form-button modal-button">
 
               <ion-icon name="open-outline"></ion-icon>
