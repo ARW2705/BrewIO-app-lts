@@ -3,26 +3,22 @@ import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { IonicModule, LoadingController, ModalController } from '@ionic/angular';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Observable, of, throwError } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockAuthor, mockBatch, mockInventoryItem, mockEnglishUnits, mockMetricUnits, mockImage, mockStyles } from '../../../../../test-config/mock-models';
+import { mockAuthor, mockBatch, mockInventoryItem, mockImage, mockStyles } from '../../../../../test-config/mock-models';
 import { CalculationsServiceStub, ImageServiceStub, LibraryServiceStub, PreferencesServiceStub, RecipeServiceStub, ToastServiceStub, UserServiceStub } from '../../../../../test-config/service-stubs';
 import { HeaderComponentStub, QuantityHelperComponentStub } from '../../../../../test-config/component-stubs';
-import { LoadingControllerStub, LoadingStub, ModalControllerStub, ModalStub } from '../../../../../test-config/ionic-stubs';
-
-/* Default imports */
-import { defaultImage } from '../../../shared/defaults/default-image';
+import { LoadingControllerStub, ModalControllerStub, ModalStub } from '../../../../../test-config/ionic-stubs';
 
 /* Interface imports */
 import { Author } from '../../../shared/interfaces/author';
 import { Batch } from '../../../shared/interfaces/batch';
 import { Image } from '../../../shared/interfaces/image';
 import { InventoryItem } from '../../../shared/interfaces/inventory-item';
-import { StockType } from '../../../shared/interfaces/stocktype';
 import { Style } from '../../../shared/interfaces/library';
 
 /* Service imports */
