@@ -64,10 +64,8 @@ export class IngredientFormPage implements OnInit {
 
     this.title = toTitleCase(this.ingredientType);
     this.units = this.preferenceService.getSelectedUnits();
-    this.requiresConversionLarge = this.calculator
-      .requiresConversion('weightLarge', this.units);
-    this.requiresConversionSmall = this.calculator
-      .requiresConversion('weightSmall', this.units);
+    this.requiresConversionLarge = this.calculator.requiresConversion('weightLarge', this.units);
+    this.requiresConversionSmall = this.calculator.requiresConversion('weightSmall', this.units);
 
     this.initForm();
   }
@@ -238,8 +236,7 @@ export class IngredientFormPage implements OnInit {
    * @return: none
    */
   initGrainsFields(): void {
-    const requiresConversion: boolean = this.calculator
-      .requiresConversion('weightLarge', this.units);
+    const requiresConversion: boolean = this.calculator.requiresConversion('weightLarge', this.units);
 
     this.hasSubQuantity = !requiresConversion;
 
@@ -259,16 +256,12 @@ export class IngredientFormPage implements OnInit {
           subQuantity *= 16;
         }
         quantity = Math.floor(quantity);
-        this.ingredientForm.controls.subQuantity
-          .setValue(roundToDecimalPlace(subQuantity, 2));
+        this.ingredientForm.controls.subQuantity.setValue(roundToDecimalPlace(subQuantity, 2));
       }
 
-      this.ingredientForm.controls.quantity
-        .setValue(roundToDecimalPlace(quantity, 2));
-      this.ingredientForm.controls.type
-        .setValue((<GrainBill>this.update).grainType);
-      this.ingredientForm.controls.mill
-        .setValue((<GrainBill>this.update).mill);
+      this.ingredientForm.controls.quantity.setValue(roundToDecimalPlace(quantity, 2));
+      this.ingredientForm.controls.type.setValue((<GrainBill>this.update).grainType);
+      this.ingredientForm.controls.mill.setValue((<GrainBill>this.update).mill);
     }
   }
 
@@ -280,7 +273,8 @@ export class IngredientFormPage implements OnInit {
    */
   initHopsFields(): void {
     this.ingredientForm.addControl(
-      'duration', new FormControl(
+      'duration',
+      new FormControl(
         null,
         [
           Validators.required,
@@ -297,14 +291,10 @@ export class IngredientFormPage implements OnInit {
         quantity = this.calculator.convertWeight(quantity, false, false);
       }
 
-      this.ingredientForm.controls.subQuantity
-        .setValue(roundToDecimalPlace(quantity, 2));
-      this.ingredientForm.controls.type
-        .setValue((<HopsSchedule>this.update).hopsType);
-      this.ingredientForm.controls.duration
-        .setValue((<HopsSchedule>this.update).duration);
-      this.ingredientForm.controls.dryHop
-        .setValue((<HopsSchedule>this.update).dryHop);
+      this.ingredientForm.controls.subQuantity.setValue(roundToDecimalPlace(quantity, 2));
+      this.ingredientForm.controls.type.setValue((<HopsSchedule>this.update).hopsType);
+      this.ingredientForm.controls.duration.setValue((<HopsSchedule>this.update).duration);
+      this.ingredientForm.controls.dryHop.setValue((<HopsSchedule>this.update).dryHop);
     }
   }
 
@@ -318,12 +308,9 @@ export class IngredientFormPage implements OnInit {
     this.ingredientForm.addControl('requiresStarter', new FormControl(false));
 
     if (this.update) {
-      this.ingredientForm.controls.type
-        .setValue((<YeastBatch>this.update).yeastType);
-      this.ingredientForm.controls.quantity
-        .setValue((<YeastBatch>this.update).quantity);
-      this.ingredientForm.controls.requiresStarter
-        .setValue((<YeastBatch>this.update).requiresStarter);
+      this.ingredientForm.controls.type.setValue((<YeastBatch>this.update).yeastType);
+      this.ingredientForm.controls.quantity.setValue((<YeastBatch>this.update).quantity);
+      this.ingredientForm.controls.requiresStarter.setValue((<YeastBatch>this.update).requiresStarter);
     }
   }
 
@@ -334,54 +321,46 @@ export class IngredientFormPage implements OnInit {
    * @return: none
    */
   initOtherIngredientsFields(): void {
-    this.ingredientForm
-      .addControl(
-        'name',
-        new FormControl(
-          '',
-          [
-            Validators.minLength(2),
-            Validators.maxLength(50),
-            Validators.required
-          ]
-        )
-      );
-    this.ingredientForm
-      .addControl(
-        'description',
-        new FormControl(
-          '',
-          [
-            Validators.minLength(2),
-            Validators.maxLength(500),
-            Validators.required
-          ]
-        )
-      );
-    this.ingredientForm
-      .addControl(
-        'units',
-        new FormControl(
-          '',
-          [
-            Validators.minLength(1),
-            Validators.maxLength(20),
-            Validators.required
-          ]
-        )
-      );
+    this.ingredientForm.addControl(
+      'name',
+      new FormControl(
+        '',
+        [
+          Validators.minLength(2),
+          Validators.maxLength(50),
+          Validators.required
+        ]
+      )
+    );
+    this.ingredientForm.addControl(
+      'description',
+      new FormControl(
+        '',
+        [
+          Validators.minLength(2),
+          Validators.maxLength(500),
+          Validators.required
+        ]
+      )
+    );
+    this.ingredientForm.addControl(
+      'units',
+      new FormControl(
+        '',
+        [
+          Validators.minLength(1),
+          Validators.maxLength(20),
+          Validators.required
+        ]
+      )
+    );
 
     if (this.update) {
-      this.ingredientForm.controls.type
-        .setValue((<OtherIngredients>this.update).type);
-      this.ingredientForm.controls.name
-        .setValue((<OtherIngredients>this.update).name);
-      this.ingredientForm.controls.description
-        .setValue((<OtherIngredients>this.update).description);
-      this.ingredientForm.controls.quantity
-        .setValue((<OtherIngredients>this.update).quantity);
-      this.ingredientForm.controls.units
-        .setValue((<OtherIngredients>this.update).units);
+      this.ingredientForm.controls.type.setValue((<OtherIngredients>this.update).type);
+      this.ingredientForm.controls.name.setValue((<OtherIngredients>this.update).name);
+      this.ingredientForm.controls.description.setValue((<OtherIngredients>this.update).description);
+      this.ingredientForm.controls.quantity.setValue((<OtherIngredients>this.update).quantity);
+      this.ingredientForm.controls.units.setValue((<OtherIngredients>this.update).units);
     }
   }
 
@@ -392,7 +371,7 @@ export class IngredientFormPage implements OnInit {
    * @return: none
    */
   onDeletion(): void {
-    this.modalCtrl.dismiss({delete: true});
+    this.modalCtrl.dismiss({ delete: true });
   }
 
   /**
