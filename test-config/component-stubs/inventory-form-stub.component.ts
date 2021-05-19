@@ -5,7 +5,7 @@ import { Component } from '@angular/core';
 import { InventoryFormPage } from '../../src/app/pages/forms/inventory-form/inventory-form.page';
 
 @Component({
-  selector: 'inventory',
+  selector: 'page-inventory-form',
   template: '',
   providers: [
     { provide: InventoryFormPage, useClass: InventoryFormPageStub }

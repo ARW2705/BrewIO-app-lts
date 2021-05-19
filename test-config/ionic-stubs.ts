@@ -35,3 +35,7 @@ export { ViewControllerStub } from './ionic-stubs/view-controller-stub';
 export { StorageStub } from './ionic-stubs/storage-stub';
 export { ActivatedRouteStub } from './ionic-stubs/activated-route-stub';
 export { IonListStub } from './ionic-stubs/ion-list-stub';
+export { AnimationControllerStub } from './ionic-stubs/animation-controller-stub';
+export { AnimationStub } from './ionic-stubs/animation-stub';
+export { LoadingStub } from './ionic-stubs/loading-stub';
+export { LoadingControllerStub } from './ionic-stubs/loading-controller-stub';

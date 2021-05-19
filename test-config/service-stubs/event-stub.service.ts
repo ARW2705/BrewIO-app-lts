@@ -1,11 +1,17 @@
+/* Module imports */
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
+/* Interface imports */
+import { EventSubscriber } from '../../src/app/shared/interfaces/event';
+
+
 @Injectable()
 export class EventServiceStub {
-  public register(...args) {
+  subscribers: EventSubscriber = {};
+  public register(...options: any[]): any {
     return new Observable();
   }
-  public unregister(...args) { }
-  public emit(...args) { }
+  public unregister(...options: any[]) { }
+  public emit(...options: any[]) { }
 }

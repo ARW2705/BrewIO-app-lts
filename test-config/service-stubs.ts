@@ -18,3 +18,5 @@ export { SyncServiceStub } from './service-stubs/sync-stub.service';
 export { ToastServiceStub } from './service-stubs/toast-stub.service';
 export { TimerServiceStub } from './service-stubs/timer-stub.service';
 export { UserServiceStub } from './service-stubs/user-stub.service';
+export { AnimationsServiceStub } from './service-stubs/animations-stub.service';
+export { FormValidationServiceStub } from './service-stubs/form-validation-stub.service';

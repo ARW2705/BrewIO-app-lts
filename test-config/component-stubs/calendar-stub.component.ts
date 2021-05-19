@@ -1,5 +1,9 @@
 /* Module imports */
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnChanges, OnInit } from '@angular/core';
+
+/* Interface imports */
+import { Alert } from '../../src/app/shared/interfaces/alert';
+import { CalendarDate } from '../../src/app/shared/interfaces/calendar-date';
 
 /* Component imports */
 import { CalendarComponent } from '../../src/app/components/calendar/calendar.component';
@@ -11,8 +15,36 @@ import { CalendarComponent } from '../../src/app/components/calendar/calendar.co
     { provide: CalendarComponent, useClass: CalendarComponentStub }
   ]
 })
-export class CalendarComponentStub {
+export class CalendarComponentStub implements OnInit, OnChanges {
   @Input() stepData: object;
+  currentDate: moment.Moment = null;
+  displayDate: moment.Moment = null;
+  editType: string = '';
+  isProjectedSelection: boolean = false;
+  month: CalendarDate[][] = [];
+  projectedDates: CalendarDate[] = [];
+  refreshChildInputs: boolean = false;
+  selectedDay: CalendarDate = null;
+  startDate: CalendarDate = null;
+  weekdays: string[] = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
+  constructor() {}
+
+  ngOnInit() {}
+  ngOnChanges() {}
+  addToProjectedDates() {}
+  changeMonthYear() {}
+  fillDates(...options: any[]): any {}
   getFinal(): any {}
+  initCalendar(): any {}
+  isMonth(...options: any[]): any {}
+  isProjected(...options: any[]): any {}
+  isStart(...options: any[]): any {}
+  isToday(...options: any[]): any {}
+  populateCalendar(): any {}
+  resetProjectedDates(): any {}
+  selectStartDate(...options: any[]): any {}
+  toggleEdit(...options: any[]): any {}
+  toggleProjectedDate(...options: any[]): any {}
+  updateView(): any {}
 }

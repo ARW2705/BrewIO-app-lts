@@ -15,7 +15,8 @@ export const mockOptionalItemData: () => OptionalItemData = (): OptionalItemData
     originalRecipe: 'originalid',
     remainingColor: '#fd4855',
     srmColor: '#963500',
-    supplierLabelImage: mockImage()
+    supplierLabelImage: mockImage(),
+    supplierURL: 'url'
   };
   return mock;
 };

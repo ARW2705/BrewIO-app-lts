@@ -10,3 +10,14 @@ export { ConfirmationComponentStub } from './component-stubs/confirmation-stub.c
 export { HeaderComponentStub } from './component-stubs/header-stub.component';
 export { NoteListComponentStub } from './component-stubs/note-list-stub.component';
 export { IngredientListComponentStub } from './component-stubs/ingredient-list-stub.component';
+export { ActiveBatchesComponentStub } from './component-stubs/active-batches-stub.component';
+export { InventoryComponentStub } from './component-stubs/inventory-stub.component';
+export { AboutComponentStub } from './component-stubs/about-stub.component';
+export { PreferencesComponentStub } from './component-stubs/preferences-stub.component';
+export { UserComponentStub } from './component-stubs/user-stub.component';
+export { ProcessCalendarComponentStub } from './component-stubs/process-calendar-stub.component';
+export { ProcessManualComponentStub } from './component-stubs/process-manual-stub.component';
+export { ProcessTimerComponentStub } from './component-stubs/process-timer-stub.component';
+export { ProcessMeasurementsFormPageStub } from './component-stubs/process-measurements-form-stub.component';
+export { ProcessControlsComponentStub } from './component-stubs/process-controls-stub.component';
+export { QuantityHelperComponentStub } from './component-stubs/quantity-helper-stub.component';
