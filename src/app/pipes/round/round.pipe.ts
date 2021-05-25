@@ -19,4 +19,5 @@ export class RoundPipe implements PipeTransform {
     const rounded: number = Math.round(toRound);
     return isNaN(rounded) ? value : rounded;
   }
+
 }
