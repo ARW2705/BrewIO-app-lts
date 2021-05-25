@@ -47,14 +47,10 @@ export class ProcessMeasurementsFormPage implements OnInit, OnDestroy {
   /***** Lifecycle Hooks *****/
 
   ngOnInit() {
-    this.onBackClick = this.areAllRequired
-      ? undefined
-      : this.dismiss.bind(this);
+    this.onBackClick = this.areAllRequired ? undefined : this.dismiss.bind(this);
     this.units = this.preferenceService.getSelectedUnits();
-    this.requiresVolumeConversion = this.calculator
-      .requiresConversion('volumeLarge', this.units);
-    this.requiresDensityConversion = this.calculator
-      .requiresConversion('density', this.units);
+    this.requiresVolumeConversion = this.calculator.requiresConversion('volumeLarge', this.units);
+    this.requiresDensityConversion = this.calculator.requiresConversion('density', this.units);
     this.initForm();
     this.listenForChanges();
   }
@@ -105,9 +101,7 @@ export class ProcessMeasurementsFormPage implements OnInit, OnDestroy {
    * @return: the converted gravity value
    */
   getGravity(measuredGravity: number, targetGravity: number): number {
-    let originalGravity: number = measuredGravity !== -1
-      ? measuredGravity
-      : targetGravity;
+    let originalGravity: number = measuredGravity !== -1 ? measuredGravity : targetGravity;
 
     if (this.requiresDensityConversion) {
       originalGravity = this.calculator
@@ -131,9 +125,7 @@ export class ProcessMeasurementsFormPage implements OnInit, OnDestroy {
    * @return: the converted batch volume value
    */
   getVolume(measuredVolume: number, targetVolume: number): number {
-    let batchVolume: number = measuredVolume !== -1
-      ? measuredVolume
-      : targetVolume;
+    let batchVolume: number = measuredVolume !== -1 ? measuredVolume : targetVolume;
 
     if (this.requiresVolumeConversion) {
       batchVolume = this.calculator.convertVolume(batchVolume, true, false);
@@ -196,12 +188,9 @@ export class ProcessMeasurementsFormPage implements OnInit, OnDestroy {
     const targetValues: PrimaryValues = annotations.targetValues;
     const measuredValues: PrimaryValues = annotations.measuredValues;
 
-    const originalGravity: number
-      = this.getGravity(measuredValues.originalGravity, targetValues.originalGravity);
-    const finalGravity: number
-      = this.getGravity(measuredValues.finalGravity, targetValues.finalGravity);
-    const batchVolume: number
-      = this.getVolume(measuredValues.batchVolume, targetValues.batchVolume);
+    const originalGravity: number = this.getGravity(measuredValues.originalGravity, targetValues.originalGravity);
+    const finalGravity: number = this.getGravity(measuredValues.finalGravity, targetValues.finalGravity);
+    const batchVolume: number = this.getVolume(measuredValues.batchVolume, targetValues.batchVolume);
 
     this.measurementsForm = this.formBuilder.group({
       originalGravity: [
@@ -239,8 +228,7 @@ export class ProcessMeasurementsFormPage implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(
         (formValues: { originalGravity: string, finalGravity: string }): void => {
-          const controls: { [key: string]: AbstractControl }
-            = this.measurementsForm.controls;
+          const controls: { [key: string]: AbstractControl } = this.measurementsForm.controls;
 
           if (formValues.originalGravity.length > 5) {
             controls.originalGravity.setValue(
