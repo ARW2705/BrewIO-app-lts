@@ -150,10 +150,10 @@ export class ProcessPage implements OnInit, OnDestroy {
             this.recipeMasterId = configData['recipeMasterId'];
             this.recipeVariantId = configData['recipeVariantId'];
             this.selectedBatchId = configData['selectedBatchId'];
+            return of(null);
           } catch (error) {
             return throwError(error.message);
           }
-          return of(null);
         })
       )
       .subscribe(
