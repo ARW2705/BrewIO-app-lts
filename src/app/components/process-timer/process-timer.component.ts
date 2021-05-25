@@ -10,9 +10,6 @@ import { Timer } from '../../shared/interfaces/timer';
 /* Utility imports */
 import { hasId } from '../../shared/utility-functions/id-helpers';
 
-/* Animation imports */
-import { expandUpDown } from '../../animations/expand';
-
 /* Service imports */
 import { TimerService } from '../../services/timer/timer.service';
 import { ToastService } from '../../services/toast/toast.service';
@@ -21,10 +18,7 @@ import { ToastService } from '../../services/toast/toast.service';
 @Component({
   selector: 'process-timer',
   templateUrl: './process-timer.component.html',
-  styleUrls: ['./process-timer.component.scss'],
-  animations: [
-    expandUpDown()
-  ]
+  styleUrls: ['./process-timer.component.scss']
 })
 export class ProcessTimerComponent implements OnInit, OnChanges, OnDestroy {
   @Input() batchId: string;
