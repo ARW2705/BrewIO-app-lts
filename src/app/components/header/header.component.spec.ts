@@ -175,16 +175,33 @@ describe('HeaderComponent', (): void => {
   });
 
   test('should open the login/signup action sheet', (): void => {
+    let sheetOptions: any[];
     headerCmp.actionService.openActionSheet = jest
+      .fn()
+      .mockImplementation((...options: any[]): void => {
+        sheetOptions = options;
+      });
+
+    headerCmp.openLogin = jest
+      .fn();
+
+    headerCmp.openSignup = jest
       .fn();
 
     const actionSpy: jest.SpyInstance = jest.spyOn(headerCmp.actionService, 'openActionSheet');
+    const loginSpy: jest.SpyInstance = jest.spyOn(headerCmp, 'openLogin');
+    const signupSpy: jest.SpyInstance = jest.spyOn(headerCmp, 'openSignup');
 
     fixture.detectChanges();
 
     headerCmp.openLoginSignup();
 
     expect(actionSpy).toHaveBeenCalled();
+
+    sheetOptions[1][0].handler();
+    expect(loginSpy).toHaveBeenCalled();
+    sheetOptions[1][1].handler();
+    expect(signupSpy).toHaveBeenCalled();
   });
 
   test('should render the template with a user logged in', (): void => {
