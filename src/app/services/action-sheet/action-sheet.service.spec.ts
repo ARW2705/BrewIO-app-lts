@@ -42,17 +42,24 @@ describe('ActionSheetService', () => {
 
   test('should open action sheet with default options', (done: jest.DoneCallback) => {
     const _mockActionSheetElement = mockActionSheetElement();
+    let sheetOptions: any[];
 
     actionCtrl.create = jest
       .fn()
-      .mockReturnValue(Promise.resolve(_mockActionSheetElement));
+      .mockImplementation((...options: any[]): Promise<any> => {
+        sheetOptions = options;
+        return Promise.resolve(_mockActionSheetElement);
+      });
 
     const createSpy: jest.SpyInstance = jest.spyOn(actionCtrl, 'create');
     const presentSpy: jest.SpyInstance = jest.spyOn(_mockActionSheetElement, 'present');
+    const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
 
     actionSheetService.openActionSheet('test', []);
 
     setTimeout(() => {
+      sheetOptions[0].buttons[0].handler();
+      expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('Action Sheet cancelled');
       expect(presentSpy).toHaveBeenCalled();
       const caughtCall: object = createSpy.mock.calls[0][0];
       expect(caughtCall['header']).toMatch('test');
