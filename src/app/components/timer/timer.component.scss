@@ -59,10 +59,10 @@
 
 .timer-individual-controls {
   /* Display */
-  z-index: 1 !important;
   width: 100%;
   margin-top: 5px;
-  height: auto;
+  opacity: 0;
+  height: 0;
   overflow: hidden;
 
   /* Children */

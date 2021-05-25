@@ -1,29 +1,28 @@
 /* Module imports */
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import { Animation } from '@ionic/angular';
 
 /* Interface imports */
 import { Timer } from '../../shared/interfaces/timer';
 
-/* Animation imports */
-import { expandUpDown } from '../../animations/expand';
+/* Service imports */
+import { AnimationsService } from '../../services/animations/animations.service';
 
 
 @Component({
   selector: 'timer',
   templateUrl: './timer.component.html',
-  styleUrls: ['./timer.component.scss'],
-  animations: [
-    expandUpDown()
-  ]
+  styleUrls: ['./timer.component.scss']
 })
 export class TimerComponent implements OnInit {
   @Input() isConcurrent: boolean = false;
   @Input() onTimerAction: (actionName: string, timer: Timer) => void;
   @Input() timer: Timer = null;
   @Input() showDescription: boolean = false;
+  @ViewChild('timerControlsContainer', { read: ElementRef }) timerControlsContainer: ElementRef;
   chevronPath: string = '';
 
-  constructor() { }
+  constructor(public animationService: AnimationsService) { }
 
   ngOnInit() {
     if (this.timer) {
@@ -93,20 +92,21 @@ export class TimerComponent implements OnInit {
   /**
    * Show or hide individual timer controls
    *
-   * @params: timer - a timer type process step instance
-   *
+   * @params: none
    * @return: none
    */
-  toggleTimerControls(): void {
+  async toggleTimerControls(): Promise<void> {
     this.timer.show = !this.timer.show;
-    this.timer.expansion = {
-      value: this.timer.show ? 'expanded' : 'collapsed',
-      params: {
-        height: this.timer.settings.height,
-        speed: 250
-      }
-    };
     this.setChevron();
+    if (this.timerControlsContainer) {
+      let animation: Animation;
+      if (this.timer.show) {
+        animation = this.animationService.expand(this.timerControlsContainer.nativeElement, { direction: -20 });
+      } else {
+        animation = this.animationService.collapse(this.timerControlsContainer.nativeElement, { direction: -20 });
+      }
+      await animation.play();
+    }
   }
 
 }

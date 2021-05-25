@@ -42,52 +42,52 @@
       <ng-container *ngIf="isConcurrent">
 
         <!-- Concurrent Timers Individual Controls -->
-        <div  [@expandUpDown]="timer.expansion"
+        <div  #timerControlsContainer
               class="timer-individual-controls">
 
-            <!-- Start Individual Timer Button -->
-            <ion-row>
+          <!-- Start Individual Timer Button -->
+          <ion-row>
 
-              <ion-button color="primary"
-                          (click)="startSingleTimer()"
-                          class="button timer-button">
-                Start
-              </ion-button>
+            <ion-button color="primary"
+                        (click)="startSingleTimer()"
+                        class="button timer-button">
+              Start
+            </ion-button>
 
-            </ion-row>
+          </ion-row>
 
-            <!-- Stop Individual Timer Button -->
-            <ion-row>
+          <!-- Stop Individual Timer Button -->
+          <ion-row>
 
-              <ion-button color="primary"
-                          (click)="stopSingleTimer()"
-                          class="button timer-button">
-                Stop
-              </ion-button>
+            <ion-button color="primary"
+                        (click)="stopSingleTimer()"
+                        class="button timer-button">
+              Stop
+            </ion-button>
 
-            </ion-row>
+          </ion-row>
 
-            <!-- Add minute to Individual Timer Button -->
-            <ion-row>
+          <!-- Add minute to Individual Timer Button -->
+          <ion-row>
 
-              <ion-button color="secondary"
-                          (click)="addToSingleTimer()"
-                          class="button timer-button">
-                +1min
-              </ion-button>
+            <ion-button color="secondary"
+                        (click)="addToSingleTimer()"
+                        class="button timer-button">
+              +1min
+            </ion-button>
 
-            </ion-row>
+          </ion-row>
 
-            <!-- Reset Individual Timer Button -->
-            <ion-row>
+          <!-- Reset Individual Timer Button -->
+          <ion-row>
 
-              <ion-button color="secondary"
-                          (click)="resetSingleTimer()"
-                          class="button timer-button">
-                Reset
-              </ion-button>
+            <ion-button color="secondary"
+                        (click)="resetSingleTimer()"
+                        class="button timer-button">
+              Reset
+            </ion-button>
 
-            </ion-row>
+          </ion-row>
 
         </div>
         <!-- End Concurrent Timers Individual Controls -->
