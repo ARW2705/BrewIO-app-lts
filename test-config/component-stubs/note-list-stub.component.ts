@@ -1,5 +1,10 @@
 /* Module imports */
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { ModalController } from '@ionic/angular';
+
+/* Service imports */
+import { RecipeService } from '../../src/app/services/recipe/recipe.service';
+import { ToastService } from '../../src/app/services/toast/toast.service';
 
 /* Component imports */
 import { NoteListComponent } from '../../src/app/components/note-list/note-list.component';
@@ -11,9 +16,24 @@ import { NoteListComponent } from '../../src/app/components/note-list/note-list.
     { provide: NoteListComponent, useClass: NoteListComponentStub }
   ]
 })
-export class NoteListComponentStub {
+export class NoteListComponentStub implements OnInit, OnDestroy {
   @Input() dismissFn: (index?: number) => (data: object) => void;
   @Input() recipeMasterId: string;
   @Input() recipeVariantId: string;
   @Input() notes: string[] = [];
+
+  constructor(
+    public modalCtrl: ModalController,
+    public recipeService: RecipeService,
+    public toastService: ToastService
+  ) {}
+
+  ngOnInit() {}
+
+  ngOnDestroy() {}
+
+  onNoteModalDismiss(...options: any[]): any {}
+  openNoteModal(...options: any[]): any {}
+  patchRecipeNotes(): any {}
+  submitUpdatedNotes(): any {}
 }

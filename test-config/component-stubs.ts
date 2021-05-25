@@ -21,3 +21,9 @@ export { ProcessTimerComponentStub } from './component-stubs/process-timer-stub.
 export { ProcessMeasurementsFormPageStub } from './component-stubs/process-measurements-form-stub.component';
 export { ProcessControlsComponentStub } from './component-stubs/process-controls-stub.component';
 export { QuantityHelperComponentStub } from './component-stubs/quantity-helper-stub.component';
+export { GrainBillComponentStub } from './component-stubs/grain-bill-stub.component';
+export { HopsScheduleComponentStub } from './component-stubs/hops-schedule-stub.component';
+export { OtherIngredientsComponentStub } from './component-stubs/other-ingredients-stub.component';
+export { ProcessListComponentStub } from './component-stubs/process-list-stub.component';
+export { RecipeQuickDataComponentStub } from './component-stubs/recipe-quick-data-stub.component';
+export { YeastBatchComponentStub } from './component-stubs/yeast-batch-stub.component';

@@ -58,16 +58,6 @@ export const mockProcessSchedule: () => Process[] = (): Process[] => {
     },
     {
       splitInterval: 1,
-      duration: 60,
-      concurrent: true,
-      _id: '5d02b47a78264160488b6392',
-      cid: '1234567890128',
-      type: 'timer',
-      name: 'Boil',
-      description: 'Boil wort'
-    },
-    {
-      splitInterval: 1,
       duration: 0,
       concurrent: true,
       _id: '5d02b47a78264160488b6391',
@@ -85,6 +75,16 @@ export const mockProcessSchedule: () => Process[] = (): Process[] => {
       type: 'timer',
       name: 'Sterilize yeast water',
       description: 'Boil 2 cups water with 4 teaspoons of extract or corn sugar and yeast nutrient. Allow to cool to < 115F before transferring to flask adding yeast. Cover with sanitized foil and swirl'
+    },
+    {
+      splitInterval: 1,
+      duration: 60,
+      concurrent: true,
+      _id: '5d02b47a78264160488b6392',
+      cid: '1234567890128',
+      type: 'timer',
+      name: 'Boil',
+      description: 'Boil wort'
     },
     {
       splitInterval: 1,
