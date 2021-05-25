@@ -7,6 +7,13 @@ import { By } from '@angular/platform-browser';
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
+/* Mock imports */
+import { AnimationsServiceStub } from '../../../../test-config/service-stubs';
+import { AnimationStub } from '../../../../test-config/ionic-stubs';
+
+/* Service imports */
+import { AnimationsService } from '../../services/animations/animations.service';
+
 /* Component imports */
 import { AccordionComponent } from './accordion.component';
 
@@ -20,6 +27,9 @@ describe('AccordionComponent', (): void => {
     TestBed.configureTestingModule({
       imports: [ NoopAnimationsModule ],
       declarations: [ AccordionComponent ],
+      providers: [
+        { provide: AnimationsService, useClass: AnimationsServiceStub }
+      ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
     await TestBed.compileComponents();
@@ -38,29 +48,85 @@ describe('AccordionComponent', (): void => {
     expect(accordionCmp).toBeDefined();
   });
 
-  test('should toggle expansion', (): void => {
+  test('should call play animation on changes', (): void => {
+    accordionCmp.playAnimation = jest
+      .fn();
+
+    const playSpy: jest.SpyInstance = jest.spyOn(accordionCmp, 'playAnimation');
+
     fixture.detectChanges();
 
-    const divElement: DebugElement = fixture.debugElement.query(By.css('.accordion'));
+    accordionCmp.ngOnChanges();
 
-    expect(divElement.properties['@expandUpDown'].value).toMatch('collapsed');
-    expect(divElement.properties['@expandUpDown'].params.maxHeight).toBe(0);
+    expect(playSpy).toHaveBeenCalled();
+  });
+
+  test('should toggle expansion', (): void => {
+    const _stubExpandAnimation: AnimationStub = new AnimationStub();
+    _stubExpandAnimation.play = jest
+      .fn()
+      .mockReturnValue(Promise.resolve());
+
+    const _stubCollapseAnimation: AnimationStub = new AnimationStub();
+    _stubCollapseAnimation.play = jest
+      .fn()
+      .mockReturnValue(Promise.resolve());
+
+    accordionCmp.animationService.expand = jest
+      .fn()
+      .mockReturnValue(_stubExpandAnimation);
+
+    accordionCmp.animationService.collapse = jest
+      .fn()
+      .mockReturnValue(_stubCollapseAnimation);
+
+    const expandSpy: jest.SpyInstance = jest.spyOn(accordionCmp.animationService, 'expand');
+    const collapseSpy: jest.SpyInstance = jest.spyOn(accordionCmp.animationService, 'collapse');
+    const expandPlaySpy: jest.SpyInstance = jest.spyOn(_stubExpandAnimation, 'play');
+    const collapsePlaySpy: jest.SpyInstance = jest.spyOn(_stubCollapseAnimation, 'play');
 
     accordionCmp.expanded = true;
-    accordionCmp.ngOnChanges();
+
     fixture.detectChanges();
 
-    expect(divElement.properties['@expandUpDown'].value).toMatch('expanded');
-    expect(divElement.properties['@expandUpDown'].params.speed).toEqual(250);
-    expect(divElement.properties['@expandUpDown'].params.maxHeight).toEqual(2000);
+    const divElement: HTMLElement = fixture.nativeElement.querySelector('div');
+
+    accordionCmp.playAnimation();
+
+    expect(expandSpy).toHaveBeenCalledWith(divElement);
+    expect(expandPlaySpy).toHaveBeenCalled();
 
     accordionCmp.expanded = false;
-    accordionCmp.ngOnChanges();
+
+    accordionCmp.playAnimation();
+
+    expect(collapseSpy).toHaveBeenCalledWith(divElement);
+    expect(collapsePlaySpy).toHaveBeenCalled();
+  });
+
+  test('should not play animation if container is not present', (): void => {
+    const _stubExpandAnimation: AnimationStub = new AnimationStub();
+    _stubExpandAnimation.play = jest
+      .fn()
+      .mockReturnValue(Promise.resolve());
+
+    accordionCmp.animationService.expand = jest
+      .fn()
+      .mockReturnValue(_stubExpandAnimation);
+
+    const expandSpy: jest.SpyInstance = jest.spyOn(accordionCmp.animationService, 'expand');
+    const expandPlaySpy: jest.SpyInstance = jest.spyOn(_stubExpandAnimation, 'play');
+
+    accordionCmp.expanded = true;
+
     fixture.detectChanges();
 
-    expect(divElement.properties['@expandUpDown'].value).toMatch('collapsed');
-    expect(divElement.properties['@expandUpDown'].params.speed).toEqual(250);
-    expect(divElement.properties['@expandUpDown'].params.maxHeight).toEqual(0);
+    accordionCmp.container = null;
+
+    accordionCmp.playAnimation();
+
+    expect(expandSpy).not.toHaveBeenCalled();
+    expect(expandPlaySpy).not.toHaveBeenCalled();
   });
 
 });

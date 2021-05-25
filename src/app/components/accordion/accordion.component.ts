@@ -1,44 +1,46 @@
 /* Module imports */
 import { Component, ElementRef, Input, OnChanges, ViewChild } from '@angular/core';
+import { Animation } from '@ionic/angular';
 
-/* Animation imports */
-import { expandUpDown } from '../../animations/expand';
+/* Service imports */
+import { AnimationsService } from '../../services/animations/animations.service';
 
 
 @Component({
   selector: 'accordion',
   templateUrl: './accordion.component.html',
-  styleUrls: ['./accordion.component.scss'],
-  animations: [
-    expandUpDown()
-  ]
+  styleUrls: ['./accordion.component.scss']
 })
 export class AccordionComponent implements OnChanges {
   @Input() expanded: boolean;
   @ViewChild('accordionContainer', {read: ElementRef}) container: ElementRef;
-  expand: object = {
-    value: 'collapsed',
-    params: {
-      maxHeight: 0
-    }
-  };
 
-  constructor() { }
+  constructor(public animationService: AnimationsService) { }
 
   /***** Lifecycle Hooks *****/
 
   ngOnChanges(): void {
-    if (this.container) {
-      this.expand = {
-        value: this.expanded ? 'expanded' : 'collapsed',
-        params: {
-          maxHeight: this.expanded ? 2000 : 0,
-          speed: 250
-        }
-      };
-    }
+    this.playAnimation();
   }
 
   /***** End Lifecycle Hooks *****/
+
+  /**
+   * Play vertical expand or collapse animation
+   *
+   * @params: none
+   * @return: none
+   */
+  async playAnimation(): Promise<void> {
+    if (this.container) {
+      let animation: Animation;
+      if (this.expanded) {
+        animation = this.animationService.expand(this.container.nativeElement);
+      } else {
+        animation = this.animationService.collapse(this.container.nativeElement);
+      }
+      await animation.play();
+    }
+  }
 
 }
