@@ -54,13 +54,12 @@ export class ProcessFormPage implements OnInit {
     } else {
       if (this.processType === 'timer') {
         this.processForm.addControl('concurrent', new FormControl(false));
-        this.processForm.addControl('splitInterval', new FormControl(1));
+        this.processForm.addControl('splitInterval', new FormControl(1, [Validators.min(0)]));
       }
-      this.processForm
-        .addControl(
-          'duration',
-          new FormControl('', [Validators.required, Validators.min(0)])
-        );
+      this.processForm.addControl(
+        'duration',
+        new FormControl('', [Validators.required, Validators.min(0)])
+      );
     }
   }
 

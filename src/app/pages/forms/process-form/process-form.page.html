@@ -50,7 +50,7 @@
       <ion-item *ngIf="processType === 'manual'">
 
         <ion-label position="floating">
-          Expected Duration (minutes)
+          Expected Duration (Minutes)
         </ion-label>
 
         <ion-input  formControlName="expectedDuration"
@@ -109,6 +109,20 @@
             </ion-input>
 
           </ion-item>
+
+          <!-- Error messages -->
+          <div class="form-error-container">
+
+            <form-error *ngIf="
+              processForm.controls['splitInterval'].touched
+              && processForm.controls['splitInterval'].errors
+            "
+                        formName="process"
+                        controlName="splitInterval"
+                        [controlErrors]="processForm.controls['splitInterval'].errors">
+            </form-error>
+
+          </div>
 
 
           <!-- Toggle if timer is concurrent with neighboring timers -->
