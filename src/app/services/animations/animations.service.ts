@@ -10,44 +10,119 @@ export class AnimationsService {
 
   constructor(public animationCtrl: AnimationController) {}
 
-  slideIn(element: HTMLElement, options: object): Animation {
+  /**
+   * Slide in element horizontally
+   *
+   * @params: element - the HTMLElement to animate
+   * @params: [options] - optional overrides
+   *
+   * @return: configured animation
+   */
+  slideIn(element: HTMLElement, options?: object): Animation {
+    let direction: number = -100;
+    let speed: number = 500;
+
+    if (options) {
+      if (options.hasOwnProperty('direction')) {
+        direction = options['direction'];
+      }
+      if (options.hasOwnProperty('speed')) {
+        speed = options['speed'];
+      }
+    }
+
     return this.animationCtrl.create()
       .addElement(element)
-      .duration(options['speed'] || 500)
-      .fromTo('transform', `translateX(${ options['direction'] || -100}%)`, 'translateX(0)')
+      .duration(speed)
+      .fromTo('transform', `translateX(${direction}%)`, 'translateX(0)')
       .fromTo('opacity', 0, 1);
   }
 
-  slideOut(element: HTMLElement, options: object): Animation {
+  /**
+   * Slide out element horizontally
+   *
+   * @params: element - the HTMLElement to animate
+   * @params: [options] - optional overrides
+   *
+   * @return: configured animation
+   */
+  slideOut(element: HTMLElement, options?: object): Animation {
+    let direction: number = 100;
+    let speed: number = 500;
+
+    if (options) {
+      if (options.hasOwnProperty('direction')) {
+        direction = options['direction'];
+      }
+      if (options.hasOwnProperty('speed')) {
+        speed = options['speed'];
+      }
+    }
+
     return this.animationCtrl.create()
       .addElement(element)
-      .duration(options['speed'] || 500)
-      .fromTo('transform', 'translateX(0)', `translateX(${ options['direction'] || 100}%)`)
+      .duration(speed)
+      .fromTo('transform', 'translateX(0)', `translateX(${direction}%)`)
       .fromTo('opacity', 1, 0);
   }
 
-  expand(element: HTMLElement): Animation {
-    const opacityAnimation = this.animationCtrl.create()
-      .duration(150)
+  /**
+   * Expand element vertically
+   *
+   * @params: element - the HTMLElement to animate
+   * @params: [options] - optional overrides
+   *
+   * @return: configured animation
+   */
+  expand(element: HTMLElement, options?: object): Animation {
+    let direction: number = -50;
+    let speed: number = 250;
+
+    if (options) {
+      if (options.hasOwnProperty('direction')) {
+        direction = options['direction'];
+      }
+      if (options.hasOwnProperty('speed')) {
+        speed = options['speed'];
+      }
+    }
+
+    return this.animationCtrl.create()
+      .addElement(element)
+      .duration(speed)
+      .easing('ease-in')
+      .fromTo('transform', `translateY(${direction}%)`, 'translateY(0%)')
+      .fromTo('height', 0, 'auto')
       .fromTo('opacity', 0, 1);
-    const transformAnimation = this.animationCtrl.create()
-      .addElement(element)
-      .duration(350)
-      .fromTo('transform', 'translateY(-100%)', 'translateY(0%)')
-      .fromTo('height', 0, 'auto');
-
-    return this.animationCtrl.create()
-      .beforeStyles({ height: 'auto' })
-      .afterStyles({ opacity: 1 })
-      .addAnimation([opacityAnimation, transformAnimation]);
   }
 
-  collapse(element: HTMLElement): Animation {
+  /**
+   * Collapse element vertically
+   *
+   * @params: element - the HTMLElement to animate
+   * @params: [options] - optional overrides
+   *
+   * @return: configured animation
+   */
+  collapse(element: HTMLElement, options?: object): Animation {
+    let direction: number = -50;
+    let speed: number = 250;
+
+    if (options) {
+      if (options.hasOwnProperty('direction')) {
+        direction = options['direction'];
+      }
+      if (options.hasOwnProperty('speed')) {
+        speed = options['speed'];
+      }
+    }
+
     return this.animationCtrl.create()
       .addElement(element)
-      .duration(350)
-      .afterStyles({ height: 0 })
-      .fromTo('transform', 'translateY(0%)', 'translateY(-100%)')
-      .fromTo('height', 'auto', 0);
+      .duration(speed)
+      .fromTo('transform', 'translateY(0%)', `translateY(${direction}%)`)
+      .fromTo('height', 'auto', 0)
+      .fromTo('opacity', 1, 0);
   }
+
 }
