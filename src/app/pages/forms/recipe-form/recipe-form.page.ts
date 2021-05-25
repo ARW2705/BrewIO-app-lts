@@ -2,8 +2,8 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute, Navigation } from '@angular/router';
 import { ModalController, IonContent } from '@ionic/angular';
-import { Observable, Subject, from, throwError } from 'rxjs';
-import { map, takeUntil } from 'rxjs/operators';
+import { Observable, Subject, from, of, throwError } from 'rxjs';
+import { mergeMap, takeUntil } from 'rxjs/operators';
 
 /* Interface imports */
 import { Grains, Hops, Yeast, Style } from '../../../shared/interfaces/library';
@@ -154,7 +154,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
     this.route.queryParams
       .pipe(
         takeUntil(this.destroy$),
-        map((): Observable<never> => {
+        mergeMap((): Observable<null> => {
           try {
             const nav: Navigation = this.router.getCurrentNavigation();
             const options: object = nav.extras.state;
@@ -166,9 +166,10 @@ export class RecipeFormPage implements OnInit, OnDestroy {
             );
             this.isLoaded = true;
             this.refreshPipes = !this.refreshPipes;
+            return of(null);
           } catch (error) {
             console.log('Navigation/Setup error', error);
-            return throwError(error);
+            return throwError(error.message);
           }
         })
       )
@@ -247,13 +248,27 @@ export class RecipeFormPage implements OnInit, OnDestroy {
   }
 
   /**
+   * Handle general form modal error
+   *
+   * @params: none
+   *
+   * @return: modal error handler function
+   */
+  onGeneralFormModalError(): (error: string) => void {
+    return (error: string): void => {
+      console.log('General form modal error', error);
+      this.toastService.presentErrorToast('A general form error occurred');
+    };
+  }
+
+  /**
    * Handle returned data from general form modal
    *
    * @params: none
    *
    * @return: callback function for modal onDidDismiss
    */
-  onGeneralFormModalDismiss(): (data: object) => void {
+  onGeneralFormModalSuccess(): (data: object) => void {
     return (data: object): void => {
       const _data: object = data['data'];
       if (_data) {
@@ -307,7 +322,11 @@ export class RecipeFormPage implements OnInit, OnDestroy {
         componentProps: this.getGeneralFormModalOptions()
       });
 
-    from(modal.onDidDismiss()).subscribe(this.onGeneralFormModalDismiss());
+    from(modal.onDidDismiss())
+      .subscribe(
+        this.onGeneralFormModalSuccess(),
+        this.onGeneralFormModalError()
+      );
 
     return await modal.present();
   }
@@ -343,6 +362,20 @@ export class RecipeFormPage implements OnInit, OnDestroy {
   }
 
   /**
+   * Handle ingredient form modal error
+   *
+   * @params: none
+   *
+   * @return: error handler function
+   */
+  onIngredientFormModalError(): (error: string) => void {
+    return (error: string): void => {
+      console.log('Ingredient form modal error', error);
+      this.toastService.presentErrorToast('An ingredient form error occurred');
+    };
+  }
+
+  /**
    * Handle ingredient form modal returned data
    *
    * @params: type - the ingredient type ('grains', 'hops', etc)
@@ -350,7 +383,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
    *
    * @return: callback function for modal onDidDismiss
    */
-  onIngredientFormModalDismiss(
+  onIngredientFormModalSuccess(
     type: string,
     toUpdate?: GrainBill | HopsSchedule | YeastBatch | OtherIngredients
   ): (data: object) => void {
@@ -384,7 +417,10 @@ export class RecipeFormPage implements OnInit, OnDestroy {
     });
 
     from(modal.onDidDismiss())
-      .subscribe(this.onIngredientFormModalDismiss(type, toUpdate));
+      .subscribe(
+        this.onIngredientFormModalSuccess(type, toUpdate),
+        this.onIngredientFormModalError()
+      );
 
     return await modal.present();
   }
@@ -401,9 +437,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
       const _data: object = data['data'];
 
       if (_data) {
-        const notes: string[] = this.formType === 'master'
-          ? this.master.notes
-          : this.variant.notes;
+        const notes: string[] = this.formType === 'master' ? this.master.notes : this.variant.notes;
 
         if (_data['method'] === 'create') {
           notes.push(_data['note']);
@@ -417,7 +451,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Call the note list open the note modal method
+   * Call on note list to open the note modal method
    *
    * @params: none
    * @return: none
@@ -443,13 +477,27 @@ export class RecipeFormPage implements OnInit, OnDestroy {
   }
 
   /**
+   * Handle process form modal error
+   *
+   * @params: none
+   *
+   * @return: error handler function
+   */
+  onProcessFormModalError(): (error: string) => void {
+    return (error: string): void => {
+      console.log('Process form modal error', error);
+      this.toastService.presentErrorToast('A process form error occurred');
+    };
+  }
+
+  /**
    * Handle process form modal returned data
    *
-   * @params: index - the index to update/delete or to add if undefined
+   * @params: [index] - the index to update/delete or to add if undefined
    *
-   * @return: callback function for modal onDidDismiss
+   * @return: success handler function
    */
-  onProcessFormModalDismiss(index: number): (data: object) => void {
+  onProcessFormModalSuccess(index?: number): (data: object) => void {
     return (data: object): void => {
       const _data: object = data['data'];
 
@@ -480,7 +528,11 @@ export class RecipeFormPage implements OnInit, OnDestroy {
       componentProps: this.getProcessFormModalOptions(type, toUpdate)
     });
 
-    from(modal.onDidDismiss()).subscribe(this.onProcessFormModalDismiss(index));
+    from(modal.onDidDismiss())
+      .subscribe(
+        this.onProcessFormModalSuccess(index),
+        this.onProcessFormModalError()
+      );
 
     return await modal.present();
   }
@@ -628,10 +680,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
         });
 
       const updatedBoilIndex: number = this.getProcessIndex('name', 'Boil');
-
-      const preAdditionSchedule: Process[] = this.variant.processSchedule
-        .splice(0, updatedBoilIndex);
-
+      const preAdditionSchedule: Process[] = this.variant.processSchedule.splice(0, updatedBoilIndex);
       const hopsProcesses: Process[] = this.generateHopsProcesses();
 
       this.variant.processSchedule = preAdditionSchedule
@@ -886,8 +935,8 @@ export class RecipeFormPage implements OnInit, OnDestroy {
       throw new Error(this.onConfigError());
     }
 
-    const isCreation: boolean = this.docMethod === 'create';
-    const isMaster: boolean = this.formType === 'master';
+    const isCreation: boolean = docMethod === 'create';
+    const isMaster: boolean = formType === 'master';
 
     if (isCreation && isMaster) {
       this.initCreateMasterForm();
@@ -1005,7 +1054,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
 
   /**
    * Sort grains instances in descending quantity; if quantities
-   * are the  same, sort in descending alphabetical
+   * are the same, sort in descending alphabetical
    *
    * @params: none
    * @return: none
@@ -1072,7 +1121,8 @@ export class RecipeFormPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Sort yeast instances in descending quantity
+   * Sort yeast instances in descending quantity; if quantities
+   * are the same, sort in descending alphabetical
    *
    * @params: none
    * @return: none
@@ -1080,7 +1130,11 @@ export class RecipeFormPage implements OnInit, OnDestroy {
   sortYeast(): void {
     this.variant.yeast
       .sort((y1: YeastBatch, y2: YeastBatch): number => {
-        return y2.quantity - y1.quantity;
+        const difference: number = y2.quantity - y1.quantity;
+        if (!difference) {
+          return y2.yeastType.name < y1.yeastType.name ? 1 : -1;
+        }
+        return difference;
       });
   }
 
