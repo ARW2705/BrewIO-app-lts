@@ -5,7 +5,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 })
 export class FormatTimePipe implements PipeTransform {
   /**
-   * Takes a value and makes it lowercase.
+   * Format time value to text
    */
   transform(value: string, formatType: string): string {
     switch (formatType) {
