@@ -26,12 +26,7 @@ export class CalculatePipe implements PipeTransform {
    *
    * @return: formatted result of calculation
    */
-  transform(
-    inputSource: object,
-    calculation: string,
-    dataset: object,
-    refresh?: boolean
-  ): string {
+  transform(inputSource: object, calculation: string, dataset: object, refresh?: boolean): string {
     if (calculation === 'ibu') {
       return `${this.getIBU(<HopsSchedule>inputSource, <RecipeVariant>dataset).toFixed(1)} IBU`;
     } else {
@@ -49,14 +44,13 @@ export class CalculatePipe implements PipeTransform {
    */
   getIBU(hops: HopsSchedule, variant: RecipeVariant): number {
     try {
-      return this.calculator
-        .getIBU(
-          hops.hopsType,
-          hops,
-          variant.originalGravity,
-          variant.batchVolume,
-          variant.boilVolume
-        );
+      return this.calculator.getIBU(
+        hops.hopsType,
+        hops,
+        variant.originalGravity,
+        variant.batchVolume,
+        variant.boilVolume
+      );
     } catch (error) {
       console.log('Calculate pipe error', error);
       return 0;
