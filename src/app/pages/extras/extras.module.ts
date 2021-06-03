@@ -12,12 +12,16 @@ import { UserComponentModule } from '../../components/user/user.module';
 
 /* Page imports */
 import { ExtrasPage } from './extras.page';
+import { LoginPageModule } from '../forms/login/login.module';
+import { SignupPageModule } from '../forms/signup/signup.module';
 
 
 @NgModule({
   imports: [
     CommonModule,
     IonicModule,
+    LoginPageModule,
+    SignupPageModule,
     HeaderComponentModule,
     AboutComponentModule,
     ActiveBatchesComponentModule,
