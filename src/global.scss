@@ -160,7 +160,7 @@ $colors: (
   --box-shadow: 3px 5px 5px rgba(0, 0, 0, 0.7);
 
   /* Text */
-  font-size: 1.5rem;
+  font-size: 1.35rem;
   font-weight: 500;
   text-transform: none;
 }
@@ -356,6 +356,7 @@ ion-item-options {
 
 ion-spinner {
   /* Display */
-  width: 60px;
-  height: 60px;
+  margin: auto;
+  width: 20vw;
+  height: 20vw;
 }
