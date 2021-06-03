@@ -7,4 +7,8 @@ export class AnimationStub {
   afterStyles() {}
   addAnimation() {}
   easing() {}
+  delay() {}
+  keyframes() {}
+  destroy() {}
+  onFinish() {}
 }
