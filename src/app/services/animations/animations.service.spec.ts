@@ -88,7 +88,7 @@ describe('AnimationsService', () => {
     const fromSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'fromTo');
 
     animationService.slideIn(mockElem, {
-      speed: 250,
+      duration: 250,
       direction: 70
     });
 
@@ -98,7 +98,7 @@ describe('AnimationsService', () => {
     expect(fromSpy).toHaveBeenNthCalledWith(2, 'opacity', 0, 1);
 
     animationService.slideIn(mockElem, {
-      speed: 500
+      duration: 500
     });
 
     expect(durationSpy).toHaveBeenNthCalledWith(2, 500);
@@ -163,7 +163,7 @@ describe('AnimationsService', () => {
     const fromSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'fromTo');
 
     animationService.slideOut(mockElem, {
-      speed: 250,
+      duration: 250,
       direction: 70
     });
 
@@ -173,7 +173,7 @@ describe('AnimationsService', () => {
     expect(fromSpy).toHaveBeenNthCalledWith(2, 'opacity', 1, 0);
 
     animationService.slideOut(mockElem, {
-      speed: 500
+      duration: 500
     });
 
     expect(durationSpy).toHaveBeenNthCalledWith(2, 500);
@@ -248,7 +248,7 @@ describe('AnimationsService', () => {
     const easingSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'easing');
 
     animationService.expand(mockElem, {
-      speed: 500,
+      duration: 500,
       direction: -20
     });
 
@@ -260,7 +260,7 @@ describe('AnimationsService', () => {
     expect(fromSpy).toHaveBeenNthCalledWith(3, 'opacity', 0, 1);
 
     animationService.expand(mockElem, {
-      speed: 100
+      duration: 100
     });
 
     expect(durationSpy).toHaveBeenNthCalledWith(2, 100);
@@ -326,7 +326,7 @@ describe('AnimationsService', () => {
     const fromSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'fromTo');
 
     animationService.collapse(mockElem, {
-      speed: 500,
+      duration: 500,
       direction: -20
     });
 
@@ -337,7 +337,7 @@ describe('AnimationsService', () => {
     expect(fromSpy).toHaveBeenNthCalledWith(3, 'opacity', 1, 0);
 
     animationService.collapse(mockElem, {
-      speed: 100
+      duration: 100
     });
 
     expect(durationSpy).toHaveBeenNthCalledWith(2, 100);
@@ -347,6 +347,144 @@ describe('AnimationsService', () => {
     });
 
     expect(fromSpy).toHaveBeenNthCalledWith(7, 'transform', 'translateY(0%)', 'translateY(100%)');
+  });
+
+  test('should check if a hint animation has been shown', (): void => {
+    const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+
+    animationService.hintFlags.sliding.recipeDetail = true;
+
+    expect(animationService.hasHintBeenShown('sliding', 'recipeDetail')).toBe(true);
+    expect(animationService.hasHintBeenShown('sliding', 'recipe')).toBe(false);
+    expect(animationService.hasHintBeenShown('other', 'recipe')).toBe(false);
+
+    const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
+    expect(consoleCalls[0]).toMatch('Error getting hint show flag');
+    expect(consoleCalls[1]).toMatch('other');
+    expect(consoleCalls[2]).toMatch('recipe');
+    expect(consoleCalls[3] instanceof Error).toBe(true);
+  });
+
+  test('should set hint shown flag', (): void => {
+    const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+
+    animationService.hintFlags.sliding.recipeDetail = false;
+    animationService.setHintShownFlag('sliding', 'recipeDetail');
+    expect(animationService.hintFlags.sliding.recipeDetail).toBe(true);
+
+    expect(animationService.hintFlags.other).toBeUndefined();
+    animationService.setHintShownFlag('other', 'recipe');
+    expect(animationService.hintFlags.other).toBeUndefined();
+
+    const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
+    expect(consoleCalls[0]).toMatch('Error setting hint show flag');
+    expect(consoleCalls[1]).toMatch('other');
+    expect(consoleCalls[2]).toMatch('recipe');
+    expect(consoleCalls[3] instanceof Error).toBe(true);
+  });
+
+  test('should get sliding hint animation with defaults', (): void => {
+    const mockElem: HTMLElement = global.document.createElement('div');
+    const _stubAnimation: AnimationStub = new AnimationStub();
+
+    animationService.animationCtrl.create = jest
+      .fn()
+      .mockReturnValue(_stubAnimation);
+
+    _stubAnimation.addElement = jest
+      .fn()
+      .mockReturnValue(_stubAnimation);
+    _stubAnimation.duration = jest
+      .fn()
+      .mockReturnValue(_stubAnimation);
+    _stubAnimation.delay = jest
+      .fn()
+      .mockReturnValue(_stubAnimation);
+    _stubAnimation.easing = jest
+      .fn()
+      .mockReturnValue(_stubAnimation);
+    _stubAnimation.keyframes = jest
+      .fn()
+      .mockReturnValue(_stubAnimation);
+
+    const addSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'addElement');
+    const durationSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'duration');
+    const delaySpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'delay');
+    const easingSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'easing');
+    const keyframesSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'keyframes');
+
+    animationService.slidingHint(mockElem, {});
+
+    expect(addSpy).toHaveBeenCalledWith(mockElem);
+    expect(durationSpy).toHaveBeenCalledWith(1000);
+    expect(delaySpy).toHaveBeenCalledWith(0);
+    expect(easingSpy).toHaveBeenCalledWith('ease-out');
+    expect(keyframesSpy).toHaveBeenCalledWith([
+      { offset: 0,    transform: 'translateX(0)'     },
+      { offset: 0.2,  transform: 'translateX(-50px)' },
+      { offset: 0.25, transform: 'translateX(-50px)' },
+      { offset: 0.55, transform: 'translateX(0)'     },
+      { offset: 0.65, transform: 'translateX(-13px)' },
+      { offset: 0.68, transform: 'translateX(-13px)' },
+      { offset: 0.85, transform: 'translateX(0)'     },
+      { offset: 0.90, transform: 'translateX(-3px)'  },
+      { offset: 0.91, transform: 'translateX(-3px)'  },
+      { offset: 1,    transform: 'translateX(0)'     }
+    ]);
+  });
+
+  test('should get sliding hint animation with options', (): void => {
+    const mockElem: HTMLElement = global.document.createElement('div');
+    const _stubAnimation: AnimationStub = new AnimationStub();
+
+    animationService.animationCtrl.create = jest
+      .fn()
+      .mockReturnValue(_stubAnimation);
+
+    _stubAnimation.addElement = jest
+      .fn()
+      .mockReturnValue(_stubAnimation);
+    _stubAnimation.duration = jest
+      .fn()
+      .mockReturnValue(_stubAnimation);
+    _stubAnimation.delay = jest
+      .fn()
+      .mockReturnValue(_stubAnimation);
+    _stubAnimation.easing = jest
+      .fn()
+      .mockReturnValue(_stubAnimation);
+    _stubAnimation.keyframes = jest
+      .fn()
+      .mockReturnValue(_stubAnimation);
+
+    const addSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'addElement');
+    const durationSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'duration');
+    const delaySpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'delay');
+    const easingSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'easing');
+    const keyframesSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'keyframes');
+
+    animationService.slidingHint(mockElem, {
+      duration: 800,
+      delay: 250,
+      distance: 100
+    });
+
+    expect(addSpy).toHaveBeenCalledWith(mockElem);
+    expect(durationSpy).toHaveBeenCalledWith(800);
+    expect(delaySpy).toHaveBeenCalledWith(250);
+    expect(easingSpy).toHaveBeenCalledWith('ease-out');
+    expect(keyframesSpy).toHaveBeenCalledWith([
+      { offset: 0,    transform: 'translateX(0)'      },
+      { offset: 0.2,  transform: 'translateX(-100px)' },
+      { offset: 0.25, transform: 'translateX(-100px)' },
+      { offset: 0.55, transform: 'translateX(0)'      },
+      { offset: 0.65, transform: 'translateX(-25px)'  },
+      { offset: 0.68, transform: 'translateX(-25px)'  },
+      { offset: 0.85, transform: 'translateX(0)'      },
+      { offset: 0.90, transform: 'translateX(-5px)'   },
+      { offset: 0.91, transform: 'translateX(-5px)'   },
+      { offset: 1,    transform: 'translateX(0)'      }
+    ]);
   });
 
 });
