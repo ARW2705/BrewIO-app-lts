@@ -120,7 +120,7 @@ export class ExtrasPage implements OnInit, OnDestroy {
         const animation = this.animationService.slideOut(
           this.getContainer(fromIndex),
           {
-            speed: 250,
+            duration: 250,
             direction: -100
           }
         );
