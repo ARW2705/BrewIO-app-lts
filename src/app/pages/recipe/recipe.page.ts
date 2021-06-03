@@ -1,6 +1,7 @@
 /* Module imports */
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
+import { Animation } from '@ionic/angular';
 import { ModalController, IonList, IonContent } from '@ionic/angular';
 import { BehaviorSubject, Subject, from } from 'rxjs';
 import { map, takeUntil } from 'rxjs/operators';
@@ -17,6 +18,7 @@ import { getId, hasId } from '../../shared/utility-functions/id-helpers';
 import { ConfirmationComponent } from '../../components/confirmation/confirmation.component';
 
 /* Service imports */
+import { AnimationsService } from '../../services/animations/animations.service';
 import { RecipeService } from '../../services/recipe/recipe.service';
 import { ToastService } from '../../services/toast/toast.service';
 import { UserService } from '../../services/user/user.service';
@@ -30,18 +32,21 @@ import { UserService } from '../../services/user/user.service';
 export class RecipePage implements OnInit, OnDestroy {
   @ViewChild(IonContent, { static: false }) ionContent: IonContent;
   @ViewChild('slidingItemsList') slidingItemsList: IonList;
+  @ViewChild('slidingItemsList', { read: ElementRef }) slidingItemsListRef: ElementRef;
   creationMode: boolean = false;
   destroy$: Subject<boolean> = new Subject<boolean>();
   isLoggedIn: boolean = false;
   masterIndex: number = -1;
   masterList: RecipeMaster[] = null;
   refreshPipes: boolean = false;
+  showSlidingItems: boolean = false;
   variantList: RecipeVariant[] = null;
 
   constructor(
     public modalCtrl: ModalController,
     public route: ActivatedRoute,
     public router: Router,
+    public animationService: AnimationsService,
     public recipeService: RecipeService,
     public toastService: ToastService,
     public userService: UserService
@@ -58,6 +63,12 @@ export class RecipePage implements OnInit, OnDestroy {
     this.refreshPipes = !this.refreshPipes;
   }
 
+  ionViewDidEnter() {
+    if (!this.animationService.hasHintBeenShown('sliding', 'recipe')) {
+      this.runSlidingHints();
+    }
+  }
+
   // Close all sliding items on view exit
   ionViewDidLeave() {
     try {
@@ -65,7 +76,7 @@ export class RecipePage implements OnInit, OnDestroy {
         .then(() => console.log('sliding items closed'))
         .catch((error: any) => console.log('error closing sliding items', error));
     } catch (error) {
-      console.log('Unable to close sliding items');
+      console.log('Unable to close sliding items', error);
     }
   }
 
@@ -301,7 +312,9 @@ export class RecipePage implements OnInit, OnDestroy {
       this.masterIndex = -1;
     } else {
       this.masterIndex = index;
-      const accordionElement: HTMLElement = document.querySelector(`#scroll-landmark-${index}`);
+      const accordionElement: HTMLElement = document.querySelector(
+        `accordion[data-scroll-landmark="${index}"]`
+      );
       this.ionContent.scrollToPoint(0, accordionElement.offsetTop, 1000);
     }
   }
@@ -335,5 +348,119 @@ export class RecipePage implements OnInit, OnDestroy {
   }
 
   /***** End other *****/
+
+
+  /***** Animation *****/
+
+  /**
+   * Get count of sliding items that are visible
+   *
+   * @params: element - a sample HTMLElement to get denominator height
+   *
+   * @return: number of items in view (even partially) or -1 on error
+   */
+  getAboveFoldCount(element: HTMLElement): number {
+    try {
+      const contentHeight: number = this.ionContent['el']['clientHeight'];
+      const itemHeight: number = element.clientHeight;
+      return Math.ceil(contentHeight / itemHeight);
+    } catch (error) {
+      console.log('Error getting content height', error);
+      return -1;
+    }
+  }
+
+  /**
+   * Get a list of ion-item elements to be animated
+   *
+   * @params: none
+   *
+   * @return: array of ion-item HTMLElements
+   */
+  getListItemsElements(): HTMLElement[] {
+    const ionItems: NodeList = this.slidingItemsListRef.nativeElement.querySelectorAll(
+      '[data-sliding-item]'
+    );
+    const ionItemElems: HTMLElement[] = Array
+      .from(ionItems)
+      .map((node: Node): HTMLElement => <HTMLElement>node);
+    let showCount: number = this.getAboveFoldCount(ionItemElems[0]);
+
+    if (showCount === -1) {
+      showCount = ionItems.length / 2;
+    }
+
+    return ionItemElems.filter((_: any, index: number): boolean => index < showCount);
+  }
+
+  /**
+   * Get sliding animation for selected elements
+   *
+   * @params: elements - elements on which to apply animations
+   *
+   * @return: array of animations
+   */
+  getSlidingHintAnimations(elements: HTMLElement[]): Animation[] {
+    return elements
+      .map((element: HTMLElement, index: number): Animation => {
+        return this.animationService.slidingHint(
+          element,
+          {
+            delay: 100 * index,
+            distance: this.slidingItemsListRef.nativeElement.clientWidth / 5
+          }
+        );
+      });
+  }
+
+  /**
+   * Play a given animation, afterwards destroy animation once it has completed
+   *
+   * @params: animation - the animation to play
+   *
+   * @return: Promise resolve once animation has completed and been destoryed
+   */
+  playSlidingHint(animation: Animation): Promise<null> {
+    return new Promise((resolve: any, _: any): void => {
+      animation.onFinish((): void => {
+        animation.destroy();
+        resolve();
+      });
+      animation.play();
+    });
+  }
+
+  /**
+   * Setup and run sliding item hint animations; Set flag to not run animations after the first time
+   *
+   * @params: none
+   * @return: none
+   */
+  async runSlidingHints(): Promise<void> {
+    this.toggleSlidingItemClass(true);
+
+    const items: HTMLElement[] = this.getListItemsElements();
+    const hintAnimations: Animation[] = this.getSlidingHintAnimations(items);
+
+    await Promise.all(
+      hintAnimations.map((animation: Animation): Promise<null> => this.playSlidingHint(animation))
+    );
+
+    this.toggleSlidingItemClass(false);
+    this.animationService.setHintShownFlag('sliding', 'recipe');
+  }
+
+  /**
+   * Toggle visibility of normally invisible ion-item-option for animation
+   *
+   * @param: shouldShow - true if options should be visible
+   *
+   * @return: none
+   */
+  toggleSlidingItemClass(shouldShow: boolean): void {
+    this.showSlidingItems = shouldShow;
+  }
+
+  /***** End Animation *****/
 
 }

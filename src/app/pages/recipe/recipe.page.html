@@ -33,7 +33,11 @@
         <ng-container *ngFor="let master of masterList; index as i">
 
           <!-- Slide left or right for actions, click to toggle ingredient list -->
-          <ion-item-sliding class="recipe-master-item">
+          <ion-item-sliding [ngClass]="{
+                              'item-sliding-active-slide': showSlidingItems,
+                              'item-sliding-active-options-end': showSlidingItems
+                            }"
+                            class="recipe-master-item">
 
             <!-- Delete the recipe master button -->
             <ion-item-options side="start">
@@ -61,7 +65,8 @@
                       detail="false"
                       lines="none"
                       (click)="expandMaster(i)"
-                      class="ion-no-padding expand-button">
+                      class="ion-no-padding expand-button"
+                      data-sliding-item>
 
               <!-- Recipe master quick info -->
               <ion-grid class="master-summary-grid ion-no-padding">
@@ -171,7 +176,7 @@
 
           <!-- Recipe ingredient list -->
           <accordion  [expanded]="masterIndex === i"
-                      [id]="'scroll-landmark-' + i">
+                      [attr.data-scroll-landmark]="i">
 
             <ingredient-list  [recipeVariant]="variantList[i]"
                               [refreshPipes]="refreshPipes">
@@ -186,11 +191,23 @@
     </ion-row>
 
     <!-- Loading spinner -->
-    <ion-row *ngIf="isLoggedIn && !masterList">
+    <ng-container *ngIf="isLoggedIn && !masterList">
 
-      <ion-spinner name="circular"></ion-spinner>
+      <ion-row>
 
-    </ion-row>
+        <ion-spinner name="circular"></ion-spinner>
+
+      </ion-row>
+
+      <ion-row class="loading-message">
+
+        <p>
+          Loading Recipes
+        </p>
+
+      </ion-row>
+
+    </ng-container>
 
   </ion-grid>
 

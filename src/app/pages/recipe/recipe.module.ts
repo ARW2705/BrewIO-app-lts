@@ -17,9 +17,14 @@ import { IngredientListComponentModule } from '../../components/ingredient-list/
 
 /* Page imports */
 import { RecipePage } from './recipe.page';
+import { LoginPageModule } from '../forms/login/login.module';
+import { SignupPageModule } from '../forms/signup/signup.module';
+
 
 @NgModule({
   imports: [
+    LoginPageModule,
+    SignupPageModule,
     CommonModule,
     IonicModule,
     RoundPipeModule,
