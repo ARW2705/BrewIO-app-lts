@@ -333,7 +333,7 @@ export class RecipeService {
     return this.removeRecipeMasterFromList(masterId)
       .pipe(
         tap((): void => {
-          if (!this.imageService.hasDefaultImage(recipeMaster.labelImage)) {
+          if (recipeMaster.labelImage && !this.imageService.hasDefaultImage(recipeMaster.labelImage)) {
             this.imageService.deleteLocalImage(recipeMaster.labelImage.filePath)
               .subscribe((errMsg: string) => console.log('image deletion', errMsg));
           }
