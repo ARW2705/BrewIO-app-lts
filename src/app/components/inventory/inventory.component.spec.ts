@@ -10,7 +10,7 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 /* Mock imports */
 import { mockBatch, mockInventoryItem } from '../../../../test-config/mock-models';
 import { AccordionComponentStub } from '../../../../test-config/component-stubs';
-import { EventServiceStub, ImageServiceStub, InventoryServiceStub, ProcessServiceStub, ToastServiceStub } from '../../../../test-config/service-stubs';
+import { AnimationsServiceStub, EventServiceStub, ImageServiceStub, InventoryServiceStub, ProcessServiceStub, ToastServiceStub } from '../../../../test-config/service-stubs';
 import { FormatStockPipeStub, RoundPipeStub, TruncatePipeStub } from '../../../../test-config/pipe-stubs';
 import { ModalControllerStub, ModalStub } from '../../../../test-config/ionic-stubs';
 
@@ -19,6 +19,7 @@ import { Batch } from '../../shared/interfaces/batch';
 import { InventoryItem } from '../../shared/interfaces/inventory-item';
 
 /* Service imports */
+import { AnimationsService } from '../../services/animations/animations.service';
 import { EventService } from '../../services/event/event.service';
 import { ImageService } from '../../services/image/image.service';
 import { InventoryService } from '../../services/inventory/inventory.service';
@@ -33,6 +34,7 @@ describe('InventoryComponent', (): void => {
   let fixture: ComponentFixture<InventoryComponent>;
   let inventoryCmp: InventoryComponent;
   let originalOnInit: any;
+  let originalAfterInit: any;
   let originalOnDestroy: any;
   configureTestBed();
 
@@ -46,6 +48,7 @@ describe('InventoryComponent', (): void => {
         AccordionComponentStub
       ],
       providers: [
+        { provide: AnimationsService, useClass: AnimationsServiceStub },
         { provide: EventService, useClass: EventServiceStub },
         { provide: ImageService, useClass: ImageServiceStub },
         { provide: InventoryService, useClass: InventoryServiceStub },
@@ -64,8 +67,11 @@ describe('InventoryComponent', (): void => {
     fixture = TestBed.createComponent(InventoryComponent);
     inventoryCmp = fixture.componentInstance;
     originalOnInit = inventoryCmp.ngOnInit;
+    originalAfterInit = inventoryCmp.ngAfterViewInit;
     originalOnDestroy = inventoryCmp.ngOnDestroy;
     inventoryCmp.ngOnInit = jest
+      .fn();
+    inventoryCmp.ngAfterViewInit = jest
       .fn();
     inventoryCmp.ngOnDestroy = jest
       .fn();
@@ -113,6 +119,30 @@ describe('InventoryComponent', (): void => {
       inventoryCmp.ngOnChanges();
 
       expect(openSpy).toHaveBeenCalledWith({ batch: _mockBatch });
+    });
+
+    test('should handle after view init', (): void => {
+      inventoryCmp.ngAfterViewInit = originalAfterInit;
+
+      inventoryCmp.animationService.hasHintBeenShown = jest
+        .fn()
+        .mockReturnValueOnce(false)
+        .mockReturnValueOnce(true);
+
+      inventoryCmp.runSlidingHints = jest
+        .fn();
+
+      const hintSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.animationService, 'hasHintBeenShown');
+      const runSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'runSlidingHints');
+
+      fixture.detectChanges();
+
+      expect(runSpy).toHaveBeenCalled();
+
+      inventoryCmp.ngAfterViewInit();
+
+      expect(runSpy).toHaveBeenCalledTimes(1);
+      expect(hintSpy).toHaveBeenCalledTimes(2);
     });
 
     test('should handle component destroy', (): void => {
@@ -936,6 +966,150 @@ describe('InventoryComponent', (): void => {
       const secondSlidingItem: HTMLElement = fixture.nativeElement.querySelectorAll('.inventory-item').item(1);
       const secondNameLabel: HTMLElement = secondSlidingItem.querySelector('.expand-button');
       expect(secondNameLabel.childNodes.item(0).textContent).toMatch(`${_mockInventoryItem2.itemName} | ${_mockInventoryItem2.optionalItemData.itemSubname}`);
+    });
+
+  });
+
+
+  describe('Animations', (): void => {
+
+    test('should get the ion-content element', (): void => {
+      const _mockInventoryItem: InventoryItem = mockInventoryItem();
+      inventoryCmp.displayList = [_mockInventoryItem];
+
+      const container: HTMLElement = global.document.createElement('body');
+      const ionContent: HTMLElement = global.document.createElement('ion-content');
+      const child1: HTMLElement = global.document.createElement('div');
+      const child2: HTMLElement = global.document.createElement('p');
+      const ref: HTMLElement = global.document.createElement('div');
+
+      Object.defineProperty(ref, 'nativeElement', { writable: false, value: child2 });
+      Object.defineProperty(child2, 'parentElement', { writable: false, value: child1 });
+      Object.defineProperty(child1, 'parentElement', { writable: false, value: ionContent });
+      Object.defineProperty(ionContent, 'parentElement', { writable: false, value: container });
+      Object.defineProperty(container, 'parentElement', { writable: false, value: null });
+
+      fixture.detectChanges();
+
+      inventoryCmp.slidingItemsListRef = <any>ref;
+
+      const elem: HTMLElement = inventoryCmp.getTopLevelContainer();
+
+      expect(elem).toStrictEqual(ionContent);
+    });
+
+    test('should run sliding hints', (done: jest.DoneCallback): void => {
+      const _mockElem: HTMLElement = global.document.createElement('div');
+
+      inventoryCmp.getTopLevelContainer = jest
+        .fn()
+        .mockReturnValue(_mockElem);
+
+      inventoryCmp.toggleSlidingItemClass = jest
+        .fn();
+
+      inventoryCmp.animationService.playCombinedSlidingHintAnimations = jest
+        .fn()
+        .mockReturnValue(of([]));
+
+      inventoryCmp.animationService.setHintShownFlag = jest
+        .fn();
+
+      const toggleSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'toggleSlidingItemClass');
+      const setSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.animationService, 'setHintShownFlag');
+
+      fixture.detectChanges();
+
+      inventoryCmp.slidingItemsListRef = <any>_mockElem;
+
+      inventoryCmp.runSlidingHints();
+
+      setTimeout((): void => {
+        expect(toggleSpy).toHaveBeenCalledTimes(2);
+        expect(setSpy).toHaveBeenCalledWith('sliding', 'inventory');
+        done();
+      }, 10);
+    });
+
+    test('should get an error running sliding hints with missing content element', (): void => {
+      inventoryCmp.getTopLevelContainer = jest
+        .fn()
+        .mockReturnValue(null);
+
+      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+
+      fixture.detectChanges();
+
+      inventoryCmp.runSlidingHints();
+
+      expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0])
+        .toMatch('Animation error: cannot find content container');
+    });
+
+    test('should get an error running sliding hints with animation error', (done: jest.DoneCallback): void => {
+      const _mockElem: HTMLElement = global.document.createElement('div');
+
+      inventoryCmp.getTopLevelContainer = jest
+        .fn()
+        .mockReturnValue(_mockElem);
+
+      inventoryCmp.toggleSlidingItemClass = jest
+        .fn();
+
+      inventoryCmp.animationService.playCombinedSlidingHintAnimations = jest
+        .fn()
+        .mockReturnValue(throwError('test-error'));
+
+      inventoryCmp.animationService.setHintShownFlag = jest
+        .fn();
+
+      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+      const toggleSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'toggleSlidingItemClass');
+      const setSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.animationService, 'setHintShownFlag');
+
+      fixture.detectChanges();
+
+      inventoryCmp.slidingItemsListRef = <any>_mockElem;
+
+      inventoryCmp.runSlidingHints();
+
+      setTimeout((): void => {
+        expect(toggleSpy).toHaveBeenCalledTimes(2);
+        expect(setSpy).not.toHaveBeenCalled();
+        const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
+        expect(consoleCalls[0]).toMatch('Animation error');
+        expect(consoleCalls[1]).toMatch('test-error');
+        done();
+      }, 10);
+    });
+
+    test('should toggle sliding item class', (): void => {
+      const _mockElem: HTMLElement = global.document.createElement('div');
+
+      inventoryCmp.animationService.toggleSlidingItemClass = jest
+        .fn();
+
+      const toggleSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.animationService, 'toggleSlidingItemClass');
+
+      fixture.detectChanges();
+
+      inventoryCmp.slidingItemsListRef = <any>_mockElem;
+
+      inventoryCmp.toggleSlidingItemClass(true);
+
+      expect(toggleSpy).toHaveBeenCalledWith(
+        inventoryCmp.slidingItemsListRef.nativeElement,
+        true,
+        inventoryCmp.renderer
+      );
+
+      inventoryCmp.toggleSlidingItemClass(false);
+
+      expect(toggleSpy).toHaveBeenCalledWith(
+        inventoryCmp.slidingItemsListRef.nativeElement,
+        false,
+        inventoryCmp.renderer
+      );
     });
 
   });

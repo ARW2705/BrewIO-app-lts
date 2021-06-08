@@ -124,7 +124,8 @@
 
               <ion-item lines="none"
                         (click)="expandItem(i)"
-                        class="expand-button">
+                        class="expand-button"
+                        data-sliding-item>
 
                 <ion-label>
                   {{ item.itemName | titlecase }}{{ item.optionalItemData.itemSubname ? ' | ' + item.optionalItemData.itemSubname : ''}}

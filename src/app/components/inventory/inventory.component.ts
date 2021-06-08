@@ -1,8 +1,8 @@
 /* Module imports */
-import { Component, Input, OnInit, OnChanges, OnDestroy, ViewChild } from '@angular/core';
-import { IonList, ModalController } from '@ionic/angular';
+import { Component, Input, OnInit, OnChanges, OnDestroy, AfterViewInit, ViewChild, ElementRef, Renderer2 } from '@angular/core';
+import { ModalController } from '@ionic/angular';
 import { Subject, from } from 'rxjs';
-import { take, takeUntil } from 'rxjs/operators';
+import { finalize, take, takeUntil } from 'rxjs/operators';
 
 /* Constant imports */
 import { BASE_URL } from '../../shared/constants/base-url';
@@ -25,6 +25,7 @@ import { InventoryFormPage } from '../../pages/forms/inventory-form/inventory-fo
 import { QuantityHelperComponent } from '../quantity-helper/quantity-helper.component';
 
 /* Service imports */
+import { AnimationsService } from '../../services/animations/animations.service';
 import { EventService } from '../../services/event/event.service';
 import { ImageService } from '../../services/image/image.service';
 import { InventoryService } from '../../services/inventory/inventory.service';
@@ -37,9 +38,10 @@ import { ToastService } from '../../services/toast/toast.service';
   templateUrl: './inventory.component.html',
   styleUrls: ['./inventory.component.scss']
 })
-export class InventoryComponent implements OnInit, OnChanges, OnDestroy {
+export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterViewInit {
+  @Input() enterDuration: number = 0;
   @Input() optionalData: Batch;
-  @ViewChild('slidingItemsList') slidingItemsList: IonList;
+  @ViewChild('slidingItemsList', { read: ElementRef }) slidingItemsListRef: ElementRef;
   _defaultImage: Image = defaultImage();
   baseImageURL: string = `${BASE_URL}/${API_VERSION}/assets/`; // TODO implement image asset handling
   destroy$: Subject<boolean> = new Subject<boolean>();
@@ -54,6 +56,8 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy {
   sortBy: string = 'alphabetical';
 
   constructor(
+    public renderer: Renderer2,
+    public animationService: AnimationsService,
     public event: EventService,
     public imageService: ImageService,
     public inventoryService: InventoryService,
@@ -73,6 +77,12 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy {
     console.log('inventory component changes');
     if (this.optionalData) {
       this.openInventoryFormModal({ batch: this.optionalData });
+    }
+  }
+
+  ngAfterViewInit() {
+    if (!this.animationService.hasHintBeenShown('sliding', 'inventory')) {
+      this.runSlidingHints();
     }
   }
 
@@ -544,5 +554,69 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   /***** End Sorting *****/
+
+
+  /***** Animation *****/
+
+  /**
+   * Get the IonContent HTMLElement of the current view
+   *
+   * @params: none
+   *
+   * @return: IonContent element
+   */
+  getTopLevelContainer(): HTMLElement {
+    let currentElem: HTMLElement = this.slidingItemsListRef.nativeElement;
+    while (currentElem && currentElem.tagName !== 'ION-CONTENT') {
+      currentElem = currentElem.parentElement;
+    }
+    return currentElem;
+  }
+
+  /**
+   * Trigger horizontally sliding gesture hint animations
+   *
+   * @params: none
+   * @return: none
+   */
+  runSlidingHints(): void {
+    const topLevelContent: HTMLElement = this.getTopLevelContainer();
+    if (!topLevelContent) {
+      console.log('Animation error: cannot find content container');
+      return;
+    }
+
+    this.toggleSlidingItemClass(true);
+
+    this.animationService.playCombinedSlidingHintAnimations(
+      topLevelContent,
+      this.slidingItemsListRef.nativeElement,
+      this.enterDuration
+    )
+    .pipe(finalize((): void => this.toggleSlidingItemClass(false)))
+    .subscribe(
+      (): void => this.animationService.setHintShownFlag('sliding', 'inventory'),
+      (error: string): void => console.log('Animation error', error)
+    );
+  }
+
+  /**
+   * Toggle classes on IonItemSliding for hint animations;
+   * This will show the IonOptions underneath the IonItem
+   *
+   * @params: show - true if classes should be added prior to animation; false to remove classes
+   *  after animations have completed
+   *
+   * @return: none
+   */
+  toggleSlidingItemClass(show: boolean): void {
+    this.animationService.toggleSlidingItemClass(
+      this.slidingItemsListRef.nativeElement,
+      show,
+      this.renderer
+    );
+  }
+
+  /***** End Animation *****/
 
 }
