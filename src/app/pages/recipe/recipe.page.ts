@@ -1,10 +1,9 @@
 /* Module imports */
-import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, Renderer2, ElementRef, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Animation } from '@ionic/angular';
 import { ModalController, IonList, IonContent } from '@ionic/angular';
 import { BehaviorSubject, Subject, from } from 'rxjs';
-import { map, takeUntil } from 'rxjs/operators';
+import { finalize, map, takeUntil } from 'rxjs/operators';
 
 /* Interface imports */
 import { RecipeMaster } from '../../shared/interfaces/recipe-master';
@@ -39,11 +38,11 @@ export class RecipePage implements OnInit, OnDestroy {
   masterIndex: number = -1;
   masterList: RecipeMaster[] = null;
   refreshPipes: boolean = false;
-  showSlidingItems: boolean = false;
   variantList: RecipeVariant[] = null;
 
   constructor(
     public modalCtrl: ModalController,
+    public renderer: Renderer2,
     public route: ActivatedRoute,
     public router: Router,
     public animationService: AnimationsService,
@@ -353,112 +352,46 @@ export class RecipePage implements OnInit, OnDestroy {
   /***** Animation *****/
 
   /**
-   * Get count of sliding items that are visible
-   *
-   * @params: element - a sample HTMLElement to get denominator height
-   *
-   * @return: number of items in view (even partially) or -1 on error
-   */
-  getAboveFoldCount(element: HTMLElement): number {
-    try {
-      const contentHeight: number = this.ionContent['el']['clientHeight'];
-      const itemHeight: number = element.clientHeight;
-      return Math.ceil(contentHeight / itemHeight);
-    } catch (error) {
-      console.log('Error getting content height', error);
-      return -1;
-    }
-  }
-
-  /**
-   * Get a list of ion-item elements to be animated
-   *
-   * @params: none
-   *
-   * @return: array of ion-item HTMLElements
-   */
-  getListItemsElements(): HTMLElement[] {
-    const ionItems: NodeList = this.slidingItemsListRef.nativeElement.querySelectorAll(
-      '[data-sliding-item]'
-    );
-    const ionItemElems: HTMLElement[] = Array
-      .from(ionItems)
-      .map((node: Node): HTMLElement => <HTMLElement>node);
-    let showCount: number = this.getAboveFoldCount(ionItemElems[0]);
-
-    if (showCount === -1) {
-      showCount = ionItems.length / 2;
-    }
-
-    return ionItemElems.filter((_: any, index: number): boolean => index < showCount);
-  }
-
-  /**
-   * Get sliding animation for selected elements
-   *
-   * @params: elements - elements on which to apply animations
-   *
-   * @return: array of animations
-   */
-  getSlidingHintAnimations(elements: HTMLElement[]): Animation[] {
-    return elements
-      .map((element: HTMLElement, index: number): Animation => {
-        return this.animationService.slidingHint(
-          element,
-          {
-            delay: 100 * index,
-            distance: this.slidingItemsListRef.nativeElement.clientWidth / 5
-          }
-        );
-      });
-  }
-
-  /**
-   * Play a given animation, afterwards destroy animation once it has completed
-   *
-   * @params: animation - the animation to play
-   *
-   * @return: Promise resolve once animation has completed and been destoryed
-   */
-  playSlidingHint(animation: Animation): Promise<null> {
-    return new Promise((resolve: any, _: any): void => {
-      animation.onFinish((): void => {
-        animation.destroy();
-        resolve();
-      });
-      animation.play();
-    });
-  }
-
-  /**
-   * Setup and run sliding item hint animations; Set flag to not run animations after the first time
+   * Trigger horizontally sliding gesture hint animations
    *
    * @params: none
    * @return: none
    */
-  async runSlidingHints(): Promise<void> {
+  runSlidingHints(): void {
+    const topLevelContent: HTMLElement = this.ionContent['el'];
+    if (!topLevelContent) {
+      console.log('Animation error: cannot find content container');
+      return;
+    }
+
     this.toggleSlidingItemClass(true);
 
-    const items: HTMLElement[] = this.getListItemsElements();
-    const hintAnimations: Animation[] = this.getSlidingHintAnimations(items);
-
-    await Promise.all(
-      hintAnimations.map((animation: Animation): Promise<null> => this.playSlidingHint(animation))
+    this.animationService.playCombinedSlidingHintAnimations(
+      topLevelContent,
+      this.slidingItemsListRef.nativeElement
+    )
+    .pipe(finalize((): void => this.toggleSlidingItemClass(false)))
+    .subscribe(
+      (): void => this.animationService.setHintShownFlag('sliding', 'recipe'),
+      (error: string): void => console.log('Animation error', error)
     );
-
-    this.toggleSlidingItemClass(false);
-    this.animationService.setHintShownFlag('sliding', 'recipe');
   }
 
   /**
-   * Toggle visibility of normally invisible ion-item-option for animation
+   * Toggle classes on IonItemSliding for hint animations;
+   * This will show the IonOptions underneath the IonItem
    *
-   * @param: shouldShow - true if options should be visible
+   * @params: show - true if classes should be added prior to animation; false to remove classes
+   *  after animations have completed
    *
    * @return: none
    */
-  toggleSlidingItemClass(shouldShow: boolean): void {
-    this.showSlidingItems = shouldShow;
+  toggleSlidingItemClass(show: boolean): void {
+    this.animationService.toggleSlidingItemClass(
+      this.slidingItemsListRef.nativeElement,
+      show,
+      this.renderer
+    );
   }
 
   /***** End Animation *****/

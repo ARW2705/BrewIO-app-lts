@@ -3,7 +3,7 @@ import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { IonicModule, ModalController, Animation } from '@ionic/angular';
+import { IonicModule, ModalController } from '@ionic/angular';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 
@@ -15,7 +15,7 @@ import { mockRecipeMasterActive, mockRecipeVariantComplete, mockUser } from '../
 import { AnimationsServiceStub, RecipeServiceStub, ToastServiceStub, UserServiceStub } from '../../../../test-config/service-stubs';
 import { AccordionComponentStub, ConfirmationComponentStub, HeaderComponentStub, IngredientListComponentStub } from '../../../../test-config/component-stubs';
 import { RoundPipeStub, TruncatePipeStub, UnitConversionPipeStub } from '../../../../test-config/pipe-stubs';
-import { ActivatedRouteStub, ModalControllerStub, ModalStub, IonContentStub, AnimationStub } from '../../../../test-config/ionic-stubs';
+import { ActivatedRouteStub, ModalControllerStub, ModalStub, IonContentStub } from '../../../../test-config/ionic-stubs';
 
 /* Utility imports */
 import { toTitleCase } from '../../shared/utility-functions/utilities';
@@ -735,163 +735,110 @@ describe('RecipePage', (): void => {
 
   describe('Animations', (): void => {
 
-    test('should get above the fold item count', (): void => {
+    test('should run sliding hints', (done: jest.DoneCallback): void => {
       const _stubIonContent: IonContentStub = new IonContentStub();
-      _stubIonContent.el = { clientHeight: 1000 };
-
       const _mockElem: HTMLElement = global.document.createElement('div');
-      Object.defineProperty(_mockElem, 'clientHeight', { writable: false, value: 100 });
+      Object.defineProperty(_stubIonContent, 'el', { writable: false, value: _mockElem });
+
+      recipePage.toggleSlidingItemClass = jest
+        .fn();
+
+      recipePage.animationService.playCombinedSlidingHintAnimations = jest
+        .fn()
+        .mockReturnValue(of([]));
+
+      recipePage.animationService.setHintShownFlag = jest
+        .fn();
+
+      const toggleSpy: jest.SpyInstance = jest.spyOn(recipePage, 'toggleSlidingItemClass');
+      const setSpy: jest.SpyInstance = jest.spyOn(recipePage.animationService, 'setHintShownFlag');
 
       fixture.detectChanges();
 
       recipePage.ionContent = <any>_stubIonContent;
 
-      expect(recipePage.getAboveFoldCount(_mockElem)).toEqual(10);
+      recipePage.runSlidingHints();
+
+      setTimeout((): void => {
+        expect(toggleSpy).toHaveBeenCalledTimes(2);
+        expect(setSpy).toHaveBeenCalledWith('sliding', 'recipe');
+        done();
+      }, 10);
     });
 
-    test('should handle error getting above the fold item count and return -1', (): void => {
+    test('should get an error running sliding hints with missing content element', (): void => {
       const _stubIonContent: IonContentStub = new IonContentStub();
-      const _mockElem: HTMLElement = global.document.createElement('div');
+
       const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
 
       fixture.detectChanges();
 
       recipePage.ionContent = <any>_stubIonContent;
 
-      expect(recipePage.getAboveFoldCount(_mockElem)).toEqual(-1);
+      recipePage.runSlidingHints();
 
-      const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
-      expect(consoleCalls[0]).toMatch('Error getting content height');
-      expect(consoleCalls[1] instanceof Error).toBe(true);
+      expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0])
+        .toMatch('Animation error: cannot find content container');
     });
 
-    test('should get list of items to be animated', (): void => {
-      const mockElems: HTMLElement[] = new Array(4).fill(global.document.createElement('div'));
-
-      recipePage.getAboveFoldCount = jest
-        .fn()
-        .mockReturnValueOnce(3)
-        .mockReturnValueOnce(-1);
-
-      fixture.detectChanges();
-
-      recipePage.slidingItemsListRef.nativeElement.querySelectorAll = jest
-        .fn()
-        .mockReturnValue(mockElems);
-
-      // above fold count = 3
-      expect(recipePage.getListItemsElements().length).toEqual(3);
-
-      // above fold count returns -1
-      expect(recipePage.getListItemsElements().length).toEqual(2);
-    });
-
-    test('should get sliding hint animations', (): void => {
-      const mockElem1: HTMLElement = global.document.createElement('div');
-      const mockElem2: HTMLElement = global.document.createElement('section');
-      const _stubAnimation: AnimationStub = new AnimationStub();
-
-      recipePage.animationService.slidingHint = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-
-      const animSpy: jest.SpyInstance = jest.spyOn(recipePage.animationService, 'slidingHint');
-
-      fixture.detectChanges();
-
-      Object.defineProperty(recipePage.slidingItemsListRef.nativeElement, 'clientWidth', { writable: false, value: 1000 });
-
-      expect(recipePage.getSlidingHintAnimations([mockElem1, mockElem2])).toStrictEqual([
-        _stubAnimation,
-        _stubAnimation
-      ]);
-
-      expect(animSpy).toHaveBeenNthCalledWith(1, mockElem1, { delay: 0, distance: 200 });
-      expect(animSpy).toHaveBeenNthCalledWith(2, mockElem2, { delay: 100, distance: 200 });
-    });
-
-    test('should play a sliding hint animation', (done: jest.DoneCallback): void => {
-      const _stubAnimation: AnimationStub = new AnimationStub();
-      let callBack: () => void;
-
-      _stubAnimation.play = jest
-        .fn()
-        .mockReturnValue(Promise.resolve());
-      _stubAnimation.destroy = jest
-        .fn();
-      _stubAnimation.onFinish = jest
-        .fn()
-        .mockImplementation((cb: () => void): Animation => {
-          callBack = cb;
-          return <any>_stubAnimation;
-        });
-
-      const playSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'play');
-      const destroySpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'destroy');
-
-      fixture.detectChanges();
-
-      recipePage.playSlidingHint(<any>_stubAnimation)
-        .then((): void => {
-          expect(playSpy).toHaveBeenCalled();
-          expect(destroySpy).toHaveBeenCalled();
-          done();
-        });
-
-      callBack();
-    });
-
-    test('should generate and trigger sliding gesture hint animations', (done: jest.DoneCallback): void => {
+    test('should get an error running sliding hints with animation error', (done: jest.DoneCallback): void => {
+      const _stubIonContent: IonContentStub = new IonContentStub();
       const _mockElem: HTMLElement = global.document.createElement('div');
-      const _stubAnimation: AnimationStub = new AnimationStub();
+      Object.defineProperty(_stubIonContent, 'el', { writable: false, value: _mockElem });
 
       recipePage.toggleSlidingItemClass = jest
         .fn();
 
-      recipePage.getListItemsElements = jest
+      recipePage.animationService.playCombinedSlidingHintAnimations = jest
         .fn()
-        .mockReturnValue([_mockElem, _mockElem]);
-
-      recipePage.getSlidingHintAnimations = jest
-        .fn()
-        .mockReturnValue([_stubAnimation, _stubAnimation]);
-
-      recipePage.playSlidingHint = jest
-        .fn()
-        .mockReturnValue(Promise.resolve(null));
+        .mockReturnValue(throwError('test-error'));
 
       recipePage.animationService.setHintShownFlag = jest
         .fn();
 
+      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
       const toggleSpy: jest.SpyInstance = jest.spyOn(recipePage, 'toggleSlidingItemClass');
-      const getElemSpy: jest.SpyInstance = jest.spyOn(recipePage, 'getListItemsElements');
-      const getAnimSpy: jest.SpyInstance = jest.spyOn(recipePage, 'getSlidingHintAnimations');
-      const playSpy: jest.SpyInstance = jest.spyOn(recipePage, 'playSlidingHint');
       const setSpy: jest.SpyInstance = jest.spyOn(recipePage.animationService, 'setHintShownFlag');
 
       fixture.detectChanges();
 
+      recipePage.ionContent = <any>_stubIonContent;
+
       recipePage.runSlidingHints();
 
       setTimeout((): void => {
-        expect(toggleSpy).toHaveBeenNthCalledWith(1, true);
-        expect(toggleSpy).toHaveBeenNthCalledWith(2, false);
-        expect(getElemSpy).toHaveBeenCalled();
-        expect(getAnimSpy).toHaveBeenCalledWith([_mockElem, _mockElem]);
-        expect(playSpy).toHaveBeenCalledTimes(2);
-        expect(setSpy).toHaveBeenCalledWith('sliding', 'recipe');
+        expect(toggleSpy).toHaveBeenCalledTimes(2);
+        expect(setSpy).not.toHaveBeenCalled();
+        const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
+        expect(consoleCalls[0]).toMatch('Animation error');
+        expect(consoleCalls[1]).toMatch('test-error');
         done();
       }, 10);
     });
 
-    test('should toggle sliding item class flag', (): void => {
+    test('should toggle sliding item class', (): void => {
+      recipePage.animationService.toggleSlidingItemClass = jest
+        .fn();
+
+      const toggleSpy: jest.SpyInstance = jest.spyOn(recipePage.animationService, 'toggleSlidingItemClass');
+
       fixture.detectChanges();
 
-      expect(recipePage.showSlidingItems).toBe(false);
       recipePage.toggleSlidingItemClass(true);
-      expect(recipePage.showSlidingItems).toBe(true);
+
+      expect(toggleSpy).toHaveBeenCalledWith(
+        recipePage.slidingItemsListRef.nativeElement,
+        true,
+        recipePage.renderer
+      );
+
       recipePage.toggleSlidingItemClass(false);
-      expect(recipePage.showSlidingItems).toBe(false);
+
+      expect(toggleSpy).toHaveBeenCalledWith(
+        recipePage.slidingItemsListRef.nativeElement,
+        false,
+        recipePage.renderer
+      );
     });
 
   });

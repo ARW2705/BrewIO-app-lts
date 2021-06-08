@@ -33,11 +33,7 @@
         <ng-container *ngFor="let master of masterList; index as i">
 
           <!-- Slide left or right for actions, click to toggle ingredient list -->
-          <ion-item-sliding [ngClass]="{
-                              'item-sliding-active-slide': showSlidingItems,
-                              'item-sliding-active-options-end': showSlidingItems
-                            }"
-                            class="recipe-master-item">
+          <ion-item-sliding class="recipe-master-item">
 
             <!-- Delete the recipe master button -->
             <ion-item-options side="start">
