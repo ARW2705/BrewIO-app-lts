@@ -19,7 +19,7 @@ import { roundToDecimalPlace, toTitleCase } from '../../shared/utility-functions
   styleUrls: ['./quantity-helper.component.scss']
 })
 export class QuantityHelperComponent implements OnInit {
-  @Input() headerText: string;
+  @Input() headerText: string = '';
   @Input() quantity: number;
   commonContainers: Container[] = COMMON_CONTAINERS;
   quantityPints: number;
@@ -27,6 +27,7 @@ export class QuantityHelperComponent implements OnInit {
   quantityCentiliters: number;
   onBackClick: () => void;
   selectOptions: object = { cssClass: 'select-popover' };
+  showCommonContainers: boolean = true;
 
 
   constructor(public modalCtrl: ModalController) {
@@ -35,6 +36,7 @@ export class QuantityHelperComponent implements OnInit {
 
   ngOnInit() {
     this.changeQuantities('pints', this.quantity);
+    this.showCommonContainers = !this.headerText.toLowerCase().includes('reduce');
   }
 
   /**

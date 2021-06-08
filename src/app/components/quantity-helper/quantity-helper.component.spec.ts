@@ -55,6 +55,7 @@ describe('QuantityHelperComponent', (): void => {
   test('should init the component', (): void => {
     qhCmp.ngOnInit = originalOnInit;
     qhCmp.quantity = 10;
+    qhCmp.headerText = 'initial quantity';
     qhCmp.changeQuantities = jest
       .fn();
 
