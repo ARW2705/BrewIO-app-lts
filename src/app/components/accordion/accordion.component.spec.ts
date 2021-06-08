@@ -93,14 +93,14 @@ describe('AccordionComponent', (): void => {
 
     accordionCmp.playAnimation();
 
-    expect(expandSpy).toHaveBeenCalledWith(divElement);
+    expect(expandSpy).toHaveBeenCalledWith(divElement, { duration: accordionCmp.animationDuration });
     expect(expandPlaySpy).toHaveBeenCalled();
 
     accordionCmp.expanded = false;
 
     accordionCmp.playAnimation();
 
-    expect(collapseSpy).toHaveBeenCalledWith(divElement);
+    expect(collapseSpy).toHaveBeenCalledWith(divElement, { duration: accordionCmp.animationDuration });
     expect(collapsePlaySpy).toHaveBeenCalled();
   });
 

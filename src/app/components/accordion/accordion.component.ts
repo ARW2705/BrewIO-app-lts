@@ -13,6 +13,7 @@ import { AnimationsService } from '../../services/animations/animations.service'
 })
 export class AccordionComponent implements OnChanges {
   @Input() expanded: boolean;
+  @Input() animationDuration: number = 250;
   @ViewChild('accordionContainer', {read: ElementRef}) container: ElementRef;
 
   constructor(public animationService: AnimationsService) { }
@@ -35,9 +36,19 @@ export class AccordionComponent implements OnChanges {
     if (this.container) {
       let animation: Animation;
       if (this.expanded) {
-        animation = this.animationService.expand(this.container.nativeElement);
+        animation = this.animationService.expand(
+          this.container.nativeElement,
+          {
+            duration: this.animationDuration
+          }
+        );
       } else {
-        animation = this.animationService.collapse(this.container.nativeElement);
+        animation = this.animationService.collapse(
+          this.container.nativeElement,
+          {
+            duration: this.animationDuration
+          }
+        );
       }
       await animation.play();
     }
