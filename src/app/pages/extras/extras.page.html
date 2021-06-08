@@ -35,6 +35,7 @@
   <!-- Active Batches Component -->
   <div #activeBatchesContainer>
     <active-batches *ngIf="title === 'Active Batches'"
+                    [enterDuration]="animationDuration"
                     rootURL="tabs/extras">
     </active-batches>
   </div>
@@ -43,7 +44,8 @@
   <!-- Inventory Component -->
   <div #inventoryContainer>
     <inventory  *ngIf="title === 'Inventory'"
-                [optionalData]="optionalInventoryData">
+                [optionalData]="optionalInventoryData"
+                [enterDuration]="animationDuration">
     </inventory>
   </div>
 

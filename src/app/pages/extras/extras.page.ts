@@ -31,6 +31,7 @@ export class ExtrasPage implements OnInit, OnDestroy {
   @ViewChild('userContainer') userContainer: ElementRef;
   currentIndex: number = -1;
   destroy$: Subject<boolean> = new Subject<boolean>();
+  animationDuration: number = 250;
   extras: { title: string, icon: string }[] = [
     {
       title: 'active batches',
@@ -120,7 +121,7 @@ export class ExtrasPage implements OnInit, OnDestroy {
         const animation = this.animationService.slideOut(
           this.getContainer(fromIndex),
           {
-            duration: 250,
+            duration: this.animationDuration,
             direction: -100
           }
         );
@@ -151,7 +152,7 @@ export class ExtrasPage implements OnInit, OnDestroy {
         const animation = this.animationService.slideIn(
           this.getContainer(index),
           {
-            speed: 250
+            duration: this.animationDuration
           }
         );
         await animation.play();
