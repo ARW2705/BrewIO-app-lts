@@ -19,6 +19,16 @@
     </ion-col>
 
   </ion-row>
+
+  <ion-row  *ngIf="showDescription"
+            class="description">
+
+    <p>
+      {{ timer.timer.description }}
+    </p>
+
+  </ion-row>
+
   <!-- End Active Step View Timer Data -->
   <div>
 
