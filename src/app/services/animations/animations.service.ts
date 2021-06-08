@@ -1,6 +1,7 @@
 /* Module imports */
-import { Injectable } from '@angular/core';
+import { Injectable, Renderer2 } from '@angular/core';
 import { Animation, AnimationController } from '@ionic/angular';
+import { Observable, Observer, forkJoin } from 'rxjs';
 
 
 @Injectable({
@@ -11,7 +12,8 @@ export class AnimationsService {
     sliding: {
       recipe: false,
       recipeDetail: false,
-      inventory: false
+      inventory: false,
+      batch: false
     }
   };
 
@@ -212,5 +214,155 @@ export class AnimationsService {
         { offset: 1,    transform: 'translateX(0)'                  }
       ]);
   }
+
+  /***** End Animations *****/
+
+
+  /***** HTML Element Helpers *****/
+
+  /**
+   * Get a count of how many items are currently in view
+   *
+   * @params: containerElement - the current view content container
+   * @params: sampleElement - an example of one of the items to get a dividing height
+   *
+   * @return: an estimated number of items in view (rounded up)
+   */
+  getAboveFoldCount(containerElement: HTMLElement, sampleElement: HTMLElement): number {
+    try {
+      const contentHeight: number = containerElement.clientHeight;
+      const itemHeight: number = sampleElement.clientHeight;
+      return Math.ceil(contentHeight / itemHeight);
+    } catch (error) {
+      console.log('Error getting content height', error);
+      return -1;
+    }
+  }
+
+  /**
+   * Get the sliding HTMLElements to be animated
+   *
+   * @params: containerElement - the current view content container
+   * @params: parentElement - the sliding elements parent container
+   *
+   * @return: array of sliding HTMLElements
+   */
+  getSlidingElements(containerElement: HTMLElement, parentElement: HTMLElement): HTMLElement[] {
+    const ionItems: NodeList = parentElement.querySelectorAll('[data-sliding-item]');
+    const ionItemElems: HTMLElement[] = Array
+      .from(ionItems)
+      .map((node: Node): HTMLElement => <HTMLElement>node);
+    let showCount: number = this.getAboveFoldCount(containerElement, ionItemElems[0]);
+
+    if (showCount === -1) {
+      showCount = ionItems.length / 2;
+    }
+
+    return ionItemElems.filter((_: any, index: number): boolean => index < showCount);
+  }
+
+  /**
+   * Get sliding element hint animations
+   *
+   * @params: elements - the elements to animate
+   * @params: slideDistance - distance to move element in pixels
+   * @params: offsetDelay - additional animation delay
+   *
+   * @return: array sliding hint animations
+   */
+  getSlidingHintAnimations(
+    elements: HTMLElement[],
+    slideDistance: number,
+    offsetDelay: number
+  ): Animation[] {
+    const interElementDelay: number = 100;
+    return elements
+      .map((element: HTMLElement, index: number): Animation => {
+        return this.slidingHint(
+          element,
+          {
+            delay: interElementDelay * index + offsetDelay,
+            distance: slideDistance
+          }
+        );
+      });
+  }
+
+  /**
+   * Queue animations and set up animation clean up handling
+   *
+   * Note: animations must each be destroyed after completion to avoid
+   * built-in styles from being affected
+   *
+   * @params: animations - animations group to prepare
+   *
+   * @return: array of animation executions as observables
+   */
+  queueAnimations(animations: Animation[]): Observable<null>[] {
+    return animations.map((animation: Animation): Observable<null> => {
+      return new Observable((observer: Observer<null>) => {
+        animation.onFinish((): void => {
+          animation.destroy();
+          observer.next(null);
+          observer.complete();
+        });
+        animation.play();
+      });
+    });
+  }
+
+  /**
+   * Build and play horizontal sliding hint animations for a group of sliding elements
+   *
+   * @params: containerElement - the current view content container
+   * @params: parentElement - the sliding elements parent container
+   * @params: offsetDelay - additional animation delay; defaults to 0
+   *
+   * @return: observable of array of animation executions
+   */
+  playCombinedSlidingHintAnimations(
+    containerElement: HTMLElement,
+    parentElement: HTMLElement,
+    offsetDelay: number = 0
+  ): Observable<null[]> {
+    const slidingElements: HTMLElement[] = this.getSlidingElements(containerElement, parentElement);
+    const animations: Animation[] = this.getSlidingHintAnimations(
+      slidingElements,
+      containerElement.clientWidth / 5,
+      offsetDelay
+    );
+    const animationQueue: Observable<null>[] = this.queueAnimations(animations);
+
+    return forkJoin(animationQueue);
+  }
+
+  /**
+   * Toggle classes on IonItemSliding for hint animations;
+   * This will show the IonOptions underneath the IonItem
+   *
+   * @params: parentElement - the parent IonItemSliding element
+   * @params: show - true if classes should be added prior to animation; false to remove classes
+   *  after animations have completed
+   * @params: renderer - Renderer2 instance from requesting component to perform the class manipulation
+   *
+   * @return: none
+   */
+  toggleSlidingItemClass(parentElement: HTMLElement, show: boolean, renderer: Renderer2): void {
+    const items: NodeList = parentElement.querySelectorAll('ion-item-sliding');
+
+    Array.from(items).forEach(
+      (node: Node): void => {
+        if (show) {
+          renderer.addClass(node, 'item-sliding-active-slide');
+          renderer.addClass(node, 'item-sliding-active-options-end');
+        } else {
+          renderer.removeClass(node, 'item-sliding-active-slide');
+          renderer.removeClass(node, 'item-sliding-active-options-end');
+        }
+      }
+    );
+  }
+
+  /***** End HTML Element Helpers *****/
 
 }
