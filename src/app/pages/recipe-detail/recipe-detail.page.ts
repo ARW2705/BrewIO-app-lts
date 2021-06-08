@@ -1,9 +1,9 @@
 /* Module imports */
-import { Component, OnInit, OnDestroy, ViewChildren, QueryList, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChildren, QueryList, ViewChild, ElementRef, Renderer2 } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { IonList, IonItemSliding, ModalController, IonContent } from '@ionic/angular';
 import { Subject, from } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { finalize, takeUntil } from 'rxjs/operators';
 
 /* Interface imports */
 import { RecipeMaster } from '../../shared/interfaces/recipe-master';
@@ -20,6 +20,7 @@ import { AccordionComponent } from '../../components/accordion/accordion.compone
 import { ConfirmationComponent } from '../../components/confirmation/confirmation.component';
 
 /* Service imports */
+import { AnimationsService } from '../../services/animations/animations.service';
 import { RecipeService } from '../../services/recipe/recipe.service';
 import { ToastService } from '../../services/toast/toast.service';
 
@@ -33,6 +34,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
   @ViewChild(IonContent, { static: false }) ionContent: IonContent;
   @ViewChild('noteContainerScrollLandmark') noteContainerScrollLandmark: AccordionComponent;
   @ViewChild('slidingItemsList') slidingItemsList: IonList;
+  @ViewChild('slidingItemsList', { read: ElementRef }) slidingItemsListRef: ElementRef;
   @ViewChildren('ingredientScrollLandmark') ingredientScrollLandmarks: QueryList<IonItemSliding>;
   @ViewChildren('noteScrollLandmark') noteScrollLandmarks: QueryList<IonItemSliding>;
   destroy$: Subject<boolean> = new Subject<boolean>();
@@ -46,8 +48,10 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
 
   constructor(
     public modalCtrl: ModalController,
+    public renderer: Renderer2,
     public route: ActivatedRoute,
     public router: Router,
+    public animationService: AnimationsService,
     public recipeService: RecipeService,
     public toastService: ToastService
   ) {
@@ -80,6 +84,12 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
         'Error initializing recipe',
         this.navToRoot.bind(this)
       );
+    }
+  }
+
+  ionViewDidEnter() {
+    if (!this.animationService.hasHintBeenShown('sliding', 'recipeDetail')) {
+      this.runSlidingHints();
     }
   }
 
@@ -367,5 +377,53 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
   }
 
   /***** End recipe *****/
+
+
+  /***** Animation *****/
+
+  /**
+   * Trigger horizontally sliding gesture hint animations
+   *
+   * @params: none
+   * @return: none
+   */
+  runSlidingHints() {
+    const topLevelContent: HTMLElement = this.ionContent['el'];
+    if (!topLevelContent) {
+      console.log('Animation error: cannot find content container');
+      return;
+    }
+
+    this.toggleSlidingItemClass(true);
+
+    this.animationService.playCombinedSlidingHintAnimations(
+      topLevelContent,
+      this.slidingItemsListRef.nativeElement
+    )
+    .pipe(finalize((): void => this.toggleSlidingItemClass(false)))
+    .subscribe(
+      (): void => this.animationService.setHintShownFlag('sliding', 'recipeDetail'),
+      (error: string): void => console.log('Animation error', error)
+    );
+  }
+
+  /**
+   * Toggle classes on IonItemSliding for hint animations;
+   * This will show the IonOptions underneath the IonItem
+   *
+   * @params: show - true if classes should be added prior to animation; false to remove classes
+   *  after animations have completed
+   *
+   * @return: none
+   */
+  toggleSlidingItemClass(show: boolean): void {
+    this.animationService.toggleSlidingItemClass(
+      this.slidingItemsListRef.nativeElement,
+      show,
+      this.renderer
+    );
+  }
+
+  /***** End Animation *****/
 
 }
