@@ -43,10 +43,12 @@
     <ion-row class="ion-justify-content-center">
 
       <accordion  [expanded]="showActiveBatches"
+                  [animationDuration]="accordionAnimationDuration"
                   id="batch-scroll-landmark"
                   class="home-list">
 
         <active-batches *ngIf="!firstActiveBatchesLoad"
+                        [enterDuration]="accordionAnimationDuration"
                         rootURL="tabs/home">
         </active-batches>
 
@@ -75,10 +77,13 @@
     <ion-row class="ion-justify-content-center">
 
       <accordion  [expanded]="showInventory"
+                  [animationDuration]="accordionAnimationDuration"
                   id="inventory-scroll-landmark"
                   class="home-list">
 
-        <inventory *ngIf="!firstInventoryLoad"></inventory>
+        <inventory *ngIf="!firstInventoryLoad"
+                    [enterDuration]="accordionAnimationDuration">
+        </inventory>
 
       </accordion>
 

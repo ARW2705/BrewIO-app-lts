@@ -20,6 +20,7 @@ import { UserService } from '../../services/user/user.service';
 export class HomePage implements OnInit, OnDestroy {
   @ViewChild(IonContent, { static: false }) ionContent: IonContent;
   destroy$: Subject<boolean> = new Subject<boolean>();
+  accordionAnimationDuration: number = 250;
   firstActiveBatchesLoad: boolean = true;
   firstInventoryLoad: boolean = true;
   isLoggedIn: boolean = false;
