@@ -753,7 +753,8 @@ export class RecipeFormPage implements OnInit, OnDestroy {
           name: `Add ${hopsAddition.hopsType.name} hops`,
           concurrent: true,
           description: this.formatHopsDescription(hopsAddition),
-          duration: this.variant.boilDuration - hopsAddition.duration
+          duration: this.variant.boilDuration - hopsAddition.duration,
+          splitInterval: 1
         };
       });
   }
