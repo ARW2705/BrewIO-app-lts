@@ -15,5 +15,6 @@ import { InventoryComponent } from '../../src/app/components/inventory/inventory
   ]
 })
 export class InventoryComponentStub {
+  @Input() enterDuration: number;
   @Input() optionalData: Batch;
 }

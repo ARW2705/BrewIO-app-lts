@@ -12,5 +12,6 @@ import { AccordionComponent } from '../../src/app/components/accordion/accordion
   ]
 })
 export class AccordionComponentStub {
+  @Input() animationDuration: number;
   @Input() expanded: any;
 }

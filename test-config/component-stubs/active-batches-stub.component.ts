@@ -16,6 +16,7 @@ import { ActiveBatchesComponent } from '../../src/app/components/active-batches/
   ]
 })
 export class ActiveBatchesComponentStub {
+  @Input() enterDuration: number;
   @Input() rootURL: string;
   activeBatchesList: Batch[] = [];
   destroy$: Subject<boolean> = new Subject<boolean>();
