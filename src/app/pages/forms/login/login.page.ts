@@ -91,7 +91,7 @@ export class LoginPage implements OnInit {
         (user: User): void => {
           this.toastService.presentToast(
             `Welcome ${user.username}!`,
-            2000,
+            1500,
             'middle',
             'toast-bright'
           );
