@@ -1,4 +1,4 @@
-import { StockType } from '../interfaces/stocktype';
+import { StockType } from '../interfaces';
 
 export const STOCK_TYPES: StockType[] = [
   { isDiscreteUnit: true , name: 'Standard Bottle' },
