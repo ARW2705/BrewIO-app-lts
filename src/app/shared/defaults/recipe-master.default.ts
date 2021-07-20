@@ -1,8 +1,8 @@
-import { RecipeMaster } from '../interfaces/recipe-master';
-import { defaultRecipeVariant } from '../defaults/default-recipe-variant';
-import { defaultStyle } from '../defaults/default-style';
+import { RecipeMaster } from '../interfaces';
+import { defaultRecipeVariant } from './recipe-variant.default';
+import { defaultStyle } from './style.default';
 
-export const defaultRecipeMaster = () => {
+export const defaultRecipeMaster: () => RecipeMaster = () => {
   const _default: RecipeMaster = {
     cid: '0',
     name: '',

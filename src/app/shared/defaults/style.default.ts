@@ -1,7 +1,7 @@
-import { Style } from '../interfaces/library';
+import { Style } from '../interfaces';
 
 export const defaultStyle: () => Style = () => {
-  const def: Style = {
+  const _default: Style = {
     _id: '-1',
     createdAt: '',
     updatedAt: '',
@@ -13,5 +13,5 @@ export const defaultStyle: () => Style = () => {
     SRM: [-1, -1],
     co2Volume: [-1, -1]
   };
-  return def;
+  return _default;
 };

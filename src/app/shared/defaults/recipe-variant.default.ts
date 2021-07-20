@@ -1,6 +1,6 @@
-import { RecipeVariant } from '../interfaces/recipe-variant';
+import { RecipeVariant } from '../interfaces';
 
-export const defaultRecipeVariant = () => {
+export const defaultRecipeVariant: () => RecipeVariant = () => {
   const _default: RecipeVariant = {
     cid: '0',
     variantName: 'Initial Recipe',
