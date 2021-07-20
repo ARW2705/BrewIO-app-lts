@@ -1,9 +1,4 @@
-export interface Unit {
-  system: string;
-  longName: string;
-  shortName: string;
-  symbol?: string;
-}
+import { Unit } from './unit.interface';
 
 export interface SelectedUnits {
   system: string;

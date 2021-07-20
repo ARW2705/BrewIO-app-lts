@@ -1,4 +1,4 @@
-import { Hops } from './library';
+import { Hops } from './hops.interface';
 
 export interface HopsSchedule {
   _id?: string;

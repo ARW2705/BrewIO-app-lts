@@ -1,16 +1,16 @@
-import { Image } from './image';
-import { SelectedUnits } from './units';
+import { Image } from './image.interface';
+import { SelectedUnits } from './selected-units.interface';
 
 export interface User {
   _id?: string;
-  cid: string;
   createdAt?: string;
   updatedAt?: string;
+  cid?: string;
   username: string;
   firstname?: string;
   lastname?: string;
   email?: string;
-  friendList?: Array<string>;
+  friendList?: string[];
   token: string;
   preferredUnitSystem: string;
   units: SelectedUnits;

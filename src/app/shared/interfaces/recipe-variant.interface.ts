@@ -1,8 +1,8 @@
-import { GrainBill } from './grain-bill';
-import { HopsSchedule } from './hops-schedule';
-import { YeastBatch } from './yeast-batch';
-import { OtherIngredients } from './other-ingredients';
-import { Process } from './process';
+import { GrainBill } from './grain-bill.interface';
+import { HopsSchedule } from './hops-schedule.interface';
+import { YeastBatch } from './yeast-batch.interface';
+import { OtherIngredients } from './other-ingredients.interface';
+import { Process } from './process.interface';
 
 export interface RecipeVariant {
   _id?: string;

@@ -1,6 +1,6 @@
-import { Image } from './image';
-import { RecipeVariant } from './recipe-variant';
-import { Style } from './library';
+import { Image } from './image.interface';
+import { RecipeVariant } from './recipe-variant.interface';
+import { Style } from './style.interface';
 
 export interface RecipeMaster {
   _id?: string;

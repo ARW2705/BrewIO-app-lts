@@ -1,4 +1,4 @@
-import { Image } from './image';
+import { OptionalItemData } from './optional-item-data.interface';
 
 export interface InventoryItem {
   _id?: string;
@@ -16,18 +16,4 @@ export interface InventoryItem {
   itemABV: number;
   sourceType: string;
   optionalItemData: OptionalItemData;
-}
-
-export interface OptionalItemData {
-  batchId?: string;
-  itemIBU?: number;
-  itemLabelImage?: Image;
-  itemSRM?: number;
-  itemSubname?: string;
-  originalRecipe?: string;
-  packagingDate?: string;
-  remainingColor?: string;
-  srmColor?: string;
-  supplierLabelImage?: Image;
-  supplierURL?: string;
 }

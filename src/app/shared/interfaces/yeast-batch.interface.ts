@@ -1,10 +1,10 @@
-import { Yeast } from './library';
+import { Yeast } from './yeast.interface';
 
 export interface YeastBatch {
   _id?: string;
-  cid: string;
   createdAt?: string;
   updatedAt?: string;
+  cid: string;
   yeastType: Yeast;
   quantity: number; // packs/vials
   requiresStarter: boolean;

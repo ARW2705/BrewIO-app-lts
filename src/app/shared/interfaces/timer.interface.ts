@@ -1,12 +1,10 @@
-import { BehaviorSubject } from 'rxjs';
-
-import { Process } from './process';
-import { ProgressCircleSettings } from './progress-circle';
+import { TimerProcess } from './timer-process.interface';
+import { ProgressCircleSettings } from './progress-circle.interface';
 
 export interface Timer {
   cid: string;
   first: string;
-  timer: Process;
+  timer: TimerProcess;
   timeRemaining: number;
   show: boolean;
   expansion: {
@@ -18,9 +16,4 @@ export interface Timer {
   };
   isRunning: boolean;
   settings: ProgressCircleSettings;
-}
-
-export interface BatchTimer {
-  batchId: string;
-  timers: BehaviorSubject<Timer>[];
 }

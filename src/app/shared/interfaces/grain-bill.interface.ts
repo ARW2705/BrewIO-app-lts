@@ -1,4 +1,4 @@
-import { Grains } from './library';
+import { Grains } from './grains.interface';
 
 export interface GrainBill {
   _id?: string;
