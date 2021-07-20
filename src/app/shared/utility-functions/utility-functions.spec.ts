@@ -5,8 +5,7 @@ import { BehaviorSubject } from 'rxjs';
 import { mockNestedObject, mockObjectArray, mockSubjectArray } from '../../../../test-config/mock-models';
 
 /* Constant imports */
-import { SHARED_PROPERTIES } from '../constants/shared-properties';
-import { STATIC_LIBRARY_PROPERTIES } from '../constants/static-library-properties';
+import { SHARED_PROPERTIES, STATIC_LIBRARY_PROPERTIES } from '../constants';
 
 /* Utility imports */
 import { clone } from './clone';

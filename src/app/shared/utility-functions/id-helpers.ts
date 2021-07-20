@@ -1,4 +1,4 @@
-import { DEFAULT_ID_TYPE_REGEX } from '../constants/default-id-pattern';
+import { DEFAULT_ID_TYPE_REGEX } from '../constants';
 
 
 /**

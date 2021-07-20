@@ -1,5 +1,4 @@
-import { SHARED_PROPERTIES } from '../constants/shared-properties';
-import { STATIC_LIBRARY_PROPERTIES } from '../constants/static-library-properties';
+import { SHARED_PROPERTIES, STATIC_LIBRARY_PROPERTIES } from '../constants';
 
 /**
  * Remove database specific shared properties from object
@@ -10,7 +9,7 @@ import { STATIC_LIBRARY_PROPERTIES } from '../constants/static-library-propertie
  */
 export function stripSharedProperties(obj: object): void {
   if (Array.isArray(obj)) {
-    for (let item of obj) {
+    for (const item of obj) {
       if (typeof item === 'object' && item !== null) {
         stripSharedProperties(item);
       }
