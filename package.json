@@ -26,6 +26,7 @@
     "@ionic-native/camera": "^5.30.0",
     "@ionic-native/core": "^5.30.0",
     "@ionic-native/crop": "^5.30.0",
+    "@ionic-native/device": "^5.33.1",
     "@ionic-native/file": "^5.30.0",
     "@ionic-native/file-path": "^5.30.0",
     "@ionic-native/image-resizer": "^5.30.0",
