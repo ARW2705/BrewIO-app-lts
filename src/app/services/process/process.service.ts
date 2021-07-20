@@ -1048,34 +1048,6 @@ export class ProcessService {
     }
   }
 
-  // /**
-  //  * Get the process type specific document type guard
-  //  *
-  //  * @param: processType - the specific type of process to check: either 'manual', 'timer', or 'calendar'
-  //  *
-  //  * @return: the combined common and specific process type guard data
-  //  */
-  // getDocumentGuardByType(processType: string): DocumentGuard {
-  //   let SpecificValidations: DocumentGuard;
-  //
-  //   if (processType === 'manual') {
-  //     SpecificValidations = ManualProcessGuardMetadata;
-  //   } else if (processType === 'timer') {
-  //     SpecificValidations = TimerProcessGuardMetadata;
-  //   } else if (processType === 'calendar') {
-  //     SpecificValidations = CalendarProcessGuardMetadata;
-  //   } else {
-  //     throw new CustomError(
-  //       'TypeGuardError',
-  //       `Invalid process type on type guard validation: ${processType}`,
-  //       2,
-  //       'An internal check error occurred, Process is malformed'
-  //     );
-  //   }
-  //
-  //   return this.typeGuard.concatGuards(ProcessGuardMetadata, SpecificValidations);
-  // }
-
   /**
    * Get a custom error on unsafe batch type
    *
@@ -1191,12 +1163,6 @@ export class ProcessService {
   isSafeProcessSchedule(schedule: Process[]): boolean {
     return this.recipeService.isSafeProcessSchedule(schedule);
   }
-  // isSafeProcessSchedule(schedule: Process[]): boolean {
-  //   return schedule.every((process: Process): boolean => {
-  //     const validation: DocumentGuard = this.getDocumentGuardByType(process.type);
-  //     return this.typeGuard.hasValidProperties(process, validation);
-  //   });
-  // }
 
   /**
    * Check if given process is a TimerProcess

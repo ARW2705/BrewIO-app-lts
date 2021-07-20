@@ -66,10 +66,6 @@ import { CustomError } from '../../shared/types';
 /* Type guard imports */
 import {
   AlertGuardMetadata,
-  ManualProcessGuardMetadata,
-  ProcessGuardMetadata,
-  TimerProcessGuardMetadata,
-  CalendarProcessGuardMetadata,
   BatchGuardMetadata,
   BatchContextGuardMetadata,
   BatchAnnotationsGuardMetadata,
@@ -1969,29 +1965,6 @@ describe('ProcessService', (): void => {
       }).toThrow(_mockError);
     });
 
-    // test('should get document guard by process type', (): void => {
-    //   processService.typeGuard.concatGuards = jest
-    //     .fn()
-    //     .mockReturnValue(null);
-    //
-    //   const concatSpy: jest.SpyInstance = jest.spyOn(processService.typeGuard, 'concatGuards');
-    //
-    //   processService.getDocumentGuardByType('manual');
-    //   expect(concatSpy).toHaveBeenCalledWith(ProcessGuardMetadata, ManualProcessGuardMetadata);
-    //   processService.getDocumentGuardByType('timer');
-    //   expect(concatSpy).toHaveBeenCalledWith(ProcessGuardMetadata, TimerProcessGuardMetadata);
-    //   processService.getDocumentGuardByType('calendar');
-    //   expect(concatSpy).toHaveBeenCalledWith(ProcessGuardMetadata, CalendarProcessGuardMetadata);
-    //   expect((): void => {
-    //     processService.getDocumentGuardByType('invalid');
-    //   }).toThrow(<CustomError>{
-    //     name: 'TypeGuardError',
-    //     message: 'Invalid process type on type guard validation: invalid',
-    //     severity: 2,
-    //     userMessage: 'An internal check error occurred, Process is malformed'
-    //   });
-    // });
-
     test('should get a type unsafe error', (): void => {
       const _mockCheck: any = { mock: false };
       const customError: CustomError = <CustomError>processService.getUnsafeError(_mockCheck);
@@ -2177,21 +2150,6 @@ describe('ProcessService', (): void => {
 
     test('should check if process schedule items are type safe', (): void => {
       const _mockProcessSchedule: Process[] = mockProcessSchedule();
-      // let failFlag: boolean = false;
-      //
-      // processService.getDocumentGuardByType = jest
-      //   .fn()
-      //   .mockReturnValue(null);
-      //
-      // processService.typeGuard.hasValidProperties = jest
-      //   .fn()
-      //   .mockImplementation((): boolean => {
-      //     return !failFlag;
-      //   });
-      //
-      // expect(processService.isSafeProcessSchedule(_mockProcessSchedule)).toBe(true);
-      // failFlag = true;
-      // expect(processService.isSafeProcessSchedule(_mockProcessSchedule)).toBe(false);
 
       processService.recipeService.isSafeProcessSchedule = jest
         .fn()

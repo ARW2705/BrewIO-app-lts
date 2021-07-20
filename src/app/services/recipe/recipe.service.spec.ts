@@ -578,7 +578,7 @@ describe('RecipeService', (): void => {
 
       recipeService.errorReporter.handleGenericCatchError = jest
         .fn()
-        .mockReturnValue((error: any): Observable<never> => {
+        .mockReturnValue((): Observable<never> => {
           handledError = true;
           return throwError(null);
         });
@@ -630,7 +630,7 @@ describe('RecipeService', (): void => {
 
       recipeService.errorReporter.handleGenericCatchError = jest
         .fn()
-        .mockReturnValue((error: any): Observable<never> => {
+        .mockReturnValue((): Observable<never> => {
           handledError = true;
           return throwError(null);
         });
@@ -680,7 +680,7 @@ describe('RecipeService', (): void => {
 
       recipeService.errorReporter.handleGenericCatchError = jest
         .fn()
-        .mockReturnValue((error: any): Observable<never> => {
+        .mockReturnValue((): Observable<never> => {
           handledError = true;
           return throwError(null);
         });
@@ -766,7 +766,7 @@ describe('RecipeService', (): void => {
 
       recipeService.errorReporter.handleGenericCatchError = jest
         .fn()
-        .mockReturnValue((error: any): Observable<never> => {
+        .mockReturnValue((): Observable<never> => {
           handledError = true;
           return throwError(null);
         });
@@ -1172,7 +1172,7 @@ describe('RecipeService', (): void => {
 
       recipeService.errorReporter.handleGenericCatchError = jest
         .fn()
-        .mockReturnValue((error: any): Observable<never> => {
+        .mockReturnValue((): Observable<never> => {
           return throwError(null);
         });
 
@@ -1885,7 +1885,7 @@ describe('RecipeService', (): void => {
 
       recipeService.errorReporter.handleGenericCatchError = jest
         .fn()
-        .mockReturnValue((error: any): Observable<never> => {
+        .mockReturnValue((): Observable<never> => {
           return throwError(null);
         });
 

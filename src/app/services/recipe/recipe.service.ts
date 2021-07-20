@@ -22,7 +22,6 @@ import {
   Process,
   RecipeMaster,
   RecipeVariant,
-  Style,
   SyncData,
   SyncError,
   SyncMetadata,
