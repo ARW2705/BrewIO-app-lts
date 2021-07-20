@@ -9,7 +9,7 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 import { mockProcessSchedule } from '../../../../test-config/mock-models';
 
 /* Interface imports */
-import { Process } from '../../shared/interfaces/process';
+import { Process } from '../../shared/interfaces';
 
 /* Component imports */
 import { ProcessListComponent } from './process-list.component';

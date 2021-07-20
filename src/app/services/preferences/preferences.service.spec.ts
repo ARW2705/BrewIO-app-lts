@@ -5,10 +5,10 @@ import { TestBed, getTestBed, async } from '@angular/core/testing';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Default imports */
-import { defaultEnglish, defaultMetric } from '../../shared/defaults/default-units';
+import { defaultEnglishUnits, defaultMetricUnits } from '../../shared/defaults';
 
 /* Interface imports */
-import { SelectedUnits } from '../../shared/interfaces/units';
+import { SelectedUnits } from '../../shared/interfaces';
 
 /* Service imports */
 import { PreferencesService } from './preferences.service';
@@ -39,7 +39,7 @@ describe('PreferencesService', (): void => {
   });
 
   test('should get the current selected units', (): void => {
-    expect(preferenceService.getSelectedUnits()).toStrictEqual(defaultEnglish());
+    expect(preferenceService.getSelectedUnits()).toStrictEqual(defaultEnglishUnits());
   });
 
   test('should check if a density unit is valid', (): void => {
@@ -88,7 +88,7 @@ describe('PreferencesService', (): void => {
         return testCount !== 7;
       });
 
-    const _mockSelectedUnits: SelectedUnits = defaultEnglish();
+    const _mockSelectedUnits: SelectedUnits = defaultEnglishUnits();
     for (; testCount < 8; testCount++) {
       expect(preferenceService.isValidUnits(_mockSelectedUnits)).toBe(testCount === 0);
     }
@@ -118,8 +118,8 @@ describe('PreferencesService', (): void => {
   });
 
   test('should set the preferred unit system', (): void => {
-    const _defaultEnglish: SelectedUnits = defaultEnglish();
-    const _defaultMetric: SelectedUnits = defaultMetric();
+    const _defaultEnglishUnits: SelectedUnits = defaultEnglishUnits();
+    const _defaultMetricUnits: SelectedUnits = defaultMetricUnits();
 
     preferenceService.isValidSystem = jest
       .fn()
@@ -130,31 +130,31 @@ describe('PreferencesService', (): void => {
       .mockReturnValue(true);
 
     expect(preferenceService.preferredUnitSystem).toMatch('englishStandard');
-    expect(preferenceService.units).toStrictEqual(_defaultEnglish);
+    expect(preferenceService.units).toStrictEqual(_defaultEnglishUnits);
 
-    preferenceService.setUnits('metric', _defaultMetric);
+    preferenceService.setUnits('metric', _defaultMetricUnits);
 
     expect(preferenceService.preferredUnitSystem).toMatch('metric');
-    expect(preferenceService.units).toStrictEqual(_defaultMetric);
+    expect(preferenceService.units).toStrictEqual(_defaultMetricUnits);
   });
 
   test('should log an error if system or units are not valid', (): void => {
-    const _defaultEnglish: SelectedUnits = defaultEnglish();
-    const _defaultMetric: SelectedUnits = defaultMetric();
+    const _defaultEnglishUnits: SelectedUnits = defaultEnglishUnits();
+    const _defaultMetricUnits: SelectedUnits = defaultMetricUnits();
     const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
 
-    preferenceService.setUnits('invalid', _defaultMetric);
+    preferenceService.setUnits('invalid', _defaultMetricUnits);
 
     expect(preferenceService.preferredUnitSystem).toMatch('englishStandard');
-    expect(preferenceService.units).toStrictEqual(_defaultEnglish);
+    expect(preferenceService.units).toStrictEqual(_defaultEnglishUnits);
     expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('unit set error');
     expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][1]).toMatch('invalid');
 
-    _defaultMetric.density.longName = 'invalid';
-    preferenceService.setUnits('metric', _defaultMetric);
+    _defaultMetricUnits.density.longName = 'invalid';
+    preferenceService.setUnits('metric', _defaultMetricUnits);
 
     expect(preferenceService.preferredUnitSystem).toMatch('englishStandard');
-    expect(preferenceService.units).toStrictEqual(_defaultEnglish);
+    expect(preferenceService.units).toStrictEqual(_defaultEnglishUnits);
     expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('unit set error');
     expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][2].density.longName).toMatch('invalid');
   });

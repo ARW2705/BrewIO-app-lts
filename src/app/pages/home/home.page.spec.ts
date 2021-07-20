@@ -9,13 +9,14 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
 import { mockUser } from '../../../../test-config/mock-models';
-import { EventServiceStub, ToastServiceStub, UserServiceStub } from '../../../../test-config/service-stubs';
+import { ErrorReportingServiceStub, EventServiceStub, ToastServiceStub, UserServiceStub } from '../../../../test-config/service-stubs';
 import { AccordionComponentStub, ActiveBatchesComponentStub, InventoryComponentStub, HeaderComponentStub, LoginPageStub, SignupPageStub } from '../../../../test-config/component-stubs';
 
 /* Interface imports */
-import { User } from '../../shared/interfaces/user';
+import { User } from '../../shared/interfaces';
 
 /* Service imports */
+import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
 import { EventService } from '../../services/event/event.service';
 import { ToastService } from '../../services/toast/toast.service';
 import { UserService } from '../../services/user/user.service';
@@ -62,6 +63,7 @@ describe('HomePage', (): void => {
       ],
       imports: [ IonicModule ],
       providers: [
+        { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: EventService, useClass: EventServiceStub },
         { provide: ToastService, useClass: ToastServiceStub },
         { provide: UserService, useClass: UserServiceStub }
@@ -86,6 +88,8 @@ describe('HomePage', (): void => {
     homePage.toastService.presentToast = jest
       .fn();
     homePage.toastService.presentErrorToast = jest
+      .fn();
+    homePage.errorReporter.handleUnhandledError = jest
       .fn();
   });
 
@@ -170,18 +174,23 @@ describe('HomePage', (): void => {
     });
 
     test('should handle error listening for user', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+
       homePage.userService.getUser = jest
         .fn()
-        .mockReturnValue(throwError('test-error'));
+        .mockReturnValue(throwError(_mockError));
 
-      const toastSpy: jest.SpyInstance = jest.spyOn(homePage.toastService, 'presentErrorToast');
+      // const toastSpy: jest.SpyInstance = jest.spyOn(homePage.toastService, 'presentErrorToast');
+
+      const errorSpy: jest.SpyInstance = jest.spyOn(homePage.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
       homePage.listenForUserChanges();
 
       setTimeout((): void => {
-        expect(toastSpy).toHaveBeenCalledWith('test-error');
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
+        // expect(toastSpy).toHaveBeenCalledWith('test-error');
         done();
       }, 10);
     });

@@ -10,7 +10,7 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 import { ModalControllerStub } from '../../../../test-config/ionic-stubs';
 
 /* Constant imports */
-import { COMMON_CONTAINERS } from '../../shared/constants/common-containers';
+import { COMMON_CONTAINERS } from '../../shared/constants';
 
 /* Utility imports */
 import { toTitleCase } from '../../shared/utility-functions/utilities';

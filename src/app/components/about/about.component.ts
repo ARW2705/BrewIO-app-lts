@@ -2,8 +2,7 @@
 import { Component } from '@angular/core';
 
 /* Constant imports */
-import { API_VERSION } from '../../shared/constants/api-version';
-import { APP_VERSION } from '../../shared/constants/app-version';
+import { API_VERSION, APP_VERSION } from '../../shared/constants';
 
 
 @Component({

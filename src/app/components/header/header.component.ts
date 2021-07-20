@@ -6,7 +6,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 /* Interface Imports */
-import { User } from '../../shared/interfaces/user';
+import { User } from '../../shared/interfaces';
 
 /* Page imports */
 import { LoginPage } from '../../pages/forms/login/login.page';

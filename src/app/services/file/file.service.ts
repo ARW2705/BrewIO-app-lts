@@ -6,6 +6,9 @@ import { WebView } from '@ionic-native/ionic-webview/ngx';
 import { Observable, Observer, forkJoin, from, of } from 'rxjs';
 import { catchError, mergeMap } from 'rxjs/operators';
 
+/* Service imports */
+import { ErrorReportingService } from '../error-reporting/error-reporting.service';
+
 
 @Injectable({
   providedIn: 'root'
@@ -13,6 +16,7 @@ import { catchError, mergeMap } from 'rxjs/operators';
 export class FileService {
 
   constructor(
+    public errorReporter: ErrorReportingService,
     public file: File,
     public filePath: FilePath,
     public webview: WebView
@@ -39,7 +43,8 @@ export class FileService {
           observer.complete();
         };
       }
-    );
+    )
+    .pipe(catchError(this.errorReporter.handleGenericCatchError()));
   }
 
   /**
@@ -61,7 +66,8 @@ export class FileService {
           observer.complete();
         }
       );
-    });
+    })
+    .pipe(catchError(this.errorReporter.handleGenericCatchError()));
   }
 
   /**
@@ -84,7 +90,8 @@ export class FileService {
       .pipe(
         mergeMap((entry: Entry): Observable<[Entry, Metadata]> => {
           return forkJoin(of(entry), this.getMetadata(entry));
-        })
+        }),
+        catchError(this.errorReporter.handleGenericCatchError())
       );
   }
 
@@ -93,7 +100,7 @@ export class FileService {
    *
    * @params: path - file's path
    *
-   * @return: observable of null on success or error message on error (does not throw error)
+   * @return: observable of null on success
    */
   deleteLocalFile(path: string): Observable<string> {
     return from(this.file.resolveLocalFilesystemUrl(path))
@@ -113,10 +120,7 @@ export class FileService {
             );
           });
         }),
-        catchError((error: any): Observable<string> => {
-          console.log('file read error', error);
-          return of(error);
-        })
+        catchError(this.errorReporter.handleGenericCatchError())
       );
   }
 
@@ -135,7 +139,8 @@ export class FileService {
         }),
         mergeMap((file: IFile): Observable<string | ArrayBuffer> => {
           return this.convertCordovaFileToJSFile(file);
-        })
+        }),
+        catchError(this.errorReporter.handleGenericCatchError())
       );
   }
 
@@ -169,7 +174,8 @@ export class FileService {
           observer.complete();
         }
       );
-    });
+    })
+    .pipe(catchError(this.errorReporter.handleGenericCatchError()));
   }
 
   /**

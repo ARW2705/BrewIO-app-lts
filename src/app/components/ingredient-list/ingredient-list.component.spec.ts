@@ -10,7 +10,7 @@ import { mockRecipeVariantComplete } from '../../../../test-config/mock-models';
 import { UnitConversionPipeStub } from '../../../../test-config/pipe-stubs';
 
 /* Interface imports */
-import { RecipeVariant } from '../../shared/interfaces/recipe-variant';
+import { RecipeVariant } from '../../shared/interfaces';
 
 /* Component imports */
 import { IngredientListComponent } from './ingredient-list.component';

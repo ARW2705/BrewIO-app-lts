@@ -8,11 +8,11 @@ import { takeUntil } from 'rxjs/operators';
 import { toTitleCase } from '../../shared/utility-functions/utilities';
 
 /* Interface imports */
-import { Batch } from '../../shared/interfaces/batch';
-import { InventoryItem } from '../../shared/interfaces/inventory-item';
+import { Batch, InventoryItem } from '../../shared/interfaces';
 
 /* Animation imports */
 import { AnimationsService } from '../../services/animations/animations.service';
+import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
 
 // For testing purposes only
 // import { ConnectionProvider } from '../../providers/connection/connection';
@@ -62,7 +62,8 @@ export class ExtrasPage implements OnInit, OnDestroy {
   constructor(
     public route: ActivatedRoute,
     public router: Router,
-    public animationService: AnimationsService
+    public animationService: AnimationsService,
+    public errorReporter: ErrorReportingService
   ) { }
 
   /***** Lifecycle Hooks *****/
@@ -82,8 +83,8 @@ export class ExtrasPage implements OnInit, OnDestroy {
             }
           }
         },
-        (error: string): void => {
-          console.log('Extras page router error', error);
+        (error: Error): void => {
+          this.errorReporter.setErrorReport(this.errorReporter.getCustomReportFromError(error));
         }
       );
   }

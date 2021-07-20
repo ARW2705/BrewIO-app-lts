@@ -10,14 +10,15 @@ import { configureTestBed } from '../../../../../test-config/configure-test-bed'
 
 /* Mock imports */
 import { mockUser } from '../../../../../test-config/mock-models';
-import { ToastServiceStub, UserServiceStub } from '../../../../../test-config/service-stubs';
+import { ErrorReportingServiceStub, ToastServiceStub, UserServiceStub } from '../../../../../test-config/service-stubs';
 import { HeaderComponentStub } from '../../../../../test-config/component-stubs';
 import { LoadingControllerStub, LoadingStub, ModalControllerStub } from '../../../../../test-config/ionic-stubs';
 
 /* Interface imports */
-import { User } from '../../../shared/interfaces/user';
+import { User } from '../../../shared/interfaces';
 
 /* Service imports */
+import { ErrorReportingService } from '../../../services/error-reporting/error-reporting.service';
 import { ToastService } from '../../../services/toast/toast.service';
 import { UserService } from '../../../services/user/user.service';
 
@@ -42,6 +43,7 @@ describe('LoginPage', (): void => {
         ReactiveFormsModule
       ],
       providers: [
+        { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: LoadingController, useClass: LoadingControllerStub },
         { provide: ModalController, useClass: ModalControllerStub },
         { provide: ToastService, useClass: ToastServiceStub },
@@ -87,7 +89,7 @@ describe('LoginPage', (): void => {
     expect(initSpy).toHaveBeenCalled();
   });
 
-  test('should call modal dismiss with not data', (): void => {
+  test('should call modal dismiss with no data', (): void => {
     const dismissSpy: jest.SpyInstance = jest.spyOn(loginPage.modalCtrl, 'dismiss');
 
     fixture.detectChanges();
@@ -145,7 +147,7 @@ describe('LoginPage', (): void => {
       expect(loginSpy).toHaveBeenCalledWith(form, false);
       expect(toastSpy).toHaveBeenCalledWith(
         `Welcome ${_mockUser.username}!`,
-        2000,
+        1500,
         'middle',
         'toast-bright'
       );
@@ -154,7 +156,7 @@ describe('LoginPage', (): void => {
   });
 
   test('should handle an error loggin in', (done: jest.DoneCallback): void => {
-    const _mockUser: User = mockUser();
+    const _mockError: Error = new Error('test-error');
     const _stubLoading: LoadingStub = new LoadingStub();
     const formBuilder: FormBuilder = new FormBuilder();
     const form: object = {
@@ -165,11 +167,14 @@ describe('LoginPage', (): void => {
 
     loginPage.userService.logIn = jest
       .fn()
-      .mockReturnValue(throwError('test-error'));
+      .mockReturnValue(throwError(_mockError));
 
     loginPage.loadingCtrl.create = jest
       .fn()
       .mockReturnValue(_stubLoading);
+
+    loginPage.errorReporter.handleUnhandledError = jest
+      .fn();
 
     _stubLoading.present = jest
       .fn();
@@ -177,7 +182,7 @@ describe('LoginPage', (): void => {
       .fn();
 
     const dismissSpy: jest.SpyInstance = jest.spyOn(_stubLoading, 'dismiss');
-    const toastSpy: jest.SpyInstance = jest.spyOn(loginPage.toastService, 'presentErrorToast');
+    const errorSpy: jest.SpyInstance = jest.spyOn(loginPage.errorReporter, 'handleUnhandledError');
 
     fixture.detectChanges();
 
@@ -186,8 +191,8 @@ describe('LoginPage', (): void => {
     loginPage.onSubmit();
 
     setTimeout((): void => {
-      expect(toastSpy).toHaveBeenCalledWith('test-error');
       expect(dismissSpy).toHaveBeenCalled();
+      expect(errorSpy).toHaveBeenCalledWith(_mockError);
       done();
     }, 10);
   });

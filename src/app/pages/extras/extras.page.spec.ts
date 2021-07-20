@@ -11,17 +11,17 @@ import { IonicModule } from '@ionic/angular';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockBatch, mockInventoryItem } from '../../../../test-config/mock-models';
-import { AnimationsServiceStub } from '../../../../test-config/service-stubs';
+import { mockBatch, mockErrorReport, mockInventoryItem } from '../../../../test-config/mock-models';
+import { AnimationsServiceStub, ErrorReportingServiceStub } from '../../../../test-config/service-stubs';
 import { AboutComponentStub, ActiveBatchesComponentStub, HeaderComponentStub, InventoryComponentStub, PreferencesComponentStub, UserComponentStub } from '../../../../test-config/component-stubs';
 import { ActivatedRouteStub, AnimationStub } from '../../../../test-config/ionic-stubs';
 
 /* Interface imports */
-import { Batch } from '../../shared/interfaces/batch';
-import { InventoryItem } from '../../shared/interfaces/inventory-item';
+import { Batch, ErrorReport, InventoryItem } from '../../shared/interfaces';
 
 /* Provider imports */
 import { AnimationsService } from '../../services/animations/animations.service';
+import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
 
 /* Page imports */
 import { ExtrasPage } from './extras.page';
@@ -53,7 +53,8 @@ describe('ExtrasPage', (): void => {
       ],
       providers: [
         { provide: ActivatedRoute, useClass: ActivatedRouteStub },
-        { provide: AnimationsService, useClass: AnimationsServiceStub }
+        { provide: AnimationsService, useClass: AnimationsServiceStub },
+        { provide: ErrorReportingService, useClass: ErrorReportingServiceStub }
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
@@ -167,17 +168,29 @@ describe('ExtrasPage', (): void => {
     });
 
     test('should handle error on init the component', (): void => {
+      const _mockError: Error = new Error('test-error');
+      const _mockErrorReport: ErrorReport = mockErrorReport();
+
       extrasPage.ngOnInit = originalOnInit;
 
-      extrasPage.route.queryParams = throwError('test-error');
+      extrasPage.route.queryParams = throwError(_mockError);
 
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+      extrasPage.errorReporter.setErrorReport = jest
+        .fn();
+
+      extrasPage.errorReporter.getCustomReportFromError = jest
+        .fn()
+        .mockReturnValue(_mockErrorReport);
+
+      const getSpy: jest.SpyInstance = jest.spyOn(extrasPage.errorReporter, 'getCustomReportFromError');
+      const setSpy: jest.SpyInstance = jest.spyOn(extrasPage.errorReporter, 'setErrorReport');
 
       fixture.detectChanges();
 
-      const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
-      expect(consoleCalls[0]).toMatch('Extras page router error');
-      expect(consoleCalls[1]).toMatch('test-error');
+      setTimeout((): void => {
+        expect(getSpy).toHaveBeenCalledWith(_mockError);
+        expect(setSpy).toHaveBeenCalledWith(_mockErrorReport);
+      }, 10);
     });
 
     test('should handle destroying the component', (): void => {

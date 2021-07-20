@@ -1,31 +1,41 @@
 /* Module imports */
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, forkJoin, of } from 'rxjs';
 import { catchError, defaultIfEmpty, mergeMap, map, tap } from 'rxjs/operators';
 
 /* Constants imports */
-import { API_VERSION } from '../../shared/constants/api-version';
-import { BASE_URL } from '../../shared/constants/base-url';
+import { API_VERSION, BASE_URL } from '../../shared/constants';
 
 /* Default imports */
-import { defaultEnglish } from '../../shared/defaults/default-units';
-import { defaultImage } from '../../shared/defaults/default-image';
+import { defaultEnglishUnits, defaultImage } from '../../shared/defaults';
+
+/* Type guard imports */
+import { UserGuardMetadata } from '../../shared/type-guard-metadata/user.guard';
+
+/* Type imports */
+import { CustomError } from '../../shared/types';
 
 /* utility imports */
 import { getId, hasDefaultIdType } from '../../shared/utility-functions/id-helpers';
 
 /* Interface imports */
-import { Image, ImageRequestFormData, ImageRequestMetadata } from '../../shared/interfaces/image';
-import { LoginCredentials } from '../../shared/interfaces/login-credentials';
-import { SelectedUnits } from '../../shared/interfaces/units';
-import { SyncMetadata, SyncResponse } from '../../shared/interfaces/sync';
-import { User } from '../../shared/interfaces/user';
-import { UserResponse } from '../../shared/interfaces/user-response';
+import {
+  Image,
+  ImageRequestFormData,
+  ImageRequestMetadata,
+  LoginCredentials,
+  SelectedUnits,
+  SyncMetadata,
+  SyncResponse,
+  User,
+  UserResponse
+} from '../../shared/interfaces';
 
-/* Provider imports */
+/* Service imports */
 import { ConnectionService } from '../connection/connection.service';
+import { ErrorReportingService } from '../error-reporting/error-reporting.service';
 import { EventService } from '../event/event.service';
 import { ImageService } from '../image/image.service';
 import { PreferencesService } from '../preferences/preferences.service';
@@ -33,6 +43,7 @@ import { HttpErrorService } from '../http-error/http-error.service';
 import { StorageService } from '../storage/storage.service';
 import { SyncService } from '../sync/sync.service';
 import { ToastService } from '../toast/toast.service';
+import { TypeGuardService } from '../type-guard/type-guard.service';
 
 
 @Injectable({
@@ -58,14 +69,16 @@ export class UserService {
   constructor(
     public http: HttpClient,
     public connectionService: ConnectionService,
+    public errorReporter: ErrorReportingService,
     public event: EventService,
+    public httpError: HttpErrorService,
     public imageService: ImageService,
     public preferenceService: PreferencesService,
-    public httpError: HttpErrorService,
     public router: Router,
     public storageService: StorageService,
     public syncService: SyncService,
-    public toastService: ToastService
+    public toastService: ToastService,
+    public typeGuard: TypeGuardService
   ) {
     console.log('user service');
   }
@@ -73,28 +86,25 @@ export class UserService {
   /**
    * Request server check of json web token validity
    *
-   * @params: none
+   * @param: none
    *
    * @return: Observable of UserResponse
    */
   checkJWToken(): Observable<UserResponse> {
-    return this.http.get<UserResponse>(`${BASE_URL}/${API_VERSION}/users/checkJWToken`)
-      .pipe(catchError((error: HttpErrorResponse): Observable<never> => {
-        return this.httpError.handleError(error);
-      }));
+    return this.http.get<UserResponse>(`${BASE_URL}/${API_VERSION}/users/checkJWToken`);
   }
 
   /**
    * Set user subject data to default values, clear user from ionic storage,
    * and emit event to call any other stored values to be cleared
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   clearUserData(): void {
-    const _defaultEnglish: SelectedUnits = defaultEnglish();
+    const _defaultEnglishUnits: SelectedUnits = defaultEnglishUnits();
     const _defaultImage: Image = defaultImage();
-    this.user$.next({
+    const blankUser: User = {
       _id: undefined,
       cid: 'offline',
       createdAt: undefined,
@@ -105,11 +115,15 @@ export class UserService {
       email: undefined,
       friendList: [],
       token: '',
-      preferredUnitSystem: _defaultEnglish.system,
-      units: _defaultEnglish,
+      preferredUnitSystem: _defaultEnglishUnits.system,
+      units: _defaultEnglishUnits,
       breweryLabelImage: _defaultImage,
       userImage: _defaultImage
-    });
+    };
+
+    this.checkTypeSafety(blankUser);
+
+    this.user$.next(blankUser);
 
     this.storageService.removeUser();
     this.event.emit('clear-data');
@@ -118,18 +132,18 @@ export class UserService {
   /**
    * Retrieve user authentication json web token
    *
-   * @params: none
+   * @param: none
    *
    * @return: user's auth token
    */
   getToken(): string {
-    return this.user$.value.token;
+    return this.getUser().value.token;
   }
 
   /**
    * Get the user subject
    *
-   * @params: none
+   * @param: none
    *
    * @return: user behavior subject
    */
@@ -140,7 +154,7 @@ export class UserService {
   /**
    * Check if user is logged in
    *
-   * @params: none
+   * @param: none
    *
    * @return: true if an auth token is present and not an empty string
    */
@@ -153,27 +167,25 @@ export class UserService {
    * offline mode. Otherwise, check if json web token is valid. Remove stored
    * token if no longer valid. Finally, emit event to request other data
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   loadUserFromStorage(): void {
     this.storageService.getUser()
       .subscribe(
         (user: User): void => {
+          this.checkTypeSafety(user);
+
           this.user$.next(user);
+
           if (this.isLoggedIn()) {
             this.checkJWToken()
               .subscribe(
                 (jwtResponse: UserResponse): void => console.log(jwtResponse.status),
-                (error: string): void => {
-                  console.log('jwt error', error);
-                  if (error.includes('401')) {
-                    this.clearUserData();
-                    this.toastService.presentErrorToast(
-                      'Login has expired, please log in again',
-                      this.navToHome.bind(this)
-                    );
-                  }
+                (error: any): void => {
+                  this.errorReporter.handleUnhandledError(error);
+                  this.clearUserData();
+                  this.navToHome();
                 }
               );
           } else {
@@ -182,7 +194,7 @@ export class UserService {
           this.event.emit('init-recipes');
           this.preferenceService.setUnits(user.preferredUnitSystem, user.units);
         },
-        (error: string): void => console.log(`User load error: ${error}`)
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
@@ -190,8 +202,8 @@ export class UserService {
    * Log user in with username and password. Update user subject with response.
    * If user selected to remember login, store user data in ionic storage
    *
-   * @params: user - contains username, password, and remember boolean
-   * @params: onSignupSync - true if logging in after initial sign up
+   * @param: user - contains username, password, and remember boolean
+   * @param: onSignupSync - true if logging in after initial sign up
    *
    * @return: observable with login response user data
    */
@@ -199,6 +211,7 @@ export class UserService {
     return this.http.post<UserResponse>(`${BASE_URL}/${API_VERSION}/users/login`, user)
       .pipe(
         map((response: UserResponse): User => {
+          this.checkTypeSafety(response.user);
           this.user$.next(response.user);
           this.connectionService.setOfflineMode(false);
 
@@ -214,7 +227,7 @@ export class UserService {
             this.storageService.setUser(response.user)
               .subscribe(
                 (): void => console.log('stored user data'),
-                (error: string): void => console.log(`User store error: ${error}`)
+                (error: any): void => this.errorReporter.handleUnhandledError(error)
               );
           }
 
@@ -224,19 +237,17 @@ export class UserService {
           this.syncOnConnection()
             .subscribe(
               (): void => console.log('user sync successful'),
-              (error: string): void => console.log('User login error', error)
+              (error: any): void => this.errorReporter.handleUnhandledError(error)
             );
         }),
-        catchError((error: HttpErrorResponse): Observable<never> => {
-          return this.httpError.handleError(error);
-        })
+        catchError(this.errorReporter.handleGenericCatchError())
       );
   }
 
   /**
    * Clear stored user data on logout and set connection to offline
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   logOut(): void {
@@ -247,8 +258,8 @@ export class UserService {
   /**
    * Copy data from updated user or partial user values to current user
    *
-   * @params: userUpdate - object with new user values
-   * @params: [inputUser] - optional given user to apply new values to;
+   * @param: userUpdate - object with new user values
+   * @param: [inputUser] - optional given user to apply new values to;
    * uses current user if input not given
    *
    * @return: none
@@ -276,6 +287,7 @@ export class UserService {
     }
 
     if (!inputUser) {
+      this.checkTypeSafety(user);
       user$.next(user);
     }
   }
@@ -283,7 +295,7 @@ export class UserService {
   /**
    * Navigate to home page
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   navToHome(): void {
@@ -293,7 +305,7 @@ export class UserService {
   /**
    * Sign up a new user and login if successful
    *
-   * @params: user - user must contain at least a username, password, and email
+   * @param: user - user must contain at least a username, password, and email
    *
    * @return: if signup successful, return observable of login response, else signup response
    */
@@ -329,18 +341,19 @@ export class UserService {
             },
             true
           )
-          .subscribe((): void => console.log('Signup successful; log in successful'));
+          .subscribe(
+            (): void => console.log('Signup successful; log in successful'),
+            (error: any): void => this.errorReporter.handleUnhandledError(error)
+          );
         }),
-        catchError((error: HttpErrorResponse): Observable<never> => {
-          return this.httpError.handleError(error);
-        })
+        catchError(this.errorReporter.handleGenericCatchError())
       );
   }
 
   /**
    * Update user profile
    *
-   * @params: user - object with new user profile data
+   * @param: user - object with new user profile data
    *
    * @return: Observable of user data from server
    */
@@ -371,23 +384,27 @@ export class UserService {
           } else {
             this.addSyncFlag('update', getId(user));
           }
+
+          this.checkTypeSafety(user);
+
           user$.next(user);
           return of(user);
-        })
+        }),
+        catchError(this.errorReporter.handleGenericCatchError())
       );
   }
 
   /**
    * Update stored user with current user
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   updateUserStorage(): void {
     this.storageService.setUser(this.getUser().value)
       .subscribe(
-        () => console.log('user data stored'),
-        (error: string): void => console.log(`user store error: ${error}`)
+        (): void => console.log('user data stored'),
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
@@ -396,7 +413,7 @@ export class UserService {
   /**
    * Check if able to send an http request
    *
-   * @params: userId - the user's id to check
+   * @param: userId - the user's id to check
    *
    * @return: true if connected to network, logged in, and has a server id
    */
@@ -408,8 +425,8 @@ export class UserService {
    * Set up image storage function calls to persistently store image
    * If an existing persistent image is to be overridden, provide object with new paths
    *
-   * @params: user - contains the image(s)
-   * @params: replacementPaths - object with original paths for overriding persistent image
+   * @param: user - contains the image(s)
+   * @param: replacementPaths - object with original paths for overriding persistent image
    *
    * @return: array of persistent image observables
    */
@@ -436,7 +453,7 @@ export class UserService {
   /**
    * Set up image upload request data
    *
-   * @params: user - user update object
+   * @param: user - user update object
    *
    * @return: array of objects with image and its formdata name
    */
@@ -463,16 +480,13 @@ export class UserService {
   /**
    * Configure a background request while defining which error handling method to use
    *
-   * @params: user - user update object
-   * @params: shouldResolveError - true if error should return the error response as an observable
+   * @param: user - user update object
+   * @param: shouldResolveError - true if error should return the error response as an observable
    * or false if error should be handled as an error
    *
    * @return: observable of User or HttpErrorResponse
    */
-  configureBackgroundRequest(
-    user: User | object,
-    shouldResolveError: boolean
-  ): Observable<User | HttpErrorResponse> {
+  configureBackgroundRequest(user: User | object, shouldResolveError: boolean): Observable<User> {
     const formData: FormData = new FormData();
     formData.append('user', JSON.stringify(user));
 
@@ -487,19 +501,14 @@ export class UserService {
 
           return this.http.patch<User>(`${BASE_URL}/${API_VERSION}/users/profile`, formData);
         }),
-        catchError((error: HttpErrorResponse): Observable<HttpErrorResponse> => {
-          if (shouldResolveError) {
-            return of(error);
-          }
-          return this.httpError.handleError(error);
-        })
+        catchError(this.errorReporter.handleResolvableCatchError<User>(shouldResolveError))
       );
   }
 
   /**
    * Get a server update object for the user
    *
-   * @params: user - the user as the basis for the update - may have pre-saved updated values
+   * @param: user - the user as the basis for the update - may have pre-saved updated values
    *
    * @return: object of user update body
    */
@@ -526,7 +535,7 @@ export class UserService {
   /**
    * Perform background server http request - update local user with response
    *
-   * @params: user - the user to push to server
+   * @param: user - the user to push to server
    *
    * @return: none
    */
@@ -538,10 +547,7 @@ export class UserService {
           this.mapUserData(userResponse);
           this.updateUserStorage();
         },
-        (error: string): void => {
-          console.log('User: background patch request error', error);
-          this.toastService.presentErrorToast('User profile failed to save to server');
-        }
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
@@ -553,8 +559,8 @@ export class UserService {
   /**
    * Add a sync flag for a recipe
    *
-   * @params: method - options: 'create', 'update', or 'delete'
-   * @params: docId - document id to apply sync
+   * @param: method - options: 'create', 'update', or 'delete'
+   * @param: docId - document id to apply sync
    *
    * @return: none
    */
@@ -571,7 +577,7 @@ export class UserService {
   /**
    * Process all sync flags on reconnect
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   syncOnConnection(): Observable<boolean> {
@@ -589,10 +595,61 @@ export class UserService {
           console.log('sync complete', response);
           const userResponse: User = <User>response.successes[0];
           this.mapUserData(userResponse, user);
+
+          this.checkTypeSafety(user);
+
           user$.next(user);
           return true;
-        })
+        }),
+        catchError(this.errorReporter.handleGenericCatchError())
       );
   }
+
+  /**** End Server Sync *****/
+
+
+  /***** Type Guard *****/
+
+  checkTypeSafety(user: any): void {
+    if (!this.isSafeUser(user)) {
+      throw this.getUnsafeUserError(user);
+    }
+  }
+
+  /**
+   * Throw a custom error when an invalid user is encountered
+   *
+   * @param: thrownFor - given user object that failed validation
+   *
+   * @return: custom invalid user error
+   */
+  getUnsafeUserError(thrownFor: any): Error {
+    return new CustomError(
+      'UserError',
+      `Given User is invalid: got\n${JSON.stringify(thrownFor, null, 2)}`,
+      2,
+      'An error occurred while updating user: invalid user'
+    );
+  }
+
+  /**
+   * Check if given user object is valid by correctly implementing the User interface
+   *
+   * @param: user - expects a User at runtime
+   *
+   * @return: true if given user correctly implements User interface
+   */
+  isSafeUser(user: any): boolean {
+    if (!this.typeGuard.hasValidProperties(user, UserGuardMetadata)) {
+      return false;
+    }
+    return (
+      this.preferenceService.isValidUnits(user.units)
+      && (!user.breweryLabelImage || this.imageService.isSafeImage(user.breweryLabelImage))
+      && (!user.userImage || this.imageService.isSafeImage(user.userImage))
+    );
+  }
+
+  /***** End Type Guard *****/
 
 }

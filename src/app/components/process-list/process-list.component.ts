@@ -4,7 +4,7 @@ import { IonReorderGroup } from '@ionic/angular';
 import { ItemReorderEventDetail } from '@ionic/core';
 
 /* Interface imports */
-import { Process } from '../../shared/interfaces/process';
+import { Process } from '../../shared/interfaces';
 
 @Component({
   selector: 'process-list',

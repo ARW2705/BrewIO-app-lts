@@ -9,7 +9,7 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 import { mockYeastBatch } from '../../../../test-config/mock-models';
 
 /* Interface imports */
-import { YeastBatch } from '../../shared/interfaces/yeast-batch';
+import { YeastBatch } from '../../shared/interfaces';
 
 /* Component imports */
 import { YeastBatchComponent } from './yeast-batch.component';

@@ -2,16 +2,45 @@
 import { Injectable } from '@angular/core';
 
 /* Constants imports */
-import * as Constant from '../../shared/constants/factors';
-import * as Units from '../../shared/constants/units';
+import {
+  ABV_FACTORS,
+  BIGNESS_BASE,
+  BIGNESS_FACTOR,
+  BOIL_TIME_EXP,
+  BOIL_TIME_FACTOR,
+  BRIX,
+  ENGLISH_TEMPERATURE,
+  FL_TO_ML,
+  GAL_TO_L,
+  G_TO_OZ,
+  IBU_FACTOR,
+  KG_TO_LB,
+  LARGE_ENGLISH_VOLUME,
+  LARGE_ENGLISH_WEIGHT,
+  LB_TO_KG,
+  L_TO_GAL,
+  ML_TO_FL,
+  OZ_TO_G,
+  PLATO_TO_SG,
+  PLATO,
+  SG_TO_PLATO,
+  SMALL_ENGLISH_VOLUME,
+  SMALL_ENGLISH_WEIGHT,
+  SPECIFIC_GRAVITY,
+  SRM_EXP,
+  SRM_FACTOR
+} from '../../shared/constants';
 
 /* Interface imports */
-import { GrainBill } from '../../shared/interfaces/grain-bill';
-import { HopsSchedule } from '../../shared/interfaces/hops-schedule';
-import { YeastBatch } from '../../shared/interfaces/yeast-batch';
-import { Grains, Hops } from '../../shared/interfaces/library';
-import { RecipeVariant } from '../../shared/interfaces/recipe-variant';
-import { SelectedUnits } from '../../shared/interfaces/units';
+import {
+  GrainBill,
+  HopsSchedule,
+  YeastBatch,
+  Grains,
+  Hops,
+  RecipeVariant,
+  SelectedUnits
+} from '../../shared/interfaces';
 
 /* Utility function imports */
 import { roundToDecimalPlace } from '../../shared/utility-functions/utilities';
@@ -49,26 +78,26 @@ export class CalculationsService {
     outputUnit: string
   ): number {
     if (
-      inputUnit === Units.SPECIFIC_GRAVITY.longName
+      inputUnit === SPECIFIC_GRAVITY.longName
       && (
-        outputUnit === Units.PLATO.longName
-        || outputUnit === Units.BRIX.longName
+        outputUnit === PLATO.longName
+        || outputUnit === BRIX.longName
       )
     ) {
       return (Math.abs(
-        (Constant.SG_TO_PLATO[0] * Math.pow(density, 3))
-        - (Constant.SG_TO_PLATO[1] * Math.pow(density, 2))
-        + (Constant.SG_TO_PLATO[2] * density)
-        - Constant.SG_TO_PLATO[3]
+        (SG_TO_PLATO[0] * Math.pow(density, 3))
+        - (SG_TO_PLATO[1] * Math.pow(density, 2))
+        + (SG_TO_PLATO[2] * density)
+        - SG_TO_PLATO[3]
       ));
     } else if (
-      outputUnit === Units.SPECIFIC_GRAVITY.longName
+      outputUnit === SPECIFIC_GRAVITY.longName
       && (
-        inputUnit === Units.PLATO.longName
-        || inputUnit === Units.BRIX.longName
+        inputUnit === PLATO.longName
+        || inputUnit === BRIX.longName
       )
     ) {
-      return ((density / (Constant.PLATO_TO_SG[0] - (density * Constant.PLATO_TO_SG[1] / Constant.PLATO_TO_SG[2]))) + 1);
+      return ((density / (PLATO_TO_SG[0] - (density * PLATO_TO_SG[1] / PLATO_TO_SG[2]))) + 1);
     } else if (this.isValidDensityUnit(inputUnit) && this.isValidDensityUnit(outputUnit)) {
       return density;
     }
@@ -103,9 +132,9 @@ export class CalculationsService {
    */
   convertVolume(volume: number, isLarge: boolean, toEn: boolean): number {
     if (isLarge) {
-      return volume * (toEn ? Constant.L_TO_GAL : Constant.GAL_TO_L);
+      return volume * (toEn ? L_TO_GAL : GAL_TO_L);
     } else {
-      return volume * (toEn ? Constant.ML_TO_FL : Constant.FL_TO_ML);
+      return volume * (toEn ? ML_TO_FL : FL_TO_ML);
     }
   }
 
@@ -120,9 +149,9 @@ export class CalculationsService {
    */
   convertWeight(weight: number, isLarge: boolean, toEn: boolean): number {
     if (isLarge) {
-      return weight * (toEn ? Constant.KG_TO_LB : Constant.LB_TO_KG);
+      return weight * (toEn ? KG_TO_LB : LB_TO_KG);
     } else {
-      return weight * (toEn ? Constant.G_TO_OZ : Constant.OZ_TO_G);
+      return weight * (toEn ? G_TO_OZ : OZ_TO_G);
     }
   }
 
@@ -134,9 +163,11 @@ export class CalculationsService {
    * @return: true if unitName matches SPECIFIC_GRAVITY, PLATO, or BRIX longName
    */
   isValidDensityUnit(unitName: string): boolean {
-    return unitName === Units.SPECIFIC_GRAVITY.longName
-      || unitName === Units.PLATO.longName
-      || unitName === Units.BRIX.longName;
+    return (
+      unitName === SPECIFIC_GRAVITY.longName
+      || unitName === PLATO.longName
+      || unitName === BRIX.longName
+    );
   }
 
   /**
@@ -150,17 +181,17 @@ export class CalculationsService {
   requiresConversion(unitType: string, unit: SelectedUnits): boolean {
     switch (unitType) {
       case 'density':
-        return unit.density.longName !== Units.SPECIFIC_GRAVITY.longName;
+        return unit.density.longName !== SPECIFIC_GRAVITY.longName;
       case 'temperature':
-        return unit.temperature.longName !== Units.TEMPERATURE_ENGLISH.longName;
+        return unit.temperature.longName !== ENGLISH_TEMPERATURE.longName;
       case 'volumeLarge':
-        return unit.volumeLarge.longName !== Units.VOLUME_ENGLISH_LARGE.longName;
+        return unit.volumeLarge.longName !== LARGE_ENGLISH_VOLUME.longName;
       case 'volumeSmall':
-        return unit.volumeSmall.longName !== Units.VOLUME_ENGLISH_SMALL.longName;
+        return unit.volumeSmall.longName !== SMALL_ENGLISH_VOLUME.longName;
       case 'weightLarge':
-        return unit.weightLarge.longName !== Units.WEIGHT_ENGLISH_LARGE.longName;
+        return unit.weightLarge.longName !== LARGE_ENGLISH_WEIGHT.longName;
       case 'weightSmall':
-        return unit.weightSmall.longName !== Units.WEIGHT_ENGLISH_SMALL.longName;
+        return unit.weightSmall.longName !== SMALL_ENGLISH_WEIGHT.longName;
       default:
         return false;
     }
@@ -367,11 +398,11 @@ export class CalculationsService {
     return roundToDecimalPlace(
       (
         (
-          Constant.ABV_FACTORS[0]
+          ABV_FACTORS[0]
           * (og - fg)
-          / (Constant.ABV_FACTORS[1] - og)
+          / (ABV_FACTORS[1] - og)
         )
-        * (fg / Constant.ABV_FACTORS[2])
+        * (fg / ABV_FACTORS[2])
       ),
       3
     );
@@ -453,7 +484,7 @@ export class CalculationsService {
    */
   getBignessFactor(boilGravity: number) {
     return roundToDecimalPlace(
-      Constant.BIGNESS_FACTOR * Math.pow(Constant.BIGNESS_BASE, boilGravity),
+      BIGNESS_FACTOR * Math.pow(BIGNESS_BASE, boilGravity),
       9
     );
   }
@@ -470,10 +501,7 @@ export class CalculationsService {
    */
   getBoilTimeFactor(boilTime: number): number {
     return roundToDecimalPlace(
-      (
-        (1 - Math.pow(Math.E, (Constant.BOIL_TIME_EXP * boilTime)))
-        / Constant.BOIL_TIME_FACTOR
-      ),
+      ((1 - Math.pow(Math.E, (BOIL_TIME_EXP * boilTime))) / BOIL_TIME_FACTOR),
       9
     );
   }
@@ -522,7 +550,7 @@ export class CalculationsService {
         hops.alphaAcid
         * hopsInstance.quantity
         * this.getUtilization(bignessFactor, boilTimeFactor)
-        * Constant.IBU_FACTOR
+        * IBU_FACTOR
         / batchVolume
       ),
       1
@@ -556,10 +584,7 @@ export class CalculationsService {
    * @return: SRM value rounded to whole number
    */
   getSRM(mcu: number): number {
-    return roundToDecimalPlace(
-      Constant.SRM_FACTOR * (Math.pow(mcu, Constant.SRM_EXP)),
-      1
-    );
+    return roundToDecimalPlace(SRM_FACTOR * (Math.pow(mcu, SRM_EXP)), 1);
   }
 
   /***** End Recipe Calculations *****/

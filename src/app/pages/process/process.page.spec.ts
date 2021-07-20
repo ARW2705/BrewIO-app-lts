@@ -1,7 +1,7 @@
 /* Module imports */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { BehaviorSubject, of, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ActivatedRoute } from '@angular/router';
@@ -11,16 +11,15 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
 import { mockBatch, mockAlert, mockAlertPresent, mockAlertFuture } from '../../../../test-config/mock-models';
-import { EventServiceStub, ProcessServiceStub, TimerServiceStub, ToastServiceStub, UserServiceStub } from '../../../../test-config/service-stubs';
+import { ErrorReportingServiceStub, EventServiceStub, ProcessServiceStub, TimerServiceStub, ToastServiceStub, UserServiceStub } from '../../../../test-config/service-stubs';
 import { HeaderComponentStub, ProcessCalendarComponentStub, ProcessManualComponentStub, ProcessTimerComponentStub, ProcessMeasurementsFormPageStub, ProcessControlsComponentStub } from '../../../../test-config/component-stubs';
 import { ModalControllerStub, ModalStub, ActivatedRouteStub } from '../../../../test-config/ionic-stubs';
 
 /* Interface imports */
-import { Alert } from '../../shared/interfaces/alert';
-import { Batch } from '../../shared/interfaces/batch';
-import { Process } from '../../shared/interfaces/process';
+import { Alert, Batch, CalendarProcess, ManualProcess, Process, TimerProcess } from '../../shared/interfaces';
 
 /* Service imports */
+import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
 import { EventService } from '../../services/event/event.service';
 import { ProcessService } from '../../services/process/process.service';
 import { TimerService } from '../../services/timer/timer.service';
@@ -58,6 +57,7 @@ describe('ProcessPage', (): void => {
       providers: [
         { provide: ActivatedRoute, useClass: ActivatedRouteStub },
         { provide: ModalController, useClass: ModalControllerStub },
+        { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: EventService, useClass: EventServiceStub },
         { provide: ProcessService, useClass: ProcessServiceStub },
         { provide: TimerService, useClass: TimerServiceStub },
@@ -85,6 +85,13 @@ describe('ProcessPage', (): void => {
       .fn();
     processPage.toastService.presentErrorToast = jest
       .fn();
+    processPage.errorReporter.handleUnhandledError = jest
+      .fn();
+    processPage.errorReporter.handleGenericCatchError = jest
+      .fn()
+      .mockImplementation((): (error: any) => Observable<never> => {
+        return (error: any): Observable<never> => throwError(error);
+      });
   });
 
   afterEach((): void => {
@@ -197,6 +204,7 @@ describe('ProcessPage', (): void => {
     test('should handle error on batch change', (done: jest.DoneCallback): void => {
       const _mockBatch: Batch = mockBatch();
       const _mockBatch$: BehaviorSubject<Batch> = new BehaviorSubject<Batch>(_mockBatch);
+      const _mockError: Error = new Error('test-error');
 
       processPage.selectedBatch$ = _mockBatch$;
 
@@ -206,16 +214,16 @@ describe('ProcessPage', (): void => {
       processPage.goToActiveStep = jest
         .fn();
 
-      const toastSpy: jest.SpyInstance = jest.spyOn(processPage.toastService, 'presentErrorToast');
+      const errorSpy: jest.SpyInstance = jest.spyOn(processPage.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
       processPage.listenForBatchChanges(true);
 
-      _mockBatch$.error('test-error');
+      _mockBatch$.error(_mockError);
 
       setTimeout((): void => {
-        expect(toastSpy).toHaveBeenCalledWith('test-error', processPage.navigateToRoot);
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
     });
@@ -285,43 +293,37 @@ describe('ProcessPage', (): void => {
     });
 
     test('should handle an error on route change', (done: jest.DoneCallback): void => {
-      processPage.route.queryParams = throwError('test-error');
+      const _mockError: Error = new Error('test-error');
 
-      const toastSpy: jest.SpyInstance = jest.spyOn(processPage.toastService, 'presentErrorToast');
+      processPage.route.queryParams = throwError(_mockError);
+
+      const errorSpy: jest.SpyInstance = jest.spyOn(processPage.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
       processPage.listenForRouteChanges();
 
       setTimeout((): void => {
-        expect(toastSpy).toHaveBeenCalledWith(
-          'Process routing error',
-          processPage.navigateToRoot
-        );
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
     });
 
     test('should handle error from nav data on route change', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+
       processPage.router.getCurrentNavigation = jest
         .fn()
-        .mockImplementation((): void => { throw new Error('test-error'); });
+        .mockImplementation((): void => { throw _mockError; });
 
-      const toastSpy: jest.SpyInstance = jest.spyOn(processPage.toastService, 'presentErrorToast');
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+      const errorSpy: jest.SpyInstance = jest.spyOn(processPage.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
       processPage.listenForRouteChanges();
 
       setTimeout((): void => {
-        expect(toastSpy).toHaveBeenCalledWith(
-          'Process routing error',
-          processPage.navigateToRoot
-        );
-        const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
-        expect(consoleCalls[0]).toMatch('Process page routing error');
-        expect(consoleCalls[1]).toMatch('test-error');
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
     });
@@ -354,21 +356,20 @@ describe('ProcessPage', (): void => {
     });
 
     test('should handle error when starting a new batch', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+
       processPage.processService.startNewBatch = jest
         .fn()
-        .mockReturnValue(throwError('test-error'));
+        .mockReturnValue(throwError(_mockError));
 
-      const toastSpy: jest.SpyInstance = jest.spyOn(processPage.toastService, 'presentErrorToast');
+      const errorSpy: jest.SpyInstance = jest.spyOn(processPage.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
       processPage.startNewBatch();
 
       setTimeout((): void => {
-        expect(toastSpy).toHaveBeenCalledWith(
-          'test-error',
-          processPage.navigateToRoot
-        );
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
     });
@@ -384,17 +385,23 @@ describe('ProcessPage', (): void => {
         .fn()
         .mockReturnValue(undefined);
 
-      const toastSpy: jest.SpyInstance = jest.spyOn(processPage.toastService, 'presentErrorToast');
+      processPage.errorReporter.handleGenericCatchError = jest
+        .fn()
+        .mockImplementation((): (error: any) => Observable<never> => {
+          return (error: any): Observable<never> => {
+            expect(error.message).toMatch('An error occurred trying to start a new batch: new batch not found');
+            return throwError(error);
+          };
+        });
+
+      const errorSpy: jest.SpyInstance = jest.spyOn(processPage.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
       processPage.startNewBatch();
 
       setTimeout((): void => {
-        expect(toastSpy).toHaveBeenCalledWith(
-          'Internal error: Batch not found',
-          processPage.navigateToRoot
-        );
+        expect(errorSpy).toHaveBeenCalled();
         done();
       }, 10);
     });
@@ -564,6 +571,7 @@ describe('ProcessPage', (): void => {
 
     test('should handle an error updating batch on advance batch', (done: jest.DoneCallback): void => {
       const _mockBatch: Batch = mockBatch();
+      const _mockError: Error = new Error('test-error');
 
       processPage.selectedBatch = _mockBatch;
       processPage.viewStepIndex = 0;
@@ -572,19 +580,16 @@ describe('ProcessPage', (): void => {
 
       processPage.processService.updateBatch = jest
         .fn()
-        .mockReturnValue(throwError('test-error'));
+        .mockReturnValue(throwError(_mockError));
 
-      const toastSpy: jest.SpyInstance = jest.spyOn(processPage.toastService, 'presentErrorToast');
+      const errorSpy: jest.SpyInstance = jest.spyOn(processPage.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
       processPage.advanceBatch(1);
 
       setTimeout((): void => {
-        expect(toastSpy).toHaveBeenCalledWith(
-          'Step completion error',
-          processPage.navigateToRoot
-        );
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
     });
@@ -676,6 +681,7 @@ describe('ProcessPage', (): void => {
 
     test('should handle error on end batch', (done: jest.DoneCallback): void => {
       const _mockBatch: Batch = mockBatch();
+      const _mockError: Error = new Error('test-error');
 
       processPage.selectedBatch = _mockBatch;
 
@@ -687,19 +693,16 @@ describe('ProcessPage', (): void => {
 
       processPage.processService.endBatchById = jest
         .fn()
-        .mockReturnValue(throwError('test-error'));
+        .mockReturnValue(throwError(_mockError));
 
-      const toastSpy: jest.SpyInstance = jest.spyOn(processPage.toastService, 'presentErrorToast');
+      const errorSpy: jest.SpyInstance = jest.spyOn(processPage.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
       processPage.endBatch();
 
       setTimeout((): void => {
-        expect(toastSpy).toHaveBeenCalledWith(
-          'Batch completion error',
-          processPage.navigateToRoot
-        );
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
     });
@@ -840,7 +843,9 @@ describe('ProcessPage', (): void => {
     test('should handle date change event', (): void => {
       const _mockBatch: Batch = mockBatch();
       const calendarIndex: number = _mockBatch.process.schedule.length - 2;
-      _mockBatch.process.schedule[calendarIndex].startDatetime = (new Date()).toISOString();
+      const calendarProcess: CalendarProcess = (<CalendarProcess>_mockBatch.process.schedule[calendarIndex]);
+
+      calendarProcess.startDatetime = (new Date()).toISOString();
       _mockBatch.process.currentStep = calendarIndex;
 
       processPage.selectedBatch = _mockBatch;
@@ -852,11 +857,13 @@ describe('ProcessPage', (): void => {
 
       fixture.detectChanges();
 
-      expect(_mockBatch.process.schedule[calendarIndex].startDatetime).toBeDefined();
+      // expect(_mockBatch.process.schedule[calendarIndex].startDatetime).toBeDefined();
+      expect(calendarProcess.startDatetime).toBeDefined();
 
       processPage.changeDateEventHandler();
 
-      expect(_mockBatch.process.schedule[calendarIndex].startDatetime).toBeUndefined();
+      // expect(_mockBatch.process.schedule[calendarIndex].startDatetime).toBeUndefined();
+      expect(calendarProcess.startDatetime).toBeUndefined();
       expect(toastSpy).toHaveBeenCalledWith(
         'Select new dates',
         1500,
@@ -891,8 +898,9 @@ describe('ProcessPage', (): void => {
       const _mockBatch: Batch = mockBatch();
       const calendarNotStartedIndex: number = 13;
       const calendarStartedIndex: number = _mockBatch.process.schedule.length - 2;
+      const calendarProcess: CalendarProcess = <CalendarProcess>_mockBatch.process.schedule[calendarStartedIndex];
 
-      _mockBatch.process.schedule[calendarStartedIndex].startDatetime = (new Date()).toISOString();
+      calendarProcess.startDatetime = (new Date()).toISOString();
       _mockBatch.process.currentStep = calendarNotStartedIndex;
 
       processPage.selectedBatch = _mockBatch;
@@ -929,12 +937,13 @@ describe('ProcessPage', (): void => {
     });
 
     test('should handle error starting a calendar step', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+
       processPage.processService.updateStepById = jest
         .fn()
-        .mockReturnValue(throwError('test-error'));
+        .mockReturnValue(throwError(_mockError));
 
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
-      const toastSpy: jest.SpyInstance = jest.spyOn(processPage.toastService, 'presentErrorToast');
+      const errorSpy: jest.SpyInstance = jest.spyOn(processPage.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
@@ -946,10 +955,7 @@ describe('ProcessPage', (): void => {
       processPage.startCalendar();
 
       setTimeout((): void => {
-        const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
-        expect(consoleCalls[0]).toMatch('Calendar start error');
-        expect(consoleCalls[1]).toMatch('test-error');
-        expect(toastSpy).toHaveBeenCalledWith('Error starting calendar step');
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
     });

@@ -6,20 +6,34 @@ import { Storage } from '@ionic/storage';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockBatch, mockInventoryItem, mockLibraryStorage, mockRecipeMasterActive, mockSyncMetadata, mockUser } from '../../../../test-config/mock-models';
+import {
+  mockBatch,
+  mockErrorReport,
+  mockInventoryItem,
+  mockLibraryStorage,
+  mockRecipeMasterActive,
+  mockSyncMetadata,
+  mockUser
+} from '../../../../test-config/mock-models';
 import { StorageStub } from '../../../../test-config/ionic-stubs';
 
 /* Interface imports */
-import { Batch } from '../../shared/interfaces/batch';
-import { LibraryStorage } from '../../shared/interfaces/library';
-import { InventoryItem } from '../../shared/interfaces/inventory-item';
-import { RecipeMaster } from '../../shared/interfaces/recipe-master';
-import { SelectedUnits } from '../../shared/interfaces/units';
-import { SyncMetadata } from '../../shared/interfaces/sync';
-import { User } from '../../shared/interfaces/user';
+import {
+  Batch,
+  ErrorReport,
+  LibraryStorage,
+  InventoryItem,
+  RecipeMaster,
+  SelectedUnits,
+  SyncMetadata,
+  User
+} from '../../shared/interfaces';
+
+/* Type imports */
+import { CustomError } from '../../shared/types';
 
 /* Default imports */
-import { defaultEnglish } from '../../shared/defaults/default-units';
+import { defaultEnglishUnits } from '../../shared/defaults';
 
 /* Service imports */
 import { StorageService } from './storage.service';
@@ -28,6 +42,7 @@ import { StorageService } from './storage.service';
 describe('StorageService', (): void => {
   let injector: TestBed;
   let storageService: StorageService;
+  let originalCustomError: any;
   configureTestBed();
 
   beforeAll(async((): void => {
@@ -42,14 +57,34 @@ describe('StorageService', (): void => {
   beforeEach((): void => {
     injector = getTestBed();
     storageService = injector.get(StorageService);
+    originalCustomError = storageService.getCustomError;
+    storageService.getCustomError = jest
+      .fn()
+      .mockImplementation((message: string, error: Error): CustomError => {
+        return new CustomError('TestError', message, 3, error.message);
+      });
   });
 
   test('should create the service', (): void => {
     expect(storageService).toBeDefined();
   });
 
+  test('should get a custom storage error', (): void => {
+    storageService.getCustomError = originalCustomError;
+
+    const _mockError: Error = new Error('test-error');
+    const baseMessage: string = 'test base error message';
+    const customError: CustomError = storageService.getCustomError(baseMessage, _mockError);
+
+    expect(customError.name).toMatch('StorageError');
+    expect(customError.message).toMatch(`${baseMessage}: ${_mockError.message}`);
+    expect(customError.severity).toEqual(3);
+    expect(customError.userMessage).toMatch(baseMessage);
+  });
+
 
   describe('Batch Storage', (): void => {
+
     test('should get batches', (done: jest.DoneCallback): void => {
       const _mockBatch: Batch = mockBatch();
 
@@ -71,46 +106,31 @@ describe('StorageService', (): void => {
         );
     });
 
-    test('should get an error if batches not found', (done: jest.DoneCallback): void => {
+    test('should handle batches not found', (done: jest.DoneCallback): void => {
       storageService.storage.get = jest
         .fn()
         .mockReturnValue(Promise.resolve(null));
 
       storageService.getBatches(true)
         .subscribe(
-          (results: any): void => {
-            console.log('Should not get results', results);
-            expect(true).toBe(false);
-          },
-          (error: string): void => {
-            expect(error).toMatch('NotFoundError active batch data not found');
+          (batches: Batch[]): void => {
+            expect(batches).not.toBeNull();
+            expect(batches).toStrictEqual([]);
             done();
-          }
-        );
-    });
-
-    test('should get an error if batch list is empty', (done: jest.DoneCallback): void => {
-      storageService.storage.get = jest
-        .fn()
-        .mockReturnValue(Promise.resolve(JSON.stringify([])));
-
-      storageService.getBatches(true)
-        .subscribe(
-          (results: any): void => {
-            console.log('Should not get results', results);
-            expect(true).toBe(false);
           },
-          (error: string): void => {
-            expect(error).toMatch('NotFoundError No active batch data in storage');
-            done();
+          (error: any): void => {
+            console.log(`Error in 'should get handle batches not found'`, error);
+            expect(true).toBe(false);
           }
         );
     });
 
     test('should handle a batch internal storage error', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+
       storageService.storage.get = jest
         .fn()
-        .mockReturnValue(Promise.resolve([]));
+        .mockReturnValue(Promise.reject(_mockError));
 
       storageService.getBatches(true)
         .subscribe(
@@ -118,8 +138,9 @@ describe('StorageService', (): void => {
             console.log('Should not get results', results);
             expect(true).toBe(false);
           },
-          (error: string): void => {
-            expect(error).toMatch('SyntaxError Unexpected end of JSON input');
+          (error: CustomError): void => {
+            expect(error.message).toMatch('An error occurred trying to get batches from storage');
+            expect(error.userMessage).toMatch('test-error');
             done();
           }
         );
@@ -143,20 +164,20 @@ describe('StorageService', (): void => {
     });
 
     test('should get an error removing batches', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+
       storageService.storage.remove = jest
         .fn()
-        .mockReturnValue(Promise.reject(new Error('test-error')));
+        .mockReturnValue(Promise.reject(_mockError));
 
       const storeSpy: jest.SpyInstance = jest.spyOn(storageService.storage, 'remove');
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+      const errorSpy: jest.SpyInstance = jest.spyOn(storageService, 'getCustomError');
 
       storageService.removeBatches(false);
 
       setTimeout((): void => {
         expect(storeSpy).toHaveBeenCalledWith(storageService.archiveBatchStorageKey);
-        const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
-        expect(consoleCalls[0]).toMatch('Batch storage removal error');
-        expect(consoleCalls[1].message).toMatch('test-error');
+        expect(errorSpy).toHaveBeenCalledWith('An error occurred trying to remove batches from storage', _mockError);
         done();
       }, 10);
     });
@@ -185,6 +206,177 @@ describe('StorageService', (): void => {
           }
         );
     });
+
+    test('should get an error setting batches', (done: jest.DoneCallback): void => {
+      const _mockBatch: Batch = mockBatch();
+      const _mockError: Error = new Error('test-error');
+
+      storageService.storage.set = jest
+        .fn()
+        .mockReturnValue(Promise.reject(_mockError));
+
+      storageService.setBatches(true, [_mockBatch])
+        .subscribe(
+          (results: any): void => {
+            console.log('Should not get results', results);
+            expect(true).toBe(false);
+          },
+          (error: CustomError): void => {
+            expect(error.message).toMatch('An error occurred trying to set batches in storage');
+            expect(error.userMessage).toMatch('test-error');
+            done();
+          }
+        );
+    });
+
+  });
+
+
+  describe('Error Report Storage', (): void => {
+
+    test('should get error reports', (done: jest.DoneCallback): void => {
+      const _mockErrorReport: ErrorReport = mockErrorReport();
+
+      storageService.storage.get = jest
+        .fn()
+        .mockReturnValue(Promise.resolve(JSON.stringify([_mockErrorReport])));
+
+      storageService.getErrorReports()
+        .subscribe(
+          (items: ErrorReport[]): void => {
+            expect(items.length).toEqual(1);
+            expect(items).toStrictEqual([_mockErrorReport]);
+            done();
+          },
+          (error: any): void => {
+            console.log(`Error in 'should get inventory'`, error);
+            expect(true).toBe(false);
+          }
+        );
+    });
+
+    test('should handle error reports not found', (done: jest.DoneCallback): void => {
+      storageService.storage.get = jest
+        .fn()
+        .mockReturnValue(Promise.resolve(null));
+
+      storageService.getErrorReports()
+        .subscribe(
+          (inventory: ErrorReport[]): void => {
+            expect(inventory).toStrictEqual([]);
+            done();
+          },
+          (error: Error): void => {
+            console.log(`Error in 'should handle error reports not found'`, error);
+            expect(true).toBe(false);
+          }
+        );
+    });
+
+    test('should handle an error reports internal storage error', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+
+      storageService.storage.get = jest
+        .fn()
+        .mockReturnValue(Promise.reject(_mockError));
+
+      storageService.getErrorReports()
+        .subscribe(
+          (results: any): void => {
+            console.log('Should not get results', results);
+            expect(true).toBe(false);
+          },
+          (error: CustomError): void => {
+            expect(error.message).toMatch('An error occurred trying to get error reports from storage');
+            expect(error.userMessage).toMatch('test-error');
+            done();
+          }
+        );
+    });
+
+    test('should remove error reports', (done: jest.DoneCallback): void => {
+      storageService.storage.remove = jest
+        .fn()
+        .mockReturnValue(Promise.resolve(null));
+
+      const storeSpy: jest.SpyInstance = jest.spyOn(storageService.storage, 'remove');
+      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+
+      storageService.removeErrorReports();
+
+      setTimeout((): void => {
+        expect(storeSpy).toHaveBeenCalledWith(storageService.errorReportStorageKey);
+        expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('Error reports cleared');
+        done();
+      }, 10);
+    });
+
+    test('should get an error removing error reports', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+
+      storageService.storage.remove = jest
+        .fn()
+        .mockReturnValue(Promise.reject(_mockError));
+
+      const storeSpy: jest.SpyInstance = jest.spyOn(storageService.storage, 'remove');
+      const errorSpy: jest.SpyInstance = jest.spyOn(storageService, 'getCustomError');
+
+      storageService.removeErrorReports();
+
+      setTimeout((): void => {
+        expect(storeSpy).toHaveBeenCalledWith(storageService.errorReportStorageKey);
+        expect(errorSpy).toHaveBeenCalledWith('An error occurred trying to remove error reports from storage', _mockError);
+        done();
+      }, 10);
+    });
+
+    test('should set error reports', (done: jest.DoneCallback): void => {
+      const _mockErrorReport: ErrorReport = mockErrorReport();
+
+      storageService.storage.set = jest
+        .fn()
+        .mockReturnValue(Promise.resolve(true));
+
+      const storeSpy: jest.SpyInstance = jest.spyOn(storageService.storage, 'set');
+
+      storageService.setErrorReports([_mockErrorReport])
+        .subscribe(
+          (): void => {
+            expect(storeSpy).toHaveBeenCalledWith(
+              storageService.errorReportStorageKey,
+              JSON.stringify([_mockErrorReport])
+            );
+            done();
+          },
+          (error: any): void => {
+            console.log(`Error in 'should set error reports'`, error);
+            expect(true).toBe(false);
+          }
+        );
+    });
+
+    test('should get an error setting error reports', (done: jest.DoneCallback): void => {
+      const _mockErrorReport: ErrorReport = mockErrorReport();
+      const _mockError: Error = new Error('test-error');
+
+      storageService.storage.set = jest
+        .fn()
+        .mockReturnValue(Promise.reject(_mockError));
+
+      storageService.setErrorReports([_mockErrorReport])
+        .subscribe(
+          (results: any): void => {
+            console.log('Should not get results', results);
+            expect(true).toBe(false);
+          },
+          (error: CustomError): void => {
+            expect(error.message).toMatch('An error occurred trying to set error reports in storage');
+            expect(error.userMessage).toMatch('test-error');
+            done();
+          }
+        );
+    });
+
   });
 
 
@@ -210,46 +402,30 @@ describe('StorageService', (): void => {
         );
     });
 
-    test('should get an error if inventory not found', (done: jest.DoneCallback): void => {
+    test('should handle inventory not found', (done: jest.DoneCallback): void => {
       storageService.storage.get = jest
         .fn()
         .mockReturnValue(Promise.resolve(null));
 
       storageService.getInventory()
         .subscribe(
-          (results: any): void => {
-            console.log('Should not get results', results);
-            expect(true).toBe(false);
-          },
-          (error: string): void => {
-            expect(error).toMatch('NotFoundError Inventory data not found');
+          (inventory: InventoryItem[]): void => {
+            expect(inventory).toStrictEqual([]);
             done();
-          }
-        );
-    });
-
-    test('should get an error if inventory list is empty', (done: jest.DoneCallback): void => {
-      storageService.storage.get = jest
-        .fn()
-        .mockReturnValue(Promise.resolve(JSON.stringify([])));
-
-      storageService.getInventory()
-        .subscribe(
-          (results: any): void => {
-            console.log('Should not get results', results);
-            expect(true).toBe(false);
           },
-          (error: string): void => {
-            expect(error).toMatch('NotFoundError No inventory data in storage');
-            done();
+          (error: Error): void => {
+            console.log(`Error in 'should handle inventory not found'`, error);
+            expect(true).toBe(false);
           }
         );
     });
 
     test('should handle an inventory internal storage error', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+
       storageService.storage.get = jest
         .fn()
-        .mockReturnValue(Promise.resolve([]));
+        .mockReturnValue(Promise.reject(_mockError));
 
       storageService.getInventory()
         .subscribe(
@@ -257,8 +433,9 @@ describe('StorageService', (): void => {
             console.log('Should not get results', results);
             expect(true).toBe(false);
           },
-          (error: string): void => {
-            expect(error).toMatch('SyntaxError Unexpected end of JSON input');
+          (error: CustomError): void => {
+            expect(error.message).toMatch('An error occurred trying to get inventory from storage');
+            expect(error.userMessage).toMatch('test-error');
             done();
           }
         );
@@ -282,20 +459,20 @@ describe('StorageService', (): void => {
     });
 
     test('should get an error removing inventory', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+
       storageService.storage.remove = jest
         .fn()
-        .mockReturnValue(Promise.reject(new Error('test-error')));
+        .mockReturnValue(Promise.reject(_mockError));
 
       const storeSpy: jest.SpyInstance = jest.spyOn(storageService.storage, 'remove');
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+      const errorSpy: jest.SpyInstance = jest.spyOn(storageService, 'getCustomError');
 
       storageService.removeInventory();
 
       setTimeout((): void => {
         expect(storeSpy).toHaveBeenCalledWith(storageService.inventoryStorageKey);
-        const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
-        expect(consoleCalls[0]).toMatch('Inventory storage removal error');
-        expect(consoleCalls[1].message).toMatch('test-error');
+        expect(errorSpy).toHaveBeenCalledWith('An error occurred trying to remove inventory from storage', _mockError);
         done();
       }, 10);
     });
@@ -324,10 +501,34 @@ describe('StorageService', (): void => {
           }
         );
     });
+
+    test('should get an error setting inventory', (done: jest.DoneCallback): void => {
+      const _mockInventoryItem: InventoryItem = mockInventoryItem();
+      const _mockError: Error = new Error('test-error');
+
+      storageService.storage.set = jest
+        .fn()
+        .mockReturnValue(Promise.reject(_mockError));
+
+      storageService.setInventory([_mockInventoryItem])
+        .subscribe(
+          (results: any): void => {
+            console.log('Should not get results', results);
+            expect(true).toBe(false);
+          },
+          (error: CustomError): void => {
+            expect(error.message).toMatch('An error occurred trying to set inventory in storage');
+            expect(error.userMessage).toMatch('test-error');
+            done();
+          }
+        );
+    });
+
   });
 
 
   describe('Library Storage', (): void => {
+
     test('should get library', (done: jest.DoneCallback): void => {
       const _mockLibraryStorage: LibraryStorage = mockLibraryStorage();
 
@@ -348,46 +549,33 @@ describe('StorageService', (): void => {
         );
     });
 
-    test('should get an error if library not found', (done: jest.DoneCallback): void => {
+    test('should handle library not found', (done: jest.DoneCallback): void => {
       storageService.storage.get = jest
         .fn()
         .mockReturnValue(Promise.resolve(null));
 
       storageService.getLibrary()
         .subscribe(
-          (results: any): void => {
-            console.log('Should not get results', results);
-            expect(true).toBe(false);
-          },
-          (error: string): void => {
-            expect(error).toMatch('NotFoundError Library data not found');
+          (libraries: LibraryStorage): void => {
+            expect(libraries.grains).toStrictEqual([]);
+            expect(libraries.hops).toStrictEqual([]);
+            expect(libraries.yeast).toStrictEqual([]);
+            expect(libraries.style).toStrictEqual([]);
             done();
-          }
-        );
-    });
-
-    test('should get an error if library is empty', (done: jest.DoneCallback): void => {
-      storageService.storage.get = jest
-        .fn()
-        .mockReturnValue(Promise.resolve(JSON.stringify({})));
-
-      storageService.getLibrary()
-        .subscribe(
-          (results: any): void => {
-            console.log('Should not get results', results);
-            expect(true).toBe(false);
           },
-          (error: string): void => {
-            expect(error).toMatch('NotFoundError No library data in storage');
-            done();
+          (error: Error): void => {
+            console.log(`Error in 'should handle library not found'`, error);
+            expect(true).toBe(false);
           }
         );
     });
 
     test('should handle a library internal storage error', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+
       storageService.storage.get = jest
         .fn()
-        .mockReturnValue(Promise.resolve({}));
+        .mockReturnValue(Promise.reject(_mockError));
 
       storageService.getLibrary()
         .subscribe(
@@ -395,8 +583,9 @@ describe('StorageService', (): void => {
             console.log('Should not get results', results);
             expect(true).toBe(false);
           },
-          (error: string): void => {
-            expect(error).toMatch('SyntaxError Unexpected token o in JSON at position 1');
+          (error: CustomError): void => {
+            expect(error.message).toMatch('An error occurred trying to get library from storage');
+            expect(error.userMessage).toMatch('test-error');
             done();
           }
         );
@@ -426,10 +615,34 @@ describe('StorageService', (): void => {
           }
         );
     });
+
+    test('should get an error setting library', (done: jest.DoneCallback): void => {
+      const _mockLibraryStorage: LibraryStorage = mockLibraryStorage();
+      const _mockError: Error = new Error('test-error');
+
+      storageService.storage.set = jest
+        .fn()
+        .mockReturnValue(Promise.reject(_mockError));
+
+      storageService.setLibrary(_mockLibraryStorage)
+        .subscribe(
+          (results: any): void => {
+            console.log('Should not get results', results);
+            expect(true).toBe(false);
+          },
+          (error: CustomError): void => {
+            expect(error.message).toMatch('An error occurred trying to set library in storage');
+            expect(error.userMessage).toMatch('test-error');
+            done();
+          }
+        );
+    });
+
   });
 
 
   describe('Recipe Storage', (): void => {
+
     test('should get recipes', (done: jest.DoneCallback): void => {
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
 
@@ -451,46 +664,30 @@ describe('StorageService', (): void => {
         );
     });
 
-    test('should get an error if recipes not found', (done: jest.DoneCallback): void => {
+    test('should handle recipes not found', (done: jest.DoneCallback): void => {
       storageService.storage.get = jest
         .fn()
         .mockReturnValue(Promise.resolve(null));
 
       storageService.getRecipes()
         .subscribe(
-          (results: any): void => {
-            console.log('Should not get results', results);
-            expect(true).toBe(false);
-          },
-          (error: string): void => {
-            expect(error).toMatch('NotFoundError Recipe data not found');
+          (recipes: RecipeMaster[]): void => {
+            expect(recipes).toStrictEqual([]);
             done();
-          }
-        );
-    });
-
-    test('should get an error if recipes is empty', (done: jest.DoneCallback): void => {
-      storageService.storage.get = jest
-        .fn()
-        .mockReturnValue(Promise.resolve(JSON.stringify([])));
-
-      storageService.getRecipes()
-        .subscribe(
-          (results: any): void => {
-            console.log('Should not get results', results);
-            expect(true).toBe(false);
           },
-          (error: string): void => {
-            expect(error).toMatch('NotFoundError No recipe data in storage');
-            done();
+          (error: Error): void => {
+            console.log(`Error in 'should handle recipes not found'`, error);
+            expect(true).toBe(false);
           }
         );
     });
 
     test('should handle a recipe internal storage error', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+
       storageService.storage.get = jest
         .fn()
-        .mockReturnValue(Promise.resolve([]));
+        .mockReturnValue(Promise.reject(_mockError));
 
       storageService.getRecipes()
         .subscribe(
@@ -498,8 +695,9 @@ describe('StorageService', (): void => {
             console.log('Should not get results', results);
             expect(true).toBe(false);
           },
-          (error: string): void => {
-            expect(error).toMatch('SyntaxError Unexpected end of JSON input');
+          (error: CustomError): void => {
+            expect(error.message).toMatch('An error occurred trying to get recipes from storage');
+            expect(error.userMessage).toMatch('test-error');
             done();
           }
         );
@@ -523,20 +721,20 @@ describe('StorageService', (): void => {
     });
 
     test('should get an error removing recipes', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+
       storageService.storage.remove = jest
         .fn()
-        .mockReturnValue(Promise.reject(new Error('test-error')));
+        .mockReturnValue(Promise.reject(_mockError));
 
+      const errorSpy: jest.SpyInstance = jest.spyOn(storageService, 'getCustomError');
       const storeSpy: jest.SpyInstance = jest.spyOn(storageService.storage, 'remove');
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
 
       storageService.removeRecipes();
 
       setTimeout((): void => {
         expect(storeSpy).toHaveBeenCalledWith(storageService.recipeStorageKey);
-        const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
-        expect(consoleCalls[0]).toMatch('Recipe storage removal error');
-        expect(consoleCalls[1].message).toMatch('test-error');
+        expect(errorSpy).toHaveBeenCalledWith('An error occurred trying to remove recipes from storage', _mockError);
         done();
       }, 10);
     });
@@ -565,6 +763,29 @@ describe('StorageService', (): void => {
           }
         );
     });
+
+    test('should get an error setting recipes', (done: jest.DoneCallback): void => {
+      const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
+      const _mockError: Error = new Error('test-error');
+
+      storageService.storage.set = jest
+        .fn()
+        .mockReturnValue(Promise.reject(_mockError));
+
+      storageService.setRecipes([_mockRecipeMasterActive])
+        .subscribe(
+          (results: any): void => {
+            console.log('Should not get results', results);
+            expect(true).toBe(false);
+          },
+          (error: CustomError): void => {
+            expect(error.message).toMatch('An error occurred trying to set recipes in storage');
+            expect(error.userMessage).toMatch('test-error');
+            done();
+          }
+        );
+    });
+
   });
 
 
@@ -590,46 +811,31 @@ describe('StorageService', (): void => {
         );
     });
 
-    test('should get an error if sync flags not found', (done: jest.DoneCallback): void => {
+    test('should handle sync flags not found', (done: jest.DoneCallback): void => {
       storageService.storage.get = jest
         .fn()
         .mockReturnValue(Promise.resolve(null));
 
       storageService.getSyncFlags()
         .subscribe(
-          (results: any): void => {
-            console.log('Should not get results', results);
-            expect(true).toBe(false);
-          },
-          (error: string): void => {
-            expect(error).toMatch('NotFoundError Sync flags not found');
+          (flags: SyncMetadata[]): void => {
+            expect(flags).not.toBeNull();
+            expect(flags).toStrictEqual([]);
             done();
-          }
-        );
-    });
-
-    test('should get an error if sync flags is empty', (done: jest.DoneCallback): void => {
-      storageService.storage.get = jest
-        .fn()
-        .mockReturnValue(Promise.resolve(JSON.stringify([])));
-
-      storageService.getSyncFlags()
-        .subscribe(
-          (results: any): void => {
-            console.log('Should not get results', results);
-            expect(true).toBe(false);
           },
-          (error: string): void => {
-            expect(error).toMatch('NotFoundError No sync flags in storage');
-            done();
+          (error: any): void => {
+            console.log(`Error in 'should get an error if sync flags not found'`, error);
+            expect(true).toBe(false);
           }
         );
     });
 
     test('should handle a sync flag internal storage error', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+
       storageService.storage.get = jest
         .fn()
-        .mockReturnValue(Promise.resolve([]));
+        .mockReturnValue(Promise.reject(_mockError));
 
       storageService.getSyncFlags()
         .subscribe(
@@ -637,8 +843,9 @@ describe('StorageService', (): void => {
             console.log('Should not get results', results);
             expect(true).toBe(false);
           },
-          (error: string): void => {
-            expect(error).toMatch('SyntaxError Unexpected end of JSON input');
+          (error: CustomError): void => {
+            expect(error.message).toMatch('An error occurred trying to get sync flags from storage');
+            expect(error.userMessage).toMatch('test-error');
             done();
           }
         );
@@ -662,20 +869,20 @@ describe('StorageService', (): void => {
     });
 
     test('should get an error removing sync flags', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+
       storageService.storage.remove = jest
         .fn()
-        .mockReturnValue(Promise.reject(new Error('test-error')));
+        .mockReturnValue(Promise.reject(_mockError));
 
       const storeSpy: jest.SpyInstance = jest.spyOn(storageService.storage, 'remove');
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+      const errorSpy: jest.SpyInstance = jest.spyOn(storageService, 'getCustomError');
 
       storageService.removeSyncFlags();
 
       setTimeout((): void => {
         expect(storeSpy).toHaveBeenCalledWith(storageService.syncStorageKey);
-        const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
-        expect(consoleCalls[0]).toMatch('Sync storage removal error');
-        expect(consoleCalls[1].message).toMatch('test-error');
+        expect(errorSpy).toHaveBeenCalledWith('An error occurred trying to remove sync flags from storage', _mockError);
         done();
       }, 10);
     });
@@ -704,10 +911,34 @@ describe('StorageService', (): void => {
           }
         );
     });
+
+    test('should get an error setting sync flags', (done: jest.DoneCallback): void => {
+      const _mockSyncMetadata: SyncMetadata = mockSyncMetadata('create', 'docid', 'doctype');
+      const _mockError: Error = new Error('test-error');
+
+      storageService.storage.set = jest
+        .fn()
+        .mockReturnValue(Promise.reject(_mockError));
+
+      storageService.setSyncFlags([_mockSyncMetadata])
+        .subscribe(
+          (results: any): void => {
+            console.log('Should not get results', results);
+            expect(true).toBe(false);
+          },
+          (error: CustomError): void => {
+            expect(error.message).toMatch('An error occurred trying to set sync flags in storage');
+            expect(error.userMessage).toMatch('test-error');
+            done();
+          }
+        );
+    });
+
   });
 
 
   describe('User Storage', (): void => {
+
     test('should get user', (done: jest.DoneCallback): void => {
       const _mockUser: User = mockUser();
 
@@ -729,7 +960,7 @@ describe('StorageService', (): void => {
     });
 
     test('should get a default user after error', (done: jest.DoneCallback): void => {
-      const _defaultEnglish: SelectedUnits = defaultEnglish();
+      const _defaultEnglishUnits: SelectedUnits = defaultEnglishUnits();
 
       storageService.storage.get = jest
         .fn()
@@ -742,8 +973,8 @@ describe('StorageService', (): void => {
               cid: 'offline',
               username: '',
               token: '',
-              preferredUnitSystem: _defaultEnglish.system,
-              units: _defaultEnglish
+              preferredUnitSystem: _defaultEnglishUnits.system,
+              units: _defaultEnglishUnits
             });
             done();
           },
@@ -772,20 +1003,20 @@ describe('StorageService', (): void => {
     });
 
     test('should get an error removing user', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+
       storageService.storage.remove = jest
         .fn()
-        .mockReturnValue(Promise.reject(new Error('test-error')));
+        .mockReturnValue(Promise.reject(_mockError));
 
       const storeSpy: jest.SpyInstance = jest.spyOn(storageService.storage, 'remove');
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+      const errorSpy: jest.SpyInstance = jest.spyOn(storageService, 'getCustomError');
 
       storageService.removeUser();
 
       setTimeout((): void => {
         expect(storeSpy).toHaveBeenCalledWith(storageService.userStorageKey);
-        const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
-        expect(consoleCalls[0]).toMatch('User storage removal error');
-        expect(consoleCalls[1].message).toMatch('test-error');
+        expect(errorSpy).toHaveBeenCalledWith('An error occurred trying to remove user from storage', _mockError);
         done();
       }, 10);
     });
@@ -814,6 +1045,29 @@ describe('StorageService', (): void => {
           }
         );
     });
+
+    test('should get an error setting user', (done: jest.DoneCallback): void => {
+      const _mockUser: User = mockUser();
+      const _mockError: Error = new Error('test-error');
+
+      storageService.storage.set = jest
+        .fn()
+        .mockReturnValue(Promise.reject(_mockError));
+
+      storageService.setUser(_mockUser)
+        .subscribe(
+          (results: any): void => {
+            console.log('Should not get results', results);
+            expect(true).toBe(false);
+          },
+          (error: CustomError): void => {
+            expect(error.message).toMatch('An error occurred trying to set user in storage');
+            expect(error.userMessage).toMatch('test-error');
+            done();
+          }
+        );
+    });
+
   });
 
 });

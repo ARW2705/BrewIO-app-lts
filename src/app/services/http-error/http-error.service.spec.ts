@@ -5,51 +5,48 @@ import { HttpErrorResponse } from '@angular/common/http';
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
+/* Mock imports */
+import { ErrorReportingServiceStub } from '../../../../test-config/service-stubs';
+
 /* Provider imports */
 import { HttpErrorService } from './http-error.service';
+import { ErrorReportingService } from '../error-reporting/error-reporting.service';
 
 
 describe('Process HTTP Error Service', (): void => {
   let injector: TestBed;
-  let processHttpService: HttpErrorService;
+  let httpError: HttpErrorService;
   configureTestBed();
 
   beforeAll(async((): void => {
     TestBed.configureTestingModule({
-      providers: [ HttpErrorService ]
+      providers: [
+        HttpErrorService,
+        { provide: ErrorReportingService, useClass: ErrorReportingServiceStub }
+      ]
     });
   }));
 
   beforeEach((): void => {
     injector = getTestBed();
-    processHttpService = injector.get(HttpErrorService);
+    httpError = injector.get(HttpErrorService);
   });
 
-  test('should get 401 HttpErrorResponse', (done: jest.DoneCallback): void => {
+  test('should compose a 401 error message', (): void => {
     const errorResponse: HttpErrorResponse = new HttpErrorResponse({
       status: 401,
       statusText: '',
       error: {
         error: {
-          message: 'Not authorized'
+          message: 'Not Authorized'
         }
       }
     });
 
-    processHttpService.handleError(errorResponse)
-      .subscribe(
-        (response: any): void => {
-          console.log('Should not get a response', response);
-          expect(true).toBe(false);
-        },
-        (error: string): void => {
-          expect(error).toMatch('Not authorized');
-          done();
-        }
-      );
-  }); // end 'should get 401 HttpErrorResponse' test
+    expect(httpError.composeErrorMessage(errorResponse)).toMatch('Not Authorized');
+  });
 
-  test('should get 500 HttpErrorResponse', (done: jest.DoneCallback): void => {
+  test('should compose a 500 error message', (): void => {
     const errorResponse: HttpErrorResponse = new HttpErrorResponse({
       status: 500,
       statusText: 'test 500 error',
@@ -58,20 +55,10 @@ describe('Process HTTP Error Service', (): void => {
       }
     });
 
-    processHttpService.handleError(errorResponse)
-      .subscribe(
-        (response: any): void => {
-          console.log('Should not get a response', response);
-          expect(true).toBe(false);
-        },
-        (error: string): void => {
-          expect(error).toMatch('<500> test 500 error');
-          done();
-        }
-      );
-  }); // end 'should get 500 HttpErrorResponse' test
+    expect(httpError.composeErrorMessage(errorResponse)).toMatch('<500> test 500 error');
+  });
 
-  test('should get ValidationError', (done: jest.DoneCallback): void => {
+  test('should compose a validation error message', (): void => {
     const errorResponse: HttpErrorResponse = new HttpErrorResponse({
       status: 500,
       statusText: 'test validation error',
@@ -81,51 +68,53 @@ describe('Process HTTP Error Service', (): void => {
       }
     });
 
-    processHttpService.handleError(errorResponse)
-      .subscribe(
-        (response: any): void => {
-          console.log('Should not get a response', response);
-          expect(true).toBe(false);
-        },
-        (error: string): void => {
-          expect(error).toMatch('<500> test validation error');
-          done();
-        }
-      );
-  }); // end 'should get ValidationError' test
+    expect(httpError.composeErrorMessage(errorResponse)).toMatch('<500> test validation error');
+  });
 
-  test('should get 503 generic error with message', (done: jest.DoneCallback): void => {
+  test('should get generic 503 error', (): void => {
     const genericError: object = {
-      status: 503,
       message: 'generic error message'
     };
 
-    processHttpService.handleError(genericError).subscribe(
-      (response: any): void => {
-        console.log('Should not get a response', response);
-        expect(true).toBe(false);
-      },
-      (error: string): void => {
-        expect(error).toMatch('generic error message');
-        done();
+    expect(httpError.composeErrorMessage(<HttpErrorResponse>genericError)).toMatch('Unknown http error');
+  });
+
+  test('should handle an http error', (done: jest.DoneCallback): void => {
+    const errorResponse: HttpErrorResponse = new HttpErrorResponse({
+      status: 500,
+      statusText: 'test 500 error',
+      error: {
+        name: ''
       }
-    );
-  }); // end 'should get 503 generic error with message' test
+    });
 
-  test('should get 500 generic error', (done: jest.DoneCallback): void => {
-    const genericError: string = '500 Internal Server Error';
+    httpError.errorReporter.setErrorReport = jest
+      .fn();
 
-    processHttpService.handleError(genericError)
+    httpError.errorReporter.getTimestamp = jest
+      .fn()
+      .mockReturnValue('test-iso');
+
+    const errorSpy: jest.SpyInstance = jest.spyOn(httpError.errorReporter, 'setErrorReport');
+
+    httpError.handleError(errorResponse)
       .subscribe(
-        (response: any): void => {
-          console.log('Should not get a response', response);
+        (results: any): void => {
+          console.log('should not get results', results);
           expect(true).toBe(false);
         },
-        (error: string): void => {
-          expect(error).toMatch(genericError);
+        (error: any): void => {
+          expect(error).toBeNull();
+          expect(errorSpy).toHaveBeenCalledWith({
+            name: 'HttpError',
+            message: '<500> test 500 error',
+            severity: 3,
+            timestamp: 'test-iso',
+            userMessage: '<500> test 500 error'
+          });
           done();
         }
       );
-  }); // end 'should get 500 generic error' test
+  });
 
 });

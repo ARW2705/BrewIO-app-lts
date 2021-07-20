@@ -9,7 +9,7 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 import { mockProcessSchedule } from '../../../../test-config/mock-models';
 
 /* Interface imports */
-import { Process } from '../../shared/interfaces/process';
+import { ManualProcess, Process } from '../../shared/interfaces';
 
 /* Component imports */
 import { ProcessManualComponent } from './process-manual.component';
@@ -42,7 +42,7 @@ describe('ProcessManualComponent', (): void => {
   });
 
   test('should render a manual process', (): void => {
-    const _mockProcess: Process = mockProcessSchedule()
+    const _mockProcess: ManualProcess = mockProcessSchedule()
       .find((process: Process): boolean => {
         return process.type === 'manual';
       });

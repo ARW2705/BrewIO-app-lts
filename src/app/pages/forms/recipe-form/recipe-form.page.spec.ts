@@ -4,38 +4,45 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { of, throwError } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../../test-config/configure-test-bed';
 
 /* Mock imports */
 import { mockYeastBatch, mockHopsSchedule, mockProcessSchedule, mockGrainBill, mockRecipeMasterActive, mockRecipeVariantComplete, mockEnglishUnits, mockMetricUnits, mockGrains, mockHops, mockYeast, mockStyles } from '../../../../../test-config/mock-models';
-import { ActionSheetServiceStub, CalculationsServiceStub, ClientIdServiceStub, LibraryServiceStub, PreferencesServiceStub, RecipeServiceStub, ToastServiceStub } from '../../../../../test-config/service-stubs';
+import { ActionSheetServiceStub, CalculationsServiceStub, ClientIdServiceStub, ErrorReportingServiceStub, LibraryServiceStub, PreferencesServiceStub, RecipeServiceStub, ToastServiceStub } from '../../../../../test-config/service-stubs';
 import { HeaderComponentStub, GrainBillComponentStub, HopsScheduleComponentStub, OtherIngredientsComponentStub, ProcessListComponentStub, RecipeQuickDataComponentStub, YeastBatchComponentStub, NoteListComponentStub } from '../../../../../test-config/component-stubs';
 import { ActivatedRouteStub, ModalControllerStub, ModalStub } from '../../../../../test-config/ionic-stubs';
 import { TruncatePipeStub } from '../../../../../test-config/pipe-stubs';
 
 /* Default imports */
-import { defaultRecipeMaster } from '../../../shared/defaults/default-recipe-master';
+import { defaultRecipeMaster } from '../../../shared/defaults';
 
 /* Utility imports */
 import { toTitleCase } from '../../../shared/utility-functions/utilities';
 
 /* Interface imports */
-import { Grains, Hops, Yeast, Style } from '../../../shared/interfaces/library';
-import { GrainBill } from '../../../shared/interfaces/grain-bill';
-import { HopsSchedule } from '../../../shared/interfaces/hops-schedule';
-import { Process } from '../../../shared/interfaces/process';
-import { RecipeMaster } from '../../../shared/interfaces/recipe-master';
-import { RecipeVariant } from '../../../shared/interfaces/recipe-variant';
-import { SelectedUnits } from '../../../shared/interfaces/units';
-import { YeastBatch } from '../../../shared/interfaces/yeast-batch';
+import {
+  Grains,
+  GrainBill,
+  Hops,
+  HopsSchedule,
+  Process,
+  RecipeMaster,
+  RecipeVariant,
+  SelectedUnits,
+  TimerProcess,
+  Yeast,
+  YeastBatch,
+  Style
+} from '../../../shared/interfaces';
 
 /* Service imports */
 import { ActionSheetService } from '../../../services/action-sheet/action-sheet.service';
 import { CalculationsService } from '../../../services/calculations/calculations.service';
 import { ClientIdService } from '../../../services/client-id/client-id.service';
+import { ErrorReportingService } from '../../../services/error-reporting/error-reporting.service';
 import { LibraryService } from '../../../services/library/library.service';
 import { PreferencesService } from '../../../services/preferences/preferences.service';
 import { RecipeService } from '../../../services/recipe/recipe.service';
@@ -75,6 +82,7 @@ describe('RecipeFormPage', (): void => {
         { provide: ActionSheetService, useClass: ActionSheetServiceStub },
         { provide: CalculationsService, useClass: CalculationsServiceStub },
         { provide: ClientIdService, useClass: ClientIdServiceStub },
+        { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: LibraryService, useClass: LibraryServiceStub },
         { provide: ModalController, useClass: ModalControllerStub },
         { provide: PreferencesService, useClass: PreferencesServiceStub },
@@ -93,16 +101,12 @@ describe('RecipeFormPage', (): void => {
     recipeFormPage = fixture.componentInstance;
     originalOnInit = recipeFormPage.ngOnInit;
     originalOnDestroy = recipeFormPage.ngOnDestroy;
-    recipeFormPage.ngOnInit = jest
-      .fn();
-    recipeFormPage.ngOnDestroy = jest
-      .fn();
-    recipeFormPage.toastService.presentToast = jest
-      .fn();
-    recipeFormPage.toastService.presentErrorToast = jest
-      .fn();
-    recipeFormPage.modalCtrl.dismiss = jest
-      .fn();
+    recipeFormPage.ngOnInit = jest.fn();
+    recipeFormPage.ngOnDestroy = jest.fn();
+    recipeFormPage.toastService.presentToast = jest.fn();
+    recipeFormPage.toastService.presentErrorToast = jest.fn();
+    recipeFormPage.modalCtrl.dismiss = jest.fn();
+    recipeFormPage.errorReporter.handleUnhandledError = jest.fn();
   });
 
   test('should create the component', (): void => {
@@ -187,28 +191,22 @@ describe('RecipeFormPage', (): void => {
       }, 10);
     });
 
-    test('should handle an error getting all libraries', (done: jest.DoneCallback): void => {
-      recipeFormPage.onInitError = jest
-        .fn();
+    test('should handle error when getting all libraries', (): void => {
+      const _mockError: Error = new Error('test-error');
 
       recipeFormPage.libraryService.getAllLibraries = jest
         .fn()
-        .mockReturnValue(throwError('test-error'));
+        .mockReturnValue(throwError(_mockError));
 
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
-      const errorSpy: jest.SpyInstance = jest.spyOn(recipeFormPage, 'onInitError');
+      recipeFormPage.errorReporter.handleUnhandledError = jest.fn();
+
+      const errorSpy: jest.SpyInstance = jest.spyOn(recipeFormPage.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
       recipeFormPage.getAllLibraries();
 
-      setTimeout((): void => {
-        const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
-        expect(consoleCalls[0]).toMatch('Library error');
-        expect(consoleCalls[1]).toMatch('test-error');
-        expect(errorSpy).toHaveBeenCalledWith('Error loading ingredient libraries');
-        done();
-      });
+      expect(errorSpy).toHaveBeenCalledWith(_mockError);
     });
 
     test('should listen for route changes', (done: jest.DoneCallback): void => {
@@ -231,6 +229,8 @@ describe('RecipeFormPage', (): void => {
       recipeFormPage.setFormTypeConfiguration = jest
         .fn();
 
+      recipeFormPage.errorReporter.handleGenericCatchError = jest.fn();
+
       const configSpy: jest.SpyInstance = jest.spyOn(recipeFormPage, 'setFormTypeConfiguration');
 
       fixture.detectChanges();
@@ -249,46 +249,30 @@ describe('RecipeFormPage', (): void => {
       }, 10);
     });
 
-    test('should handle an error on route change', (done: jest.DoneCallback): void => {
-      recipeFormPage.route.queryParams = throwError('test-error');
-
-      recipeFormPage.onInitError = jest
-        .fn();
-
-      const errorSpy: jest.SpyInstance = jest.spyOn(recipeFormPage, 'onInitError');
-
-      fixture.detectChanges();
-
-      recipeFormPage.listenForRoute();
-
-      setTimeout((): void => {
-        expect(errorSpy).toHaveBeenCalledWith('test-error');
-        done();
-      }, 10);
-    });
-
-    test('should handle error from nav data on route change', (done: jest.DoneCallback): void => {
-      const mockError: Error = new Error('test-error');
-
-      recipeFormPage.onInitError = jest
-        .fn();
+    test('should handle an error parsing route query params', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
 
       recipeFormPage.router.getCurrentNavigation = jest
         .fn()
-        .mockImplementation((): void => { throw mockError; });
+        .mockImplementation((): any => { throw _mockError; });
 
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
-      const errorSpy: jest.SpyInstance = jest.spyOn(recipeFormPage, 'onInitError');
+      recipeFormPage.errorReporter.handleGenericCatchError = jest
+        .fn()
+        .mockImplementation((): (error: Error) => Observable<never> => {
+          return (error: Error): Observable<never> => {
+            expect(error).toStrictEqual(_mockError);
+            return throwError(null);
+          };
+        });
+
+      const errorSpy: jest.SpyInstance = jest.spyOn(recipeFormPage.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
       recipeFormPage.listenForRoute();
 
       setTimeout((): void => {
-        const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
-        expect(consoleCalls[0]).toMatch('Navigation/Setup error');
-        expect(consoleCalls[1]).toStrictEqual(mockError);
-        expect(errorSpy).toHaveBeenCalledWith('test-error');
+        expect(errorSpy).toHaveBeenCalledWith(null);
         done();
       }, 10);
     });
@@ -319,26 +303,6 @@ describe('RecipeFormPage', (): void => {
 
       const invalidBoth: string = recipeFormPage.onConfigError();
       expect(invalidBoth).toMatch('Error: invalid document method: \'invalidMethod\'; invalid form type: \'invalidType\';');
-    });
-
-    test('should handle init error', (): void => {
-      recipeFormPage.navToPreviousRoute = jest
-        .fn();
-
-      recipeFormPage.navToPreviousRoute.bind = jest
-        .fn()
-        .mockImplementation((page: RecipeFormPage): () => void => page.navToPreviousRoute);
-
-      const toastSpy: jest.SpyInstance = jest.spyOn(recipeFormPage.toastService, 'presentErrorToast');
-
-      fixture.detectChanges();
-
-      recipeFormPage.onInitError('test-message');
-
-      expect(toastSpy).toHaveBeenCalledWith(
-        'test-message',
-        recipeFormPage.navToPreviousRoute
-      );
     });
 
   });
@@ -512,7 +476,7 @@ describe('RecipeFormPage', (): void => {
 
       _stubModal.onDidDismiss = jest
         .fn()
-        .mockReturnValue(Promise.resolve());
+        .mockReturnValue(Promise.resolve(null));
 
       recipeFormPage.getGeneralFormModalOptions = jest
         .fn()
@@ -520,7 +484,7 @@ describe('RecipeFormPage', (): void => {
 
       recipeFormPage.onGeneralFormModalSuccess = jest
         .fn()
-        .mockReturnValue(() => {});
+        .mockReturnValue((data: any): void => {});
 
       const successSpy: jest.SpyInstance = jest.spyOn(recipeFormPage, 'onGeneralFormModalSuccess');
 
@@ -643,7 +607,7 @@ describe('RecipeFormPage', (): void => {
 
       recipeFormPage.onIngredientFormModalSuccess = jest
         .fn()
-        .mockReturnValue(() => {});
+        .mockReturnValue((): void => {});
 
       const successSpy: jest.SpyInstance = jest.spyOn(recipeFormPage, 'onIngredientFormModalSuccess');
 
@@ -718,6 +682,7 @@ describe('RecipeFormPage', (): void => {
       fixture.detectChanges();
 
       recipeFormPage.noteList = new NoteListComponentStub(
+        recipeFormPage.errorReporter,
         recipeFormPage.modalCtrl,
         recipeFormPage.recipeService,
         recipeFormPage.toastService
@@ -813,7 +778,7 @@ describe('RecipeFormPage', (): void => {
 
       recipeFormPage.onProcessFormModalSuccess = jest
         .fn()
-        .mockReturnValue(() => {});
+        .mockReturnValue((): void => {});
 
       recipeFormPage.modalCtrl.create = jest
         .fn()
@@ -886,7 +851,7 @@ describe('RecipeFormPage', (): void => {
           subCall = options;
         });
 
-      recipeFormPage.openIngredientFormModal = jest
+      recipeFormPage.openProcessModal = jest
         .fn();
 
       const formSpy: jest.SpyInstance = jest.spyOn(recipeFormPage, 'openProcessModal');
@@ -920,7 +885,7 @@ describe('RecipeFormPage', (): void => {
     test('should auto set boil duration', (): void => {
       const _mockRecipeVariantComplete: RecipeVariant = mockRecipeVariantComplete();
       const boilIndex: number = 7;
-      _mockRecipeVariantComplete.processSchedule[boilIndex].duration = 60;
+      (<TimerProcess>_mockRecipeVariantComplete.processSchedule[boilIndex]).duration = 60;
 
       expect(boilIndex).not.toEqual(-1);
 
@@ -957,7 +922,7 @@ describe('RecipeFormPage', (): void => {
 
       recipeFormPage.autoSetBoilDuration(100);
 
-      expect(recipeFormPage.variant.processSchedule[boilIndex].duration).toEqual(100);
+      expect((<TimerProcess>recipeFormPage.variant.processSchedule[boilIndex]).duration).toEqual(100);
       expect(autoSpy).toHaveBeenCalled();
     });
 
@@ -980,15 +945,16 @@ describe('RecipeFormPage', (): void => {
     test('should auto set hops additions', (): void => {
       const _mockRecipeVariantComplete: RecipeVariant = mockRecipeVariantComplete();
       const boilIndex: number = 7;
-      _mockRecipeVariantComplete.processSchedule[boilIndex].duration = 60;
-      const newHopsProcesses: Process[] = [
+      (<TimerProcess>_mockRecipeVariantComplete.processSchedule[boilIndex]).duration = 60;
+      const newHopsProcesses: TimerProcess[] = [
         {
           cid: '1',
           type: 'timer',
           name: 'Add mock hops 1',
           concurrent: true,
           description: 'mock description 1',
-          duration: 0
+          duration: 0,
+          splitInterval: 1
         },
         {
           cid: '2',
@@ -996,7 +962,8 @@ describe('RecipeFormPage', (): void => {
           name: 'Add mock hops 2',
           concurrent: true,
           description: 'mock description 2',
-          duration: 30
+          duration: 30,
+          splitInterval: 1
         }
       ];
 
@@ -1023,7 +990,7 @@ describe('RecipeFormPage', (): void => {
     test('should auto set mash duration', (): void => {
       const _mockRecipeVariantComplete: RecipeVariant = mockRecipeVariantComplete();
       const mashIndex: number = 2;
-      _mockRecipeVariantComplete.processSchedule[mashIndex].duration = 60;
+      (<TimerProcess>_mockRecipeVariantComplete.processSchedule[mashIndex]).duration = 60;
 
       recipeFormPage.variant = _mockRecipeVariantComplete;
 
@@ -1052,7 +1019,7 @@ describe('RecipeFormPage', (): void => {
 
       recipeFormPage.autoSetMashDuration(120);
 
-      expect(recipeFormPage.variant.processSchedule[mashIndex].duration).toEqual(120);
+      expect((<TimerProcess>recipeFormPage.variant.processSchedule[mashIndex]).duration).toEqual(120);
     });
 
     test('should format hops step description', (): void => {

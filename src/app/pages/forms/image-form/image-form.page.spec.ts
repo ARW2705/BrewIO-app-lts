@@ -9,17 +9,18 @@ import { configureTestBed } from '../../../../../test-config/configure-test-bed'
 
 /* Mock imports */
 import { mockEnglishUnits, mockMetricUnits, mockImage, mockStyles } from '../../../../../test-config/mock-models';
-import { ImageServiceStub } from '../../../../../test-config/service-stubs';
+import { ErrorReportingServiceStub, ImageServiceStub } from '../../../../../test-config/service-stubs';
 import { HeaderComponentStub } from '../../../../../test-config/component-stubs';
 import { LoadingControllerStub, LoadingStub, ModalControllerStub, ModalStub } from '../../../../../test-config/ionic-stubs';
 
 /* Default imports */
-import { defaultImage } from '../../../shared/defaults/default-image';
+import { defaultImage } from '../../../shared/defaults';
 
 /* Interface imports */
-import { Image } from '../../../shared/interfaces/image';
+import { Image } from '../../../shared/interfaces';
 
 /* Service imports */
+import { ErrorReportingService } from '../../../services/error-reporting/error-reporting.service';
 import { ImageService } from '../../../services/image/image.service';
 
 /* Page imports */
@@ -39,6 +40,7 @@ describe('ImageFormPage', (): void => {
         HeaderComponentStub,
       ],
       providers: [
+        { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: LoadingController, useClass: LoadingControllerStub },
         { provide: ModalController, useClass: ModalControllerStub },
         { provide: ImageService, useClass: ImageServiceStub }
@@ -57,6 +59,8 @@ describe('ImageFormPage', (): void => {
     imageFormPage.ngOnInit = jest
       .fn();
     imageFormPage.modalCtrl.dismiss = jest
+      .fn();
+    imageFormPage.errorReporter.handleUnhandledError = jest
       .fn();
   });
 
@@ -123,27 +127,26 @@ describe('ImageFormPage', (): void => {
 
     test('should handle error from image gallery', (done: jest.DoneCallback): void => {
       const _stubLoading: LoadingStub = new LoadingStub();
+      const _mockError: Error = new Error('test-error');
 
       imageFormPage.imageService.importImage = jest
         .fn()
-        .mockReturnValue(throwError('test-error'));
+        .mockReturnValue(throwError(_mockError));
 
       imageFormPage.loadingCtrl.create = jest
         .fn()
         .mockReturnValue(_stubLoading);
 
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
       const dismissSpy: jest.SpyInstance = jest.spyOn(_stubLoading, 'dismiss');
+      const errorSpy: jest.SpyInstance = jest.spyOn(imageFormPage.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
       imageFormPage.openGallery();
 
       setTimeout((): void => {
-        const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
-        expect(consoleCalls[0]).toMatch('gallery error');
-        expect(consoleCalls[1]).toMatch('test-error');
         expect(dismissSpy).toHaveBeenCalled();
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
     });

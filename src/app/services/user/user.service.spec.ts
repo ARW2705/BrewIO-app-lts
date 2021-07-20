@@ -3,47 +3,79 @@ import { TestBed, getTestBed, async } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController, TestRequest } from '@angular/common/http/testing';
 import { HttpErrorResponse } from '@angular/common/http';
 import { RouterTestingModule } from '@angular/router/testing';
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, Observer, TeardownLogic, Subject, forkJoin, of, throwError } from 'rxjs';
+import { delay } from 'rxjs/operators';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockImage, mockImageRequestMetadata, mockErrorResponse, mockLoginResponse, mockJWTSuccess, mockUser, mockUserUpdate, mockUserLogin, mockSyncMetadata, mockSyncResponse } from '../../../../test-config/mock-models';
-import { ConnectionServiceStub, EventServiceStub, HttpErrorServiceStub, ImageServiceStub, PreferencesServiceStub, StorageServiceStub, SyncServiceStub, ToastServiceStub } from '../../../../test-config/service-stubs';
+import {
+  mockImage,
+  mockImageRequestMetadata,
+  mockErrorResponse,
+  mockLoginResponse,
+  mockJWTSuccess,
+  mockUser,
+  mockUserUpdate,
+  mockUserLogin,
+  mockSyncMetadata,
+  mockSyncResponse
+} from '../../../../test-config/mock-models';
+import {
+  ConnectionServiceStub,
+  ErrorReportingServiceStub,
+  EventServiceStub,
+  HttpErrorServiceStub,
+  ImageServiceStub,
+  PreferencesServiceStub,
+  StorageServiceStub,
+  SyncServiceStub,
+  ToastServiceStub,
+  TypeGuardServiceStub
+} from '../../../../test-config/service-stubs';
 
 /* Constants imports */
-import { BASE_URL } from '../../shared/constants/base-url';
-import { API_VERSION } from '../../shared/constants/api-version';
+import { API_VERSION, BASE_URL } from '../../shared/constants';
 
 /* Default imports */
-import { defaultEnglish } from '../../shared/defaults/default-units';
-import { defaultImage } from '../../shared/defaults/default-image';
+import { defaultEnglishUnits, defaultImage } from '../../shared/defaults';
 
 /* Interface imports */
-import { Image, ImageRequestFormData, ImageRequestMetadata } from '../../shared/interfaces/image';
-import { SelectedUnits } from '../../shared/interfaces/units';
-import { SyncResponse } from '../../shared/interfaces/sync';
-import { LoginCredentials } from '../../shared/interfaces/login-credentials';
-import { User } from '../../shared/interfaces/user';
-import { UserResponse } from '../../shared/interfaces/user-response';
+import {
+  Image,
+  ImageRequestFormData,
+  ImageRequestMetadata,
+  LoginCredentials,
+  SelectedUnits,
+  SyncResponse,
+  User,
+  UserResponse
+} from '../../shared/interfaces';
+
+/* Type imports */
+import { CustomError } from '../../shared/types';
 
 /* Service imports */
 import { UserService } from './user.service';
-import { HttpErrorService } from '../http-error/http-error.service';
-import { StorageService } from '../storage/storage.service';
 import { ConnectionService } from '../connection/connection.service';
-import { PreferencesService } from '../preferences/preferences.service';
+import { ErrorReportingService } from '../error-reporting/error-reporting.service';
 import { EventService } from '../event/event.service';
+import { HttpErrorService } from '../http-error/http-error.service';
 import { ImageService } from '../image/image.service';
+import { PreferencesService } from '../preferences/preferences.service';
+import { StorageService } from '../storage/storage.service';
 import { SyncService } from '../sync/sync.service';
 import { ToastService } from '../toast/toast.service';
+import { TypeGuardService } from '../type-guard/type-guard.service';
 
 
 describe('UserService', (): void => {
   let injector: TestBed;
   let userService: UserService;
   let httpMock: HttpTestingController;
+  let originalCheckType: any;
+  const baseURL: string = `${BASE_URL}/${API_VERSION}/`;
   configureTestBed();
 
   beforeAll(async((): void => {
@@ -54,14 +86,16 @@ describe('UserService', (): void => {
       ],
       providers: [
         UserService,
-        { provide: EventService, useClass: EventServiceStub },
-        { provide: ImageService, useClass: ImageServiceStub },
-        { provide: HttpErrorService, useClass: HttpErrorServiceStub },
-        { provide: StorageService, useClass: StorageServiceStub },
         { provide: ConnectionService, useClass: ConnectionServiceStub },
+        { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
+        { provide: EventService, useClass: EventServiceStub },
+        { provide: HttpErrorService, useClass: HttpErrorServiceStub },
+        { provide: ImageService, useClass: ImageServiceStub },
         { provide: PreferencesService, useClass: PreferencesServiceStub },
+        { provide: StorageService, useClass: StorageServiceStub },
         { provide: SyncService, useClass: SyncServiceStub },
-        { provide: ToastService, useClass: ToastServiceStub }
+        { provide: ToastService, useClass: ToastServiceStub },
+        { provide: TypeGuardService, useClass: TypeGuardServiceStub }
       ]
     });
   }));
@@ -70,6 +104,12 @@ describe('UserService', (): void => {
     injector = getTestBed();
     userService = injector.get(UserService);
     httpMock = injector.get(HttpTestingController);
+    userService.errorReporter.handleUnhandledError = jest
+      .fn();
+    userService.errorReporter.setErrorReport = jest
+      .fn();
+    originalCheckType = userService.checkTypeSafety;
+    userService.checkTypeSafety = jest.fn();
   });
 
   afterEach((): void => {
@@ -100,7 +140,13 @@ describe('UserService', (): void => {
     getReq.flush(_mockJWTResponse);
   });
 
-  test('should get valid JWT', (done: jest.DoneCallback): void => {
+  test('should get invalid JWT', (done: jest.DoneCallback): void => {
+    const _mockErrorResponse: HttpErrorResponse = mockErrorResponse(
+      500,
+      'test-error',
+      baseURL + 'users/checkJWToken'
+    );
+
     userService.httpError.handleError = jest
       .fn()
       .mockReturnValue(throwError('test-error'));
@@ -111,25 +157,28 @@ describe('UserService', (): void => {
           console.log('Should not get results', results);
           expect(true).toBe(false);
         },
-        (error: string): void => {
-          expect(error).toMatch('test-error');
+        (error: HttpErrorResponse): void => {
+          expect(error).toStrictEqual(_mockErrorResponse);
           done();
         }
       );
 
     const getReq: TestRequest = httpMock.expectOne(`${BASE_URL}/${API_VERSION}/users/checkJWToken`);
     expect(getReq.request.method).toMatch('GET');
-    getReq.flush(null, mockErrorResponse(500, 'test-error'));
+    getReq.flush(null, _mockErrorResponse);
   });
 
   test('should clear user data', (): void => {
     const _defaultImage: Image = defaultImage();
-    const _defaultEnglish: SelectedUnits = defaultEnglish();
+    const _defaultEnglishUnits: SelectedUnits = defaultEnglishUnits();
 
     userService.storageService.removeUser = jest
       .fn();
 
     userService.event.emit = jest
+      .fn();
+
+    userService.checkTypeSafety = jest
       .fn();
 
     const storeSpy: jest.SpyInstance = jest.spyOn(userService.storageService, 'removeUser');
@@ -148,8 +197,8 @@ describe('UserService', (): void => {
       email: undefined,
       friendList: [],
       token: '',
-      preferredUnitSystem: _defaultEnglish.system,
-      units: _defaultEnglish,
+      preferredUnitSystem: _defaultEnglishUnits.system,
+      units: _defaultEnglishUnits,
       breweryLabelImage: _defaultImage,
       userImage: _defaultImage
     });
@@ -193,9 +242,10 @@ describe('UserService', (): void => {
     expect(userService.isLoggedIn()).toBe(false);
   });
 
-  test('should load a user from storage', (done: jest.DoneCallback): void => {
+  test('should load a user from storage', (): void => {
     const _mockUser: User = mockUser();
     const _mockJWTResponse: UserResponse = mockJWTSuccess();
+    const _mockSubject: Subject<any> = new Subject<any>();
 
     userService.storageService.getUser = jest
       .fn()
@@ -208,7 +258,7 @@ describe('UserService', (): void => {
 
     userService.checkJWToken = jest
       .fn()
-      .mockReturnValue(of(_mockJWTResponse));
+      .mockReturnValue(_mockSubject);
 
     userService.connectionService.setOfflineMode = jest
       .fn();
@@ -219,6 +269,9 @@ describe('UserService', (): void => {
     userService.preferenceService.setUnits = jest
       .fn();
 
+    userService.checkTypeSafety = jest
+      .fn();
+
     const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
     const connSpy: jest.SpyInstance = jest.spyOn(userService.connectionService, 'setOfflineMode');
     const eventSpy: jest.SpyInstance = jest.spyOn(userService.event, 'emit');
@@ -226,30 +279,33 @@ describe('UserService', (): void => {
 
     userService.loadUserFromStorage();
 
-    setTimeout((): void => {
-      expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch(_mockJWTResponse.status);
-      expect(connSpy).not.toHaveBeenCalled();
-      expect(eventSpy).toHaveBeenNthCalledWith(1, 'init-recipes');
-      expect(prefSpy).toHaveBeenNthCalledWith(1, _mockUser.preferredUnitSystem, _mockUser.units);
+    _mockSubject.next(_mockJWTResponse);
 
-      userService.loadUserFromStorage();
+    expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch(_mockJWTResponse.status);
+    expect(connSpy).not.toHaveBeenCalled();
+    expect(eventSpy).toHaveBeenNthCalledWith(1, 'init-recipes');
+    expect(prefSpy).toHaveBeenNthCalledWith(1, _mockUser.preferredUnitSystem, _mockUser.units);
 
-      setTimeout((): void => {
-        expect(connSpy).toHaveBeenCalledWith(true);
-        expect(eventSpy).toHaveBeenNthCalledWith(2, 'init-recipes');
-        expect(prefSpy).toHaveBeenNthCalledWith(2, _mockUser.preferredUnitSystem, _mockUser.units);
-        done();
-      }, 10);
-    }, 10);
+    userService.loadUserFromStorage();
+
+    _mockSubject.next(_mockJWTResponse);
+
+    expect(connSpy).toHaveBeenCalledWith(true);
+    expect(eventSpy).toHaveBeenNthCalledWith(2, 'init-recipes');
+    expect(prefSpy).toHaveBeenNthCalledWith(2, _mockUser.preferredUnitSystem, _mockUser.units);
   });
 
-  test('should handle errors trying to load user from storage', (done: jest.DoneCallback): void => {
+  test('should handle storage error trying to load user from storage', (): void => {
     const _mockUser: User = mockUser();
+    const _mockError = new Error('test-error');
+    const _mockSubject: Subject<any> = new Subject<any>();
 
     userService.storageService.getUser = jest
       .fn()
-      .mockReturnValueOnce(of(_mockUser))
-      .mockReturnValueOnce(throwError('get-error'));
+      .mockReturnValue(of(_mockUser));
+
+    userService.checkTypeSafety = jest
+      .fn();
 
     userService.isLoggedIn = jest
       .fn()
@@ -257,37 +313,48 @@ describe('UserService', (): void => {
 
     userService.checkJWToken = jest
       .fn()
-      .mockReturnValue(throwError('<401> not authorized'));
+      .mockReturnValue(_mockSubject);
 
-    userService.clearUserData = jest
+    userService.errorReporter.handleUnhandledError = jest
       .fn();
 
-    userService.toastService.presentErrorToast = jest
+    userService.clearUserData = jest
       .fn();
 
     userService.navToHome = jest
       .fn();
 
-    const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+    const handleSpy: jest.SpyInstance = jest.spyOn(userService.errorReporter, 'handleUnhandledError');
     const clearSpy: jest.SpyInstance = jest.spyOn(userService, 'clearUserData');
-    const toastSpy: jest.SpyInstance = jest.spyOn(userService.toastService, 'presentErrorToast');
+    const homeSpy: jest.SpyInstance = jest.spyOn(userService, 'navToHome');
 
     userService.loadUserFromStorage();
 
-    setTimeout((): void => {
-      const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
-      expect(consoleCalls[0]).toMatch('jwt error');
-      expect(consoleCalls[1]).toMatch('<401> not authorized');
-      expect(clearSpy).toHaveBeenCalled();
-      expect(toastSpy.mock.calls[0][0]).toMatch('Login has expired, please log in again');
+    _mockSubject.error(_mockError);
 
-      userService.loadUserFromStorage();
+    expect(handleSpy).toHaveBeenCalledWith(_mockError);
+    expect(clearSpy).toHaveBeenCalled();
+    expect(homeSpy).toHaveBeenCalled();
+  });
 
-      setTimeout((): void => {
-        expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('User load error: get-error');
-        done();
-      }, 10);
-    }, 10);
+  test('should handle verification error tyring to load user from storage', (): void => {
+    const _mockError: Error = new Error('test-error');
+    const _mockSubject: Subject<any> = new Subject<any>();
+
+    userService.storageService.getUser = jest
+      .fn()
+      .mockReturnValue(_mockSubject);
+
+    userService.errorReporter.handleUnhandledError = jest
+      .fn();
+
+    const customSpy: jest.SpyInstance = jest.spyOn(userService.errorReporter, 'handleUnhandledError');
+
+    userService.loadUserFromStorage();
+
+    _mockSubject.error(_mockError);
+
+    expect(customSpy).toHaveBeenCalledWith(_mockError);
   });
 
   test('should successfully log in (not on signup)', (done: jest.DoneCallback): void => {
@@ -295,6 +362,10 @@ describe('UserService', (): void => {
     const _mockLoginCredentials: LoginCredentials = mockUserLogin();
     _mockLoginCredentials.remember = true;
     const _mockUserResponse: UserResponse = mockLoginResponse();
+
+    userService.isSafeUser = jest
+      .fn()
+      .mockReturnValue(true);
 
     userService.connectionService.setOfflineMode = jest
       .fn();
@@ -312,6 +383,8 @@ describe('UserService', (): void => {
     userService.syncOnConnection = jest
       .fn()
       .mockReturnValue(of({}));
+
+    userService.errorReporter.handleGenericCatchError = jest.fn();
 
     const eventSpy: jest.SpyInstance = jest.spyOn(userService.event, 'emit');
     const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
@@ -341,6 +414,10 @@ describe('UserService', (): void => {
     const _mockLoginCredentials: LoginCredentials = mockUserLogin();
     const _mockUserResponse: UserResponse = mockLoginResponse();
 
+    userService.isSafeUser = jest
+      .fn()
+      .mockReturnValue(true);
+
     userService.connectionService.setOfflineMode = jest
       .fn();
 
@@ -356,6 +433,8 @@ describe('UserService', (): void => {
     userService.syncOnConnection = jest
       .fn()
       .mockReturnValue(of({}));
+
+    userService.errorReporter.handleGenericCatchError = jest.fn();
 
     const eventSpy: jest.SpyInstance = jest.spyOn(userService.event, 'emit');
     const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
@@ -387,6 +466,10 @@ describe('UserService', (): void => {
     _mockLoginCredentials.remember = true;
     const _mockUserResponse: UserResponse = mockLoginResponse();
 
+    userService.isSafeUser = jest
+      .fn()
+      .mockReturnValue(true);
+
     userService.connectionService.setOfflineMode = jest
       .fn();
 
@@ -404,18 +487,19 @@ describe('UserService', (): void => {
       .fn()
       .mockReturnValue(throwError('sync-error'));
 
-    const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+    userService.errorReporter.handleUnhandledError = jest
+      .fn();
 
-    userService.logIn(_mockLoginCredentials, true)
+    userService.errorReporter.handleGenericCatchError = jest.fn();
+
+    const customSpy: jest.SpyInstance = jest.spyOn(userService.errorReporter, 'handleUnhandledError');
+
+    userService.logIn(_mockLoginCredentials, false)
       .subscribe(
         (user: User): void => {
           expect(user).toStrictEqual(_mockUser);
-          const callCount: number = consoleSpy.mock.calls.length;
-          const storeCalls: any[] = consoleSpy.mock.calls[callCount - 2];
-          expect(storeCalls[0]).toMatch('User store error: storage-error');
-          const syncCalls: any[] = consoleSpy.mock.calls[callCount - 1];
-          expect(syncCalls[0]).toMatch('User login error');
-          expect(syncCalls[1]).toMatch('sync-error');
+          expect(customSpy).toHaveBeenNthCalledWith(1, 'storage-error');
+          expect(customSpy).toHaveBeenNthCalledWith(2, 'sync-error');
           done();
         },
         (error: any): void => {
@@ -432,10 +516,14 @@ describe('UserService', (): void => {
   test('should get an error when loggin in', (done: jest.DoneCallback): void => {
     const _mockLoginCredentials: LoginCredentials = mockUserLogin();
     const _mockErrorResponse: HttpErrorResponse = mockErrorResponse(404, 'not found');
+    let handledError: boolean = false;
 
-    userService.httpError.handleError = jest
+    userService.errorReporter.handleGenericCatchError = jest
       .fn()
-      .mockReturnValue(throwError('<404> not found'));
+      .mockReturnValue((error: any): Observable<never> => {
+        handledError = true;
+        return throwError(null);
+      });
 
     userService.logIn(_mockLoginCredentials, false)
       .subscribe(
@@ -443,8 +531,9 @@ describe('UserService', (): void => {
           console.log('Should not get results', results);
           expect(true).toBe(false);
         },
-        (error: string): void => {
-          expect(error).toMatch('<404> not found');
+        (error: any): void => {
+          expect(error).toBeNull();
+          expect(handledError).toBe(true);
           done();
         }
       );
@@ -473,6 +562,9 @@ describe('UserService', (): void => {
   test('should map user data to current user', (): void => {
     const _mockUser: User = mockUser();
     const _mockUserUpdate: User = mockUserUpdate();
+
+    userService.checkTypeSafety = jest
+      .fn();
 
     const user$: BehaviorSubject<User> = new BehaviorSubject<User>(_mockUser);
 
@@ -530,6 +622,8 @@ describe('UserService', (): void => {
       .fn()
       .mockReturnValue(of({}));
 
+    userService.errorReporter.handleGenericCatchError = jest.fn();
+
     const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
 
     userService.signUp(_mockUser)
@@ -551,8 +645,9 @@ describe('UserService', (): void => {
     postReq.flush(_mockUserResponse);
   });
 
-  test('should get an error on startup', (done: jest.DoneCallback): void => {
+  test('should get an error on signup', (done: jest.DoneCallback): void => {
     const _mockUser: User = mockUser();
+    let handledError: boolean = false;
 
     userService.composeImageStoreRequests = jest
       .fn()
@@ -566,10 +661,11 @@ describe('UserService', (): void => {
       .fn()
       .mockReturnValue(of([]));
 
-    userService.httpError.handleError = jest
+    userService.errorReporter.handleGenericCatchError = jest
       .fn()
-      .mockImplementation((error: HttpErrorResponse): Observable<never> => {
-        return throwError(`<${error.status}> ${error.statusText}`);
+      .mockReturnValue((error: any): Observable<never> => {
+        handledError = true;
+        return throwError(null);
       });
 
     userService.signUp(_mockUser)
@@ -579,7 +675,8 @@ describe('UserService', (): void => {
           expect(true).toBe(false);
         },
         (error: string): void => {
-          expect(error).toMatch('<404> not found');
+          expect(error).toBeNull();
+          expect(handledError).toBe(true);
           done();
         }
       );
@@ -587,6 +684,47 @@ describe('UserService', (): void => {
     const postReq: TestRequest = httpMock.expectOne(`${BASE_URL}/${API_VERSION}/users/signup`);
     expect(postReq.request.method).toMatch('POST');
     postReq.flush(null, mockErrorResponse(404, 'not found'));
+  });
+
+  test('should get an error on login after signing up', (done: jest.DoneCallback): void => {
+    const _mockUser: User = mockUser();
+    const _mockUserResponse: UserResponse = mockLoginResponse();
+    const _mockError: Error = new Error('test-error');
+
+    userService.composeImageStoreRequests = jest
+      .fn()
+      .mockReturnValue(of([]));
+
+    userService.composeImageUploadRequests = jest
+      .fn()
+      .mockReturnValue([]);
+
+    userService.imageService.blobbifyImages = jest
+      .fn()
+      .mockReturnValue(of([]));
+
+    userService.logIn = jest
+      .fn()
+      .mockReturnValue(throwError(_mockError));
+
+    userService.errorReporter.handleGenericCatchError = jest.fn();
+
+    const errorSpy: jest.SpyInstance = jest.spyOn(userService.errorReporter, 'handleUnhandledError');
+
+    userService.signUp(_mockUser)
+      .subscribe(
+        (): void => {
+          expect(errorSpy).toHaveBeenLastCalledWith(_mockError);
+          done();
+        },
+        (error: any): void => {
+          console.log(`Error in 'should get an error on login after signing up'`, error);
+          expect(true).toBe(false);
+        }
+      );
+
+    const postReq: TestRequest = httpMock.expectOne(`${BASE_URL}/${API_VERSION}/users/signup`);
+    postReq.flush(_mockUserResponse);
   });
 
   test('should update the user profile (online)', (done: jest.DoneCallback): void => {
@@ -611,6 +749,8 @@ describe('UserService', (): void => {
 
     userService.requestInBackground = jest
       .fn();
+
+    userService.errorReporter.handleGenericCatchError = jest.fn();
 
     const composeSpy: jest.SpyInstance = jest.spyOn(userService, 'composeImageStoreRequests');
     const reqSpy: jest.SpyInstance = jest.spyOn(userService, 'requestInBackground');
@@ -658,6 +798,8 @@ describe('UserService', (): void => {
     userService.addSyncFlag = jest
       .fn();
 
+    userService.errorReporter.handleGenericCatchError = jest.fn();
+
     const composeSpy: jest.SpyInstance = jest.spyOn(userService, 'composeImageStoreRequests');
     const syncSpy: jest.SpyInstance = jest.spyOn(userService, 'addSyncFlag');
 
@@ -681,34 +823,39 @@ describe('UserService', (): void => {
       );
   });
 
-  test('should update user storage', (done: jest.DoneCallback): void => {
+  test('should update user storage', (): void => {
+    const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+    const _mockSubject: Subject<any> = new Subject<any>();
+
     userService.storageService.setUser = jest
       .fn()
-      .mockReturnValue(of({}));
-
-    const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+      .mockReturnValue(_mockSubject);
 
     userService.updateUserStorage();
 
-    setTimeout((): void => {
-      expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('user data stored');
-      done();
-    }, 10);
+    _mockSubject.next();
+
+    expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('user data stored');
   });
 
-  test('should get an error updating user storage', (done: jest.DoneCallback): void => {
+  test('should get an error updating user storage', (): void => {
+    const _mockError: Error = new Error('test-error');
+    const _mockSubject: Subject<any> = new Subject<any>();
+
     userService.storageService.setUser = jest
       .fn()
-      .mockReturnValue(throwError('test-error'));
+      .mockReturnValue(_mockSubject);
 
-    const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+    userService.errorReporter.handleUnhandledError = jest
+      .fn();
+
+    const customSpy: jest.SpyInstance = jest.spyOn(userService.errorReporter, 'handleUnhandledError');
 
     userService.updateUserStorage();
 
-    setTimeout((): void => {
-      expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('user store error: test-error');
-      done();
-    }, 10);
+    _mockSubject.error(_mockError);
+
+    expect(customSpy).toHaveBeenCalledWith(_mockError);
   });
 
   test('should check if can send a request', (): void => {
@@ -786,6 +933,12 @@ describe('UserService', (): void => {
       .fn()
       .mockReturnValue(of([_mockImageRequestMetadata]));
 
+    userService.errorReporter.handleResolvableCatchError = jest
+      .fn()
+      .mockReturnValue((error: any): Observable<never> => {
+        return throwError(error);
+      });
+
     userService.configureBackgroundRequest(_mockUser, false)
       .subscribe(
         (): void => {
@@ -805,6 +958,7 @@ describe('UserService', (): void => {
 
   test('should get an error configuring a background request that should not resolve', (done: jest.DoneCallback): void => {
     const _mockUser: User = mockUser();
+    const _mockError: Error = new Error('test-error');
 
     userService.composeImageStoreRequests = jest
       .fn()
@@ -812,11 +966,15 @@ describe('UserService', (): void => {
 
     userService.imageService.blobbifyImages = jest
       .fn()
-      .mockReturnValue(of([]));
+      .mockReturnValue(throwError(_mockError));
 
-    userService.httpError.handleError = jest
+    userService.errorReporter.handleResolvableCatchError = jest
       .fn()
-      .mockReturnValue(throwError('test-error'));
+      .mockReturnValue((error: any): Observable<never> => {
+        return throwError(null);
+      });
+
+    const customSpy: jest.SpyInstance = jest.spyOn(userService.errorReporter, 'handleResolvableCatchError');
 
     userService.configureBackgroundRequest(_mockUser, false)
       .subscribe(
@@ -824,15 +982,12 @@ describe('UserService', (): void => {
           console.log('Should not get results', results);
           expect(true).toBe(false);
         },
-        (error: string): void => {
-          expect(error).toMatch('test-error');
+        (error: any): void => {
+          expect(customSpy).toHaveBeenCalledWith(false);
+          expect(error).toBeNull();
           done();
         }
       );
-
-    const patchReq: TestRequest = httpMock.expectOne(`${BASE_URL}/${API_VERSION}/users/profile`);
-    expect(patchReq.request.method).toMatch('PATCH');
-    patchReq.flush(null, mockErrorResponse(404, 'not found'));
   });
 
   test('should get an error configuring a background request that should resolve', (done: jest.DoneCallback): void => {
@@ -846,15 +1001,16 @@ describe('UserService', (): void => {
       .fn()
       .mockReturnValue(of([]));
 
-    userService.httpError.handleError = jest
+    userService.errorReporter.handleResolvableCatchError = jest
       .fn()
-      .mockReturnValue(throwError('test-error'));
+      .mockReturnValue((error: any): Observable<any> => {
+        return of(null);
+      });
 
     userService.configureBackgroundRequest(_mockUser, true)
       .subscribe(
-        (resolvedError: HttpErrorResponse): void => {
-          expect(resolvedError.status).toEqual(404);
-          expect(resolvedError.statusText).toMatch('not found');
+        (results: any): void => {
+          expect(results).toBeNull();
           done();
         },
         (error: any): void => {
@@ -909,8 +1065,10 @@ describe('UserService', (): void => {
     }, 10);
   });
 
-  test('should get an error making request in background', (done: jest.DoneCallback): void => {
+  test('should get an error making request in background', (): void => {
     const _mockUser: User = mockUser();
+    const _mockSubject: Subject<any> = new Subject<any>();
+    const _mockError: Error = new Error('test-error');
 
     userService.configureRequestBody = jest
       .fn()
@@ -918,19 +1076,18 @@ describe('UserService', (): void => {
 
     userService.configureBackgroundRequest = jest
       .fn()
-      .mockReturnValue(throwError('test-error'));
+      .mockReturnValue(_mockSubject);
 
-    userService.toastService.presentErrorToast = jest
+    userService.errorReporter.handleUnhandledError = jest
       .fn();
 
-    const toastSpy: jest.SpyInstance = jest.spyOn(userService.toastService, 'presentErrorToast');
+    const customSpy: jest.SpyInstance = jest.spyOn(userService.errorReporter, 'handleUnhandledError');
 
     userService.requestInBackground(_mockUser);
 
-    setTimeout((): void => {
-      expect(toastSpy).toHaveBeenCalledWith('User profile failed to save to server');
-      done();
-    }, 10);
+    _mockSubject.error(_mockError);
+
+    expect(customSpy).toHaveBeenCalledWith(_mockError);
   });
 
   test('should add a sync flag', (): void => {
@@ -975,6 +1132,11 @@ describe('UserService', (): void => {
     userService.mapUserData = jest
       .fn();
 
+    userService.checkTypeSafety = jest
+      .fn();
+
+    userService.errorReporter.handleGenericCatchError = jest.fn();
+
     const mapSpy: jest.SpyInstance = jest.spyOn(userService, 'mapUserData');
 
     userService.syncOnConnection()
@@ -1015,6 +1177,73 @@ describe('UserService', (): void => {
           expect(true).toBe(false);
         }
       );
+  });
+
+  test('should check user is type safe', (): void => {
+    userService.checkTypeSafety = originalCheckType;
+    const _mockError: Error = new Error('test-error');
+    const _mockUser: User = mockUser();
+
+    userService.isSafeUser = jest
+      .fn()
+      .mockReturnValueOnce(true)
+      .mockReturnValueOnce(false);
+
+    userService.getUnsafeUserError = jest
+      .fn()
+      .mockReturnValue(_mockError);
+
+    expect((): void => {
+      userService.checkTypeSafety(_mockUser);
+    }).not.toThrow();
+    expect((): void => {
+      userService.checkTypeSafety(_mockUser);
+    }).toThrow(_mockError);
+  });
+
+  test('should get a custom error for unsafe user', (): void => {
+    const _mockError: Error = new Error('test-error');
+    const customError: CustomError = <CustomError>userService.getUnsafeUserError(_mockError);
+
+    expect(customError.name).toMatch('UserError');
+    expect(customError.message).toMatch('Given User is invalid: got\n{}');
+    expect(customError.severity).toEqual(2);
+    expect(customError.userMessage).toMatch('An error occurred while updating user: invalid user');
+  });
+
+  test('should check if user is type safe', (): void => {
+    userService.typeGuard.hasValidProperties = jest
+      .fn()
+      .mockReturnValueOnce(true)
+      .mockReturnValueOnce(true)
+      .mockReturnValueOnce(true)
+      .mockReturnValueOnce(true);
+
+    userService.preferenceService.isValidUnits = jest
+      .fn()
+      .mockReturnValueOnce(true)
+      .mockReturnValueOnce(true)
+      .mockReturnValueOnce(true)
+      .mockReturnValueOnce(false);
+
+    userService.imageService.isSafeImage = jest
+      .fn()
+      .mockReturnValueOnce(true)
+      .mockReturnValueOnce(false)
+      .mockReturnValueOnce(false);
+
+    const _mockUser: User = mockUser();
+    _mockUser.breweryLabelImage = null;
+    _mockUser.userImage = null;
+    const _mockImage: Image = mockImage();
+
+    expect(userService.isSafeUser(_mockUser)).toBe(true);
+    _mockUser.breweryLabelImage = _mockImage;
+    _mockUser.userImage = _mockImage;
+    expect(userService.isSafeUser(_mockUser)).toBe(false);
+    expect(userService.isSafeUser(_mockUser)).toBe(false);
+    expect(userService.isSafeUser(_mockUser)).toBe(false);
+    expect(userService.isSafeUser(_mockUser)).toBe(false);
   });
 
 });

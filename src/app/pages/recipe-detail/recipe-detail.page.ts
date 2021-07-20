@@ -6,8 +6,10 @@ import { Subject, from } from 'rxjs';
 import { finalize, takeUntil } from 'rxjs/operators';
 
 /* Interface imports */
-import { RecipeMaster } from '../../shared/interfaces/recipe-master';
-import { RecipeVariant } from '../../shared/interfaces/recipe-variant';
+import { RecipeMaster, RecipeVariant } from '../../shared/interfaces';
+
+/* Type imports */
+import { CustomError } from '../../shared/types';
 
 /* Utility imports */
 import { clone } from '../../shared/utility-functions/clone';
@@ -21,6 +23,7 @@ import { ConfirmationComponent } from '../../components/confirmation/confirmatio
 
 /* Service imports */
 import { AnimationsService } from '../../services/animations/animations.service';
+import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
 import { RecipeService } from '../../services/recipe/recipe.service';
 import { ToastService } from '../../services/toast/toast.service';
 
@@ -52,6 +55,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
     public route: ActivatedRoute,
     public router: Router,
     public animationService: AnimationsService,
+    public errorReporter: ErrorReportingService,
     public recipeService: RecipeService,
     public toastService: ToastService
   ) {
@@ -62,33 +66,19 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
 
   ngOnInit() {
     console.log('details page init');
-    try {
-      this.recipeService.getRecipeMasterById(this.recipeMasterId)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(
-          (recipeMaster: RecipeMaster): void => {
-            this.recipeMaster = recipeMaster;
-            this.mapVariantList();
-          },
-          (error: string): void => {
-            console.log('Recipe details error', this.recipeMasterId, error);
-            this.toastService.presentErrorToast(
-              'Recipe Error',
-              this.navToRoot.bind(this)
-            );
-          }
-        );
-    } catch (error) {
-      console.log('Recipe details error', this.recipeMasterId, error);
-      this.toastService.presentErrorToast(
-        'Error initializing recipe',
-        this.navToRoot.bind(this)
+    this.recipeService.getRecipeMasterById(this.recipeMasterId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(
+        (recipeMaster: RecipeMaster): void => {
+          this.recipeMaster = recipeMaster;
+          this.mapVariantList();
+        },
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
-    }
   }
 
   ionViewDidEnter() {
-    if (!this.animationService.hasHintBeenShown('sliding', 'recipeDetail')) {
+    if (this.animationService.shouldShowHint('sliding', 'recipeDetail')) {
       this.runSlidingHints();
     }
   }
@@ -104,7 +94,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
     // Close all sliding items on view exit
     this.slidingItemsList.closeSlidingItems()
       .then((): void => console.log('sliding items closed'))
-      .catch((error: any): void => console.log('error closing sliding items', error));
+      .catch((error: Error): void => console.log('error closing sliding items', error));
   }
 
   /***** End lifecycle hooks *****/
@@ -133,7 +123,15 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
         }
       );
     } else {
-      this.toastService.presentErrorToast('Recipe missing a process guide!');
+      const message: string = 'Recipe is missing a process guide';
+      this.errorReporter.setErrorReport(
+        this.errorReporter.createErrorReport(
+          'MissingError',
+          message,
+          3,
+          message,
+        )
+      );
     }
   }
 
@@ -155,9 +153,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
     if (formType === 'variant') {
       if (variant) {
         options['variantData'] = this.recipeMaster.variants
-          .find((recipeVariant: RecipeVariant): boolean => {
-            return hasId(recipeVariant, getId(variant));
-          });
+          .find((recipeVariant: RecipeVariant): boolean => hasId(recipeVariant, getId(variant)));
       } else {
         options['docMethod'] = 'create';
       }
@@ -215,8 +211,14 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
    */
   onConfirmDeleteModalErrorDismiss(): (error: string) => void {
     return (error: string): void => {
-      console.log('confirmation modal error', error);
-      this.toastService.presentErrorToast('Confirmation Error');
+      this.errorReporter.setErrorReport(
+        this.errorReporter.createErrorReport(
+          'ModalError',
+          error,
+          3,
+          error
+        )
+      );
     };
   }
 
@@ -244,10 +246,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
               'middle'
             );
           },
-          (error: string): void => {
-            console.log(`Variant deletion error: ${error}`);
-            this.toastService.presentErrorToast('Error deleting variant');
-          }
+          (error: any): void => this.errorReporter.handleUnhandledError(error)
         );
       }
     };
@@ -367,12 +366,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
           );
         }
       },
-      (error: string): void => {
-        console.log('Favorite error', error);
-        this.toastService.presentErrorToast(
-          `Unable to ${ !variant.isFavorite ? 'add to' : 'remove from'} favorites`
-        );
-      }
+      (error: any): void => this.errorReporter.handleUnhandledError(error)
     );
   }
 
@@ -390,20 +384,27 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
   runSlidingHints() {
     const topLevelContent: HTMLElement = this.ionContent['el'];
     if (!topLevelContent) {
-      console.log('Animation error: cannot find content container');
-      return;
+      const message: string = 'Animation error: cannot find content container';
+      throw new CustomError('AnimationError', message, 4, message);
     }
 
     this.toggleSlidingItemClass(true);
 
+    const slideDistance: number = this.animationService.getEstimatedItemOptionWidth(
+      this.slidingItemsListRef.nativeElement,
+      this.recipeMaster.variants[0].isMaster ? 0 : 1,
+      2
+    );
+
     this.animationService.playCombinedSlidingHintAnimations(
       topLevelContent,
-      this.slidingItemsListRef.nativeElement
+      this.slidingItemsListRef.nativeElement,
+      slideDistance
     )
     .pipe(finalize((): void => this.toggleSlidingItemClass(false)))
     .subscribe(
       (): void => this.animationService.setHintShownFlag('sliding', 'recipeDetail'),
-      (error: string): void => console.log('Animation error', error)
+      (error: any): void => this.errorReporter.handleUnhandledError(error)
     );
   }
 

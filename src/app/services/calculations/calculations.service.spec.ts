@@ -5,21 +5,30 @@ import { TestBed, getTestBed, async } from '@angular/core/testing';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockEnglishUnits, mockMetricUnits, mockGrainBill, mockHopsSchedule, mockYeastBatch, mockRecipeVariantComplete } from '../../../../test-config/mock-models';
+import {
+  mockEnglishUnits,
+  mockMetricUnits,
+  mockGrainBill,
+  mockHopsSchedule,
+  mockYeastBatch,
+  mockRecipeVariantComplete
+} from '../../../../test-config/mock-models';
 import { PreferencesServiceStub } from '../../../../test-config/service-stubs';
 
 /* Constant imports */
-import * as Units from '../../shared/constants/units';
+import { BRIX, PLATO, SPECIFIC_GRAVITY } from '../../shared/constants';
 
 /* Utility imports */
 import { roundToDecimalPlace } from '../../shared/utility-functions/utilities';
 
 /* Interace Imports */
-import { GrainBill } from '../../shared/interfaces/grain-bill';
-import { HopsSchedule } from '../../shared/interfaces/hops-schedule';
-import { RecipeVariant } from '../../shared/interfaces/recipe-variant';
-import { YeastBatch } from '../../shared/interfaces/yeast-batch';
-import { SelectedUnits } from '../../shared/interfaces/units';
+import {
+  GrainBill,
+  HopsSchedule,
+  YeastBatch,
+  RecipeVariant,
+  SelectedUnits
+} from '../../shared/interfaces';
 
 /* Provider imports */
 import { CalculationsService } from './calculations.service';
@@ -56,7 +65,7 @@ describe('CalculationsService', () => {
     test('should convert density: Brix -> SG', () => {
       expect(
         roundToDecimalPlace(
-          calculator.convertDensity(12, Units.BRIX.longName, Units.SPECIFIC_GRAVITY.longName),
+          calculator.convertDensity(12, BRIX.longName, SPECIFIC_GRAVITY.longName),
           3
         )
       ).toEqual(1.048);
@@ -65,7 +74,7 @@ describe('CalculationsService', () => {
     test('should convert density: SG -> Plato', () => {
       expect(
         roundToDecimalPlace(
-          calculator.convertDensity(1.06, Units.SPECIFIC_GRAVITY.longName, Units.PLATO.longName),
+          calculator.convertDensity(1.06, SPECIFIC_GRAVITY.longName, PLATO.longName),
           1
         )
       )
@@ -75,7 +84,7 @@ describe('CalculationsService', () => {
     test('should convert density: Plato -> Brix', () => {
       expect(
         roundToDecimalPlace(
-          calculator.convertDensity(13.5, Units.PLATO.longName, Units.BRIX.longName),
+          calculator.convertDensity(13.5, PLATO.longName, BRIX.longName),
           1
         )
       )
@@ -125,15 +134,15 @@ describe('CalculationsService', () => {
     }); // end 'should convert weight to english standard' test
 
     test('should check if a density unit long name is valid', () => {
-      expect(calculator.isValidDensityUnit(Units.SPECIFIC_GRAVITY.longName)).toBe(true);
-      expect(calculator.isValidDensityUnit(Units.PLATO.longName)).toBe(true);
-      expect(calculator.isValidDensityUnit(Units.BRIX.longName)).toBe(true);
+      expect(calculator.isValidDensityUnit(SPECIFIC_GRAVITY.longName)).toBe(true);
+      expect(calculator.isValidDensityUnit(PLATO.longName)).toBe(true);
+      expect(calculator.isValidDensityUnit(BRIX.longName)).toBe(true);
       expect(calculator.isValidDensityUnit('unknown')).toBe(false);
     }); // end 'should check if a density unit long name is valid' test
 
     test('should check if a unit requires conversion', () => {
       const _mockEnglishUnits: SelectedUnits = mockEnglishUnits();
-      _mockEnglishUnits.density = Units.BRIX;
+      _mockEnglishUnits.density = BRIX;
       const _mockMetricUnits: SelectedUnits = mockMetricUnits();
 
       expect(calculator.requiresConversion('density', _mockEnglishUnits)).toBe(true);

@@ -4,10 +4,16 @@ import { Injectable } from '@angular/core';
 import { Platform } from '@ionic/angular';
 
 /* Interface imports */
-import { Batch } from '../../shared/interfaces/batch';
-import { Process } from '../../shared/interfaces/process';
-import { ProgressCircleSettings } from '../../shared/interfaces/progress-circle';
-import { Timer, BatchTimer } from '../../shared/interfaces/timer';
+import {
+  Batch,
+  BatchTimer,
+  Process,
+  ProgressCircleSettings,
+  Timer,
+  TimerProcess
+} from '../../shared/interfaces';
+
+import { CustomError } from '../../shared/types';
 
 /* Utility imports */
 import { clone } from '../../shared/utility-functions/clone';
@@ -16,7 +22,9 @@ import { hasId } from '../../shared/utility-functions/id-helpers';
 /* Service imports */
 import { BackgroundModeService } from '../background-mode/background-mode.service';
 import { ClientIdService } from '../client-id/client-id.service';
+import { ErrorReportingService } from '../error-reporting/error-reporting.service';
 import { LocalNotificationService } from '../local-notification/local-notification.service';
+import { ProcessService } from '../process/process.service';
 
 
 @Injectable({
@@ -43,10 +51,12 @@ export class TimerService {
   timerFontFamily: string = 'Arial';
 
   constructor(
+    public platform: Platform,
     public backgroundModeService: BackgroundModeService,
     public clientIdService: ClientIdService,
+    public errorReporter: ErrorReportingService,
     public notificationService: LocalNotificationService,
-    public platform: Platform
+    public processService: ProcessService,
   ) {
     this.timing = setInterval((): void => {
       this.tick();
@@ -54,10 +64,12 @@ export class TimerService {
     this.initializeSettings();
   }
 
+  /***** Timer Functions *****/
+
   /**
    * Add a new batch set of timers
    *
-   * @params: batch - new Batch to generate batch timer
+   * @param: batch - new Batch to generate batch timer
    *
    * @return: none
    */
@@ -81,13 +93,14 @@ export class TimerService {
         timers: timers
       });
     }
+    // Do not add a timer if it already exists
   }
 
   /**
    * Add a minute to a timer
    *
-   * @params: batchId - batch id associated with BatchTimer
-   * @params: timerId - timer id within BatchTimer to update
+   * @param: batchId - batch id associated with BatchTimer
+   * @param: timerId - timer id within BatchTimer to update
    *
    * @return: observable of updated timer
    */
@@ -95,14 +108,17 @@ export class TimerService {
     const timer$: BehaviorSubject<Timer> = this.getTimerSubjectById(batchId, timerId);
 
     if (!timer$) {
-      return throwError('Error adding time: timer not found');
+      const message: string = 'An error occurred trying to add time to timer: missing timer';
+      const additionalMessage: string = `Timer with id ${timerId} not found`;
+      return throwError(this.getMissingError(message, additionalMessage));
     }
 
     const timer: Timer = timer$.value;
-
     timer.timer.duration++;
     timer.timeRemaining += 60;
+
     this.setProgress(timer);
+
     timer$.next(timer);
 
     return of(timer);
@@ -111,12 +127,12 @@ export class TimerService {
   /**
    * Format the time remaining text inside progress circle
    *
-   * @params: timeRemaining - time remaining in seconds
+   * @param: timeRemaining - time remaining in seconds
    *
    * @return: datetime string in hh:mm:ss format - hour/minutes removed if zero
    */
   formatProgressCircleText(timeRemaining: number): string {
-    if (timeRemaining < 0) {
+    if (timeRemaining < 0 || timeRemaining === null || timeRemaining === undefined) {
       return '';
     }
 
@@ -152,9 +168,9 @@ export class TimerService {
   /**
    * Generate a new timer based on batch data
    *
-   * @params: batch - the batch that contains required data
-   * @params: processIndex - the process schedule index with time data
-   * @params: concurrentOffset - offset index from processIndex to first concurrent timer
+   * @param: batch - the batch that contains required data
+   * @param: processIndex - the process schedule index with time data
+   * @param: concurrentOffset - offset index from processIndex to first concurrent timer
    *
    * @return: BehaviorSubject of new timer
    */
@@ -163,11 +179,11 @@ export class TimerService {
     processIndex: number,
     concurrentOffset: number
   ): BehaviorSubject<Timer> {
-    const newTimer$: BehaviorSubject<Timer> = new BehaviorSubject<Timer>({
+    const newTimer: Timer = {
       cid: this.clientIdService.getNewId(),
       first: batch.process.schedule[processIndex - concurrentOffset].cid,
-      timer: clone(batch.process.schedule[processIndex]),
-      timeRemaining: batch.process.schedule[processIndex].duration * 60,
+      timer: clone(<TimerProcess>batch.process.schedule[processIndex]),
+      timeRemaining: (<TimerProcess>batch.process.schedule[processIndex]).duration * 60,
       show: false,
       expansion : {
         value: 'collapsed',
@@ -177,19 +193,18 @@ export class TimerService {
         }
       },
       isRunning: false,
-      settings: this.getSettings(batch.process.schedule[processIndex])
-    });
+      settings: this.getSettings(<TimerProcess>batch.process.schedule[processIndex])
+    };
 
-    return newTimer$;
+    return new BehaviorSubject<Timer>(newTimer);
   }
 
   /**
    * Get a batch timer by its id
    *
-   * @params: batchId - batch id associated with batch timer
+   * @param: batchId - batch id associated with batch timer
    *
-   * @return: the BatchTimer associated with given batch id else undefined if
-   *          not found
+   * @return: the BatchTimer associated with given batch id else undefined if not found
    */
   getBatchTimerById(batchId: string): BatchTimer {
     return this.batchTimers.find((batchTimer: BatchTimer): boolean => batchTimer.batchId === batchId);
@@ -199,7 +214,7 @@ export class TimerService {
    * Get the appropriate font size for timer display based on the
    * number of digits to be displayed
    *
-   * @params: timeRemaining - remaining time in seconds
+   * @param: timeRemaining - remaining time in seconds
    *
    * @return: css font size value
    */
@@ -216,7 +231,7 @@ export class TimerService {
   /**
    * Get step duration to be used in description display
    *
-   * @params: duration - stored duration in minutes
+   * @param: duration - stored duration in minutes
    *
    * @return: datetime string hh:mm
    */
@@ -242,11 +257,11 @@ export class TimerService {
   /**
    * Get timer progress circle settings
    *
-   * @params: process - Process to help create settings
+   * @param: process - TimerProcess to help create settings
    *
    * @return: ProgressCircleSettings object
    */
-  getSettings(process: Process): ProgressCircleSettings {
+  getSettings(process: TimerProcess): ProgressCircleSettings {
     return {
       height: this.timerHeight,
       width: this.timerWidth,
@@ -276,8 +291,8 @@ export class TimerService {
   /**
    * Get all timer behaviorsubjects associated with given process id
    *
-   * @params: batchId - batch id assigned to batchTimer
-   * @params: processId - the Process to match timers to
+   * @param: batchId - batch id assigned to batchTimer
+   * @param: processId - the Process to match timers to
    *
    * @return: array of timer behaviorsubjects associated to process else
    *          else undefined if not found
@@ -289,15 +304,16 @@ export class TimerService {
       return undefined;
     }
 
-    return batchTimer.timers
+    return batchTimer
+      .timers
       .filter((timer$: BehaviorSubject<Timer>): boolean => timer$.value.first === processId);
   }
 
   /**
    * Get timer behaviorsubject by its id
    *
-   * @params: batchId - batch id used to search for BatchTimer
-   * @params: timerId - Timer id to search
+   * @param: batchId - batch id used to search for BatchTimer
+   * @param: timerId - Timer id to search
    *
    * @return: timer behaviorsubject else undefined if not found
    */
@@ -308,14 +324,15 @@ export class TimerService {
       return undefined;
     }
 
-    return batchTimer.timers
+    return batchTimer
+      .timers
       .find((timer$: BehaviorSubject<Timer>): boolean => hasId(timer$.value, timerId));
   }
 
   /**
    * Generate initial base settings for timers
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   initializeSettings(): void {
@@ -337,23 +354,35 @@ export class TimerService {
   /**
    * Check if adjacent timer steps are concurrent
    *
-   * @params: batch - batch that contains the process schedule to check
-   * @params: index - index of step to check
+   * @param: batch - batch that contains the process schedule to check
+   * @param: index - index of step to check
    *
    * @return: true if given step index and the next step are both concurrent
    */
   isConcurrent(batch: Batch, index: number): boolean {
+    const schedule: Process[] = batch.process.schedule;
     return (
       index < batch.process.schedule.length - 1
-      && batch.process.schedule[index].concurrent
-      && batch.process.schedule[index + 1].concurrent
+      && this.isConcurrentTimer(schedule[index])
+      && this.isConcurrentTimer(schedule[index + 1])
     );
+  }
+
+  /**
+   * Check if a process is a TimerProcess and has a concurrent flag
+   *
+   * @param: process - the process to check
+   *
+   * @return: true if process is a TimerProcess and concurrent is true
+   */
+  isConcurrentTimer(process: Process): boolean {
+    return this.processService.isTimerProcess(process) && (<TimerProcess>process).concurrent;
   }
 
   /**
    * Remove a BatchTimer from list
    *
-   * @params: batchId - batch id associated with BatchTimer
+   * @param: batchId - batch id associated with BatchTimer
    *
    * @return: none
    */
@@ -362,7 +391,8 @@ export class TimerService {
       .findIndex((batchTimer) => batchTimer.batchId === batchId);
 
     if (batchTimerIndex !== -1) {
-      this.batchTimers[batchTimerIndex].timers
+      this.batchTimers[batchTimerIndex]
+        .timers
         .forEach((timer$: BehaviorSubject<Timer>): void => timer$.complete());
       this.batchTimers.splice(batchTimerIndex, 1);
     }
@@ -371,9 +401,9 @@ export class TimerService {
   /**
    * Stop a timer and reset its duration and time remaining
    *
-   * @params: batchId - batch id associated with BatchTimer
-   * @params: timerId - timer id within BatchTimer to update
-   * @params: duration - duration in minutes
+   * @param: batchId - batch id associated with BatchTimer
+   * @param: timerId - timer id within BatchTimer to update
+   * @param: duration - duration in minutes
    *
    * @return: observable of updated timer
    */
@@ -381,7 +411,9 @@ export class TimerService {
     const timer$: BehaviorSubject<Timer> = this.getTimerSubjectById(batchId, timerId);
 
     if (!timer$) {
-      return throwError('Timer not found');
+      const message: string = `An error occurred trying to reset timer: missing timer`;
+      const additionalMessage: string = `Timer with id ${timerId} not found`;
+      return throwError(this.getMissingError(message, additionalMessage));
     }
 
     const timer: Timer = timer$.value;
@@ -389,7 +421,9 @@ export class TimerService {
     timer.isRunning = false;
     timer.timer.duration = duration;
     timer.timeRemaining = timer.timer.duration * 60;
+
     this.setProgress(timer);
+
     timer$.next(timer);
 
     return of(timer);
@@ -398,15 +432,13 @@ export class TimerService {
   /**
    * Update css values as timer progresses
    *
-   * @params: timer - a timer type process step instance
+   * @param: timer - a timer type process step instance
    *
    * @return: none
    */
   setProgress(timer: Timer): void {
     timer.settings.text.fontSize = this.getFontSize(timer.timeRemaining);
-    timer.settings.circle.strokeDashoffset = `
-      ${this.circumference - timer.timeRemaining / (timer.timer.duration * 60) * this.circumference}
-    `;
+    timer.settings.circle.strokeDashoffset = `${this.circumference - timer.timeRemaining / (timer.timer.duration * 60) * this.circumference}`;
     timer.settings.text.content = this.formatProgressCircleText(timer.timeRemaining);
 
     if (timer.isRunning) {
@@ -426,8 +458,8 @@ export class TimerService {
   /**
    * Start a timer by id
    *
-   * @params: batchId - batch id associated with BatchTimer
-   * @params: timerId - timer id within BatchTimer to update
+   * @param: batchId - batch id associated with BatchTimer
+   * @param: timerId - timer id within BatchTimer to update
    *
    * @return: observable of updated timer
    */
@@ -438,8 +470,8 @@ export class TimerService {
   /**
    * Stop a timer by id
    *
-   * @params: batchId - batch id associated with BatchTimer
-   * @params: timerId - timer id within BatchTimer to update
+   * @param: batchId - batch id associated with BatchTimer
+   * @param: timerId - timer id within BatchTimer to update
    *
    * @return: observable of updated timer
    */
@@ -450,9 +482,9 @@ export class TimerService {
   /**
    * Toggle timer start/stop
    *
-   * @params: batchId - batch id associated with BatchTimer
-   * @params: timerId - timer id within BatchTimer to update
-   * @params: run - true if timer should run, false if should stop
+   * @param: batchId - batch id associated with BatchTimer
+   * @param: timerId - timer id within BatchTimer to update
+   * @param: run - true if timer should run, false if should stop
    *
    * @return: observable of updated timer
    */
@@ -460,13 +492,16 @@ export class TimerService {
     const timer$: BehaviorSubject<Timer> = this.getTimerSubjectById(batchId, timerId);
 
     if (!timer$) {
-      return throwError('Timer switch error: timer not found');
+      const message: string = `An error occurred trying to ${ run ? 'start' : 'stop' } timer`;
+      const additionalMessage: string = `Timer with id ${timerId} not found`;
+      return throwError(this.getMissingError(message, additionalMessage));
     }
 
     const timer: Timer = timer$.value;
-
     timer.isRunning = run;
+
     this.setProgress(timer);
+
     timer$.next(timer);
 
     return of(timer);
@@ -475,7 +510,7 @@ export class TimerService {
   /**
    * Update all running timers
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   tick(): void {
@@ -495,7 +530,9 @@ export class TimerService {
         }
 
         this.setProgress(timer);
+
         timer$.next(timer);
+
         if (timer.isRunning) {
           runningTimers.push(timer);
         }
@@ -508,7 +545,7 @@ export class TimerService {
   /**
    * Update notifications timer
    *
-   * @params: timers - array of all running timers
+   * @param: timers - array of all running timers
    *
    * @return: none
    */
@@ -518,21 +555,44 @@ export class TimerService {
         let nearest: Timer = timers[0];
 
         if (timers.length > 1) {
-          nearest = timers.reduce(
-            (acc: Timer, curr: Timer): Timer => {
+          nearest = timers
+            .reduce((acc: Timer, curr: Timer): Timer => {
               return acc.timeRemaining < curr.timeRemaining ? acc : curr;
-            }
-          );
+            });
         }
 
         this.backgroundModeService.setNotification(
-          `${nearest.timer.name}: ${nearest.settings.text.content}`,
-          `${timers.length} timer${timers.length > 1 ? 's' : ''} running`
+          `${ nearest.timer.name }: ${ nearest.settings.text.content }`,
+          `${ timers.length } timer${ timers.length > 1 ? 's' : '' } running`
         );
       } else {
         this.backgroundModeService.disableBackgroundMode();
       }
     }
   }
+
+  /**** End Timer Functions *****/
+
+
+  /***** Other *****/
+
+  /**
+   * Get a custom error for missing timer
+   *
+   * @param: baseMessage - base error message for user and internal
+   * @param: additionalMessage - additional message for internal use only
+   *
+   * @return: a new missing timer error
+   */
+  getMissingError(baseMessage: string, additionalMessage: string = ''): Error {
+    return new CustomError(
+      'TimerError',
+      `${baseMessage} ${additionalMessage}`,
+      2,
+      baseMessage
+    );
+  }
+
+  /***** End Other *****/
 
 }

@@ -3,36 +3,76 @@ import { TestBed, getTestBed, async } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController, TestRequest } from '@angular/common/http/testing';
 import { HttpErrorResponse } from '@angular/common/http';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
-import { BehaviorSubject, Subject, concat, forkJoin, of, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, concat, forkJoin, of, throwError } from 'rxjs';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockAuthor, mockBatch, mockImage, mockImageRequestMetadata, mockInventoryItem, mockOptionalItemData, mockRecipeMasterActive, mockErrorResponse, mockStyles, mockSyncMetadata, mockSyncError, mockSyncResponse } from '../../../../test-config/mock-models';
-import { ClientIdServiceStub, ConnectionServiceStub, EventServiceStub, ImageServiceStub, LibraryServiceStub, HttpErrorServiceStub, ProcessServiceStub, RecipeServiceStub, StorageServiceStub, SyncServiceStub, ToastServiceStub, UserServiceStub } from '../../../../test-config/service-stubs';
+import {
+  mockAuthor,
+  mockBatch,
+  mockImage,
+  mockImageRequestMetadata,
+  mockInventoryItem,
+  mockOptionalItemData,
+  mockRecipeMasterActive,
+  mockErrorResponse,
+  mockStyles,
+  mockSyncMetadata,
+  mockSyncError,
+  mockSyncResponse
+} from '../../../../test-config/mock-models';
+import {
+  ClientIdServiceStub,
+  ConnectionServiceStub,
+  ErrorReportingServiceStub,
+  EventServiceStub,
+  ImageServiceStub,
+  LibraryServiceStub,
+  HttpErrorServiceStub,
+  ProcessServiceStub,
+  RecipeServiceStub,
+  StorageServiceStub,
+  SyncServiceStub,
+  ToastServiceStub,
+  TypeGuardServiceStub,
+  UserServiceStub
+} from '../../../../test-config/service-stubs';
 import { SplashScreenStub } from '../../../../test-config/ionic-stubs';
 
 /* Constants imports */
-import { API_VERSION } from '../../shared/constants/api-version';
-import { BASE_URL } from '../../shared/constants/base-url';
+import { API_VERSION, BASE_URL } from '../../shared/constants';
 
 /* Default imports */
-import { defaultImage } from '../../shared/defaults/default-image';
+import { defaultImage } from '../../shared/defaults';
 
 /* Interface imports*/
-import { Author } from '../../shared/interfaces/author';
-import { Batch } from '../../shared/interfaces/batch';
-import { Image, ImageRequestFormData, ImageRequestMetadata } from '../../shared/interfaces/image';
-import { InventoryItem, OptionalItemData } from '../../shared/interfaces/inventory-item';
-import { RecipeMaster } from '../../shared/interfaces/recipe-master';
-import { Style } from '../../shared/interfaces/library';
-import { SyncData, SyncRequests, SyncMetadata, SyncError, SyncResponse } from '../../shared/interfaces/sync';
+import {
+  Author,
+  Batch,
+  Image,
+  ImageRequestFormData,
+  ImageRequestMetadata,
+  InventoryItem,
+  OptionalItemData,
+  RecipeMaster,
+  Style,
+  SyncData,
+  SyncRequests,
+  SyncMetadata,
+  SyncError,
+  SyncResponse
+} from '../../shared/interfaces';
+
+/* Type imports */
+import { CustomError } from '../../shared/types';
 
 /* Service imports */
 import { InventoryService } from './inventory.service';
 import { ClientIdService } from '../client-id/client-id.service';
 import { ConnectionService } from '../connection/connection.service';
+import { ErrorReportingService } from '../error-reporting/error-reporting.service';
 import { EventService } from '../event/event.service';
 import { ImageService } from '../image/image.service';
 import { LibraryService } from '../library/library.service';
@@ -42,6 +82,7 @@ import { RecipeService } from '../recipe/recipe.service';
 import { StorageService } from '../storage/storage.service';
 import { SyncService } from '../sync/sync.service';
 import { ToastService } from '../toast/toast.service';
+import { TypeGuardService } from '../type-guard/type-guard.service';
 import { UserService } from '../user/user.service';
 
 
@@ -60,6 +101,7 @@ describe('InventoryService', (): void => {
         InventoryService,
         { provide: ClientIdService, useClass: ClientIdServiceStub },
         { provide: ConnectionService, useClass: ConnectionServiceStub },
+        { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: EventService, useClass: EventServiceStub },
         { provide: HttpErrorService, useClass: HttpErrorServiceStub },
         { provide: ImageService, useClass: ImageServiceStub },
@@ -69,6 +111,7 @@ describe('InventoryService', (): void => {
         { provide: StorageService, useClass: StorageServiceStub },
         { provide: SyncService, useClass: SyncServiceStub },
         { provide: ToastService, useClass: ToastServiceStub },
+        { provide: TypeGuardService, useClass: TypeGuardServiceStub },
         { provide: UserService, useClass: UserServiceStub },
         { provide: SplashScreen, useClass: SplashScreenStub }
       ]
@@ -79,6 +122,15 @@ describe('InventoryService', (): void => {
     injector = getTestBed();
     inventoryService = injector.get(InventoryService);
     httpMock = injector.get(HttpTestingController);
+
+    inventoryService.errorReporter.handleUnhandledError = jest
+      .fn();
+
+    inventoryService.errorReporter.handleGenericCatchError = jest
+      .fn()
+      .mockImplementation((): (error: any) => Observable<never> => {
+        return (error: any): Observable<never> => throwError(error);
+      });
   });
 
   afterEach((): void => {
@@ -107,6 +159,9 @@ describe('InventoryService', (): void => {
     inventoryService.updateInventoryStorage = jest
       .fn();
 
+    inventoryService.checkTypeSafety = jest
+      .fn();
+
     const getSpy: jest.SpyInstance = jest.spyOn(inventoryService, 'getInventoryList');
     const updateSpy: jest.SpyInstance = jest.spyOn(inventoryService, 'updateInventoryStorage');
     const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
@@ -127,6 +182,8 @@ describe('InventoryService', (): void => {
   });
 
   test('should get an error when failing to init inventory from server', (done: jest.DoneCallback): void => {
+    const _mockHttpErrorResponse: HttpErrorResponse = mockErrorResponse(404, 'user not found', `${BASE_URL}/${API_VERSION}/inventory`);
+
     inventoryService.registerEvents = jest
       .fn();
 
@@ -134,42 +191,45 @@ describe('InventoryService', (): void => {
       .fn()
       .mockReturnValue(of(true));
 
-    inventoryService.getInventoryList = jest
+    inventoryService.errorReporter.handleGenericCatchError = jest
       .fn()
-      .mockReturnValue(new BehaviorSubject<InventoryItem[]>([]));
+      .mockImplementation((): (error: HttpErrorResponse) => Observable<never> => {
+        return (error: HttpErrorResponse): Observable<never> => {
+          expect(error).toStrictEqual(_mockHttpErrorResponse);
+          return throwError(null);
+        };
+      });
 
-    inventoryService.updateInventoryStorage = jest
+    inventoryService.errorReporter.handleUnhandledError = jest
       .fn();
-
-    inventoryService.httpError.handleError = jest
-      .fn()
-      .mockReturnValue(throwError('user not found'));
 
     const getSpy: jest.SpyInstance = jest.spyOn(inventoryService, 'getInventoryList');
     const updateSpy: jest.SpyInstance = jest.spyOn(inventoryService, 'updateInventoryStorage');
-    const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+    const errorSpy: jest.SpyInstance = jest.spyOn(inventoryService.errorReporter, 'handleUnhandledError');
 
     inventoryService.initFromServer();
 
     setTimeout((): void => {
       expect(getSpy).not.toHaveBeenCalled();
       expect(updateSpy).not.toHaveBeenCalled();
-      expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('Initialization error: user not found');
+      expect(errorSpy).toHaveBeenCalledWith(null);
       done();
     }, 10);
 
     const getReq: TestRequest = httpMock.expectOne(`${BASE_URL}/${API_VERSION}/inventory`);
     expect(getReq.request.method).toMatch('GET');
-    getReq.flush(null, mockErrorResponse(404, 'user not found'));
+    getReq.flush(null, _mockHttpErrorResponse);
   });
 
   test('should get an error when init inventory and sync fails', (done: jest.DoneCallback): void => {
+    const _mockError: Error = new Error('test-error');
+
     inventoryService.registerEvents = jest
       .fn();
 
     inventoryService.syncOnConnection = jest
       .fn()
-      .mockReturnValue(throwError('user not found'));
+      .mockReturnValue(throwError(_mockError));
 
     inventoryService.getInventoryList = jest
       .fn()
@@ -178,16 +238,19 @@ describe('InventoryService', (): void => {
     inventoryService.updateInventoryStorage = jest
       .fn();
 
+    inventoryService.errorReporter.handleUnhandledError = jest
+      .fn();
+
     const getSpy: jest.SpyInstance = jest.spyOn(inventoryService, 'getInventoryList');
     const updateSpy: jest.SpyInstance = jest.spyOn(inventoryService, 'updateInventoryStorage');
-    const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+    const errorSpy: jest.SpyInstance = jest.spyOn(inventoryService.errorReporter, 'handleUnhandledError');
 
     inventoryService.initFromServer();
 
     setTimeout((): void => {
       expect(getSpy).not.toHaveBeenCalled();
       expect(updateSpy).not.toHaveBeenCalled();
-      expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('Initialization error: user not found');
+      expect(errorSpy).toHaveBeenCalledWith(_mockError);
       done();
     }, 10);
   });
@@ -207,6 +270,9 @@ describe('InventoryService', (): void => {
       .fn()
       .mockReturnValue(list$);
 
+    inventoryService.checkTypeSafety = jest
+      .fn();
+
     const hideSpy: jest.SpyInstance = jest.spyOn(inventoryService.splashScreen, 'hide');
 
     inventoryService.initFromStorage();
@@ -219,21 +285,26 @@ describe('InventoryService', (): void => {
   });
 
   test('should get an error when init inventory from storage', (done: jest.DoneCallback): void => {
+    const _mockError: Error = new Error('test-error');
+
     inventoryService.registerEvents = jest
       .fn();
 
     inventoryService.storageService.getInventory = jest
       .fn()
-      .mockReturnValue(throwError('Inventory not found'));
+      .mockReturnValue(throwError(_mockError));
 
-    const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+    inventoryService.errorReporter.handleUnhandledError = jest
+      .fn();
+
     const hideSpy: jest.SpyInstance = jest.spyOn(inventoryService.splashScreen, 'hide');
+    const errorSpy: jest.SpyInstance = jest.spyOn(inventoryService.errorReporter, 'handleUnhandledError');
 
     inventoryService.initFromStorage();
 
     setTimeout((): void => {
-      expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('Inventory not found: awaiting data from server');
       expect(hideSpy).toHaveBeenCalledWith();
+      expect(errorSpy).toHaveBeenCalledWith(_mockError);
       done();
     }, 10);
   });
@@ -600,9 +671,15 @@ describe('InventoryService', (): void => {
   });
 
   test('should get an error trying to delete an item that doesn\'t exist', (done: jest.DoneCallback): void => {
+    const _mockError: Error = new Error('test-error');
+
     inventoryService.getInventoryList = jest
       .fn()
       .mockReturnValue(new BehaviorSubject<InventoryItem[]>([]));
+
+    inventoryService.getMissingError = jest
+      .fn()
+      .mockReturnValue(_mockError);
 
     inventoryService.removeItem('wrong-id')
       .subscribe(
@@ -610,8 +687,8 @@ describe('InventoryService', (): void => {
           console.log('Should not get results', results);
           expect(true).toBe(false);
         },
-        (error: string): void => {
-          expect(error).toMatch('Item with id: \'wrong-id\' not found');
+        (error: any): void => {
+          expect(error.message).toMatch('test-error');
           done();
         }
       );
@@ -645,6 +722,9 @@ describe('InventoryService', (): void => {
       .fn();
 
     inventoryService.updateInventoryStorage = jest
+      .fn();
+
+    inventoryService.checkTypeSafety = jest
       .fn();
 
     const requestSpy: jest.SpyInstance = jest.spyOn(inventoryService, 'requestInBackground');
@@ -694,10 +774,15 @@ describe('InventoryService', (): void => {
 
   test('should get an error updating a missing item', (done: jest.DoneCallback): void => {
     const _mockInventoryItem: InventoryItem = mockInventoryItem();
+    const _mockError: Error = new Error('test-error');
 
     inventoryService.getInventoryList = jest
       .fn()
       .mockReturnValue(new BehaviorSubject<InventoryItem[]>([]));
+
+    inventoryService.getMissingError = jest
+      .fn()
+      .mockReturnValue(_mockError);
 
     inventoryService.updateItem(_mockInventoryItem.cid, {})
       .subscribe(
@@ -705,8 +790,8 @@ describe('InventoryService', (): void => {
           console.log('Should not get results', results);
           expect(true).toBe(false);
         },
-        (error: string): void => {
-          expect(error).toMatch('Item not found in list');
+        (error: Error): void => {
+          expect(error.message).toMatch('test-error');
           done();
         }
       );
@@ -763,6 +848,10 @@ describe('InventoryService', (): void => {
       .fn()
       .mockReturnValue(of(_mockInventoryItem));
 
+    inventoryService.errorReporter.handleResolvableCatchError = jest
+      .fn()
+      .mockReturnValue(throwError(null));
+
     const getSpy: jest.SpyInstance = jest.spyOn(inventoryService, 'getBackgroundRequest');
 
     inventoryService.configureBackgroundRequest('post', true, _mockInventoryItem)
@@ -787,7 +876,17 @@ describe('InventoryService', (): void => {
       .fn()
       .mockReturnValue(throwError(_mockErrorResponse));
 
+    inventoryService.errorReporter.handleResolvableCatchError = jest
+      .fn()
+      .mockImplementation((): (error: any) => Observable<any> => {
+        return (error: any): Observable<any> => {
+          expect(error).toStrictEqual(_mockErrorResponse);
+          return of(error);
+        };
+      });
+
     const getSpy: jest.SpyInstance = jest.spyOn(inventoryService, 'getBackgroundRequest');
+    const errorSpy: jest.SpyInstance = jest.spyOn(inventoryService.errorReporter, 'handleResolvableCatchError');
 
     inventoryService.configureBackgroundRequest('post', true, _mockInventoryItem)
       .subscribe(
@@ -795,6 +894,7 @@ describe('InventoryService', (): void => {
           expect(resolvedError.status).toEqual(404);
           expect(resolvedError.statusText).toMatch('not found');
           expect(getSpy).toHaveBeenCalled();
+          expect(errorSpy).toHaveBeenCalledWith(true);
           done();
         },
         (error: any): void => {
@@ -812,11 +912,16 @@ describe('InventoryService', (): void => {
       .fn()
       .mockReturnValue(throwError(_mockErrorResponse));
 
-    inventoryService.httpError.handleError = jest
+    inventoryService.errorReporter.handleResolvableCatchError = jest
       .fn()
-      .mockReturnValue(throwError('<404> not found'));
+      .mockImplementation((): (error: any) => Observable<never> => {
+        return (error: any): Observable<never> => {
+          expect(error).toStrictEqual(_mockErrorResponse);
+          return throwError(null);
+        };
+      });
 
-    const getSpy: jest.SpyInstance = jest.spyOn(inventoryService, 'getBackgroundRequest');
+    const errorSpy: jest.SpyInstance = jest.spyOn(inventoryService.errorReporter, 'handleResolvableCatchError');
 
     inventoryService.configureBackgroundRequest('post', false, _mockInventoryItem)
       .subscribe(
@@ -824,9 +929,9 @@ describe('InventoryService', (): void => {
           console.log('Should not get results', results);
           expect(true).toBe(false);
         },
-        (error: string): void => {
-          expect(error).toMatch('<404> not found');
-          expect(getSpy).toHaveBeenCalled();
+        (error: any): void => {
+          expect(errorSpy).toHaveBeenCalledWith(false);
+          expect(error).toBeNull();
           done();
         }
       );
@@ -932,14 +1037,23 @@ describe('InventoryService', (): void => {
       .fn()
       .mockReturnValue(of([]));
 
+    inventoryService.errorReporter.handleGenericCatchError = jest
+      .fn()
+      .mockImplementation((): (error: Error) => Observable<never> => {
+        return (error: Error): Observable<never> => {
+          expect(error.message).toMatch('Invalid http method: invalid');
+          return throwError(null);
+        };
+      });
+
     inventoryService.getBackgroundRequest('invalid', _mockInventoryItem)
       .subscribe(
         (results: any): void => {
           console.log('Should not get results', results);
           expect(true).toBe(false);
         },
-        (error: string): void => {
-          expect(error).toMatch('Invalid http method');
+        (error: any): void => {
+          expect(error).toBeNull();
           done();
         }
       );
@@ -956,6 +1070,9 @@ describe('InventoryService', (): void => {
     inventoryService.getInventoryList = jest
       .fn()
       .mockReturnValue(list$);
+
+    inventoryService.checkTypeSafety = jest
+      .fn();
 
     inventoryService.handleBackgroundUpdateResponse(_mockUpdateResponse, false)
       .subscribe(
@@ -993,10 +1110,15 @@ describe('InventoryService', (): void => {
   test('should get an error handling a background update response', (done: jest.DoneCallback): void => {
     const _mockInventoryItem: InventoryItem = mockInventoryItem();
     const list$: BehaviorSubject<InventoryItem[]> = new BehaviorSubject<InventoryItem[]>([]);
+    const _mockError: Error = new Error('test-error');
 
     inventoryService.getInventoryList = jest
       .fn()
       .mockReturnValue(list$);
+
+    inventoryService.getMissingError = jest
+      .fn()
+      .mockReturnValue(_mockError);
 
     inventoryService.handleBackgroundUpdateResponse(_mockInventoryItem, false)
       .subscribe(
@@ -1004,8 +1126,8 @@ describe('InventoryService', (): void => {
           console.log('Should not get results', results);
           expect(true).toBe(false);
         },
-        (error: string): void => {
-          expect(error).toMatch('Inventory item is missing and cannot be updated');
+        (error: any): void => {
+          expect(error.message).toMatch('test-error');
           done();
         }
       );
@@ -1040,38 +1162,41 @@ describe('InventoryService', (): void => {
       .fn()
       .mockReturnValue(throwError(_mockErrorResponse));
 
-    inventoryService.httpError.handleError = jest
+    inventoryService.errorReporter.handleGenericCatchError = jest
       .fn()
-      .mockReturnValue(throwError('<404> not found'));
+      .mockImplementation((): (error: HttpErrorResponse) => Observable<never> => {
+        return (error: HttpErrorResponse): Observable<never> => {
+          expect(error).toStrictEqual(_mockErrorResponse);
+          return throwError(null);
+        };
+      });
 
-    inventoryService.toastService.presentErrorToast = jest
-      .fn();
-
-    const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
-    const toastSpy: jest.SpyInstance = jest.spyOn(inventoryService.toastService, 'presentErrorToast');
+    const errorSpy: jest.SpyInstance = jest.spyOn(inventoryService.errorReporter, 'handleUnhandledError');
 
     inventoryService.requestInBackground('post', _mockInventoryItem);
 
     setTimeout((): void => {
-      const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
-      expect(consoleCalls[0]).toMatch('Inventory: background post request error');
-      expect(consoleCalls[1]).toMatch('<404> not found');
-      expect(toastSpy).toHaveBeenCalledWith('Inventory item failed to save to server');
+      expect(errorSpy).toHaveBeenCalledWith(null);
       done();
     }, 10);
   });
 
   test('should get an unknown sync type error when requesting in background with invalid method', (done: jest.DoneCallback): void => {
-    const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
-    const toastSpy: jest.SpyInstance = jest.spyOn(inventoryService.toastService, 'presentErrorToast');
+    inventoryService.errorReporter.handleGenericCatchError = jest
+      .fn()
+      .mockImplementation((): (error: Error) => Observable<never> => {
+        return (error: Error): Observable<never> => {
+          expect(error.message).toMatch('Unknown sync type: invalid');
+          return throwError(null);
+        };
+      });
+
+    const errorSpy: jest.SpyInstance = jest.spyOn(inventoryService.errorReporter, 'handleUnhandledError');
 
     inventoryService.requestInBackground('invalid', null);
 
     setTimeout((): void => {
-      const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
-      expect(consoleCalls[0]).toMatch('Inventory: background invalid request error');
-      expect(consoleCalls[1]).toMatch('Unknown sync type');
-      expect(toastSpy).toHaveBeenCalledWith('Inventory item failed to save to server');
+      expect(errorSpy).toHaveBeenCalledWith(null);
       done();
     }, 10);
   });
@@ -1111,15 +1236,6 @@ describe('InventoryService', (): void => {
     inventoryService.dismissSyncError(0);
 
     expect(inventoryService.syncErrors.length).toEqual(1);
-  });
-
-  test('should throw an error if dismissing an error at an invalid index', (): void => {
-    inventoryService.syncErrors = [];
-
-    expect(() => {
-      inventoryService.dismissSyncError(0);
-    })
-    .toThrow('Invalid sync error index');
   });
 
   test('should generate sync requests', (done: jest.DoneCallback): void => {
@@ -1250,6 +1366,9 @@ describe('InventoryService', (): void => {
     inventoryService.getInventoryList = jest
       .fn()
       .mockReturnValue(list$);
+
+    inventoryService.checkTypeSafety = jest
+      .fn();
 
     const syncData: (InventoryItem | SyncData<InventoryItem>)[] = [
       _mockInventoryItem,
@@ -1387,22 +1506,24 @@ describe('InventoryService', (): void => {
   });
 
   test('should sync on reconnect', (done: jest.DoneCallback): void => {
+    const _mockError: Error = new Error('test-error');
+
     inventoryService.syncOnConnection = jest
       .fn()
       .mockReturnValueOnce(of({}))
-      .mockReturnValueOnce(throwError('test-error'));
+      .mockReturnValueOnce(throwError(_mockError));
 
-    const toastSpy: jest.SpyInstance = jest.spyOn(inventoryService.toastService, 'presentErrorToast');
+    const errorSpy: jest.SpyInstance = jest.spyOn(inventoryService.errorReporter, 'handleUnhandledError');
 
     inventoryService.syncOnReconnect();
 
     setTimeout((): void => {
-      expect(toastSpy).not.toHaveBeenCalled();
+      expect(errorSpy).not.toHaveBeenCalled();
 
       inventoryService.syncOnReconnect();
 
       setTimeout((): void => {
-        expect(toastSpy).toHaveBeenCalledWith('Sync error: some inventory items did not update');
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
     }, 10);
@@ -1462,6 +1583,20 @@ describe('InventoryService', (): void => {
 
     expect(inventoryService.canSendRequest(['1a2b3c4d5e', '6f7g8h9i10j'])).toBe(true);
     expect(inventoryService.canSendRequest()).toBe(false);
+  });
+
+  test('should get a missing item custom error', (): void => {
+    const message: string = 'test-message';
+    const additional: string = 'test-additional';
+
+    const errorWithAdditional: CustomError = <CustomError>inventoryService.getMissingError(message, additional);
+    expect(errorWithAdditional.name).toMatch('InventoryError');
+    expect(errorWithAdditional.message).toMatch(`${message} ${additional}`);
+    expect(errorWithAdditional.severity).toEqual(2);
+    expect(errorWithAdditional.userMessage).toMatch(message);
+
+    const errorWithOutAdditional: CustomError = <CustomError>inventoryService.getMissingError(message);
+    expect(errorWithOutAdditional.message).toMatch(`${message} `);
   });
 
   test('should get the text color for quantity remaining', (): void => {
@@ -1550,8 +1685,7 @@ describe('InventoryService', (): void => {
 
     inventoryService.storageService.setInventory = jest
       .fn()
-      .mockReturnValueOnce(of({}))
-      .mockReturnValueOnce(throwError('test-error'));
+      .mockReturnValue(of(null));
 
     const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
 
@@ -1559,14 +1693,89 @@ describe('InventoryService', (): void => {
 
     setTimeout((): void => {
       expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('stored inventory');
-
-      inventoryService.updateInventoryStorage();
-
-      setTimeout((): void => {
-        expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('inventory store error: test-error');
-        done();
-      }, 10);
+      done();
     }, 10);
+  });
+
+  test('should handle error thrown from inventory storage', (done: jest.DoneCallback): void => {
+    const _mockError: Error = new Error('test-error');
+
+    inventoryService.storageService.setInventory = jest
+      .fn()
+      .mockReturnValue(throwError(_mockError));
+
+    inventoryService.errorReporter.handleUnhandledError = jest.fn();
+
+    const errorSpy: jest.SpyInstance = jest.spyOn(inventoryService.errorReporter, 'handleUnhandledError');
+
+    inventoryService.updateInventoryStorage();
+
+    setTimeout((): void => {
+      expect(errorSpy).toHaveBeenCalledWith(_mockError);
+      done();
+    });
+  });
+
+  test('should check item type safety', (): void => {
+    const _mockError: Error = new Error('test-error');
+    const _mockInventoryItem: InventoryItem = mockInventoryItem();
+
+    inventoryService.isSafeInventoryItem = jest
+      .fn()
+      .mockReturnValueOnce(true)
+      .mockReturnValueOnce(false);
+
+    inventoryService.getUnsafeError = jest
+      .fn()
+      .mockReturnValue(_mockError);
+
+    inventoryService.checkTypeSafety(_mockInventoryItem);
+
+    expect((): void => {
+      inventoryService.checkTypeSafety(null);
+    }).toThrow(_mockError);
+  });
+
+  test('should get an unsafe type error', (): void => {
+    const _mockError: Error = new Error('test-error');
+    const errorString: string = JSON.stringify(_mockError);
+
+    const unsafeError: CustomError = <CustomError>inventoryService.getUnsafeError(_mockError);
+    expect(unsafeError.name).toMatch('InventoryError');
+    expect(unsafeError.message).toMatch(`Given inventory item is invalid: got ${errorString}`);
+    expect(unsafeError.severity).toEqual(2);
+    expect(unsafeError.userMessage).toMatch('An internal error occurred: invalid inventory item');
+  });
+
+  test('should check if an inventory item is type safe', (): void => {
+    inventoryService.typeGuard.hasValidProperties = jest
+      .fn()
+      .mockReturnValueOnce(false)
+      .mockReturnValueOnce(true)
+      .mockReturnValueOnce(true);
+
+    inventoryService.isSafeOptionalItemData = jest
+      .fn()
+      .mockReturnValueOnce(false)
+      .mockReturnValueOnce(true);
+
+    const _mockInventoryItem: InventoryItem = mockInventoryItem();
+
+    expect(inventoryService.isSafeInventoryItem(_mockInventoryItem)).toBe(false);
+    expect(inventoryService.isSafeInventoryItem(_mockInventoryItem)).toBe(false);
+    expect(inventoryService.isSafeInventoryItem(_mockInventoryItem)).toBe(true);
+  });
+
+  test('should check if optional item data is type safe', (): void => {
+    inventoryService.typeGuard.hasValidProperties = jest
+      .fn()
+      .mockReturnValueOnce(false)
+      .mockReturnValueOnce(true);
+
+    const _mockOptionalItemData: OptionalItemData = mockOptionalItemData();
+
+    expect(inventoryService.isSafeOptionalItemData(_mockOptionalItemData)).toBe(false);
+    expect(inventoryService.isSafeOptionalItemData(_mockOptionalItemData)).toBe(true);
   });
 
 });

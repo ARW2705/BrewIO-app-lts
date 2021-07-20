@@ -2,6 +2,7 @@
 import { TestBed, getTestBed, async } from '@angular/core/testing';
 import { Platform } from '@ionic/angular';
 import { Network } from '@ionic-native/network/ngx';
+import { of } from 'rxjs';
 
 /* Test configuration import */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
@@ -52,6 +53,21 @@ describe('Connection Provider', (): void => {
     test('should get the connection status', (): void => {
       expect(connectionService.isConnected()).toBe(true);
     }); // end 'should get the connection status' test
+
+    test('should get empty network listener in dev mode', (done: jest.DoneCallback): void => {
+      connectionService.listenForConnection()
+        .subscribe(
+          (results: any): void => {
+            console.log('Should not get any results', results);
+            expect(true).toBe(false);
+          },
+          (errors: any): void => {
+            console.log('Should not get any errors', errors);
+            expect(true).toBe(false);
+          },
+          (): void => done()
+        );
+    });
 
   }); // end 'Connection in dev mode' section
 
@@ -107,6 +123,21 @@ describe('Connection Provider', (): void => {
         done();
       }, 40);
     }); // end 'should get disconnect event in cordova' test
+
+    test('should get empty network listener in dev mode', (done: jest.DoneCallback): void => {
+      connectionService.network.onConnect = jest
+        .fn()
+        .mockReturnValue(of(null));
+
+      connectionService.listenForConnection()
+        .subscribe(
+          (): void => done(),
+          (errors: any): void => {
+            console.log('Should not get any errors', errors);
+            expect(true).toBe(false);
+          }
+        );
+    });
 
   }); // end 'Connection in device mode' section
 

@@ -6,8 +6,10 @@ import { BehaviorSubject, Subject, from } from 'rxjs';
 import { finalize, map, takeUntil } from 'rxjs/operators';
 
 /* Interface imports */
-import { RecipeMaster } from '../../shared/interfaces/recipe-master';
-import { RecipeVariant } from '../../shared/interfaces/recipe-variant';
+import { RecipeMaster, RecipeVariant } from '../../shared/interfaces';
+
+/* Type imports */
+import { CustomError } from '../../shared/types';
 
 /* Utility function imports */
 import { clone } from '../../shared/utility-functions/clone';
@@ -18,6 +20,7 @@ import { ConfirmationComponent } from '../../components/confirmation/confirmatio
 
 /* Service imports */
 import { AnimationsService } from '../../services/animations/animations.service';
+import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
 import { RecipeService } from '../../services/recipe/recipe.service';
 import { ToastService } from '../../services/toast/toast.service';
 import { UserService } from '../../services/user/user.service';
@@ -46,6 +49,7 @@ export class RecipePage implements OnInit, OnDestroy {
     public route: ActivatedRoute,
     public router: Router,
     public animationService: AnimationsService,
+    public errorReporter: ErrorReportingService,
     public recipeService: RecipeService,
     public toastService: ToastService,
     public userService: UserService
@@ -63,7 +67,7 @@ export class RecipePage implements OnInit, OnDestroy {
   }
 
   ionViewDidEnter() {
-    if (!this.animationService.hasHintBeenShown('sliding', 'recipe')) {
+    if (this.animationService.shouldShowHint('sliding', 'recipe')) {
       this.runSlidingHints();
     }
   }
@@ -112,10 +116,7 @@ export class RecipePage implements OnInit, OnDestroy {
           console.log('got list', this.masterList);
           this.mapMasterRecipes();
         },
-        (error: string): void => {
-          console.log('Recipe list error', error);
-          this.toastService.presentErrorToast('Recipe list error');
-        }
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
@@ -132,10 +133,9 @@ export class RecipePage implements OnInit, OnDestroy {
         (): void => {
           this.isLoggedIn = this.userService.isLoggedIn();
         },
-        (error: string): void => {
-          console.log('user subject error', error);
+        (error: any): void => {
           this.isLoggedIn = false;
-          this.toastService.presentErrorToast('User Error');
+          this.errorReporter.handleUnhandledError(error);
         }
       );
   }
@@ -170,7 +170,15 @@ export class RecipePage implements OnInit, OnDestroy {
         }
       );
     } else {
-      this.toastService.presentErrorToast('Recipe is missing a process guide!');
+      const message: string = 'Recipe is missing a process guide';
+      this.errorReporter.setErrorReport(
+        this.errorReporter.createErrorReport(
+          'MissingError',
+          message,
+          3,
+          message,
+        )
+      );
     }
   }
 
@@ -186,7 +194,18 @@ export class RecipePage implements OnInit, OnDestroy {
       this.router.navigate([`tabs/recipe/${getId(this.masterList[index])}`]);
     } catch (error) {
       console.log('Details nav error', error);
-      this.toastService.presentErrorToast('Error: invalid Recipe Master list index');
+      const message: string = 'Recipe details not found';
+      const recipeIds: object[] = this.masterList.map((recipe: RecipeMaster) => {
+        return { _id: recipe._id, cid: recipe.cid };
+      });
+      this.errorReporter.setErrorReport(
+        this.errorReporter.createErrorReport(
+          'MissingError',
+          `${message}: list index ${index}, present list ${recipeIds}`,
+          3,
+          message,
+        )
+      );
     }
   }
 
@@ -238,8 +257,10 @@ export class RecipePage implements OnInit, OnDestroy {
    */
   onConfirmDeleteError(): (error: string) => void {
     return (error: string): void => {
-      console.log('recipe master deletion error', error);
-      this.toastService.presentErrorToast('Unable to delete recipe master');
+      this.errorReporter.handleModalError(
+        error,
+        'An internal error occurred trying to delete the recipe'
+      );
     };
   }
 
@@ -291,10 +312,7 @@ export class RecipePage implements OnInit, OnDestroy {
             'toast-bright'
           );
         },
-        (error: string): void => {
-          console.log('Error deleting recipe master', error);
-          this.toastService.presentErrorToast('An error occured during recipe deletion');
-        }
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
@@ -360,20 +378,21 @@ export class RecipePage implements OnInit, OnDestroy {
   runSlidingHints(): void {
     const topLevelContent: HTMLElement = this.ionContent['el'];
     if (!topLevelContent) {
-      console.log('Animation error: cannot find content container');
-      return;
+      const message: string = 'Animation error: cannot find content container';
+      throw new CustomError('AnimationError', message, 4, message);
     }
 
     this.toggleSlidingItemClass(true);
 
     this.animationService.playCombinedSlidingHintAnimations(
       topLevelContent,
-      this.slidingItemsListRef.nativeElement
+      this.slidingItemsListRef.nativeElement,
+      this.animationService.getEstimatedItemOptionWidth(this.slidingItemsListRef.nativeElement, 1, 2)
     )
     .pipe(finalize((): void => this.toggleSlidingItemClass(false)))
     .subscribe(
       (): void => this.animationService.setHintShownFlag('sliding', 'recipe'),
-      (error: string): void => console.log('Animation error', error)
+      (error: any): void => this.errorReporter.handleUnhandledError(error)
     );
   }
 

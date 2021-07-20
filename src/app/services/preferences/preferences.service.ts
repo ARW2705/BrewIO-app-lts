@@ -2,10 +2,10 @@
 import { Injectable } from '@angular/core';
 
 /* Interface imports */
-import { SelectedUnits } from '../../shared/interfaces/units';
+import { SelectedUnits } from '../../shared/interfaces';
 
 /* Default imports */
-import { defaultEnglish } from '../../shared/defaults/default-units';
+import { defaultEnglishUnits } from '../../shared/defaults';
 
 
 @Injectable({
@@ -13,7 +13,7 @@ import { defaultEnglish } from '../../shared/defaults/default-units';
 })
 export class PreferencesService {
   preferredUnitSystem: string = 'englishStandard';
-  units: SelectedUnits = defaultEnglish();
+  units: SelectedUnits = defaultEnglishUnits();
 
   constructor() { }
 

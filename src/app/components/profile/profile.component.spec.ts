@@ -11,17 +11,17 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
 import { mockImage, mockUser } from '../../../../test-config/mock-models';
-import { ImageServiceStub, UserServiceStub, ToastServiceStub } from '../../../../test-config/service-stubs';
+import { ErrorReportingServiceStub, ImageServiceStub, UserServiceStub, ToastServiceStub } from '../../../../test-config/service-stubs';
 import { ModalControllerStub, ModalStub } from '../../../../test-config/ionic-stubs';
 
 /* Default imports */
-import { defaultImage } from '../../shared/defaults/default-image';
+import { defaultImage } from '../../shared/defaults';
 
 /* Interface imports */
-import { Image } from '../../shared/interfaces/image';
-import { User } from '../../shared/interfaces/user';
+import { Image, User } from '../../shared/interfaces';
 
 /* Service imports */
+import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
 import { ImageService } from '../../services/image/image.service';
 import { UserService } from '../../services/user/user.service';
 import { ToastService } from '../../services/toast/toast.service';
@@ -48,6 +48,7 @@ describe('ProfileComponent', (): void => {
         ReactiveFormsModule
       ],
       providers: [
+        { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: ModalController, useClass: ModalControllerStub },
         { provide: ImageService, useClass: ImageServiceStub },
         { provide: ToastService, useClass: ToastServiceStub },
@@ -68,6 +69,8 @@ describe('ProfileComponent', (): void => {
     profileCmp.ngOnInit = jest
       .fn();
     profileCmp.ngOnDestroy = jest
+      .fn();
+    profileCmp.errorReporter.handleUnhandledError = jest
       .fn();
   });
 
@@ -108,20 +111,22 @@ describe('ProfileComponent', (): void => {
     });
 
     test('should get an error on component init', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+
       profileCmp.ngOnInit = originalOnInit;
 
       profileCmp.userService.getUser = jest
         .fn()
-        .mockReturnValue(throwError('test-error'));
+        .mockReturnValue(throwError(_mockError));
 
-      const toastSpy: jest.SpyInstance = jest.spyOn(profileCmp.toastService, 'presentErrorToast');
+      const errorSpy: jest.SpyInstance = jest.spyOn(profileCmp.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
       profileCmp.ngOnInit();
 
       setTimeout((): void => {
-        expect(toastSpy).toHaveBeenCalledWith('Error getting profile');
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
     });
@@ -327,6 +332,8 @@ describe('ProfileComponent', (): void => {
     });
 
     test('should get an error updating profile', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+
       profileCmp.userForm = new FormGroup({});
 
       profileCmp.imageService.hasDefaultImage = jest
@@ -336,16 +343,16 @@ describe('ProfileComponent', (): void => {
 
       profileCmp.userService.updateUserProfile = jest
         .fn()
-        .mockReturnValue(throwError('test-error'));
+        .mockReturnValue(throwError(_mockError));
 
-      const toastSpy: jest.SpyInstance = jest.spyOn(profileCmp.toastService, 'presentErrorToast');
+      const errorSpy: jest.SpyInstance = jest.spyOn(profileCmp.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
       profileCmp.onUpdate();
 
       setTimeout((): void => {
-        expect(toastSpy).toHaveBeenCalledWith('Error updating profile');
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
     });

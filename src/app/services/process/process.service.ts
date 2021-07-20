@@ -5,17 +5,44 @@ import { BehaviorSubject, Observable, concat, of, throwError } from 'rxjs';
 import { catchError, finalize, map, mergeMap, take, tap } from 'rxjs/operators';
 
 /* Constants imports */
-import { API_VERSION } from '../../shared/constants/api-version';
-import { BASE_URL } from '../../shared/constants/base-url';
+import { API_VERSION, BASE_URL } from '../../shared/constants';
 
 /* Interface imports */
-import { Batch } from '../../shared/interfaces/batch';
-import { PrimaryValues } from '../../shared/interfaces/primary-values';
-import { Process } from '../../shared/interfaces/process';
-import { RecipeMaster } from '../../shared/interfaces/recipe-master';
-import { RecipeVariant } from '../../shared/interfaces/recipe-variant';
-import { SyncData, SyncError, SyncMetadata, SyncRequests, SyncResponse } from '../../shared/interfaces/sync';
-import { User } from '../../shared/interfaces/user';
+import {
+  Alert,
+  Batch,
+  BatchAnnotations,
+  BatchContext,
+  BatchProcess,
+  DocumentGuard,
+  PrimaryValues,
+  Process,
+  RecipeMaster,
+  RecipeVariant,
+  SyncData,
+  SyncError,
+  SyncMetadata,
+  SyncRequests,
+  SyncResponse,
+  User
+} from '../../shared/interfaces';
+
+/* Type guard imports */
+import {
+  AlertGuardMetadata,
+  ManualProcessGuardMetadata,
+  ProcessGuardMetadata,
+  TimerProcessGuardMetadata,
+  CalendarProcessGuardMetadata,
+  BatchGuardMetadata,
+  BatchContextGuardMetadata,
+  BatchAnnotationsGuardMetadata,
+  BatchProcessGuardMetadata,
+  PrimaryValuesGuardMetadata
+} from '../../shared/type-guard-metadata';
+
+/* Type imports */
+import { CustomError } from '../../shared/types';
 
 /* Utility function imports */
 import { getArrayFromSubjects, toSubjectArray } from '../../shared/utility-functions/subject-helpers';
@@ -26,13 +53,16 @@ import { clone } from '../../shared/utility-functions/clone';
 import { CalculationsService } from '../calculations/calculations.service';
 import { ClientIdService } from '../client-id/client-id.service';
 import { ConnectionService } from '../connection/connection.service';
+import { ErrorReportingService } from '../error-reporting/error-reporting.service';
 import { EventService } from '../event/event.service';
 import { HttpErrorService } from '../http-error/http-error.service';
+import { LibraryService } from '../library/library.service';
 import { RecipeService } from '../recipe/recipe.service';
 import { StorageService } from '../storage/storage.service';
 import { SyncService } from '../sync/sync.service';
 import { ToastService } from '../toast/toast.service';
 import { UserService } from '../user/user.service';
+import { TypeGuardService } from '../type-guard/type-guard.service';
 
 
 @Injectable({
@@ -52,13 +82,16 @@ export class ProcessService {
     public calculationService: CalculationsService,
     public clientIdService: ClientIdService,
     public connectionService: ConnectionService,
+    public errorReporter: ErrorReportingService,
     public event: EventService,
     public httpError: HttpErrorService,
+    public libraryService: LibraryService,
     public recipeService: RecipeService,
     public storageService: StorageService,
     public syncService: SyncService,
     public toastService: ToastService,
     public userService: UserService,
+    public typeGuard: TypeGuardService
   ) {
     this.registerEvents();
   }
@@ -90,15 +123,13 @@ export class ProcessService {
             this.updateBatchStorage(false);
           }
         ),
-        catchError((error: HttpErrorResponse): Observable<never> => {
-          return this.httpError.handleError(error);
-        })
+        catchError(this.errorReporter.handleGenericCatchError())
       )
     )
     .pipe(finalize(() => this.event.emit('init-inventory')))
     .subscribe(
       (): void => {},
-      (error: string): void => console.log(`Initialization message: ${error}`)
+      (error: any): void => this.errorReporter.handleUnhandledError(error)
     );
   }
 
@@ -118,7 +149,7 @@ export class ProcessService {
             this.mapBatchArrayToSubjectArray(true, activeBatchList);
           }
         },
-        (error: string): void => console.log(`${error}: awaiting active batch data from server`)
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
 
     // Get archive batches from storage, do not overwrite if batches from server
@@ -130,7 +161,7 @@ export class ProcessService {
             this.mapBatchArrayToSubjectArray(false, archiveBatchList);
           }
         },
-        (error: string): void => console.log(`${error}: awaiting archive batch data from server`)
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
@@ -179,14 +210,19 @@ export class ProcessService {
   endBatchById(batchId: string): Observable<Batch> {
     const batch$: BehaviorSubject<Batch> = this.getBatchById(batchId);
     if (!batch$) {
-      return throwError(`End of batch error: batch with id ${batchId} not found`);
+      const message: string = 'An error occurring trying to end a batch: batch not found';
+      const additionalMessage: string = `Active batch with id ${batchId} not found`;
+      return throwError(this.getMissingError(message, additionalMessage));
     }
     const batch: Batch = batch$.value;
 
     batch.isArchived = true;
 
     return this.updateBatch(batch)
-      .pipe(mergeMap((): Observable<Batch> => this.archiveActiveBatch(batchId)));
+      .pipe(
+        mergeMap((): Observable<Batch> => this.archiveActiveBatch(batchId)),
+        catchError(this.errorReporter.handleGenericCatchError())
+      );
   }
 
   /**
@@ -203,7 +239,9 @@ export class ProcessService {
       .pipe(
         mergeMap((newBatch: Batch) => {
           if (!newBatch) {
-            return throwError('Unable to generate new batch: missing recipe');
+            const message: string = 'An error occurring trying to start a batch: batch generation failed';
+            const additionalMessage: string = `New batch could not be generated with the following ids: user - ${userId}, recipeMaster - ${recipeMasterId}, recipeVariant - ${recipeVariantId}`;
+            return throwError(this.getMissingError(message, additionalMessage));
           }
 
           if (this.canSendRequest()) {
@@ -213,7 +251,8 @@ export class ProcessService {
           }
 
           return this.addBatchToActiveList(newBatch);
-        })
+        }),
+        catchError(this.errorReporter.handleGenericCatchError())
       );
   }
 
@@ -228,8 +267,12 @@ export class ProcessService {
   updateBatch(updatedBatch: Batch, isActive: boolean = true): Observable<Batch> {
     const batch$: BehaviorSubject<Batch> = this.getBatchById(getId(updatedBatch));
     if (!batch$) {
-      return throwError(`Update batch error: batch with id ${getId(updatedBatch)} not found`);
+      const message: string = 'An error occurring trying to update a batch: batch not found';
+      const additionalMessage: string = `Batch with id ${updatedBatch.cid} not found`;
+      return throwError(this.getMissingError(message, additionalMessage));
     }
+
+    this.checkTypeSafety(updatedBatch);
 
     batch$.next(updatedBatch);
     this.emitBatchListUpdate(isActive);
@@ -275,7 +318,7 @@ export class ProcessService {
       return this.updateBatch(batch, isActive);
     } catch (error) {
       console.log('Update measured values error', error);
-      return throwError(error);
+      return this.errorReporter.handleGenericCatchError()(error);
     }
   }
 
@@ -290,23 +333,29 @@ export class ProcessService {
   updateStepById(batchId: string, stepUpdate: object): Observable<Batch> {
     const batch$: BehaviorSubject<Batch> = this.getBatchById(batchId);
     if (!batch$) {
-      return throwError(`Active batch with id ${batchId} not found`);
+      const message: string = 'An error occurring trying to update batch step: missing batch';
+      const additionalMessage: string = `Batch with id ${batchId} not found`;
+      return throwError(this.getMissingError(message, additionalMessage));
     }
     const batch: Batch = batch$.value;
 
     if (!batch.owner) {
-      return throwError('Active batch is missing an owner id');
+      const message: string = 'An error occurring trying to update batch step: missing batch owner id';
+      return throwError(this.getMissingError(message));
     }
 
     if (!stepUpdate.hasOwnProperty('id')) {
-      return throwError('Step update missing an id');
+      const message: string = 'An error occurring trying to update batch step: missing step id';
+      return throwError(this.getMissingError(message));
     }
 
     const stepIndex: number = batch.process.schedule
       .findIndex((step: Process) => hasId(step, stepUpdate['id']));
 
     if (stepIndex === -1) {
-      return throwError(`Active batch missing step with id ${stepUpdate['id']}`);
+      const message: string = 'An error occurring trying to update batch step: missing step';
+      const additionalMessage: string = `Step with id ${stepUpdate['id']} not found`;
+      return throwError(this.getMissingError(message, additionalMessage));
     }
 
     batch.process.alerts = batch.process.alerts.concat(stepUpdate['update']['alerts']);
@@ -336,12 +385,9 @@ export class ProcessService {
     batch: Batch
   ): Observable<Batch | HttpErrorResponse> {
     return this.getBackgroundRequest(syncMethod, batch)
-      .pipe(catchError((error: HttpErrorResponse): Observable<HttpErrorResponse> => {
-        if (shouldResolveError) {
-          return of(error);
-        }
-        return this.httpError.handleError(error);
-      }));
+      .pipe(
+        catchError(this.errorReporter.handleResolvableCatchError<HttpErrorResponse>(shouldResolveError))
+      );
   }
 
   /**
@@ -362,7 +408,8 @@ export class ProcessService {
       route += `batch/${batch._id}`;
       return this.http.patch<Batch>(route, batch);
     } else {
-      return throwError('Invalid http method');
+      const message: string = `Invalid http method: ${syncMethod}`;
+      return throwError(new CustomError('HttpRequestError', message, 2, message));
     }
   }
 
@@ -380,7 +427,8 @@ export class ProcessService {
     if (syncMethod === 'post' || syncMethod === 'patch') {
       syncRequest = this.getBackgroundRequest(syncMethod, batch);
     } else {
-      syncRequest = throwError('Unknown sync type');
+      const message: string = `Unknown sync type: ${syncMethod}`;
+      syncRequest = throwError(new CustomError('SyncError', message, 2, message));
     }
 
     syncRequest
@@ -388,7 +436,9 @@ export class ProcessService {
         tap((batchResponse: Batch): void => {
           const batch$: BehaviorSubject<Batch> = this.getBatchById(batchResponse.cid);
           if (!batch$) {
-            this.toastService.presentErrorToast(`Batch with id ${batchResponse.cid} not found`);
+            const message: string = 'An error occurring trying to update batch after server sync: batch not found';
+            const additionalMessage: string = `Batch with id ${batchResponse.cid} not found`;
+            throw this.getMissingError(message, additionalMessage);
           } else {
             batch$.next(batchResponse);
             this.emitBatchListUpdate(true);
@@ -397,16 +447,11 @@ export class ProcessService {
             this.updateBatchStorage(false);
           }
         }),
-        catchError((error: HttpErrorResponse): Observable<never> => {
-          return this.httpError.handleError(error);
-        })
+        catchError(this.errorReporter.handleGenericCatchError())
       )
       .subscribe(
         (): void => console.log(`Batch: background ${syncMethod} request successful`),
-        (error: string): void => {
-          console.log(`Batch: background ${syncMethod} request error`, error);
-          this.toastService.presentErrorToast('Batch: update failed to save to server');
-        }
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
@@ -451,9 +496,6 @@ export class ProcessService {
    * @return: none
    */
   dismissSyncError(index: number): void {
-    if (index >= this.syncErrors.length || index < 0) {
-      throw new Error('Invalid sync error index');
-    }
     this.syncErrors.splice(index, 1);
   }
 
@@ -537,8 +579,7 @@ export class ProcessService {
   processSyncSuccess(syncData: (Batch | SyncData<Batch>)[]): void {
     syncData.forEach((_syncData: Batch | SyncData<Batch>): void => {
       if (_syncData['isDeleted'] === undefined) {
-        const batch$: BehaviorSubject<Batch>
-          = this.getBatchById((<Batch>_syncData).cid);
+        const batch$: BehaviorSubject<Batch> = this.getBatchById((<Batch>_syncData).cid);
 
         if (batch$ === undefined) {
           this.syncErrors.push({
@@ -546,6 +587,7 @@ export class ProcessService {
             message: `Sync error: batch with id: '${(<Batch>_syncData).cid}' not found`
           });
         } else {
+          this.checkTypeSafety(_syncData);
           batch$.next(<Batch>_syncData);
         }
       }
@@ -583,7 +625,8 @@ export class ProcessService {
           }
           this.syncErrors = responses.errors.concat(errors);
           return true;
-        })
+        }),
+        catchError(this.errorReporter.handleGenericCatchError())
       );
   }
 
@@ -596,11 +639,8 @@ export class ProcessService {
   syncOnReconnect(): void {
     this.syncOnConnection(false)
       .subscribe(
-        (): void => {}, // Nothing further required if successful
-        (error: string): void => {
-          // TODO error feedback (toast?)
-          console.log('Reconnect sync error', error);
-        }
+        (): void => console.log('batch sync on reconnect complete'),
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
@@ -618,15 +658,21 @@ export class ProcessService {
 
     // TODO: extract to own method(?)
     batchList.forEach((batch$: BehaviorSubject<Batch>): void => {
-      const recipe$: BehaviorSubject<RecipeMaster>
-        = this.recipeService.getRecipeMasterById(batch$.value.recipeMasterId);
+      const recipe$: BehaviorSubject<RecipeMaster> = this.recipeService
+        .getRecipeMasterById(batch$.value.recipeMasterId);
 
-      if (recipe$ === undefined || isMissingServerId(recipe$.value._id)) {
-        requests.push(throwError(`Recipe with id ${batch$.value.recipeMasterId} not found`));
+      if (!recipe$ || isMissingServerId(recipe$.value._id)) {
+        const message: string = `Recipe with id ${batch$.value.recipeMasterId} not found`;
+        requests.push(throwError(new CustomError('SyncError', message, 2, message)));
         return;
       }
 
       const user$: BehaviorSubject<User> = this.userService.getUser();
+      if (!user$ || !user$.value._id) {
+        const message: string = 'User server id not found';
+        requests.push(throwError(new CustomError('SyncError', message, 2, message)));
+        return;
+      }
       const user: User = user$.value;
 
       const payload: Batch = batch$.value;
@@ -649,7 +695,7 @@ export class ProcessService {
       )
       .subscribe(
         (): void => {},
-        (error: string): void => console.log('Batch sync error; continuing other sync events', error)
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
@@ -685,8 +731,10 @@ export class ProcessService {
   archiveActiveBatch(batchId: string): Observable<Batch> {
     const batch$: BehaviorSubject<Batch> = this.getBatchById(batchId);
 
-    if (batch$ === undefined) {
-      return throwError(`Active batch with id: ${batchId} could not be archived`);
+    if (!batch$) {
+      const message: string = 'An error occurring trying to archive an active batch: missing batch';
+      const additionalMessage: string = `Batch with id ${batchId} not found`;
+      return throwError(this.getMissingError(message, additionalMessage));
     }
 
     const batch: Batch = batch$.value;
@@ -728,16 +776,16 @@ export class ProcessService {
    * @return: none
    */
   clearBatchList(isActive: boolean): void {
-    const batchList$: BehaviorSubject<BehaviorSubject<Batch>[]> = this.getBatchList(isActive);
+    const list$: BehaviorSubject<BehaviorSubject<Batch>[]> = this.getBatchList(isActive);
 
-    batchList$.value.forEach((batch$: BehaviorSubject<Batch>): void => batch$.complete());
-    batchList$.next([]);
+    list$.value.forEach((batch$: BehaviorSubject<Batch>): void => batch$.complete());
+    list$.next([]);
 
     this.storageService.removeBatches(isActive);
   }
 
   /**
-   * Clear all active and archive batches and clear storage on user logout
+   * Clear all active and archive batches
    *
    * @params: none
    * @return: none
@@ -773,7 +821,9 @@ export class ProcessService {
       .getRecipeMasterById(masterId);
 
     if (!recipeMaster$) {
-      return throwError('Missing recipe template');
+      const message: string = 'An error occurring trying to generate batch from recipe: missing recipe';
+      const additionalMessage: string = `Recipe master with id ${masterId} not found`;
+      return throwError(this.getMissingError(message, additionalMessage));
     }
 
     return recipeMaster$
@@ -785,8 +835,10 @@ export class ProcessService {
               return hasId(_variant, variantId);
             });
 
-          if (variant === undefined) {
-            throw Error('Missing recipe template');
+          if (!variant) {
+            const message: string = 'An error occurring trying to generate batch from recipe: missing recipe';
+            const additionalMessage: string = `Recipe master with id ${masterId} was found, but variant with id ${variantId} not found`;
+            throw this.getMissingError(message, additionalMessage);
           }
 
           const newBatch: Batch = {
@@ -849,7 +901,7 @@ export class ProcessService {
           console.log('new batch', newBatch);
           return newBatch;
         }),
-        catchError((error: Error) => throwError(error.message))
+        catchError(this.errorReporter.handleGenericCatchError())
       );
   }
 
@@ -873,9 +925,7 @@ export class ProcessService {
    */
   getBatchById(batchId: string): BehaviorSubject<Batch> {
     const active$: BehaviorSubject<Batch> = this.getBatchList(true).value
-      .find((batch$: BehaviorSubject<Batch>): boolean => {
-        return hasId(batch$.value, batchId);
-      });
+      .find((batch$: BehaviorSubject<Batch>): boolean => hasId(batch$.value, batchId));
 
     if (active$ !== undefined) return active$;
 
@@ -894,6 +944,23 @@ export class ProcessService {
    */
   getBatchList(isActive: boolean): BehaviorSubject<BehaviorSubject<Batch>[]> {
     return isActive ? this.activeBatchList$ : this.archiveBatchList$;
+  }
+
+  /**
+   * Get a custom error for a missing batch
+   *
+   * @param: baseMessage - user accessible message
+   * @parma: additionalMessage - additional error message that is not shown to user
+   *
+   * @return: custom error
+   */
+  getMissingError(baseMessage: string, additionalMessage: string = ''): Error {
+    return new CustomError(
+      'BatchError',
+      `${baseMessage} ${additionalMessage}`,
+      2,
+      baseMessage
+    );
   }
 
   /**
@@ -925,9 +992,9 @@ export class ProcessService {
     const indexToRemove: number = getIndexById(batchId, getArrayFromSubjects(batchList));
 
     if (indexToRemove === -1) {
-      return throwError(
-        `Delete error: ${isActive ? 'Active' : 'Archive'} batch with id ${batchId} not found`
-      );
+      const message: string = 'An error occurring trying to remove batch from list: missing batch';
+      const additionalMessage: string = `Batch with id ${batchId} not found`;
+      return throwError(this.getMissingError(message, additionalMessage));
     }
 
     batchList[indexToRemove].complete();
@@ -959,12 +1026,189 @@ export class ProcessService {
     )
     .subscribe(
       (): void => console.log(`stored ${ isActive ? 'active' : 'archive' } batches`),
-      (error: string): void => {
-        console.log(`${ isActive ? 'active' : 'archive' } batch store error: ${error}`);
-      }
+      (error: any): void => this.errorReporter.handleUnhandledError(error)
     );
   }
 
   /***** End storage methods *****/
+
+
+  /***** Type Guard *****/
+
+  /**
+   * Runtime check given Batch for type correctness; throws error on check failed
+   *
+   * @param: batch - the batch to check
+   *
+   * @return: none
+   */
+  checkTypeSafety(batch: any): void {
+    if (!this.isSafeBatch(batch)) {
+      throw this.getUnsafeError(batch);
+    }
+  }
+
+  // /**
+  //  * Get the process type specific document type guard
+  //  *
+  //  * @param: processType - the specific type of process to check: either 'manual', 'timer', or 'calendar'
+  //  *
+  //  * @return: the combined common and specific process type guard data
+  //  */
+  // getDocumentGuardByType(processType: string): DocumentGuard {
+  //   let SpecificValidations: DocumentGuard;
+  //
+  //   if (processType === 'manual') {
+  //     SpecificValidations = ManualProcessGuardMetadata;
+  //   } else if (processType === 'timer') {
+  //     SpecificValidations = TimerProcessGuardMetadata;
+  //   } else if (processType === 'calendar') {
+  //     SpecificValidations = CalendarProcessGuardMetadata;
+  //   } else {
+  //     throw new CustomError(
+  //       'TypeGuardError',
+  //       `Invalid process type on type guard validation: ${processType}`,
+  //       2,
+  //       'An internal check error occurred, Process is malformed'
+  //     );
+  //   }
+  //
+  //   return this.typeGuard.concatGuards(ProcessGuardMetadata, SpecificValidations);
+  // }
+
+  /**
+   * Get a custom error on unsafe batch type
+   *
+   * @param: thrownFor - the original error thrown
+   *
+   * @return: new custom error
+   */
+  getUnsafeError(thrownFor: any): Error {
+    return new CustomError(
+      'BatchError',
+      `Batch is invalid: got ${JSON.stringify(thrownFor, null, 2)}`,
+      2,
+      'An internal error occurred: invalid batch'
+    );
+  }
+
+  /**
+   * Check if given alerts are valid by correctly implementing the Alert interface
+   *
+   * @param: alerts - expects an array of Alerts at runtime
+   *
+   * @return: true if all alerts correctly implement Alert interface
+   */
+  isSafeAlerts(alerts: Alert[]): boolean {
+    return alerts.every((alert: Alert): boolean => {
+      return this.typeGuard.hasValidProperties(alert, AlertGuardMetadata);
+    });
+  }
+
+  /**
+   * Check if given batch object is valid by correctly implementing the Batch interface
+   *
+   * @param: batch - expects a Batch at runtime
+   *
+   * @return: true if given batch correctly implements Batch interface
+   */
+  isSafeBatch(batch: Batch): boolean {
+    return (
+      this.typeGuard.hasValidProperties(batch, BatchGuardMetadata)
+      && this.isSafeBatchAnnotations(batch.annotations)
+      && this.isSafeBatchContext(batch.contextInfo)
+      && this.isSafeBatchProcess(batch.process)
+    );
+  }
+
+  /**
+   * Check if given batch annotations object is valid by correctly implementing the BatchAnnotations interface
+   *
+   * @param: annotations - expects a BatchAnnotations at runtime
+   *
+   * @return: true if given annotations correctly implements BatchAnnotations interface
+   */
+  isSafeBatchAnnotations(annotations: BatchAnnotations): boolean {
+    return (
+      this.typeGuard.hasValidProperties(annotations, BatchAnnotationsGuardMetadata)
+      && this.isSafePrimaryValues(annotations.targetValues)
+      && this.isSafePrimaryValues(annotations.measuredValues)
+    );
+  }
+
+  /**
+   * Check if given batch context object is valid by correctly implementing the BatchContext interface
+   *
+   * @param: context - expects a BatchContext at runtime
+   *
+   * @return: true if given context correctly implements BatchContext interface
+   */
+  isSafeBatchContext(context: BatchContext): boolean {
+    return (
+      this.typeGuard.hasValidProperties(context, BatchContextGuardMetadata)
+      && this.recipeService.isSafeGrainBillCollection(context.grains)
+      && this.recipeService.isSafeHopsScheduleCollection(context.hops)
+      && this.recipeService.isSafeYeastBatchCollection(context.yeast)
+      && this.recipeService.isSafeOtherIngredientsCollection(context.otherIngredients)
+    );
+  }
+
+  /**
+   * Check if given batch process object is valid by correctly implementing the BatchProcess interface
+   *
+   * @param: batchProcess - expects a BatchProcess at runtime
+   *
+   * @return: true if given annotations correctly implements BatchProcess interface
+   */
+  isSafeBatchProcess(batchProcess: BatchProcess): boolean {
+    return (
+      this.typeGuard.hasValidProperties(batchProcess, BatchProcessGuardMetadata)
+      && this.isSafeProcessSchedule(batchProcess.schedule)
+      && this.isSafeAlerts(batchProcess.alerts)
+    );
+  }
+
+  /**
+   * Check if given primary values object is valid by correctly implementing the PrimaryValues interface
+   *
+   * @param: values - expects a PrimaryValues at runtime
+   *
+   * @return: true if given primary values correctly implements PrimaryValues interface
+   */
+  isSafePrimaryValues(values: PrimaryValues): boolean {
+    return this.typeGuard.hasValidProperties(values, PrimaryValuesGuardMetadata);
+  }
+
+  /**
+   * Check if given process schedule array is valid by correctly implementing the Process interface
+   * as well as the appropriate extended interface defined by the type property
+   *
+   * @param: schedule - expects array of Process objects at runtime
+   *
+   * @return: true if all processes within schedule implements the Process interface as well as their
+   *          individual extended interface
+   */
+  isSafeProcessSchedule(schedule: Process[]): boolean {
+    return this.recipeService.isSafeProcessSchedule(schedule);
+  }
+  // isSafeProcessSchedule(schedule: Process[]): boolean {
+  //   return schedule.every((process: Process): boolean => {
+  //     const validation: DocumentGuard = this.getDocumentGuardByType(process.type);
+  //     return this.typeGuard.hasValidProperties(process, validation);
+  //   });
+  // }
+
+  /**
+   * Check if given process is a TimerProcess
+   *
+   * @param: process - the process to check
+   *
+   * @return: true if process has a concurrent property (required by and unique to TimerProcess)
+   */
+  isTimerProcess(process: Process): boolean {
+    return process.hasOwnProperty('concurrent');
+  }
+
+  /***** End Type Guard *****/
 
 }

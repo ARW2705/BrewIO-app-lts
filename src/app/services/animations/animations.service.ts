@@ -1,7 +1,7 @@
 /* Module imports */
 import { Injectable, Renderer2 } from '@angular/core';
 import { Animation, AnimationController } from '@ionic/angular';
-import { Observable, Observer, forkJoin } from 'rxjs';
+import { Observable, Observer, forkJoin, throwError } from 'rxjs';
 
 
 @Injectable({
@@ -22,8 +22,8 @@ export class AnimationsService {
   /**
    * Collapse element vertically
    *
-   * @params: element - the HTMLElement to animate
-   * @params: [options] - optional overrides
+   * @param: element - the HTMLElement to animate
+   * @param: [options] - optional overrides
    *
    * @return: configured animation
    */
@@ -51,8 +51,8 @@ export class AnimationsService {
   /**
    * Expand element vertically
    *
-   * @params: element - the HTMLElement to animate
-   * @params: [options] - optional overrides
+   * @param: element - the HTMLElement to animate
+   * @param: [options] - optional overrides
    *
    * @return: configured animation
    */
@@ -81,25 +81,25 @@ export class AnimationsService {
   /**
    * Check if a given gesture hint has been shown on a given component type
    *
-   * @params: gestureType - the type of gesture animation (e.g. 'sliding', 'tapping')
-   * @params: componentType - the type of component using the gesture hint
+   * @param: gestureType - the type of gesture animation (e.g. 'sliding', 'tapping')
+   * @param: componentType - the type of component using the gesture hint
    *
    * @return: true if a given gesture hint has been played on the component
    */
-  hasHintBeenShown(gestureType: string, componentType: string): boolean {
+  shouldShowHint(gestureType: string, componentType: string): boolean {
     try {
-      return this.hintFlags[gestureType][componentType];
+      return !this.hintFlags[gestureType][componentType];
     } catch (error) {
       console.log('Error getting hint show flag', gestureType, componentType, error);
-      return false;
+      return true;
     }
   }
 
   /**
    * Flag a component as having shown a gesture hint
    *
-   * @params: gestureType - the type of gesture animation (e.g. 'sliding', 'tapping')
-   * @params: componentType - the type of component using the gesture hint
+   * @param: gestureType - the type of gesture animation (e.g. 'sliding', 'tapping')
+   * @param: componentType - the type of component using the gesture hint
    *
    * @return: none
    */
@@ -114,8 +114,8 @@ export class AnimationsService {
   /**
    * Slide in element horizontally
    *
-   * @params: element - the HTMLElement to animate
-   * @params: [options] - optional overrides
+   * @param: element - the HTMLElement to animate
+   * @param: [options] - optional overrides
    *
    * @return: configured animation
    */
@@ -142,8 +142,8 @@ export class AnimationsService {
   /**
    * Slide out element horizontally
    *
-   * @params: element - the HTMLElement to animate
-   * @params: [options] - optional overrides
+   * @param: element - the HTMLElement to animate
+   * @param: [options] - optional overrides
    *
    * @return: configured animation
    */
@@ -170,8 +170,8 @@ export class AnimationsService {
   /**
    * Gesture hint animation for horizontally sliding items
    *
-   * @params: element - the HTMLElement to animate
-   * @params: [options] - optional overrides
+   * @param: element - the HTMLElement to animate
+   * @param: [options] - optional overrides
    *
    * @return: configured animation
    */
@@ -223,8 +223,8 @@ export class AnimationsService {
   /**
    * Get a count of how many items are currently in view
    *
-   * @params: containerElement - the current view content container
-   * @params: sampleElement - an example of one of the items to get a dividing height
+   * @param: containerElement - the current view content container
+   * @param: sampleElement - an example of one of the items to get a dividing height
    *
    * @return: an estimated number of items in view (rounded up)
    */
@@ -240,10 +240,32 @@ export class AnimationsService {
   }
 
   /**
+   * Estimate the width of the right side ion-item-option buttons
+   * Note: styling for these elements are not available when creating an animation related to them,
+   * this is why the width is estimated by its content instead
+   *
+   * @param: slidingElement - parent ion-item-sliding element
+   * @param: startIndex - the first index of the first ion-item-options on the right side
+   * @param: count - the number of options on the right side
+   *
+   * @return: estimated combined width of all right side ion-item-option s
+   */
+  getEstimatedItemOptionWidth(slidingElement: HTMLElement, startIndex: number, count: number): number {
+    return (count * 20) + Array
+      .from(slidingElement.querySelectorAll('ion-item-option'))
+      .reduce((acc: number, curr: Node, index: number): number => {
+        if (index >= startIndex && index < startIndex + count) {
+          return acc + ((<HTMLElement>curr).textContent.length * 9);
+        }
+        return acc;
+      }, 0);
+  }
+
+  /**
    * Get the sliding HTMLElements to be animated
    *
-   * @params: containerElement - the current view content container
-   * @params: parentElement - the sliding elements parent container
+   * @param: containerElement - the current view content container
+   * @param: parentElement - the sliding elements parent container
    *
    * @return: array of sliding HTMLElements
    */
@@ -264,9 +286,9 @@ export class AnimationsService {
   /**
    * Get sliding element hint animations
    *
-   * @params: elements - the elements to animate
-   * @params: slideDistance - distance to move element in pixels
-   * @params: offsetDelay - additional animation delay
+   * @param: elements - the elements to animate
+   * @param: slideDistance - distance to move element in pixels
+   * @param: offsetDelay - additional animation delay
    *
    * @return: array sliding hint animations
    */
@@ -294,7 +316,7 @@ export class AnimationsService {
    * Note: animations must each be destroyed after completion to avoid
    * built-in styles from being affected
    *
-   * @params: animations - animations group to prepare
+   * @param: animations - animations group to prepare
    *
    * @return: array of animation executions as observables
    */
@@ -314,24 +336,31 @@ export class AnimationsService {
   /**
    * Build and play horizontal sliding hint animations for a group of sliding elements
    *
-   * @params: containerElement - the current view content container
-   * @params: parentElement - the sliding elements parent container
-   * @params: offsetDelay - additional animation delay; defaults to 0
+   * @param: containerElement - the current view content container
+   * @param: parentElement - the sliding elements parent container
+   * @param: offsetDelay - additional animation delay; defaults to 0
    *
    * @return: observable of array of animation executions
    */
   playCombinedSlidingHintAnimations(
     containerElement: HTMLElement,
     parentElement: HTMLElement,
+    slideDistance: number = 0,
     offsetDelay: number = 0
   ): Observable<null[]> {
-    const slidingElements: HTMLElement[] = this.getSlidingElements(containerElement, parentElement);
-    const animations: Animation[] = this.getSlidingHintAnimations(
-      slidingElements,
-      containerElement.clientWidth / 5,
-      offsetDelay
-    );
-    const animationQueue: Observable<null>[] = this.queueAnimations(animations);
+    console.log('sliding distance', slideDistance);
+    let animationQueue: Observable<null>[];
+    try {
+      const slidingElements: HTMLElement[] = this.getSlidingElements(containerElement, parentElement);
+      const animations: Animation[] = this.getSlidingHintAnimations(
+        slidingElements,
+        slideDistance || containerElement.clientWidth / 4,
+        offsetDelay
+      );
+      animationQueue = this.queueAnimations(animations);
+    } catch (error) {
+      return throwError(error);
+    }
 
     return forkJoin(animationQueue);
   }
@@ -340,10 +369,10 @@ export class AnimationsService {
    * Toggle classes on IonItemSliding for hint animations;
    * This will show the IonOptions underneath the IonItem
    *
-   * @params: parentElement - the parent IonItemSliding element
-   * @params: show - true if classes should be added prior to animation; false to remove classes
+   * @param: parentElement - the parent IonItemSliding element
+   * @param: show - true if classes should be added prior to animation; false to remove classes
    *  after animations have completed
-   * @params: renderer - Renderer2 instance from requesting component to perform the class manipulation
+   * @param: renderer - Renderer2 instance from requesting component to perform the class manipulation
    *
    * @return: none
    */

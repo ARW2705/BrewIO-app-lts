@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { ActionSheetController } from '@ionic/angular';
 
 /* Interface imports */
-import { ActionSheetButton } from '../../shared/interfaces/action-sheet-buttons';
+import { ActionSheetButton } from '../../shared/interfaces';
 
 
 @Injectable({

@@ -1,11 +1,14 @@
 /* Module imports */
-import { Component, OnDestroy, Input, OnInit, AfterViewInit, ElementRef, Renderer2, ViewChild } from '@angular/core';
+import { Component, ChangeDetectorRef, OnChanges, OnDestroy, Input, OnInit, AfterViewInit, ElementRef, Renderer2, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { finalize, takeUntil } from 'rxjs/operators';
 
 /* Interface imports */
-import { Batch } from '../../shared/interfaces/batch';
+import { Batch } from '../../shared/interfaces';
+
+/* Type imports */
+import { CustomError } from '../../shared/types';
 
 /* Utility function imports */
 import { getId } from '../../shared/utility-functions/id-helpers';
@@ -13,6 +16,7 @@ import { getArrayFromSubjects } from '../../shared/utility-functions/subject-hel
 
 /* Service imports */
 import { AnimationsService } from '../../services/animations/animations.service';
+import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
 import { ProcessService } from '../../services/process/process.service';
 import { ToastService } from '../../services/toast/toast.service';
 
@@ -22,17 +26,20 @@ import { ToastService } from '../../services/toast/toast.service';
   templateUrl: './active-batches.component.html',
   styleUrls: ['./active-batches.component.scss']
 })
-export class ActiveBatchesComponent implements OnInit, OnDestroy, AfterViewInit {
+export class ActiveBatchesComponent implements OnInit, OnChanges, OnDestroy, AfterViewInit {
   @Input() enterDuration: number = 0;
   @Input() rootURL: string = 'tabs/home';
+  @Input() shown: boolean = false;
   @ViewChild('batchSlidingItemsList', { read: ElementRef }) batchSlidingItemsList: ElementRef;
   activeBatchesList: Batch[] = [];
   destroy$: Subject<boolean> = new Subject<boolean>();
 
   constructor(
+    public cdRef: ChangeDetectorRef,
     public renderer: Renderer2,
     public router: Router,
     public animationService: AnimationsService,
+    public errorReporter: ErrorReportingService,
     public processService: ProcessService,
     public toastService: ToastService
   ) { }
@@ -48,16 +55,23 @@ export class ActiveBatchesComponent implements OnInit, OnDestroy, AfterViewInit 
         (activeBatchesList$: BehaviorSubject<Batch>[]): void => {
           this.activeBatchesList = getArrayFromSubjects<Batch>(activeBatchesList$);
         },
-        (error: string): void => {
-          console.log('Batch list error', error);
-          this.toastService.presentErrorToast('Error loading batch list');
-        }
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
   ngAfterViewInit(): void {
-    if (!this.animationService.hasHintBeenShown('sliding', 'batch')) {
+    if (this.animationService.shouldShowHint('sliding', 'batch')) {
       this.runSlidingHints();
+    }
+  }
+
+  ngOnChanges(): void {
+    try {
+      if (this.animationService.shouldShowHint('sliding', 'batch')) {
+        this.runSlidingHints();
+      }
+    } catch (error) {
+      // do nothing if too soon
     }
   }
 
@@ -73,7 +87,7 @@ export class ActiveBatchesComponent implements OnInit, OnDestroy, AfterViewInit 
   /**
    * Navigate to Process Page to continue given batch
    *
-   * @params: batch - the batch instance to use in brew process
+   * @param: batch - the batch instance to use in brew process
    *
    * @return: none
    */
@@ -95,11 +109,15 @@ export class ActiveBatchesComponent implements OnInit, OnDestroy, AfterViewInit 
   /**
    * Get the IonContent HTMLElement of the current view
    *
-   * @params: none
+   * @param: none
    *
    * @return: IonContent element
    */
   getTopLevelContainer(): HTMLElement {
+    if (!this.batchSlidingItemsList) {
+      return null;
+    }
+
     let currentElem: HTMLElement = this.batchSlidingItemsList.nativeElement;
     while (currentElem && currentElem.tagName !== 'ION-CONTENT') {
       currentElem = currentElem.parentElement;
@@ -110,27 +128,33 @@ export class ActiveBatchesComponent implements OnInit, OnDestroy, AfterViewInit 
   /**
    * Trigger horizontally sliding gesture hint animations
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   runSlidingHints(): void {
     const topLevelContent: HTMLElement = this.getTopLevelContainer();
     if (!topLevelContent) {
-      console.log('Animation error: cannot find content container');
-      return;
+      const message: string = 'Animation error: cannot find content container';
+      throw new CustomError('AnimationError', message, 4, message);
     }
 
     this.toggleSlidingItemClass(true);
+    this.cdRef.detectChanges();
 
     this.animationService.playCombinedSlidingHintAnimations(
       topLevelContent,
       this.batchSlidingItemsList.nativeElement,
+      this.animationService.getEstimatedItemOptionWidth(this.batchSlidingItemsList.nativeElement, 0, 1),
       this.enterDuration
     )
     .pipe(finalize((): void => this.toggleSlidingItemClass(false)))
     .subscribe(
       (): void => this.animationService.setHintShownFlag('sliding', 'batch'),
-      (error: string): void => console.log('Animation error', error)
+      (error: Error): void => {
+        this.errorReporter.setErrorReport(
+          this.errorReporter.getCustomReportFromError(error, { severity: 4 })
+        );
+      }
     );
   }
 
@@ -138,7 +162,7 @@ export class ActiveBatchesComponent implements OnInit, OnDestroy, AfterViewInit 
    * Toggle classes on IonItemSliding for hint animations;
    * This will show the IonOptions underneath the IonItem
    *
-   * @params: show - true if classes should be added prior to animation; false to remove classes
+   * @param: show - true if classes should be added prior to animation; false to remove classes
    *  after animations have completed
    *
    * @return: none

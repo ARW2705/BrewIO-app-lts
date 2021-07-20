@@ -13,7 +13,7 @@ import { UnitConversionPipeStub } from '../../../../test-config/pipe-stubs';
 import { AnimationStub } from '../../../../test-config/ionic-stubs';
 
 /* Interface imports */
-import { Timer } from '../../shared/interfaces/timer';
+import { Timer } from '../../shared/interfaces';
 
 /* Service imports */
 import { AnimationsService } from '../../services/animations/animations.service';

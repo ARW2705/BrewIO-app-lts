@@ -12,7 +12,7 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
 import { mockRecipeMasterActive, mockRecipeVariantComplete } from '../../../../test-config/mock-models';
-import { AnimationsServiceStub, RecipeServiceStub, ToastServiceStub } from '../../../../test-config/service-stubs';
+import { AnimationsServiceStub, ErrorReportingServiceStub, RecipeServiceStub, ToastServiceStub } from '../../../../test-config/service-stubs';
 import { AccordionComponentStub, ConfirmationComponentStub, HeaderComponentStub, IngredientListComponentStub, NoteListComponentStub } from '../../../../test-config/component-stubs';
 import { RoundPipeStub, TruncatePipeStub, UnitConversionPipeStub } from '../../../../test-config/pipe-stubs';
 import { ActivatedRouteStub, ModalControllerStub, ModalStub, IonContentStub } from '../../../../test-config/ionic-stubs';
@@ -21,16 +21,15 @@ import { ActivatedRouteStub, ModalControllerStub, ModalStub, IonContentStub } fr
 import { toTitleCase } from '../../shared/utility-functions/utilities';
 
 /* Interface imports */
-import { HopsSchedule } from '../../shared/interfaces/hops-schedule';
-import { RecipeMaster } from '../../shared/interfaces/recipe-master';
-import { RecipeVariant } from '../../shared/interfaces/recipe-variant';
+import { HopsSchedule, RecipeMaster, RecipeVariant } from '../../shared/interfaces';
 
 /* Service imports */
+import { AnimationsService } from '../../services/animations/animations.service';
+import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
 import { RecipeService } from '../../services/recipe/recipe.service';
 import { ToastService } from '../../services/toast/toast.service';
 
 /* Page imports */
-import { AnimationsService } from '../../services/animations/animations.service';
 import { RecipeDetailPage } from './recipe-detail.page';
 import { ConfirmationComponent } from '../../components/confirmation/confirmation.component';
 
@@ -64,6 +63,7 @@ describe('RecipeDetailPage', (): void => {
       ],
       providers: [
         { provide: ActivatedRoute, useClass: ActivatedRouteStub },
+        { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: ModalController, useClass: ModalControllerStub },
         { provide: AnimationsService, useClass: AnimationsServiceStub },
         { provide: RecipeService, useClass: RecipeServiceStub },
@@ -88,6 +88,12 @@ describe('RecipeDetailPage', (): void => {
     detailPage.toastService.presentToast = jest
       .fn();
     detailPage.toastService.presentErrorToast = jest
+      .fn();
+    detailPage.errorReporter.handleUnhandledError = jest
+      .fn();
+    detailPage.errorReporter.setErrorReport = jest
+      .fn();
+    detailPage.errorReporter.createErrorReport = jest
       .fn();
   });
 
@@ -124,39 +130,14 @@ describe('RecipeDetailPage', (): void => {
       }, 10);
     });
 
-    test('should init the component and get error from recipe service', (done: jest.DoneCallback): void => {
-      detailPage.ngOnInit = originalOnInit;
-
-      detailPage.recipeService.getRecipeMasterById = jest
-        .fn()
-        .mockReturnValue(throwError('test-error'));
-
-      detailPage.toastService.presentErrorToast = jest
-        .fn();
-
-      detailPage.navToRoot.bind = jest
-        .fn()
-        .mockImplementation((page: RecipeDetailPage): () => void => {
-          return page.navToRoot;
-        });
-
-      const toastSpy: jest.SpyInstance = jest.spyOn(detailPage.toastService, 'presentErrorToast');
-
-      fixture.detectChanges();
-
-      setTimeout((): void => {
-        expect(detailPage.recipeMaster).toBeNull();
-        expect(toastSpy).toHaveBeenCalledWith('Recipe Error', detailPage.navToRoot);
-        done();
-      }, 10);
-    });
-
     test('should handle error on init', (): void => {
+      const _mockError: Error = new Error('test-error');
+
       detailPage.ngOnInit = originalOnInit;
 
       detailPage.recipeService.getRecipeMasterById = jest
         .fn()
-        .mockReturnValue(new Error('test-error'));
+        .mockReturnValue(throwError(_mockError));
 
       detailPage.navToRoot.bind = jest
         .fn()
@@ -164,15 +145,15 @@ describe('RecipeDetailPage', (): void => {
           return page.navToRoot;
         });
 
-      const toastSpy: jest.SpyInstance = jest.spyOn(detailPage.toastService, 'presentErrorToast');
+      const errorSpy: jest.SpyInstance = jest.spyOn(detailPage.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
-      expect(toastSpy).toHaveBeenCalledWith('Error initializing recipe', detailPage.navToRoot);
+      expect(errorSpy).toHaveBeenCalledWith(_mockError);
     });
 
     test('should trigger gesture hint animation after view has entered', (): void => {
-      detailPage.animationService.hasHintBeenShown = jest
+      detailPage.animationService.shouldShowHint = jest
         .fn()
         .mockReturnValueOnce(false)
         .mockReturnValueOnce(true);
@@ -186,7 +167,7 @@ describe('RecipeDetailPage', (): void => {
 
       detailPage.ionViewDidEnter();
 
-      expect(runSpy).toHaveBeenCalled();
+      expect(runSpy).not.toHaveBeenCalled();
 
       detailPage.ionViewDidEnter();
 
@@ -296,19 +277,22 @@ describe('RecipeDetailPage', (): void => {
     });
 
     test('should get error navigating to brew process', (): void => {
-      const _mockRecipeVariantComplete: RecipeVariant = mockRecipeVariantComplete();
-
       detailPage.recipeService.isRecipeProcessPresent = jest
         .fn()
         .mockReturnValue(false);
 
-      const toastSpy: jest.SpyInstance = jest.spyOn(detailPage.toastService, 'presentErrorToast');
+      const errorSpy: jest.SpyInstance = jest.spyOn(detailPage.errorReporter, 'createErrorReport');
 
       fixture.detectChanges();
 
-      detailPage.navToBrewProcess(_mockRecipeVariantComplete);
+      detailPage.navToBrewProcess(null);
 
-      expect(toastSpy).toHaveBeenCalledWith('Recipe missing a process guide!');
+      expect(errorSpy).toHaveBeenCalledWith(
+        'MissingError',
+        'Recipe is missing a process guide',
+        3,
+        'Recipe is missing a process guide'
+      );
     });
 
     test('should nav to recipe form to update master', (): void => {
@@ -492,14 +476,21 @@ describe('RecipeDetailPage', (): void => {
     });
 
     test('should handle confirm deletion modal error', (): void => {
-      const toastSpy: jest.SpyInstance = jest.spyOn(detailPage.toastService, 'presentErrorToast');
+      const errMsg: string = 'test-error';
+
+      const errorSpy: jest.SpyInstance = jest.spyOn(detailPage.errorReporter, 'createErrorReport');
 
       fixture.detectChanges();
 
       const errorHandler: (error: string) => void = detailPage.onConfirmDeleteModalErrorDismiss();
-      errorHandler('test-error');
+      errorHandler(errMsg);
 
-      expect(toastSpy).toHaveBeenCalledWith('Confirmation Error');
+      expect(errorSpy).toHaveBeenCalledWith(
+        'ModalError',
+        errMsg,
+        3,
+        errMsg
+      );
     });
 
     test('should handle confirm deletion modal success', (done: jest.DoneCallback): void => {
@@ -526,14 +517,15 @@ describe('RecipeDetailPage', (): void => {
 
     test('should handle confirm deletion modal success, but get service error', (done: jest.DoneCallback): void => {
       const _mockRecipeVariantComplete: RecipeVariant = mockRecipeVariantComplete();
+      const _mockError: Error = new Error('test-error');
 
       detailPage.displayVariantList = [ _mockRecipeVariantComplete ];
 
       detailPage.recipeService.removeRecipeVariantById = jest
         .fn()
-        .mockReturnValue(throwError('test-error'));
+        .mockReturnValue(throwError(_mockError));
 
-      const toastSpy: jest.SpyInstance = jest.spyOn(detailPage.toastService, 'presentErrorToast');
+      const errorSpy: jest.SpyInstance = jest.spyOn(detailPage.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
@@ -541,7 +533,7 @@ describe('RecipeDetailPage', (): void => {
       successHandler({ data: true });
 
       setTimeout((): void => {
-        expect(toastSpy).toHaveBeenCalledWith('Error deleting variant');
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
     });
@@ -706,15 +698,16 @@ describe('RecipeDetailPage', (): void => {
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
       const _mockRecipeVariant: RecipeVariant = _mockRecipeMasterActive.variants[1];
       _mockRecipeVariant.isFavorite = true;
+      const _mockError: Error = new Error('test-error');
 
       detailPage.recipeMaster = _mockRecipeMasterActive;
 
       detailPage.recipeService.updateRecipeVariantById = jest
         .fn()
-        .mockReturnValue(throwError('test-error'));
+        .mockReturnValue(throwError(_mockError));
 
       const updateSpy: jest.SpyInstance = jest.spyOn(detailPage.recipeService, 'updateRecipeVariantById');
-      const toastSpy: jest.SpyInstance = jest.spyOn(detailPage.toastService, 'presentErrorToast');
+      const errorSpy: jest.SpyInstance = jest.spyOn(detailPage.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
@@ -726,7 +719,7 @@ describe('RecipeDetailPage', (): void => {
           _mockRecipeVariant._id,
           { isFavorite: false }
         );
-        expect(toastSpy).toHaveBeenCalledWith('Unable to remove from favorites');
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
     });
@@ -823,8 +816,14 @@ describe('RecipeDetailPage', (): void => {
       const _mockElem: HTMLElement = global.document.createElement('div');
       Object.defineProperty(_stubIonContent, 'el', { writable: false, value: _mockElem });
 
+      detailPage.recipeMaster = mockRecipeMasterActive();
+
       detailPage.toggleSlidingItemClass = jest
         .fn();
+
+      detailPage.animationService.getEstimatedItemOptionWidth = jest
+        .fn()
+        .mockReturnValue(100);
 
       detailPage.animationService.playCombinedSlidingHintAnimations = jest
         .fn()
@@ -853,34 +852,38 @@ describe('RecipeDetailPage', (): void => {
     test('should get an error running sliding hints with missing content element', (): void => {
       const _stubIonContent: IonContentStub = new IonContentStub();
 
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
-
       fixture.detectChanges();
 
       detailPage.ionContent = <any>_stubIonContent;
 
-      detailPage.runSlidingHints();
-
-      expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0])
-        .toMatch('Animation error: cannot find content container');
+      expect((): void => {
+        detailPage.runSlidingHints();
+      }).toThrowError('Animation error: cannot find content container');
     });
 
     test('should get an error running sliding hints with animation error', (done: jest.DoneCallback): void => {
       const _stubIonContent: IonContentStub = new IonContentStub();
       const _mockElem: HTMLElement = global.document.createElement('div');
       Object.defineProperty(_stubIonContent, 'el', { writable: false, value: _mockElem });
+      const _mockError: Error = new Error('test-error');
+
+      detailPage.recipeMaster = mockRecipeMasterActive();
 
       detailPage.toggleSlidingItemClass = jest
         .fn();
 
+      detailPage.animationService.getEstimatedItemOptionWidth = jest
+        .fn()
+        .mockReturnValue(100);
+
       detailPage.animationService.playCombinedSlidingHintAnimations = jest
         .fn()
-        .mockReturnValue(throwError('test-error'));
+        .mockReturnValue(throwError(_mockError));
 
       detailPage.animationService.setHintShownFlag = jest
         .fn();
 
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+      const errorSpy: jest.SpyInstance = jest.spyOn(detailPage.errorReporter, 'handleUnhandledError');
       const toggleSpy: jest.SpyInstance = jest.spyOn(detailPage, 'toggleSlidingItemClass');
       const setSpy: jest.SpyInstance = jest.spyOn(detailPage.animationService, 'setHintShownFlag');
 
@@ -892,11 +895,9 @@ describe('RecipeDetailPage', (): void => {
       detailPage.runSlidingHints();
 
       setTimeout((): void => {
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
         expect(toggleSpy).toHaveBeenCalledTimes(2);
         expect(setSpy).not.toHaveBeenCalled();
-        const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
-        expect(consoleCalls[0]).toMatch('Animation error');
-        expect(consoleCalls[1]).toMatch('test-error');
         done();
       }, 10);
     });

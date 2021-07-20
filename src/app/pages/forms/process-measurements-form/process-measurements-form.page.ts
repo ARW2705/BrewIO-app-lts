@@ -6,9 +6,12 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 /* Interface imports */
-import { Batch, BatchAnnotations } from '../../../shared/interfaces/batch';
-import { PrimaryValues } from '../../../shared/interfaces/primary-values';
-import { SelectedUnits } from '../../../shared/interfaces/units';
+import {
+  Batch,
+  BatchAnnotations,
+  PrimaryValues,
+  SelectedUnits
+} from '../../../shared/interfaces';
 
 /* Utility imports */
 import { roundToDecimalPlace } from '../../../shared/utility-functions/utilities';

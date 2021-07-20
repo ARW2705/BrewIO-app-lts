@@ -6,31 +6,52 @@ import { BehaviorSubject, Observable, forkJoin, throwError, combineLatest, of, c
 import { catchError, defaultIfEmpty, finalize, map, mergeMap, take, tap } from 'rxjs/operators';
 
 /* Constant imports */
-import { API_VERSION } from '../../shared/constants/api-version';
-import { BASE_URL } from '../../shared/constants/base-url';
-import { OPTIONAL_INVENTORY_DATA_KEYS } from '../../shared/constants/optional-inventory-data-keys';
-import { SRM_HEX_CHART } from '../../shared/constants/srm-hex-chart';
+import {
+  API_VERSION,
+  BASE_URL,
+  OPTIONAL_INVENTORY_DATA_KEYS,
+  SRM_HEX_CHART
+} from '../../shared/constants';
 
 /* Utility function imports */
 import { clone } from '../../shared/utility-functions/clone';
 import { getId, hasDefaultIdType, hasId, isMissingServerId } from '../../shared/utility-functions/id-helpers';
 
 /* Default imports */
-import { defaultImage } from '../../shared/defaults/default-image';
+import { defaultImage } from '../../shared/defaults';
 
 /* Interface imports*/
-import { Author } from '../../shared/interfaces/author';
-import { Batch, BatchContext } from '../../shared/interfaces/batch';
-import { Image, ImageRequestFormData, ImageRequestMetadata } from '../../shared/interfaces/image';
-import { InventoryItem } from '../../shared/interfaces/inventory-item';
-import { PrimaryValues } from '../../shared/interfaces/primary-values';
-import { RecipeMaster } from '../../shared/interfaces/recipe-master';
-import { Style } from '../../shared/interfaces/library';
-import { SyncData, SyncError, SyncMetadata, SyncRequests, SyncResponse } from '../../shared/interfaces/sync';
+import {
+  Author,
+  Batch,
+  BatchContext,
+  Image,
+  ImageRequestFormData,
+  ImageRequestMetadata,
+  InventoryItem,
+  PrimaryValues,
+  RecipeMaster,
+  Style,
+  SyncData,
+  SyncError,
+  SyncMetadata,
+  SyncRequests,
+  SyncResponse
+} from '../../shared/interfaces';
+
+/* Type Guards */
+import {
+  InventoryItemGuardMetadata,
+  OptionalItemDataGuardMetadata
+} from '../../shared/type-guard-metadata';
+
+/* Type imports */
+import { CustomError } from '../../shared/types';
 
 /* Service imports */
 import { ClientIdService } from '../client-id/client-id.service';
 import { ConnectionService } from '../connection/connection.service';
+import { ErrorReportingService } from '../error-reporting/error-reporting.service';
 import { EventService } from '../event/event.service';
 import { ImageService } from '../image/image.service';
 import { LibraryService } from '../library/library.service';
@@ -40,6 +61,7 @@ import { RecipeService } from '../recipe/recipe.service';
 import { StorageService } from '../storage/storage.service';
 import { SyncService } from '../sync/sync.service';
 import { ToastService } from '../toast/toast.service';
+import { TypeGuardService } from '../type-guard/type-guard.service';
 import { UserService } from '../user/user.service';
 
 
@@ -55,6 +77,7 @@ export class InventoryService {
     public http: HttpClient,
     public clientIdService: ClientIdService,
     public connectionService: ConnectionService,
+    public errorReporter: ErrorReportingService,
     public event: EventService,
     public httpError: HttpErrorService,
     public imageService: ImageService,
@@ -65,6 +88,7 @@ export class InventoryService {
     public storageService: StorageService,
     public syncService: SyncService,
     public toastService: ToastService,
+    public typeGuard: TypeGuardService,
     public userService: UserService
   ) {
     this.registerEvents();
@@ -85,17 +109,16 @@ export class InventoryService {
         .pipe(
           tap((inventory: InventoryItem[]): void => {
             console.log('inventory from server');
+            inventory.forEach((item: InventoryItem): void => this.checkTypeSafety(item));
             this.getInventoryList().next(inventory);
             this.updateInventoryStorage();
           }),
-          catchError((error: HttpErrorResponse): Observable<never> => {
-            return this.httpError.handleError(error);
-          })
+          catchError(this.errorReporter.handleGenericCatchError())
         )
     )
     .subscribe(
       (): void => {}, // no further actions needed on success
-      (error: string): void => console.log(`Initialization error: ${error}`)
+      (error: any): void => this.errorReporter.handleUnhandledError(error)
     );
   }
 
@@ -115,10 +138,11 @@ export class InventoryService {
         (inventory: InventoryItem[]): void => {
           const list$: BehaviorSubject<InventoryItem[]> = this.getInventoryList();
           if (list$.value.length === 0) {
+            inventory.forEach((item: InventoryItem): void => this.checkTypeSafety(item));
             list$.next(inventory);
           }
         },
-        (error: string): void => console.log(`${error}: awaiting data from server`)
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
@@ -313,7 +337,9 @@ export class InventoryService {
     const removeIndex: number = list.findIndex((item: InventoryItem): boolean => hasId(item, itemId));
 
     if (removeIndex === -1) {
-      return throwError(`Item with id: '${itemId}' not found`);
+      const message: string = 'An error occurred trying to remove an item from inventory: missing item';
+      const additionalMessage: string = `Item with id ${itemId} not found`;
+      return throwError(this.getMissingError(message, additionalMessage));
     }
 
     const toDelete: InventoryItem = list[removeIndex];
@@ -362,7 +388,9 @@ export class InventoryService {
     const toUpdate: InventoryItem = list.find((item: InventoryItem): boolean => hasId(item, itemId));
 
     if (!toUpdate) {
-      return throwError('Item not found in list');
+      const message: string = 'An error occurred trying to update an item from inventory: missing item';
+      const additionalMessage: string = `Item with id ${itemId} not found`;
+      return throwError(this.getMissingError(message, additionalMessage));
     }
 
     const previousItemImagePath: string = toUpdate.optionalItemData.itemLabelImage.filePath;
@@ -375,6 +403,8 @@ export class InventoryService {
     }
 
     this.mapOptionalData(toUpdate, update);
+
+    this.checkTypeSafety(toUpdate);
 
     const storeImages: Observable<Image>[] = this.composeImageStoreRequests(
       toUpdate,
@@ -479,32 +509,28 @@ export class InventoryService {
     deletionId?: string
   ): Observable<InventoryItem | HttpErrorResponse> {
     return this.getBackgroundRequest(syncMethod, item, deletionId)
-      .pipe(catchError((error: HttpErrorResponse): Observable<HttpErrorResponse> => {
-        if (shouldResolveError) {
-          return of(error);
-        }
-        return this.httpError.handleError(error);
-      }));
+      .pipe(
+        catchError(this.errorReporter.handleResolvableCatchError<InventoryItem>(shouldResolveError))
+      );
   }
 
   /**
    * Construct a server request
    *
-   * @params: syncMethod - the http method to call
+   * @params: requestMethod - the http method to call
    * @params: item - item to use in request
    * @params: [deletionId] - id to delete if item has already been deleted locally
    *
    * @return: observable of server request
    */
   getBackgroundRequest(
-    syncMethod: string,
+    requestMethod: string,
     item: InventoryItem,
     deletionId?: string
   ): Observable<InventoryItem> {
-    console.log('inv background req', syncMethod, item, deletionId);
     let route: string = `${BASE_URL}/${API_VERSION}/inventory`;
 
-    if (syncMethod === 'delete') {
+    if (requestMethod === 'delete') {
       if (deletionId) {
         route += `/${deletionId}`;
       } else {
@@ -525,15 +551,17 @@ export class InventoryService {
             formData.append(imageDatum.name, imageDatum.blob, imageDatum.filename);
           });
 
-          if (syncMethod === 'post') {
+          if (requestMethod === 'post') {
             return this.http.post<InventoryItem>(route, formData);
-          } else if (syncMethod === 'patch') {
+          } else if (requestMethod === 'patch') {
             route += `/${item._id}`;
             return this.http.patch<InventoryItem>(route, formData);
           } else {
-            return throwError('Invalid http method');
+            const message: string = `Invalid http method: ${requestMethod}`;
+            return throwError(new CustomError('HttpRequestError', message, 2, message));
           }
-        })
+        }),
+        catchError(this.errorReporter.handleGenericCatchError())
       );
   }
 
@@ -555,9 +583,11 @@ export class InventoryService {
     if (isDeletion && updateIndex === -1) {
       return of(true);
     } else if (updateIndex === -1) {
-      // TODO offer option to add instead?
-      return throwError('Inventory item is missing and cannot be updated');
+      const message: string = 'An error occurred trying to update an item from inventory: missing item';
+      const additionalMessage: string = `Item with id ${itemResponse._id} not found`;
+      return throwError(this.getMissingError(message, additionalMessage));
     } else {
+      this.checkTypeSafety(itemResponse);
       itemList[updateIndex] = itemResponse;
     }
 
@@ -579,7 +609,8 @@ export class InventoryService {
     if (syncMethod === 'post' || syncMethod === 'patch' || syncMethod === 'delete') {
       syncRequest = this.getBackgroundRequest(syncMethod, item);
     } else {
-      syncRequest = throwError('Unknown sync type');
+      const message: string = `Unknown sync type: ${syncMethod}`;
+      syncRequest = throwError(new CustomError('SyncError', message, 2, message));
     }
 
     syncRequest
@@ -587,19 +618,11 @@ export class InventoryService {
         mergeMap((itemResponse: InventoryItem): Observable<boolean> => {
           return this.handleBackgroundUpdateResponse(itemResponse, syncMethod === 'delete');
         }),
-        catchError((error: HttpErrorResponse | string): Observable<never> => {
-          if (typeof error === 'string') {
-            return throwError(error);
-          }
-          return this.httpError.handleError(error);
-        })
+        catchError(this.errorReporter.handleGenericCatchError())
       )
       .subscribe(
         (): void => console.log(`Inventory: background ${syncMethod} request successful`),
-        (error: string): void => {
-          console.log(`Inventory: background ${syncMethod} request error`, error);
-          this.toastService.presentErrorToast('Inventory item failed to save to server');
-        }
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
@@ -644,10 +667,6 @@ export class InventoryService {
    * @return: none
    */
   dismissSyncError(index: number): void {
-    if (index >= this.syncErrors.length || index < 0) {
-      throw new Error('Invalid sync error index');
-    }
-
     this.syncErrors.splice(index, 1);
   }
 
@@ -729,6 +748,7 @@ export class InventoryService {
             message: `Inventory item with id: ${(<InventoryItem>_syncData).cid} not found`
           });
         } else {
+          this.checkTypeSafety(_syncData);
           list[itemIndex] = <InventoryItem>_syncData;
         }
       }
@@ -781,10 +801,7 @@ export class InventoryService {
     this.syncOnConnection(false)
       .subscribe(
         (): void => {}, // Nothing further required if successful
-        (error: string): void => {
-          console.log(`error on reconnect sync: ${error}`);
-          this.toastService.presentErrorToast('Sync error: some inventory items did not update');
-        }
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
@@ -841,6 +858,23 @@ export class InventoryService {
     }
 
     return this.connectionService.isConnected() && this.userService.isLoggedIn() && idsOk;
+  }
+
+  /**
+   * Get an item missing custom error
+   *
+   * @param: baseMessage - primary error user message
+   * @param: additionalMessage - additional message not shown to user
+   *
+   * @return: new custom error for missing inventory item
+   */
+  getMissingError(baseMessage: string, additionalMessage: string = ''): Error {
+    return new CustomError(
+      'InventoryError',
+      `${baseMessage} ${additionalMessage}`,
+      2,
+      baseMessage
+    );
   }
 
   /**
@@ -959,10 +993,69 @@ export class InventoryService {
     this.storageService.setInventory(this.getInventoryList().value)
       .subscribe(
         (): void => console.log('stored inventory'),
-        (error: string): void => console.log(`inventory store error: ${error}`)
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
   /***** End Other Operations *****/
+
+
+  /***** Type Guards *****/
+
+  /**
+   * Runtime check given InventoryItem for type correctness; throws error on check failed
+   *
+   * @param: inventoryItem - the item to check
+   *
+   * @return: none
+   */
+  checkTypeSafety(inventoryItem: any): void {
+    if (!this.isSafeInventoryItem(inventoryItem)) {
+      throw this.getUnsafeError(inventoryItem);
+    }
+  }
+
+  /**
+   * Get a custom error on unsafe inventory item type
+   *
+   * @param: thrownFor - the original error thrown
+   *
+   * @return: new custom error
+   */
+  getUnsafeError(thrownFor: any): Error {
+    return new CustomError(
+      'InventoryError',
+      `Given inventory item is invalid: got ${JSON.stringify(thrownFor, null, 2)}`,
+      2,
+      'An internal error occurred: invalid inventory item'
+    );
+  }
+
+  /**
+   * Check if given inventory item is type safe at runtime
+   *
+   * @param: inventoryItem - the item to check
+   *
+   * @return: true if item and component property types are valid
+   */
+  isSafeInventoryItem(inventoryItem: any): boolean {
+    if (!this.typeGuard.hasValidProperties(inventoryItem, InventoryItemGuardMetadata)) {
+      return false;
+    }
+    return this.isSafeOptionalItemData(inventoryItem.optionalItemData);
+  }
+
+  /**
+   * Check if given inventory item optional item data is type safe at runtime
+   *
+   * @param: optionalItemData - the optional data object to check
+   *
+   * @return: true if optional item data types are valid
+   */
+  isSafeOptionalItemData(optionalItemData: any): boolean {
+    return this.typeGuard.hasValidProperties(optionalItemData, OptionalItemDataGuardMetadata);
+  }
+
+  /***** End Type Guards *****/
 
 }

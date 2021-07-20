@@ -12,8 +12,7 @@ import { EventServiceStub } from '../../../../test-config/service-stubs';
 import { SortPipeStub } from '../../../../test-config/pipe-stubs';
 
 /* Interface imports */
-import { Alert } from '../../shared/interfaces/alert';
-import { Process } from '../../shared/interfaces/process';
+import { Alert, CalendarProcess, Process } from '../../shared/interfaces';
 
 /* Service imports */
 import { EventService } from '../../services/event/event.service';
@@ -58,14 +57,14 @@ describe('ProcessCalendarComponent', (): void => {
   test('should handle changes to input', (): void => {
     const _mockProcessSchedule: Process[] = mockProcessSchedule();
     const _mockNonCalendarProcess: Process = _mockProcessSchedule[12];
-    const _mockCalendarProcess: Process = _mockProcessSchedule[13];
+    const _mockCalendarProcess: CalendarProcess = <CalendarProcess>_mockProcessSchedule[13];
 
     processCmp.getClosestAlertByGroup = jest
       .fn();
 
     processCmp.currentStepCalendarData = {
       _id: _mockNonCalendarProcess._id,
-      duration: _mockNonCalendarProcess.duration,
+      // duration: _mockNonCalendarProcess.duration,
       title: _mockNonCalendarProcess.name,
       description: _mockNonCalendarProcess.description
     };
@@ -157,7 +156,7 @@ describe('ProcessCalendarComponent', (): void => {
   });
 
   test('should render template with a calendar', (): void => {
-    const _mockCalendarProcess: Process = mockProcessSchedule()[13];
+    const _mockCalendarProcess: CalendarProcess = <CalendarProcess>mockProcessSchedule()[13];
 
     processCmp.alerts = [];
     processCmp.isPreview = false;
@@ -174,7 +173,7 @@ describe('ProcessCalendarComponent', (): void => {
   });
 
   test('should render template with a preview', (): void => {
-    const _mockCalendarProcess: Process = mockProcessSchedule()[13];
+    const _mockCalendarProcess: CalendarProcess = <CalendarProcess>mockProcessSchedule()[13];
 
     processCmp.alerts = [];
     processCmp.isPreview = true;
@@ -194,7 +193,7 @@ describe('ProcessCalendarComponent', (): void => {
   test('should render template with alerts', (): void => {
     const now: string = (new Date('2020-01-01T01:00:00')).toISOString();
     const future: string = (new Date('2021-01-01T01:00:00')).toISOString();
-    const _mockCalendarProcess: Process = mockProcessSchedule()[13];
+    const _mockCalendarProcess: CalendarProcess = <CalendarProcess>mockProcessSchedule()[13];
     _mockCalendarProcess.startDatetime = now;
     const _mockAlertPresent: Alert = mockAlertPresent();
     _mockAlertPresent.datetime = now;

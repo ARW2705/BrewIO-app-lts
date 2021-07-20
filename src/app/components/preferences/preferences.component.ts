@@ -2,20 +2,22 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup } from '@angular/forms';
 import { Observable, Subject, of, throwError } from 'rxjs';
-import { map, mergeMap, take } from 'rxjs/operators';
+import { catchError, mergeMap, take } from 'rxjs/operators';
 
 /* Constant imports */
-import { BRIX, PLATO, SPECIFIC_GRAVITY } from '../../shared/constants/units';
-import { SELECT_OPTIONS } from '../../shared/constants/select-options';
+import { BRIX, PLATO, SELECT_OPTIONS, SPECIFIC_GRAVITY } from '../../shared/constants';
 
 /* Interface imports */
-import { User } from '../../shared/interfaces/user';
-import { SelectedUnits } from '../../shared/interfaces/units';
+import { SelectedUnits, User } from '../../shared/interfaces';
+
+/* Type imports */
+import { CustomError } from '../../shared/types';
 
 /* Default imports */
-import { defaultEnglish, defaultMetric } from '../../shared/defaults/default-units';
+import { defaultEnglishUnits, defaultMetricUnits } from '../../shared/defaults';
 
 /* Service imports */
+import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
 import { PreferencesService } from '../../services/preferences/preferences.service';
 import { ToastService } from '../../services/toast/toast.service';
 import { UserService } from '../../services/user/user.service';
@@ -28,8 +30,8 @@ import { UserService } from '../../services/user/user.service';
 })
 export class PreferencesComponent implements OnInit, OnDestroy {
   destroy$: Subject<boolean> = new Subject<boolean>();
-  defaultEnglish: SelectedUnits = defaultEnglish();
-  defaultMetric: SelectedUnits = defaultMetric();
+  defaultEnglish: SelectedUnits = defaultEnglishUnits();
+  defaultMetric: SelectedUnits = defaultMetricUnits();
   displayUnits: object = {
     weightSmall: this.defaultEnglish.weightSmall.longName,
     weightLarge: this.defaultEnglish.weightLarge.longName,
@@ -44,6 +46,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   user: User = null;
 
   constructor(
+    public errorReporter: ErrorReportingService,
     public formBuilder: FormBuilder,
     public preferenceService: PreferencesService,
     public toastService: ToastService,
@@ -63,17 +66,20 @@ export class PreferencesComponent implements OnInit, OnDestroy {
           this.setUnits = this.preferenceService.getSelectedUnits();
           this.mapDisplayUnits();
           if (this.preferredUnits.length === 0 || this.setUnits === null) {
-            return throwError('Error loading preferences');
+            return throwError(new CustomError(
+              'PreferencesError',
+              `Given preferredUnits of ${this.preferredUnits} and units of ${this.setUnits}`,
+              2,
+              'An internal error occurred: invalid units'
+            ));
           }
           return of(true);
-        })
+        }),
+        catchError(this.errorReporter.handleGenericCatchError())
       )
       .subscribe(
         (): void => this.initForm(),
-        (error: string): void => {
-          console.log('Error loading user preferences', error);
-          this.toastService.presentErrorToast(error);
-        }
+        (error: string): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
@@ -135,7 +141,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
    * @return: none
    */
   initForm(): void {
-    const _defaultEnglish: SelectedUnits = defaultEnglish();
+    const _defaultEnglish: SelectedUnits = defaultEnglishUnits();
     this.preferencesForm = this.formBuilder.group({
       preferredUnitSystem: [],
       weightSmall: [
@@ -306,13 +312,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
           []
         );
       },
-      (error: string): void => {
-        console.log(`Preferences submit error: ${error}`);
-        this.toastService.presentErrorToast(
-          error,
-          5000
-        );
-      }
+      (error: any): void => this.errorReporter.handleUnhandledError(error)
     );
   }
 

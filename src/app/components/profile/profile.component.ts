@@ -6,16 +6,16 @@ import { Subject, from } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 /* Default imports */
-import { defaultImage } from '../../shared/defaults/default-image';
+import { defaultImage } from '../../shared/defaults';
 
 /* Interface imports */
-import { Image } from '../../shared/interfaces/image';
-import { User } from '../../shared/interfaces/user';
+import { Image, User } from '../../shared/interfaces';
 
 /* Page imports */
 import { ImageFormPage } from '../../pages/forms/image-form/image-form.page';
 
 /* Service imports */
+import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
 import { ImageService } from '../../services/image/image.service';
 import { UserService } from '../../services/user/user.service';
 import { ToastService } from '../../services/toast/toast.service';
@@ -37,6 +37,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   userForm: FormGroup = null;
 
   constructor(
+    public errorReporter: ErrorReportingService,
     public formBuilder: FormBuilder,
     public imageService: ImageService,
     public modalCtrl: ModalController,
@@ -56,10 +57,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
           this.isLoggedIn = this.userService.isLoggedIn();
           this.initForm(user);
         },
-        (error: string): void => {
-          console.log(`Error getting user: ${error}`);
-          this.toastService.presentErrorToast('Error getting profile');
-        }
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
@@ -196,10 +194,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         (): void => {
           this.toastService.presentToast('Profile Updated', 1000);
         },
-        (error: string): void => {
-          console.log('profile update error', error);
-          this.toastService.presentErrorToast('Error updating profile');
-        }
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 

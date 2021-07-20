@@ -8,18 +8,18 @@ import { BehaviorSubject, of, throwError } from 'rxjs';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockBatch, mockInventoryItem } from '../../../../test-config/mock-models';
+import { mockBatch, mockErrorReport, mockInventoryItem } from '../../../../test-config/mock-models';
 import { AccordionComponentStub } from '../../../../test-config/component-stubs';
-import { AnimationsServiceStub, EventServiceStub, ImageServiceStub, InventoryServiceStub, ProcessServiceStub, ToastServiceStub } from '../../../../test-config/service-stubs';
+import { AnimationsServiceStub, ErrorReportingServiceStub, EventServiceStub, ImageServiceStub, InventoryServiceStub, ProcessServiceStub, ToastServiceStub } from '../../../../test-config/service-stubs';
 import { FormatStockPipeStub, RoundPipeStub, TruncatePipeStub } from '../../../../test-config/pipe-stubs';
 import { ModalControllerStub, ModalStub } from '../../../../test-config/ionic-stubs';
 
 /* Interface imports */
-import { Batch } from '../../shared/interfaces/batch';
-import { InventoryItem } from '../../shared/interfaces/inventory-item';
+import { Batch, ErrorReport, InventoryItem } from '../../shared/interfaces';
 
 /* Service imports */
 import { AnimationsService } from '../../services/animations/animations.service';
+import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
 import { EventService } from '../../services/event/event.service';
 import { ImageService } from '../../services/image/image.service';
 import { InventoryService } from '../../services/inventory/inventory.service';
@@ -49,6 +49,7 @@ describe('InventoryComponent', (): void => {
       ],
       providers: [
         { provide: AnimationsService, useClass: AnimationsServiceStub },
+        { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: EventService, useClass: EventServiceStub },
         { provide: ImageService, useClass: ImageServiceStub },
         { provide: InventoryService, useClass: InventoryServiceStub },
@@ -78,6 +79,10 @@ describe('InventoryComponent', (): void => {
     inventoryCmp.toastService.presentToast = jest
       .fn();
     inventoryCmp.toastService.presentErrorToast = jest
+      .fn();
+    inventoryCmp.errorReporter.setErrorReport = jest
+      .fn();
+    inventoryCmp.errorReporter.handleUnhandledError = jest
       .fn();
   });
 
@@ -124,7 +129,7 @@ describe('InventoryComponent', (): void => {
     test('should handle after view init', (): void => {
       inventoryCmp.ngAfterViewInit = originalAfterInit;
 
-      inventoryCmp.animationService.hasHintBeenShown = jest
+      inventoryCmp.animationService.shouldShowHint = jest
         .fn()
         .mockReturnValueOnce(false)
         .mockReturnValueOnce(true);
@@ -132,14 +137,14 @@ describe('InventoryComponent', (): void => {
       inventoryCmp.runSlidingHints = jest
         .fn();
 
-      const hintSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.animationService, 'hasHintBeenShown');
+      const hintSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.animationService, 'shouldShowHint');
       const runSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'runSlidingHints');
 
       fixture.detectChanges();
 
-      expect(runSpy).toHaveBeenCalled();
-
       inventoryCmp.ngAfterViewInit();
+
+      expect(runSpy).toHaveBeenCalled();
 
       expect(runSpy).toHaveBeenCalledTimes(1);
       expect(hintSpy).toHaveBeenCalledTimes(2);
@@ -166,8 +171,9 @@ describe('InventoryComponent', (): void => {
 
     test('should expand an item', (): void => {
       const mockElement: HTMLElement = global.document.createElement('div');
+      Object.defineProperty(mockElement, 'offsetTop', { writable: false, value: 100 });
 
-      global.document.getElementById = jest
+      global.document.querySelector = jest
         .fn()
         .mockReturnValue(mockElement);
 
@@ -272,12 +278,18 @@ describe('InventoryComponent', (): void => {
     });
 
     test('should get an error handling creating an item', (done: jest.DoneCallback): void => {
+      const _mockErrorReport: ErrorReport = mockErrorReport();
+
       inventoryCmp.inventoryService.createItem = jest
         .fn()
         .mockReturnValue(throwError('test-error'));
 
+      inventoryCmp.errorReporter.getCustomReportFromError = jest
+        .fn()
+        .mockReturnValue(_mockErrorReport);
+
       const createSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.inventoryService, 'createItem');
-      const toastSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.toastService, 'presentErrorToast');
+      const reportSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.errorReporter, 'setErrorReport');
 
       fixture.detectChanges();
 
@@ -285,7 +297,7 @@ describe('InventoryComponent', (): void => {
 
       setTimeout((): void => {
         expect(createSpy).toHaveBeenCalledWith({ test: true });
-        expect(toastSpy).toHaveBeenCalledWith('Failed to add inventory item');
+        expect(reportSpy).toHaveBeenCalledWith(_mockErrorReport);
         done();
       }, 10);
     });
@@ -345,21 +357,22 @@ describe('InventoryComponent', (): void => {
 
     test('should get an error creating an item based on given batch', (done: jest.DoneCallback): void => {
       const _mockBatch: Batch = mockBatch();
+      const _mockError: Error = new Error('test-error');
 
       inventoryCmp.inventoryService.createItemFromBatch = jest
         .fn()
-        .mockReturnValue(throwError('test-error'));
+        .mockReturnValue(throwError(_mockError));
 
       inventoryCmp.optionalData = _mockBatch;
 
-      const toastSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.toastService, 'presentErrorToast');
+      const errorSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
       inventoryCmp.createItemFromBatch(_mockBatch, {});
 
       setTimeout((): void => {
-        expect(toastSpy).toHaveBeenCalledWith('Failed to create item from batch');
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
     });
@@ -412,19 +425,20 @@ describe('InventoryComponent', (): void => {
 
     test('should get an error decrementing item count', (done: jest.DoneCallback): void => {
       const _mockInventoryItem: InventoryItem = mockInventoryItem();
+      const _mockError: Error = new Error('test-error');
 
       inventoryCmp.inventoryService.updateItem = jest
         .fn()
-        .mockReturnValue(throwError('test-error'));
+        .mockReturnValue(throwError(_mockError));
 
-      const toastSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.toastService, 'presentErrorToast');
+      const errorSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
       inventoryCmp.handleItemCountDecrement(_mockInventoryItem, 1);
 
       setTimeout((): void => {
-        expect(toastSpy).toHaveBeenCalledWith('Failed to decrement item count');
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
     });
@@ -460,11 +474,13 @@ describe('InventoryComponent', (): void => {
     });
 
     test('should get an error loading inventory list', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+
       inventoryCmp.inventoryService.getInventoryList = jest
         .fn()
-        .mockReturnValue(throwError('test-error'));
+        .mockReturnValue(throwError(_mockError));
 
-      const toastSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.toastService, 'presentErrorToast');
+      const errorSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
@@ -472,7 +488,7 @@ describe('InventoryComponent', (): void => {
 
       setTimeout((): void => {
         expect(inventoryCmp.displayList).toBeNull();
-        expect(toastSpy).toHaveBeenCalledWith('Error loading inventory');
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
     });
@@ -498,19 +514,20 @@ describe('InventoryComponent', (): void => {
 
     test('should get an error handling an item update', (done: jest.DoneCallback): void => {
       const _mockInventoryItem: InventoryItem = mockInventoryItem();
+      const _mockError: Error = new Error('test-error');
 
       inventoryCmp.inventoryService.updateItem = jest
         .fn()
-        .mockReturnValue(throwError('test-error'));
+        .mockReturnValue(throwError(_mockError));
 
-      const toastSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.toastService, 'presentErrorToast');
+      const errorSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
       inventoryCmp.updateItem(_mockInventoryItem, {});
 
       setTimeout((): void => {
-        expect(toastSpy).toHaveBeenCalledWith('Failed to update item');
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
     });
@@ -536,19 +553,20 @@ describe('InventoryComponent', (): void => {
 
     test('should get an error handling an item removal', (done: jest.DoneCallback): void => {
       const _mockInventoryItem: InventoryItem = mockInventoryItem();
+      const _mockError: Error = new Error('test-error');
 
       inventoryCmp.inventoryService.removeItem = jest
         .fn()
-        .mockReturnValue(throwError('test-error'));
+        .mockReturnValue(throwError(_mockError));
 
-      const toastSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.toastService, 'presentErrorToast');
+      const errorSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
       inventoryCmp.removeItem(_mockInventoryItem.cid);
 
       setTimeout((): void => {
-        expect(toastSpy).toHaveBeenCalledWith('Failed to remove item');
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
     });
@@ -998,6 +1016,14 @@ describe('InventoryComponent', (): void => {
       expect(elem).toStrictEqual(ionContent);
     });
 
+    test('should get null top level container if slidingItemsListRef is undefined', (): void => {
+      fixture.detectChanges();
+
+      inventoryCmp.slidingItemsListRef = undefined;
+
+      expect(inventoryCmp.getTopLevelContainer()).toBeNull();
+    });
+
     test('should run sliding hints', (done: jest.DoneCallback): void => {
       const _mockElem: HTMLElement = global.document.createElement('div');
 
@@ -1036,18 +1062,16 @@ describe('InventoryComponent', (): void => {
         .fn()
         .mockReturnValue(null);
 
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
-
       fixture.detectChanges();
 
-      inventoryCmp.runSlidingHints();
-
-      expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0])
-        .toMatch('Animation error: cannot find content container');
+      expect((): void => {
+        inventoryCmp.runSlidingHints();
+      }).toThrowError('Animation error: cannot find content container');
     });
 
     test('should get an error running sliding hints with animation error', (done: jest.DoneCallback): void => {
       const _mockElem: HTMLElement = global.document.createElement('div');
+      const _mockError: Error = new Error('test-error');
 
       inventoryCmp.getTopLevelContainer = jest
         .fn()
@@ -1058,12 +1082,12 @@ describe('InventoryComponent', (): void => {
 
       inventoryCmp.animationService.playCombinedSlidingHintAnimations = jest
         .fn()
-        .mockReturnValue(throwError('test-error'));
+        .mockReturnValue(throwError(_mockError));
 
       inventoryCmp.animationService.setHintShownFlag = jest
         .fn();
 
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+      const errorSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.errorReporter, 'handleUnhandledError');
       const toggleSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'toggleSlidingItemClass');
       const setSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.animationService, 'setHintShownFlag');
 
@@ -1074,11 +1098,9 @@ describe('InventoryComponent', (): void => {
       inventoryCmp.runSlidingHints();
 
       setTimeout((): void => {
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
         expect(toggleSpy).toHaveBeenCalledTimes(2);
         expect(setSpy).not.toHaveBeenCalled();
-        const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
-        expect(consoleCalls[0]).toMatch('Animation error');
-        expect(consoleCalls[1]).toMatch('test-error');
         done();
       }, 10);
     });

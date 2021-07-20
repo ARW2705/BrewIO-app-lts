@@ -8,7 +8,7 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 import { mockProgressCircle } from '../../../../test-config/mock-models';
 
 /* Interface imports */
-import { ProgressCircleSettings } from '../../shared/interfaces/progress-circle';
+import { ProgressCircleSettings } from '../../shared/interfaces';
 
 /* Component imports */
 import { ProgressCircleComponent } from './progress-circle.component';

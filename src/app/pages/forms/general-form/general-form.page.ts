@@ -10,12 +10,10 @@ import { roundToDecimalPlace } from '../../../shared/utility-functions/utilities
 import { compareWith } from '../../../shared/utility-functions/utilities';
 
 /* Default imports */
-import { defaultImage } from '../../../shared/defaults/default-image';
+import { defaultImage } from '../../../shared/defaults';
 
 /* Interface imports */
-import { Image } from '../../../shared/interfaces/image';
-import { SelectedUnits } from '../../../shared/interfaces/units';
-import { Style } from '../../../shared/interfaces/library';
+import { Image, SelectedUnits, Style } from '../../../shared/interfaces';
 
 /* Page imports */
 import { ImageFormPage } from '../image-form/image-form.page';

@@ -10,18 +10,18 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
 import { mockGrains, mockHops, mockYeast, mockStyles, mockErrorResponse } from '../../../../test-config/mock-models';
-import { HttpErrorServiceStub, StorageServiceStub } from '../../../../test-config/service-stubs';
+import { ErrorReportingServiceStub, TypeGuardServiceStub, StorageServiceStub } from '../../../../test-config/service-stubs';
 
 /* Constants imports */
-import { API_VERSION } from '../../shared/constants/api-version';
-import { BASE_URL } from '../../shared/constants/base-url';
+import { API_VERSION, BASE_URL } from '../../shared/constants';
 
 /* Interface imports */
-import { Grains, Hops, Style, Yeast } from '../../shared/interfaces/library';
+import { Grains, Hops, Style, Yeast } from '../../shared/interfaces';
 
 /* Service imports */
+import { ErrorReportingService } from '../error-reporting/error-reporting.service';
 import { LibraryService } from './library.service';
-import { HttpErrorService } from '../http-error/http-error.service';
+import { TypeGuardService } from '../type-guard/type-guard.service';
 import { StorageService } from '../storage/storage.service';
 
 
@@ -36,8 +36,9 @@ describe('LibraryService', (): void => {
       imports: [ HttpClientTestingModule ],
       providers: [
         LibraryService,
-        { provide: HttpErrorService, useClass: HttpErrorServiceStub },
-        { provide: StorageService, useClass: StorageServiceStub }
+        { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
+        { provide: StorageService, useClass: StorageServiceStub },
+        { provide: TypeGuardService, useClass: TypeGuardServiceStub }
       ]
     });
   }));
@@ -95,9 +96,11 @@ describe('LibraryService', (): void => {
     });
 
     test('should get an error fetching all libraries from server', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+
       libraryService.fetchGrainsLibrary = jest
         .fn()
-        .mockReturnValue(throwError('service unavailable'));
+        .mockReturnValue(throwError(_mockError));
 
       libraryService.fetchHopsLibrary = jest
         .fn()
@@ -111,12 +114,15 @@ describe('LibraryService', (): void => {
         .fn()
         .mockReturnValue(of());
 
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+      libraryService.errorReporter.handleUnhandledError = jest
+        .fn();
+
+      const errorSpy: jest.SpyInstance = jest.spyOn(libraryService.errorReporter, 'handleUnhandledError');
 
       libraryService.fetchAllLibrariesFromServer();
 
       setTimeout((): void => {
-        expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('Library fetch error: service unavailable');
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
     });
@@ -148,6 +154,9 @@ describe('LibraryService', (): void => {
         .mockImplementation(() => 0);
 
       libraryService.updateStorage = jest
+        .fn();
+
+      libraryService.errorReporter.handleGenericCatchError = jest
         .fn();
 
       forkJoin(
@@ -192,11 +201,18 @@ describe('LibraryService', (): void => {
     });
 
     test('should get an error fetching a library', (done: jest.DoneCallback): void => {
-      const _mockErrorResponse: HttpErrorResponse = mockErrorResponse(404, 'not found');
+      const _mockErrorResponse: HttpErrorResponse = mockErrorResponse(404, 'not found', `${BASE_URL}/${API_VERSION}/library/grains`);
 
-      libraryService.httpError.handleError = jest
+      libraryService.errorReporter.handleGenericCatchError = jest
         .fn()
-        .mockReturnValue(throwError('<404> not found'));
+        .mockImplementation((): (error: HttpErrorResponse) => Observable<never> => {
+          return (error: HttpErrorResponse): Observable<never> => {
+            expect(error).toStrictEqual(_mockErrorResponse);
+            return throwError(null);
+          };
+        });
+
+      const errorSpy: jest.SpyInstance = jest.spyOn(libraryService.errorReporter, 'handleGenericCatchError');
 
       libraryService.fetchLibrary<Grains>('grains')
         .subscribe(
@@ -204,8 +220,10 @@ describe('LibraryService', (): void => {
             console.log('Should not get results', results);
             expect(true).toBe(false);
           },
-          (error: string): void => {
-            expect(error).toMatch('<404> not found');
+          (error: any): void => {
+            expect(error).toBeNull();
+            expect(errorSpy).toHaveBeenCalled();
+            // expect(error).toMatch('<404> not found');
             done();
           }
         );
@@ -222,8 +240,8 @@ describe('LibraryService', (): void => {
             console.log('Should not get results', results);
             expect(true).toBe(false);
           },
-          (error: string): void => {
-            expect(error).toMatch('Invalid library name: invalid');
+          (error: Error): void => {
+            expect(error.message).toMatch('Invalid library name: invalid');
             done();
           }
         );
@@ -634,16 +652,21 @@ describe('LibraryService', (): void => {
     });
 
     test('should get an error getting libraries from storage', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+
       libraryService.storageService.getLibrary = jest
         .fn()
-        .mockReturnValue(throwError('Libraries not found'));
+        .mockReturnValue(throwError(_mockError));
 
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+      libraryService.errorReporter.handleUnhandledError = jest
+        .fn();
+
+      const errorSpy: jest.SpyInstance = jest.spyOn(libraryService.errorReporter, 'handleUnhandledError');
 
       libraryService.getAllLibrariesFromStorage();
 
       setTimeout((): void => {
-        expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('Libraries not found: awaiting data from server');
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
     });
@@ -668,7 +691,7 @@ describe('LibraryService', (): void => {
 
       libraryService.storageService.setLibrary = jest
         .fn()
-        .mockReturnValue(of());
+        .mockReturnValue(of(null));
 
       const storeSpy: jest.SpyInstance = jest.spyOn(libraryService.storageService, 'setLibrary');
 
@@ -686,18 +709,120 @@ describe('LibraryService', (): void => {
     });
 
     test('should get an error storing libraries', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+
       libraryService.storageService.setLibrary = jest
         .fn()
-        .mockReturnValue(throwError('test-error'));
+        .mockReturnValue(throwError(_mockError));
 
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+      // const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+
+      libraryService.errorReporter.handleUnhandledError = jest
+        .fn();
+
+      const errorSpy: jest.SpyInstance = jest.spyOn(libraryService.errorReporter, 'handleUnhandledError');
 
       libraryService.updateStorage();
 
       setTimeout((): void => {
-        expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('Library store error: test-error');
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
+        // expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('Library store error: test-error');
         done();
       }, 10);
+    });
+
+  });
+
+
+  describe('Type Guard', (): void => {
+
+    test('should check if grains types are safe', (): void => {
+      libraryService.typeGuard.hasValidProperties = jest
+        .fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+
+      const _mockGrains: Grains = mockGrains()[0];
+
+      expect(libraryService.isSafeGrains(_mockGrains)).toBe(true);
+      expect(libraryService.isSafeGrains(_mockGrains)).toBe(false);
+    });
+
+    test('should check if hops types are safe', (): void => {
+      let typeGuardFlag: boolean = true;
+      let skipOne: boolean = false;
+      let styleFlag: boolean = true;
+
+      libraryService.typeGuard.hasValidProperties = jest
+        .fn()
+        .mockImplementation((): boolean => {
+          if (skipOne) {
+            skipOne = false;
+            return !typeGuardFlag;
+          }
+          return typeGuardFlag;
+        });
+
+      libraryService.isSafeStyle = jest
+        .fn()
+        .mockImplementation((): boolean => styleFlag);
+
+      const _mockHops: Hops = mockHops()[0];
+      const _mockStyle: Style = mockStyles()[0];
+      _mockHops.alternatives = [ _mockHops ];
+      _mockHops.usedFor = [ _mockStyle ];
+
+      // should pass
+      expect(libraryService.isSafeHops(_mockHops)).toBe(true);
+
+      // should fail primary hops
+      typeGuardFlag = false;
+      expect(libraryService.isSafeHops(_mockHops)).toBe(false);
+
+      // should fail alternatives
+      skipOne = true;
+      typeGuardFlag = false;
+      styleFlag = true;
+      expect(libraryService.isSafeHops(_mockHops)).toBe(false);
+
+      // should fail style
+      skipOne = false;
+      typeGuardFlag = true;
+      styleFlag = false;
+      expect(libraryService.isSafeHops(_mockHops)).toBe(false);
+    });
+
+    test('should check if yeast types are safe', (): void => {
+      const _mockYeast: Yeast = mockYeast()[0];
+      const _mockStyle: Style = mockStyles()[0];
+      _mockYeast.recommendedStyles = [ _mockStyle ];
+
+      libraryService.typeGuard.hasValidProperties = jest
+        .fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+
+      libraryService.isSafeStyle = jest
+        .fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+
+      expect(libraryService.isSafeYeast(_mockYeast)).toBe(true);
+      expect(libraryService.isSafeYeast(_mockYeast)).toBe(false);
+      expect(libraryService.isSafeYeast(_mockYeast)).toBe(false);
+    });
+
+    test('should check if style types are safe', (): void => {
+      libraryService.typeGuard.hasValidProperties = jest
+        .fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+
+      const _mockStyle: Style = mockStyles()[0];
+
+      expect(libraryService.isSafeStyle(_mockStyle)).toBe(true);
+      expect(libraryService.isSafeStyle(_mockStyle)).toBe(false);
     });
 
   });

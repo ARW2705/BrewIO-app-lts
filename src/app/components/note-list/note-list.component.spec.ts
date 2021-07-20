@@ -9,17 +9,17 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
 import { mockRecipeMasterInactive, mockRecipeVariantIncomplete } from '../../../../test-config/mock-models';
-import { RecipeServiceStub, ToastServiceStub } from '../../../../test-config/service-stubs';
+import { ErrorReportingServiceStub, RecipeServiceStub, ToastServiceStub } from '../../../../test-config/service-stubs';
 import { ModalControllerStub, ModalStub } from '../../../../test-config/ionic-stubs';
 
 /* Interface imports */
-import { RecipeMaster } from '../../shared/interfaces/recipe-master';
-import { RecipeVariant } from '../../shared/interfaces/recipe-variant';
+import { RecipeMaster, RecipeVariant } from '../../shared/interfaces';
 
 /* Page imports */
 import { NoteFormPage } from '../../pages/forms/note-form/note-form.page';
 
 /* Service imports */
+import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
 import { RecipeService } from '../../services/recipe/recipe.service';
 import { ToastService } from '../../services/toast/toast.service';
 
@@ -38,6 +38,7 @@ describe('NoteListComponent', (): void => {
     TestBed.configureTestingModule({
       declarations: [ NoteListComponent ],
       providers: [
+        { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: ModalController, useClass: ModalControllerStub },
         { provide: RecipeService, useClass: RecipeServiceStub },
         { provide: ToastService, useClass: ToastServiceStub }
@@ -264,21 +265,26 @@ describe('NoteListComponent', (): void => {
   });
 
   test('should get an error submitting notes', (done: jest.DoneCallback): void => {
+    const _mockError: Error = new Error('test-error');
+
     noteCmp.toastService.presentToast = jest
       .fn();
 
     noteCmp.patchRecipeNotes = jest
       .fn()
-      .mockReturnValue(throwError('test-error'));
+      .mockReturnValue(throwError(_mockError));
 
-    const toastSpy: jest.SpyInstance = jest.spyOn(noteCmp.toastService, 'presentErrorToast');
+    noteCmp.errorReporter.handleUnhandledError = jest
+      .fn();
+
+    const errorSpy: jest.SpyInstance = jest.spyOn(noteCmp.errorReporter, 'handleUnhandledError');
 
     fixture.detectChanges();
 
     noteCmp.submitUpdatedNotes();
 
     setTimeout((): void => {
-      expect(toastSpy).toHaveBeenCalledWith('Error updating notes');
+      expect(errorSpy).toHaveBeenCalledWith(_mockError);
       done();
     }, 10);
   });

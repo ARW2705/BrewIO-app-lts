@@ -7,25 +7,46 @@ import { BehaviorSubject, concat, of } from 'rxjs';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockBatch, mockProcessSchedule, mockTimer, mockConcurrentTimers, mockBatchTimer } from '../../../../test-config/mock-models';
+import {
+  mockBatch,
+  mockProcessSchedule,
+  mockTimer,
+  mockConcurrentTimers,
+  mockBatchTimer
+} from '../../../../test-config/mock-models';
 import { PlatformStub } from '../../../../test-config/ionic-stubs';
-import { BackgroundModeServiceStub, ClientIdServiceStub, LocalNotificationServiceStub } from '../../../../test-config/service-stubs';
+import {
+  BackgroundModeServiceStub,
+  ClientIdServiceStub,
+  ErrorReportingServiceStub,
+  LocalNotificationServiceStub,
+  ProcessServiceStub
+} from '../../../../test-config/service-stubs';
 
 /* Interface imports */
-import { Batch } from '../../shared/interfaces/batch';
-import { Process } from '../../shared/interfaces/process';
-import { Timer, BatchTimer } from '../../shared/interfaces/timer';
+import {
+  Batch,
+  BatchTimer,
+  Process,
+  Timer,
+  TimerProcess
+} from '../../shared/interfaces';
+
+/* Type imports */
+import { CustomError } from '../../shared/types';
 
 /* Service imports */
 import { TimerService } from './timer.service';
 import { BackgroundModeService } from '../background-mode/background-mode.service';
 import { ClientIdService } from '../client-id/client-id.service';
+import { ErrorReportingService } from '../error-reporting/error-reporting.service';
 import { LocalNotificationService } from '../local-notification/local-notification.service';
-
+import { ProcessService } from '../process/process.service';
 
 describe('TimerService', (): void => {
   let injector: TestBed;
   let timerService: TimerService;
+  let originalMissingError: any;
   configureTestBed();
 
   beforeAll(async((): void => {
@@ -35,7 +56,9 @@ describe('TimerService', (): void => {
         { provide: Platform, useClass: PlatformStub },
         { provide: BackgroundModeService, useClass: BackgroundModeServiceStub },
         { provide: ClientIdService, useClass: ClientIdServiceStub },
-        { provide: LocalNotificationService, useClass: LocalNotificationServiceStub }
+        { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
+        { provide: LocalNotificationService, useClass: LocalNotificationServiceStub },
+        { provide: ProcessService, useClass: ProcessServiceStub },
       ]
     });
     global.setInterval = jest
@@ -45,6 +68,13 @@ describe('TimerService', (): void => {
   beforeEach((): void => {
     injector = getTestBed();
     timerService = injector.get(TimerService);
+    originalMissingError = timerService.getMissingError;
+    timerService.getMissingError = jest
+      .fn()
+      .mockImplementation((base: string, additional: string): CustomError => {
+        const message: string = `${base} ${additional}`;
+        return new CustomError('TimerError', message, 2, message);
+      });
   });
 
   test('should create the service', (): void => {
@@ -119,8 +149,8 @@ describe('TimerService', (): void => {
           console.log('Should not get results', results);
           expect(true).toBe(false);
         },
-        (error: string): void => {
-          expect(error).toMatch('Error adding time: timer not found');
+        (error: Error): void => {
+          expect(error.message).toMatch('An error occurred trying to add time to timer: missing timer Timer with id timer-id not found');
           done();
         }
       );
@@ -205,7 +235,7 @@ describe('TimerService', (): void => {
   });
 
   test('get process circle settings', (): void => {
-    const _mockProcess: Process = mockProcessSchedule()[10];
+    const _mockProcess: TimerProcess = <TimerProcess>mockProcessSchedule()[10];
 
     timerService.timerHeight = 360;
     timerService.timerWidth = 360;
@@ -334,9 +364,31 @@ describe('TimerService', (): void => {
     const concurrentIndex: number = 2;
     const endConcurrentIndex: number = 3;
 
+    timerService.isConcurrentTimer = jest
+      .fn()
+      .mockReturnValueOnce(true)
+      .mockReturnValueOnce(true)
+      .mockReturnValueOnce(false);
+
     expect(timerService.isConcurrent(_mockBatch, invalidIndex)).toBe(false);
     expect(timerService.isConcurrent(_mockBatch, concurrentIndex)).toBe(true);
     expect(timerService.isConcurrent(_mockBatch, endConcurrentIndex)).toBe(false);
+  });
+
+  test('should check if a process is a concurrent timer', (): void => {
+    const _mockTimerProcess: TimerProcess = <TimerProcess>mockProcessSchedule()[2];
+    _mockTimerProcess.concurrent = true;
+
+    timerService.processService.isTimerProcess = jest
+      .fn()
+      .mockReturnValueOnce(true)
+      .mockReturnValueOnce(false)
+      .mockReturnValueOnce(true);
+
+    expect(timerService.isConcurrentTimer(_mockTimerProcess)).toBe(true);
+    expect(timerService.isConcurrentTimer(_mockTimerProcess)).toBe(false);
+    _mockTimerProcess.concurrent = false;
+    expect(timerService.isConcurrentTimer(_mockTimerProcess)).toBe(false);
   });
 
   test('should remove a batch timer', (): void => {
@@ -403,8 +455,8 @@ describe('TimerService', (): void => {
           console.log('Should not get results', results);
           expect(true).toBe(false);
         },
-        (error: string): void => {
-          expect(error).toMatch('Timer not found');
+        (error: Error): void => {
+          expect(error.message).toMatch('An error occurred trying to reset timer: missing timer Timer with id timer-id not found');
           done();
         }
       );
@@ -415,7 +467,6 @@ describe('TimerService', (): void => {
     _mockTimer.isRunning = true;
     _mockTimer.timer.duration = 60;
     _mockTimer.timeRemaining = 1801;
-    // _mockTimer.timer.splitInterval = 2;
 
     timerService.getFontSize = jest
       .fn()
@@ -537,8 +588,8 @@ describe('TimerService', (): void => {
           console.log('Should not get results', results);
           expect(true).toBe(false);
         },
-        (error: string): void => {
-          expect(error).toMatch('Timer switch error: timer not found');
+        (error: Error): void => {
+          expect(error.message).toMatch('An error occurred trying to start timer Timer with id timer-id not found');
           done();
         }
       );
@@ -559,7 +610,6 @@ describe('TimerService', (): void => {
       _timer.timeRemaining = index % 2 === 0 ? 100 : 0;
       concurrentTimer$.next(_timer);
     });
-    console.log(concurrentTimers[0].value.timeRemaining, concurrentTimers[1].value.timeRemaining);
 
     timerService.batchTimers = [ _mockBatchTimer, _mockBatchTimerConcurrent ];
 
@@ -615,6 +665,18 @@ describe('TimerService', (): void => {
     timerService.updatedBackgroundNotifications([]);
 
     expect(disableSpy).toHaveBeenCalled();
+  });
+
+  test('should get a custom error for missing timer', (): void => {
+    timerService.getMissingError = originalMissingError;
+    const baseMessage: string = 'test base message';
+    const additionalMessage: string = 'test additional message';
+    const customError: CustomError = <CustomError>timerService.getMissingError(baseMessage, additionalMessage);
+
+    expect(customError.name).toMatch('TimerError');
+    expect(customError.message).toMatch(`${baseMessage} ${additionalMessage}`);
+    expect(customError.severity).toEqual(2);
+    expect(customError.userMessage).toMatch(baseMessage);
   });
 
 });

@@ -3,7 +3,7 @@ import { TestBed, getTestBed, async } from '@angular/core/testing';
 import { File, FileEntry, Entry, IFile, FileError, Metadata } from '@ionic-native/file/ngx';
 import { FilePath } from '@ionic-native/file-path/ngx';
 import { WebView } from '@ionic-native/ionic-webview/ngx';
-import { of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
@@ -11,9 +11,11 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 /* Mock imports */
 import { mockArrayBuffer, mockIFile, mockFileError, mockFileReader, mockFileMetadata, mockEntry, mockFileEntry } from '../../../../test-config/mock-models';
 import { FileStub, FilePathStub, WebViewStub } from '../../../../test-config/ionic-stubs';
+import { ErrorReportingServiceStub } from '../../../../test-config/service-stubs';
 
 /* Service imports */
 import { FileService } from './file.service';
+import { ErrorReportingService } from '../error-reporting/error-reporting.service';
 
 
 describe('FileService', (): void => {
@@ -25,6 +27,7 @@ describe('FileService', (): void => {
     TestBed.configureTestingModule({
       providers: [
         FileService,
+        { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: File, useClass: FileStub },
         { provide: FilePath, useClass: FilePathStub },
         { provide: WebView, useClass: WebViewStub }
@@ -36,6 +39,12 @@ describe('FileService', (): void => {
     jest.clearAllMocks();
     injector = getTestBed();
     fileService = injector.get(FileService);
+
+    fileService.errorReporter.handleGenericCatchError = jest
+      .fn()
+      .mockImplementation((): (error: any) => Observable<never> => {
+        return (error: any) => throwError(error);
+      });
   });
 
   test('should create the service', (): void => {
@@ -187,24 +196,6 @@ describe('FileService', (): void => {
       .subscribe(
         (result: any): void => {
           expect(result).toMatch('test-error');
-          done();
-        },
-        (error: any): void => {
-          console.log(`Error in: 'should delete a local file'`, error);
-          expect(true).toBe(false);
-        }
-      );
-  });
-
-  test('should catch an error while trying to resolve url for deletion', (done: jest.DoneCallback): void => {
-    fileService.file.resolveLocalFilesystemUrl = jest
-      .fn()
-      .mockReturnValue(Promise.reject('file read error'));
-
-    fileService.deleteLocalFile('path')
-      .subscribe(
-        (result: any): void => {
-          expect(result).toMatch('file read error');
           done();
         },
         (error: any): void => {

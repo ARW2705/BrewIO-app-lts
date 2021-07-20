@@ -9,7 +9,7 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 import { mockOtherIngredients } from '../../../../test-config/mock-models';
 
 /* Interface imports */
-import { OtherIngredients } from '../../shared/interfaces/other-ingredients';
+import { OtherIngredients } from '../../shared/interfaces';
 
 /* Component imports */
 import { OtherIngredientsComponent } from './other-ingredients.component';

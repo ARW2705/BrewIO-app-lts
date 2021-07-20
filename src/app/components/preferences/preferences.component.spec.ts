@@ -4,23 +4,26 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { FormControl, FormGroup } from '@angular/forms';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { BehaviorSubject, of, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
 import { mockEnglishUnits, mockMetricUnits, mockUser } from '../../../../test-config/mock-models';
-import { PreferencesServiceStub, ToastServiceStub, UserServiceStub } from '../../../../test-config/service-stubs';
+import { ErrorReportingServiceStub, PreferencesServiceStub, ToastServiceStub, UserServiceStub } from '../../../../test-config/service-stubs';
 
 /* Default imports */
-import { defaultEnglish } from '../../shared/defaults/default-units';
+import { defaultEnglishUnits } from '../../shared/defaults';
 
 /* Interface imports */
-import { User } from '../../shared/interfaces/user';
-import { SelectedUnits } from '../../shared/interfaces/units';
+import { SelectedUnits, User } from '../../shared/interfaces';
+
+/* Type impots */
+import { CustomError } from '../../shared/types';
 
 /* Service imports */
+import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
 import { PreferencesService } from '../../services/preferences/preferences.service';
 import { ToastService } from '../../services/toast/toast.service';
 import { UserService } from '../../services/user/user.service';
@@ -45,6 +48,7 @@ describe('PreferencesComponent', (): void => {
         ReactiveFormsModule
       ],
       providers: [
+        { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: PreferencesService, useClass: PreferencesServiceStub },
         { provide: ToastService, useClass: ToastServiceStub },
         { provide: UserService, useClass: UserServiceStub }
@@ -64,6 +68,10 @@ describe('PreferencesComponent', (): void => {
     prefCmp.ngOnInit = jest
       .fn();
     prefCmp.ngOnDestroy = jest
+      .fn();
+    prefCmp.errorReporter.handleUnhandledError = jest
+      .fn();
+    prefCmp.errorReporter.handleGenericCatchError = jest
       .fn();
   });
 
@@ -135,29 +143,45 @@ describe('PreferencesComponent', (): void => {
       .fn()
       .mockReturnValue(null);
 
-    const toastSpy: jest.SpyInstance = jest.spyOn(prefCmp.toastService, 'presentErrorToast');
+    prefCmp.errorReporter.handleGenericCatchError = jest
+      .fn()
+      .mockImplementation(() => (error: CustomError) => {
+        expect(error instanceof CustomError).toBe(true);
+        expect(error.userMessage).toMatch('An internal error occurred: invalid units');
+        return throwError(null);
+      });
+
+    const handleSpy: jest.SpyInstance = jest.spyOn(prefCmp.errorReporter, 'handleGenericCatchError');
+    const errorSpy: jest.SpyInstance = jest.spyOn(prefCmp.errorReporter, 'handleUnhandledError');
 
     fixture.detectChanges();
 
     setTimeout((): void => {
-      expect(toastSpy).toHaveBeenCalledWith('Error loading preferences');
+      expect(handleSpy).toHaveBeenCalled();
+      expect(errorSpy).toHaveBeenCalledWith(null);
       done();
     }, 10);
   });
 
   test('should get an error on component init from user', (done: jest.DoneCallback): void => {
+    const _mockError: Error = new Error('test-error');
+
     prefCmp.ngOnInit = originalOnInit;
 
     prefCmp.userService.getUser = jest
       .fn()
-      .mockReturnValue(throwError('test-error'));
+      .mockReturnValue(throwError(_mockError));
 
-    const toastSpy: jest.SpyInstance = jest.spyOn(prefCmp.toastService, 'presentErrorToast');
+    prefCmp.errorReporter.handleGenericCatchError = jest
+      .fn()
+      .mockImplementation((): (error: Error) => Observable<never> => (error: Error) => throwError(error));
+
+    const errorSpy: jest.SpyInstance = jest.spyOn(prefCmp.errorReporter, 'handleUnhandledError');
 
     fixture.detectChanges();
 
     setTimeout((): void => {
-      expect(toastSpy).toHaveBeenCalledWith('test-error');
+      expect(errorSpy).toHaveBeenCalledWith(_mockError);
       done();
     }, 10);
   });
@@ -363,7 +387,7 @@ describe('PreferencesComponent', (): void => {
   });
 
   test('should handle form toggle event', (): void => {
-    const _defaultEnglish: SelectedUnits = defaultEnglish();
+    const _defaultEnglishUnits: SelectedUnits = defaultEnglishUnits();
     const _mockMetricUnits: SelectedUnits = mockMetricUnits();
 
     prefCmp.setSystem = jest
@@ -372,11 +396,11 @@ describe('PreferencesComponent', (): void => {
     fixture.detectChanges();
 
     expect(prefCmp.displayUnits).toStrictEqual({
-      weightSmall: _defaultEnglish.weightSmall.longName,
-      weightLarge: _defaultEnglish.weightLarge.longName,
-      volumeSmall: _defaultEnglish.volumeSmall.longName,
-      volumeLarge: _defaultEnglish.volumeLarge.longName,
-      temperature: _defaultEnglish.temperature.longName
+      weightSmall: _defaultEnglishUnits.weightSmall.longName,
+      weightLarge: _defaultEnglishUnits.weightLarge.longName,
+      volumeSmall: _defaultEnglishUnits.volumeSmall.longName,
+      volumeLarge: _defaultEnglishUnits.volumeLarge.longName,
+      temperature: _defaultEnglishUnits.temperature.longName
     });
 
     prefCmp.onToggle('weightLarge', new CustomEvent('event', { detail: { checked: false } }));
@@ -386,7 +410,7 @@ describe('PreferencesComponent', (): void => {
     expect(prefCmp.displayUnits['temperature']).toMatch(_mockMetricUnits.temperature.longName);
 
     prefCmp.onToggle('temperature', new CustomEvent('event', { detail: { checked: true } }));
-    expect(prefCmp.displayUnits['temperature']).toMatch(_defaultEnglish.temperature.longName);
+    expect(prefCmp.displayUnits['temperature']).toMatch(_defaultEnglishUnits.temperature.longName);
   });
 
   test('should set the unit system', (): void => {
@@ -445,19 +469,20 @@ describe('PreferencesComponent', (): void => {
 
   test('should update user profile', (done: jest.DoneCallback): void => {
     const _mockMetricUnits: SelectedUnits = mockMetricUnits();
+    const _mockError: Error = new Error('test-error');
 
     prefCmp.userService.updateUserProfile = jest
       .fn()
-      .mockReturnValue(throwError('test-error'));
+      .mockReturnValue(throwError(_mockError));
 
-    const toastSpy: jest.SpyInstance = jest.spyOn(prefCmp.toastService, 'presentErrorToast');
+    const errorSpy: jest.SpyInstance = jest.spyOn(prefCmp.errorReporter, 'handleUnhandledError');
 
     fixture.detectChanges();
 
     prefCmp.updateUserProfile('metric', _mockMetricUnits);
 
     setTimeout((): void => {
-      expect(toastSpy).toHaveBeenCalledWith('test-error', 5000);
+      expect(errorSpy).toHaveBeenCalledWith(_mockError);
       done();
     }, 10);
   });

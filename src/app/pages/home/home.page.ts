@@ -5,9 +5,10 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 /* Interface imports */
-import { User } from '../../shared/interfaces/user';
+import { User } from '../../shared/interfaces';
 
 /* Provider imports */
+import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
 import { EventService } from '../../services/event/event.service';
 import { ToastService } from '../../services/toast/toast.service';
 import { UserService } from '../../services/user/user.service';
@@ -31,10 +32,19 @@ export class HomePage implements OnInit, OnDestroy {
   welcomeMessage: string = '';
 
   constructor(
+    public errorReporter: ErrorReportingService,
     public event: EventService,
     public toastService: ToastService,
     public userService: UserService
   ) { }
+
+  testError() {
+    const myErr = new Error();
+    myErr.name = 'MyError';
+    myErr.message = 'test message';
+    myErr['severity'] = 2;
+    throw myErr;
+  }
 
   /***** Lifecycle Hooks *****/
 
@@ -69,7 +79,7 @@ export class HomePage implements OnInit, OnDestroy {
           this.isLoggedIn = this.userService.isLoggedIn();
           this.setWelcomeMessage();
         },
-        (error: string): void => this.toastService.presentErrorToast(error)
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 

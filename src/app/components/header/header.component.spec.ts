@@ -15,7 +15,7 @@ import { ModalControllerStub, ModalStub } from '../../../../test-config/ionic-st
 import { ActionSheetServiceStub, UserServiceStub } from '../../../../test-config/service-stubs';
 
 /* Interface imports */
-import { User } from '../../shared/interfaces/user';
+import { User } from '../../shared/interfaces';
 
 /* Service Imports */
 import { ActionSheetService } from '../../services/action-sheet/action-sheet.service';

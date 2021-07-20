@@ -7,7 +7,6 @@ import { of } from 'rxjs';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-// import {  } from '../../../../test-config/mock-models';
 import { AnimationControllerStub, AnimationStub, Renderer2Stub } from '../../../../test-config/ionic-stubs';
 
 /* Service imports */
@@ -357,9 +356,9 @@ describe('AnimationsService', () => {
 
       animationService.hintFlags.sliding.recipeDetail = true;
 
-      expect(animationService.hasHintBeenShown('sliding', 'recipeDetail')).toBe(true);
-      expect(animationService.hasHintBeenShown('sliding', 'recipe')).toBe(false);
-      expect(animationService.hasHintBeenShown('other', 'recipe')).toBe(false);
+      expect(animationService.shouldShowHint('sliding', 'recipeDetail')).toBe(false);
+      expect(animationService.shouldShowHint('sliding', 'recipe')).toBe(true);
+      expect(animationService.shouldShowHint('other', 'recipe')).toBe(true);
 
       const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
       expect(consoleCalls[0]).toMatch('Error getting hint show flag');
@@ -514,6 +513,22 @@ describe('AnimationsService', () => {
       expect(consoleCalls[1] instanceof Error).toBe(true);
     });
 
+    test('should get estimated item option width', (): void => {
+      const _mockIonItemOptions1: HTMLElement = global.document.createElement('div');
+      Object.defineProperty(_mockIonItemOptions1, 'textContent', { writable: false, value: 'test' });
+      const _mockIonItemOptions2: HTMLElement = global.document.createElement('div');
+      Object.defineProperty(_mockIonItemOptions2, 'textContent', { writable: false, value: 'longer' });
+      const _mockIonItemOptions3: HTMLElement = global.document.createElement('div');
+      Object.defineProperty(_mockIonItemOptions3, 'textContent', { writable: false, value: 'longest' });
+
+      const _mockContainer: HTMLElement = global.document.createElement('div');
+      _mockContainer.querySelectorAll = jest
+        .fn()
+        .mockReturnValue([ _mockIonItemOptions1, _mockIonItemOptions2, _mockIonItemOptions3 ]);
+
+      expect(animationService.getEstimatedItemOptionWidth(_mockContainer, 1, 2)).toEqual(157);
+    });
+
     test('should get list of items to be animated', (): void => {
       const _mockContainer: HTMLElement = global.document.createElement('div');
       const _mockElems: HTMLElement[] = new Array(4).fill(global.document.createElement('div'));
@@ -615,13 +630,33 @@ describe('AnimationsService', () => {
         .subscribe(
           (): void => {
             expect(getElemSpy).toHaveBeenCalledWith(_mockElem, _mockElem);
-            expect(getAnimSpy).toHaveBeenCalledWith([_mockElem], 20, 0);
+            expect(getAnimSpy).toHaveBeenCalledWith([_mockElem], 25, 0);
             expect(queueSpy).toHaveBeenCalledWith([_stubAnimation]);
             done();
           },
           (error: any): void => {
             console.log('Error in: \'should queue sliding hint animations\'', error);
             expect(true).toBe(false);
+          }
+        );
+    });
+
+    test('should get an error trying to play combined sliding hint animations', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+
+      animationService.getSlidingElements = jest
+        .fn()
+        .mockImplementation((): any => { throw _mockError; });
+
+      animationService.playCombinedSlidingHintAnimations(null, null)
+        .subscribe(
+          (results: any): void => {
+            console.log('Should not get results', results);
+            expect(true).toBe(false);
+          },
+          (error: Error): void => {
+            expect(error).toStrictEqual(_mockError);
+            done();
           }
         );
     });

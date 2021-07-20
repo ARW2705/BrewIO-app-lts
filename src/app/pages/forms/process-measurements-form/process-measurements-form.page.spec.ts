@@ -14,8 +14,7 @@ import { ModalControllerStub, LoadingControllerStub, LoadingStub } from '../../.
 import { CalculationsServiceStub, PreferencesServiceStub } from '../../../../../test-config/service-stubs';
 
 /* Interface imports */
-import { Batch } from '../../../shared/interfaces/batch';
-import { SelectedUnits } from '../../../shared/interfaces/units';
+import { Batch, SelectedUnits } from '../../../shared/interfaces';
 
 /* Service imports */
 import { CalculationsService } from '../../../services/calculations/calculations.service';

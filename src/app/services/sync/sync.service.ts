@@ -1,18 +1,27 @@
 /* Module imports */
 import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, forkJoin } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 /* Interface imports */
-import { SyncError, SyncData, SyncMetadata, SyncResponse } from '../../shared/interfaces/sync';
+import {
+  SyncError,
+  SyncData,
+  SyncMetadata,
+  SyncResponse
+} from '../../shared/interfaces';
+
+/* Type imports */
+import { CustomError } from '../../shared/types';
 
 /* Utility imports */
 import { hasDefaultIdType } from '../../shared/utility-functions/id-helpers';
 
 /* Service imports */
+import { ErrorReportingService } from '../error-reporting/error-reporting.service';
 import { StorageService } from '../storage/storage.service';
-
+import { TypeGuardService } from '../type-guard/type-guard.service';
 
 @Injectable({
   providedIn: 'root'
@@ -22,7 +31,11 @@ export class SyncService {
   syncFlags: SyncMetadata[] = [];
   syncKey: string = 'sync';
 
-  constructor(public storageService: StorageService) {
+  constructor(
+    public errorReporter: ErrorReportingService,
+    public storageService: StorageService,
+    public typeGuard: TypeGuardService
+  ) {
     this.init();
   }
 
@@ -73,7 +86,8 @@ export class SyncService {
         this.syncFlags[currentFlagIndex].method = 'delete';
       }
     } else {
-      throw new Error(`Unknown sync flag method: ${metadata.method}`);
+      const message: string = `Unknown sync flag method: ${metadata.method}`;
+      throw new CustomError('SyncError', message, 3, message);
     }
     this.updateStorage();
   }
@@ -135,6 +149,22 @@ export class SyncService {
   }
 
   /**
+   * Append a catchError to each observable in a given array
+   * of observables that resolves any thrown error
+   *
+   * @param: requests - array of http request observables
+   *
+   * @return: observable of requests with each request having its own catchError
+   */
+  getRequestsWithErrorResolvingHandlers<T>(requests: Observable<T | HttpErrorResponse>[]): Observable<T | HttpErrorResponse>[] {
+    return requests
+      .map((request: Observable<T | HttpErrorResponse>): Observable<T | HttpErrorResponse> => {
+        return request
+          .pipe(catchError((error: HttpErrorResponse): Observable<HttpErrorResponse> => of(error)));
+      });
+  }
+
+  /**
    * Get array of sync flags filtered by docType
    *
    * @params: docType - document type to filter by
@@ -149,29 +179,6 @@ export class SyncService {
   }
 
   /**
-   * Get any stored sync flags
-   *
-   * @params: none
-   * @return: none
-   */
-  init(): void {
-    this.storageService.getSyncFlags()
-      .subscribe(
-        (flags: SyncMetadata[]): void => {
-          console.log('sync flags', flags);
-          this.syncFlags = flags;
-        },
-        (error: object | string): void => {
-          if (error['name'] === 'NotFoundError') {
-            console.log(error['message']);
-          } else {
-            console.log('Sync error', error);
-          }
-        }
-      );
-  }
-
-  /**
    * Process sync error responses into messages
    *
    * @params: errorData - array of errors
@@ -181,12 +188,12 @@ export class SyncService {
   processSyncErrors(errorData: (HttpErrorResponse | Error)[]): SyncError[] {
     return errorData.map((error: HttpErrorResponse): SyncError => {
       if (error instanceof HttpErrorResponse) {
-        const errStatus: number = error.status ? error.status : 503;
-        const errText: string = error.status ? error.statusText : 'Service unavailable';
+        const errStatus: number = error.status ? error.status : 500;
+        const errText: string = error.status ? error.statusText : 'Internal Server Error';
         const additionalText: string = error.error && error.error.name === 'ValidationError'
           ? `: ${error.error.message}`
           : '';
-        return this.constructSyncError(`<${errStatus}> ${errText || ''}${additionalText}`, 1);
+        return this.constructSyncError(`<${errStatus}> ${errText}${additionalText}`, 1);
       } else {
         return this.constructSyncError(error['message']);
       }
@@ -203,7 +210,7 @@ export class SyncService {
    */
   sync<T>(docType: string, requests: Observable<T | HttpErrorResponse>[]): Observable<SyncResponse<T>> {
     console.log(`performing ${requests.length} ${docType} sync requests`);
-    return forkJoin(requests)
+    return forkJoin(this.getRequestsWithErrorResolvingHandlers<T>(requests))
       .pipe(
         map((responses: (T | SyncData<T> | HttpErrorResponse)[]): SyncResponse<T> => {
           this.clearSyncFlagByType(docType);
@@ -212,7 +219,7 @@ export class SyncService {
           const successes: T[] = [];
 
           responses.forEach((response: T | HttpErrorResponse): void => {
-            if (response instanceof HttpErrorResponse || response instanceof Error) {
+            if (response instanceof HttpErrorResponse) {
               errors.push(response);
             } else {
               successes.push(response);
@@ -225,7 +232,26 @@ export class SyncService {
           };
         })
       );
-   }
+  }
+
+  /***** Storage *****/
+
+  /**
+   * Get any stored sync flags
+   *
+   * @params: none
+   * @return: none
+   */
+  init(): void {
+    this.storageService.getSyncFlags()
+      .subscribe(
+        (flags: SyncMetadata[]): void => {
+          console.log('sync flags', flags);
+          this.syncFlags = flags;
+        },
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
+      );
+  }
 
   /**
    * Update stored sync flags
@@ -237,8 +263,10 @@ export class SyncService {
     this.storageService.setSyncFlags(this.syncFlags)
       .subscribe(
         (): void => console.log('Stored sync flags'),
-        (error: string): void => console.log(`Sync flag store error: ${error}`)
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
+
+  /***** End Storage *****/
 
 }

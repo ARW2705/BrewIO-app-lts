@@ -11,9 +11,12 @@ import { mockCalendarStep, mockCalendarDate } from '../../../../test-config/mock
 import { MomentPipeStub } from '../../../../test-config/pipe-stubs';
 
 /* Interface imports*/
-import { Alert } from '../../shared/interfaces/alert';
-import { CalendarDate } from '../../shared/interfaces/calendar-date';
-import { Process } from '../../shared/interfaces/process';
+import {
+  Alert,
+  CalendarDate,
+  CalendarProcess,
+  Process
+} from '../../shared/interfaces';
 
 /* Component imports */
 import { CalendarComponent } from './calendar.component';
@@ -78,7 +81,7 @@ describe('CalendarComponent', (): void => {
       expect(initSpy).toHaveBeenCalled();
     });
 
-    test('should update calenar on changes', (): void => {
+    test('should update calendar on changes', (): void => {
       calCmp.ngOnChanges = originalOnChanges;
 
       calCmp.initCalendar = jest
@@ -87,7 +90,7 @@ describe('CalendarComponent', (): void => {
       const initSpy: jest.SpyInstance = jest.spyOn(calCmp, 'initCalendar');
 
       const oldStepData: Process = mockCalendarStep();
-      const newStepData: Process = {
+      const newStepData: CalendarProcess = {
         _id: 'different-step',
         cid: '0123456789013',
         type: 'calendar',

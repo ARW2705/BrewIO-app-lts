@@ -5,9 +5,10 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
 
 /* Interface imports */
-import { User } from '../../../shared/interfaces/user';
+import { User } from '../../../shared/interfaces';
 
 /* Service imports */
+import { ErrorReportingService } from '../../../services/error-reporting/error-reporting.service';
 import { ToastService } from '../../../services/toast/toast.service';
 import { UserService } from '../../../services/user/user.service';
 
@@ -24,6 +25,7 @@ export class LoginPage implements OnInit {
   showPassword: boolean = false;
 
   constructor(
+    public errorReporter: ErrorReportingService,
     public formBuilder: FormBuilder,
     public loadingCtrl: LoadingController,
     public modalCtrl: ModalController,
@@ -97,7 +99,7 @@ export class LoginPage implements OnInit {
           );
           this.modalCtrl.dismiss(user);
         },
-        (error: string): void => this.toastService.presentErrorToast(error)
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 

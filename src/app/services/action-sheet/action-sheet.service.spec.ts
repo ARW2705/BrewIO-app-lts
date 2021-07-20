@@ -10,7 +10,7 @@ import { mockActionSheetButtons , mockActionSheetElement } from '../../../../tes
 import { ActionSheetControllerStub } from '../../../../test-config/ionic-stubs';
 
 /* Interface imports */
-import { ActionSheetButton } from '../../shared/interfaces/action-sheet-buttons';
+import { ActionSheetButton } from '../../shared/interfaces';
 
 /* Service imports */
 import { ActionSheetService } from './action-sheet.service';

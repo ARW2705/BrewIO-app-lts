@@ -6,7 +6,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Constant imports */
-import { FORM_ERROR_MESSAGES } from '../../shared/constants/form-error-messages';
+import { FORM_ERROR_MESSAGES } from '../../shared/constants';
 
 /* Component imports */
 import { FormErrorComponent } from './form-error.component';
@@ -70,7 +70,7 @@ describe('FormErrorComponent', (): void => {
     formErrorCmp.ngOnChanges();
 
     fixture.detectChanges();
-    
+
     const signupErrors: NodeList = fixture.nativeElement.querySelectorAll('.form-error');
     const requiredPasswordText: string = FORM_ERROR_MESSAGES['signup']['password']['required'];
     const passwordInvalidText: string = FORM_ERROR_MESSAGES['signup']['password']['passwordInvalid'];

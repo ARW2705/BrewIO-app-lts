@@ -10,18 +10,18 @@ import { configureTestBed } from '../../../../../test-config/configure-test-bed'
 
 /* Mock imports */
 import { mockUser, mockImage } from '../../../../../test-config/mock-models';
-import { ImageServiceStub, ToastServiceStub, UserServiceStub } from '../../../../../test-config/service-stubs';
+import { ErrorReportingServiceStub, ImageServiceStub, ToastServiceStub, UserServiceStub } from '../../../../../test-config/service-stubs';
 import { HeaderComponentStub } from '../../../../../test-config/component-stubs';
 import { LoadingControllerStub, LoadingStub, ModalControllerStub, ModalStub } from '../../../../../test-config/ionic-stubs';
 
 /* Default imports */
-import { defaultImage } from '../../../shared/defaults/default-image';
+import { defaultImage } from '../../../shared/defaults';
 
 /* Interface imports */
-import { Image } from '../../../shared/interfaces/image';
-import { User } from '../../../shared/interfaces/user';
+import { Image, User } from '../../../shared/interfaces';
 
 /* Service imports */
+import { ErrorReportingService } from '../../../services/error-reporting/error-reporting.service';
 import { FormValidationService } from '../../../services/form-validation/form-validation.service';
 import { ImageService } from '../../../services/image/image.service';
 import { ToastService } from '../../../services/toast/toast.service';
@@ -48,6 +48,7 @@ describe('SignupPage', (): void => {
         ReactiveFormsModule
       ],
       providers: [
+        { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: ImageService, useClass: ImageServiceStub },
         { provide: LoadingController, useClass: LoadingControllerStub },
         { provide: ModalController, useClass: ModalControllerStub },
@@ -311,6 +312,7 @@ describe('SignupPage', (): void => {
   test('should handle an error on submit', (done: jest.DoneCallback): void => {
     const _stubLoading: LoadingStub = new LoadingStub();
     const _defaultImage: Image = defaultImage();
+    const _mockError: Error = new Error('test-error');
 
     signupPage.loadingCtrl.create = jest
       .fn()
@@ -318,7 +320,7 @@ describe('SignupPage', (): void => {
 
     signupPage.userService.signUp = jest
       .fn()
-      .mockReturnValue(throwError('test-error'));
+      .mockReturnValue(throwError(_mockError));
 
     signupPage.dismiss = jest
       .fn();
@@ -327,11 +329,15 @@ describe('SignupPage', (): void => {
       .fn()
       .mockImplementation((page: SignupPage) => page.dismiss);
 
+    signupPage.errorReporter.handleUnhandledError = jest
+      .fn();
+
+
     const formBuilder: FormBuilder = new FormBuilder();
 
     const signupSpy: jest.SpyInstance = jest.spyOn(signupPage.userService, 'signUp');
-    const toastSpy: jest.SpyInstance = jest.spyOn(signupPage.toastService, 'presentErrorToast');
     const loadingSpy: jest.SpyInstance = jest.spyOn(_stubLoading, 'dismiss');
+    const errorSpy: jest.SpyInstance = jest.spyOn(signupPage.errorReporter, 'handleUnhandledError');
 
     fixture.detectChanges();
 
@@ -357,10 +363,7 @@ describe('SignupPage', (): void => {
         userImage: _defaultImage,
         breweryLabelImage: _defaultImage
       });
-      expect(toastSpy).toHaveBeenCalledWith(
-        'test-error',
-        signupPage.dismiss
-      );
+      expect(errorSpy).toHaveBeenCalledWith(_mockError);
       expect(loadingSpy).toHaveBeenCalled();
       done();
     }, 10);

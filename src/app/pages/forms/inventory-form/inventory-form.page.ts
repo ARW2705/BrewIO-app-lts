@@ -3,26 +3,31 @@ import { Component, OnInit, Input } from '@angular/core';
 import { LoadingController, ModalController } from '@ionic/angular';
 import { AbstractControl, FormGroup, FormBuilder, FormControl, Validators } from '@angular/forms';
 import { Observable, forkJoin, from, of } from 'rxjs';
+import { finalize } from 'rxjs/operators';
 
 /* Contants imports */
-import { OPTIONAL_INVENTORY_DATA_KEYS } from '../../../shared/constants/optional-inventory-data-keys';
-import { STOCK_TYPES } from '../../../shared/constants/stock-types';
-import { PINT } from '../../../shared/constants/units';
+import {
+  OPTIONAL_INVENTORY_DATA_KEYS,
+  PINT,
+  STOCK_TYPES
+} from '../../../shared/constants';
 
 /* Default imports */
-import { defaultImage } from '../../../shared/defaults/default-image';
+import { defaultImage } from '../../../shared/defaults';
 
 /* Utility functions imports */
 import { hasId } from '../../../shared/utility-functions/id-helpers';
 import { compareWith } from '../../../shared/utility-functions/utilities';
 
 /* Interface imports */
-import { Author } from '../../../shared/interfaces/author';
-import { Batch } from '../../../shared/interfaces/batch';
-import { Image } from '../../../shared/interfaces/image';
-import { InventoryItem } from '../../../shared/interfaces/inventory-item';
-import { StockType } from '../../../shared/interfaces/stocktype';
-import { Style } from '../../../shared/interfaces/library';
+import {
+  Author,
+  Batch,
+  Image,
+  InventoryItem,
+  StockType,
+  Style
+} from '../../../shared/interfaces';
 
 /* Page imports */
 import { ImageFormPage } from '../image-form/image-form.page';
@@ -30,6 +35,7 @@ import { QuantityHelperComponent } from '../../../components/quantity-helper/qua
 
 /* Service imports */
 import { CalculationsService } from '../../../services/calculations/calculations.service';
+import { ErrorReportingService } from '../../../services/error-reporting/error-reporting.service';
 import { ImageService } from '../../../services/image/image.service';
 import { LibraryService } from '../../../services/library/library.service';
 import { PreferencesService } from '../../../services/preferences/preferences.service';
@@ -75,6 +81,7 @@ export class InventoryFormPage implements OnInit {
 
   constructor(
     public calculator: CalculationsService,
+    public errorReporter: ErrorReportingService,
     public formBuilder: FormBuilder,
     public imageService: ImageService,
     public libraryService: LibraryService,
@@ -100,20 +107,21 @@ export class InventoryFormPage implements OnInit {
       this.getStyleLibrary(),
       this.getAuthor(searchId)
     )
+    .pipe(finalize(async (): Promise<void> => {
+      const hasOverlay: boolean = !!await this.loadingCtrl.getTop();
+      if (hasOverlay) {
+        await this.loadingCtrl.dismiss();
+      }
+    }))
     .subscribe(
       ([styles, author]): void => {
         this.onBackClick = this.isRequired ? undefined : this.dismiss.bind(this);
         this.styles = styles;
         this.author = author;
         this.initForm();
-        this.loadingCtrl.dismiss().then(() => {});
       },
-      (error: string): void => {
-        console.log('Inventory form error', error);
-        this.toastService.presentErrorToast(
-          'Error loading inventory form',
-          this.dismiss.bind(this)
-        );
+      (error: any): void => {
+        this.errorReporter.handleUnhandledError(error);
       }
     );
   }

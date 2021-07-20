@@ -4,13 +4,13 @@ import { ModalController } from '@ionic/angular';
 import { Observable, from } from 'rxjs';
 
 /* Interface imports */
-import { RecipeMaster } from '../../shared/interfaces/recipe-master';
-import { RecipeVariant } from '../../shared/interfaces/recipe-variant';
+import { RecipeMaster, RecipeVariant } from '../../shared/interfaces';
 
 /* Page imports */
 import { NoteFormPage } from '../../pages/forms/note-form/note-form.page';
 
 /* Service imports */
+import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
 import { RecipeService } from '../../services/recipe/recipe.service';
 import { ToastService } from '../../services/toast/toast.service';
 
@@ -27,6 +27,7 @@ export class NoteListComponent implements OnInit, OnDestroy {
   @Input() notes: string[] = [];
 
   constructor(
+    public errorReporter: ErrorReportingService,
     public modalCtrl: ModalController,
     public recipeService: RecipeService,
     public toastService: ToastService
@@ -138,10 +139,7 @@ export class NoteListComponent implements OnInit, OnDestroy {
             'bottom'
           );
         },
-        (error: string): void => {
-          console.log('variant patch error', error);
-          this.toastService.presentErrorToast('Error updating notes');
-        }
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 

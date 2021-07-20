@@ -15,12 +15,10 @@ import { HeaderComponentStub } from '../../../../../test-config/component-stubs'
 import { ActivatedRouteStub, ModalControllerStub, ModalStub } from '../../../../../test-config/ionic-stubs';
 
 /* Default imports */
-import { defaultImage } from '../../../shared/defaults/default-image';
+import { defaultImage } from '../../../shared/defaults';
 
 /* Interface imports */
-import { Image } from '../../../shared/interfaces/image';
-import { SelectedUnits } from '../../../shared/interfaces/units';
-import { Style } from '../../../shared/interfaces/library';
+import { Image, SelectedUnits, Style } from '../../../shared/interfaces';
 
 /* Service imports */
 import { CalculationsService } from '../../../services/calculations/calculations.service';

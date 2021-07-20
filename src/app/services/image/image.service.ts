@@ -5,23 +5,33 @@ import { Entry, Metadata } from '@ionic-native/file/ngx';
 import { Crop } from '@ionic-native/crop/ngx';
 import { ImageResizer, ImageResizerOptions } from '@ionic-native/image-resizer/ngx';
 import { Observable, forkJoin, from, of, throwError } from 'rxjs';
-import { defaultIfEmpty, map, mergeMap, tap } from 'rxjs/operators';
+import { catchError, defaultIfEmpty, map, mergeMap, tap } from 'rxjs/operators';
 
 /* Constant imports */
-import { BASE_URL } from '../../shared/constants/base-url';
-import { API_VERSION } from '../../shared/constants/api-version';
-import { IMAGE_FILE_EXTENSION } from '../../shared/constants/image-extension';
-import { IMAGE_SIZE_LIMIT } from '../../shared/constants/image-size-limit';
+import {
+  API_VERSION,
+  BASE_URL,
+  IMAGE_FILE_EXTENSION,
+  IMAGE_SIZE_LIMIT
+} from '../../shared/constants';
 
 /* Default imports */
-import { defaultImage } from '../../shared/defaults/default-image';
+import { defaultImage } from '../../shared/defaults';
 
 /* Interface imports */
-import { Image, ImageRequestFormData, ImageRequestMetadata } from '../../shared/interfaces/image';
+import { Image, ImageRequestFormData, ImageRequestMetadata } from '../../shared/interfaces';
+
+/* Type guard imports */
+import { ImageGuardMetadata } from '../../shared/type-guard-metadata/image.guard';
+
+/* Type imports */
+import { CustomError } from '../../shared/types';
 
 /* Service imports */
 import { ClientIdService } from '../client-id/client-id.service';
+import { ErrorReportingService } from '../error-reporting/error-reporting.service';
 import { FileService } from '../file/file.service';
+import { TypeGuardService } from '../type-guard/type-guard.service';
 
 
 @Injectable({
@@ -34,8 +44,10 @@ export class ImageService {
     public camera: Camera,
     public clientIdService: ClientIdService,
     public crop: Crop,
+    public errorReporter: ErrorReportingService,
     public fileService: FileService,
-    public imageResizer: ImageResizer
+    public imageResizer: ImageResizer,
+    public typeGuard: TypeGuardService
   ) { }
 
   /***** Device Actions *** */
@@ -65,7 +77,8 @@ export class ImageService {
             localURL: localURL,
             url: localURL
           };
-        })
+        }),
+        catchError(this.errorReporter.handleGenericCatchError())
       );
   }
 
@@ -78,9 +91,9 @@ export class ImageService {
    * does not throw an error, rather just passes on the message
    */
   deleteLocalImage(filePath: string): Observable<string> {
-    console.log('deleting image', filePath);
     if (!filePath) {
-      return throwError(`Deletion error: invalid file path: ${filePath}`);
+      const message: string = `Deletion error: invalid file path: ${filePath}`;
+      return throwError(new CustomError('ImageError', message, 2, message));
     }
 
     return this.fileService.deleteLocalFile(filePath);
@@ -122,7 +135,8 @@ export class ImageService {
               imagePath.lastIndexOf('?')
             );
           return this.copyImageToLocalTmpDir(path, originalName);
-        })
+        }),
+        catchError(this.errorReporter.handleGenericCatchError())
       );
   }
 
@@ -156,7 +170,8 @@ export class ImageService {
           console.log('deleting old file', replaceImagePath);
           return !!replaceImagePath ? this.deleteLocalImage(replaceImagePath) : of(null);
         }),
-        map((): Image => image)
+        map((): Image => image),
+        catchError(this.errorReporter.handleGenericCatchError())
       );
   }
 
@@ -230,7 +245,8 @@ export class ImageService {
                 filename: `${imageData[index].image.cid}${IMAGE_FILE_EXTENSION}`
               };
             });
-        })
+        }),
+        catchError(this.errorReporter.handleGenericCatchError())
       );
   }
 
@@ -290,6 +306,17 @@ export class ImageService {
     }
     return this.fileService.getTmpDirPath()
       === image.filePath.substring(0, image.filePath.lastIndexOf('/') + 1);
+  }
+
+  /**
+   * Check if given image object is valid by correctly implementing the Image interface
+   *
+   * @param: image - expects a Image at runtime
+   *
+   * @return: true if given image correctly implements Image interface
+   */
+  isSafeImage(image: any): boolean {
+    return this.typeGuard.hasValidProperties(image, ImageGuardMetadata);
   }
 
   /**

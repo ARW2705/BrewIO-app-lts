@@ -10,7 +10,7 @@ import { mockGrainBill } from '../../../../test-config/mock-models';
 import { RatioPipeStub, UnitConversionPipeStub } from '../../../../test-config/pipe-stubs';
 
 /* Interface imports */
-import { GrainBill } from '../../shared/interfaces/grain-bill';
+import { GrainBill } from '../../shared/interfaces';
 
 /* Component imports */
 import { GrainBillComponent } from './grain-bill.component';

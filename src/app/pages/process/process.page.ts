@@ -3,13 +3,20 @@ import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute, Navigation } from '@angular/router';
 import { ModalController } from '@ionic/angular';
 import { BehaviorSubject, Observable, Subject, from, of, throwError } from 'rxjs';
-import { mergeMap, takeUntil, tap } from 'rxjs/operators';
+import { catchError, mergeMap, takeUntil, tap } from 'rxjs/operators';
 
 /* Interface imports */
-import { Alert } from '../../shared/interfaces/alert';
-import { Batch, BatchProcess } from '../../shared/interfaces/batch';
-import { PrimaryValues } from '../../shared/interfaces/primary-values';
-import { Process } from '../../shared/interfaces/process';
+import {
+  Alert,
+  Batch,
+  BatchProcess,
+  PrimaryValues,
+  Process,
+  TimerProcess
+} from '../../shared/interfaces';
+
+/* Type imports */
+import { CustomError } from '../../shared/types';
 
 /* Utility function imports */
 import { getId } from '../../shared/utility-functions/id-helpers';
@@ -21,6 +28,7 @@ import { ProcessCalendarComponent } from '../../components/process-calendar/proc
 import { ProcessMeasurementsFormPage } from '../forms/process-measurements-form/process-measurements-form.page';
 
 /* Service imports */
+import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
 import { EventService } from '../../services/event/event.service';
 import { ProcessService } from '../../services/process/process.service';
 import { TimerService } from '../../services/timer/timer.service';
@@ -66,6 +74,7 @@ export class ProcessPage implements OnInit, OnDestroy {
 
 
   constructor(
+    public errorReporter: ErrorReportingService,
     public event: EventService,
     public modalCtrl: ModalController,
     public processService: ProcessService,
@@ -123,9 +132,7 @@ export class ProcessPage implements OnInit, OnDestroy {
             this.updateViewData();
           }
         },
-        (error: string): void => {
-          this.toastService.presentErrorToast(error, this.navigateToRoot);
-        }
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
@@ -152,9 +159,10 @@ export class ProcessPage implements OnInit, OnDestroy {
             this.selectedBatchId = configData['selectedBatchId'];
             return of(null);
           } catch (error) {
-            return throwError(error.message);
+            return throwError(error);
           }
-        })
+        }),
+        catchError(this.errorReporter.handleGenericCatchError())
       )
       .subscribe(
         (): void => {
@@ -165,13 +173,7 @@ export class ProcessPage implements OnInit, OnDestroy {
             this.continueBatch();
           }
         },
-        (error: string): void => {
-          console.log('Process page routing error', error);
-          this.toastService.presentErrorToast(
-            'Process routing error',
-            this.navigateToRoot
-          );
-        }
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
@@ -192,19 +194,21 @@ export class ProcessPage implements OnInit, OnDestroy {
       this.recipeMasterId,
       this.recipeVariantId
     )
-    .pipe(mergeMap((newBatch: Batch): Observable<null> => {
-      this.selectedBatch$ = this.processService.getBatchById(getId(newBatch));
+    .pipe(
+      mergeMap((newBatch: Batch): Observable<null> => {
+        this.selectedBatch$ = this.processService.getBatchById(getId(newBatch));
 
-      if (!this.selectedBatch$) {
-        return throwError('Internal error: Batch not found');
-      }
-      return of(null);
-    }))
+        if (!this.selectedBatch$) {
+          const message: string = 'An error occurred trying to start a new batch: new batch not found';
+          return throwError(new CustomError('BatchError', message, 2, message));
+        }
+        return of(null);
+      }),
+      catchError(this.errorReporter.handleGenericCatchError())
+    )
     .subscribe(
       (): void => this.listenForBatchChanges(false),
-      (error: string): void => {
-        this.toastService.presentErrorToast(error, this.navigateToRoot);
-      }
+      (error: any): void => this.errorReporter.handleUnhandledError(error)
     );
   }
 
@@ -256,21 +260,21 @@ export class ProcessPage implements OnInit, OnDestroy {
    *
    * @return: Array of timer processes
    */
-  getTimerStepData(): Process[] {
+  getTimerStepData(): TimerProcess[] {
     const schedule: Process[] = this.selectedBatch.process.schedule;
 
     const start: number = this.viewStepIndex;
     let end: number = start + 1;
 
-    if (schedule[start].concurrent) {
+    if (schedule[start]['concurrent']) {
       for (; end < schedule.length; end++) {
-        if (!schedule[end].concurrent) {
+        if (!schedule[end]['concurrent']) {
           break;
         }
       }
     }
 
-    return schedule.slice(start, end);
+    return <TimerProcess[]>schedule.slice(start, end);
   }
 
   /**
@@ -309,13 +313,7 @@ export class ProcessPage implements OnInit, OnDestroy {
     this.processService.updateBatch(this.selectedBatch)
       .subscribe(
         (): void => console.log('batch increment step'),
-        (error: string): void => {
-          console.log('batch patch error', error);
-          this.toastService.presentErrorToast(
-            'Step completion error',
-            this.navigateToRoot
-          );
-        }
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
@@ -364,13 +362,7 @@ export class ProcessPage implements OnInit, OnDestroy {
     this.processService.endBatchById(getId(this.selectedBatch))
       .subscribe(
         (): void => console.log('batch completed'),
-        (error: string): void => {
-          console.log('batch end error', error);
-          this.toastService.presentErrorToast(
-            'Batch completion error',
-            this.navigateToRoot
-          );
-        }
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
@@ -387,14 +379,14 @@ export class ProcessPage implements OnInit, OnDestroy {
     let nextIndex: number = -1;
     if (direction === 'next') {
       for (let i = startIndex; i < process.schedule.length; i++) {
-        if (!process.schedule[i].concurrent) {
+        if (!process.schedule[i]['concurrent']) {
           nextIndex = i;
           break;
         }
       }
     } else if (direction === 'prev') {
       for (let i = startIndex - 1; i >= 0; i--) {
-        if (!process.schedule[i].concurrent) {
+        if (!process.schedule[i]['concurrent']) {
           nextIndex = i + 1;
           break;
         }
@@ -420,7 +412,7 @@ export class ProcessPage implements OnInit, OnDestroy {
 
     if (direction === 'next') {
       if (viewIndex < process.schedule.length - 1) {
-        if (process.schedule[viewIndex].concurrent) {
+        if (process.schedule[viewIndex]['concurrent']) {
           return this.getIndexAfterSkippingConcurrent(direction, viewIndex);
         } else {
           return viewIndex + 1;
@@ -428,7 +420,7 @@ export class ProcessPage implements OnInit, OnDestroy {
       }
     } else if (direction === 'prev') {
       if (viewIndex > 0) {
-        if (process.schedule[viewIndex - 1].concurrent) {
+        if (process.schedule[viewIndex - 1]['concurrent']) {
           return this.getIndexAfterSkippingConcurrent(direction, viewIndex);
         } else {
           return viewIndex - 1;
@@ -491,7 +483,7 @@ export class ProcessPage implements OnInit, OnDestroy {
     delete this.selectedBatch
       .process
       .schedule[this.selectedBatch.process.currentStep]
-      .startDatetime;
+      ['startDatetime'];
     this.isCalendarInProgress = false;
     this.clearAlertsForCurrentStep();
   }
@@ -539,10 +531,7 @@ export class ProcessPage implements OnInit, OnDestroy {
     this.processService.updateStepById(getId(this.selectedBatch), values)
       .subscribe(
         (): void => console.log('Started calendar'),
-        (error: string): void => {
-          console.log('Calendar start error', error);
-          this.toastService.presentErrorToast('Error starting calendar step');
-        }
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 

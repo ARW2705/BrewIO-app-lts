@@ -3,11 +3,10 @@ import { Component, Input, OnInit, HostListener } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 
 /* Constants imports */
-import { COMMON_CONTAINERS } from '../../shared/constants/common-containers';
-import { FLOZ_TO_PINT, CL_TO_FLOZ } from '../../shared/constants/factors';
+import { CL_TO_FLOZ , COMMON_CONTAINERS, FLOZ_TO_PINT } from '../../shared/constants';
 
 /* Interface imports */
-import { Container } from '../../shared/interfaces/container';
+import { Container } from '../../shared/interfaces';
 
 /* Utility imports */
 import { roundToDecimalPlace, toTitleCase } from '../../shared/utility-functions/utilities';
@@ -88,14 +87,14 @@ export class QuantityHelperComponent implements OnInit {
 
     if (source === 'pints') {
       this.quantityPints = roundToDecimalPlace(value, 1);
-      this.quantityOunces = roundToDecimalPlace(value * FLOZ_TO_PINT, 1);
-      this.quantityCentiliters = roundToDecimalPlace(value * FLOZ_TO_PINT / CL_TO_FLOZ, 0);
+      this.quantityOunces = roundToDecimalPlace(value / FLOZ_TO_PINT, 1);
+      this.quantityCentiliters = roundToDecimalPlace(value / FLOZ_TO_PINT / CL_TO_FLOZ, 0);
     } else if (source === 'ounces') {
-      this.quantityPints = roundToDecimalPlace(value / FLOZ_TO_PINT, 1);
+      this.quantityPints = roundToDecimalPlace(value * FLOZ_TO_PINT, 1);
       this.quantityOunces = roundToDecimalPlace(value, 1);
       this.quantityCentiliters = roundToDecimalPlace(value / CL_TO_FLOZ, 0);
     } else if (source === 'centiliters') {
-      this.quantityPints = roundToDecimalPlace(value * CL_TO_FLOZ / FLOZ_TO_PINT, 1);
+      this.quantityPints = roundToDecimalPlace(value * CL_TO_FLOZ * FLOZ_TO_PINT, 1);
       this.quantityOunces = roundToDecimalPlace(value * CL_TO_FLOZ, 1);
       this.quantityCentiliters = roundToDecimalPlace(value, 0);
     } else {

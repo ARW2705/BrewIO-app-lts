@@ -6,16 +6,16 @@ import { from } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
 /* Default imports */
-import { defaultImage } from '../../../shared/defaults/default-image';
+import { defaultImage } from '../../../shared/defaults';
 
 /* Interface imports */
-import { Image } from '../../../shared/interfaces/image';
-import { User } from '../../../shared/interfaces/user';
+import { Image, User } from '../../../shared/interfaces';
 
 /* Page */
 import { ImageFormPage } from '../image-form/image-form.page';
 
 /* Service imports */
+import { ErrorReportingService } from '../../../services/error-reporting/error-reporting.service';
 import { FormValidationService } from '../../../services/form-validation/form-validation.service';
 import { ImageService } from '../../../services/image/image.service';
 import { ToastService } from '../../../services/toast/toast.service';
@@ -38,6 +38,7 @@ export class SignupPage implements OnInit {
 
   constructor(
     public formBuilder: FormBuilder,
+    public errorReporter: ErrorReportingService,
     public formValidator: FormValidationService,
     public imageService: ImageService,
     public loadingCtrl: LoadingController,
@@ -203,7 +204,7 @@ export class SignupPage implements OnInit {
           this.toastService.presentToast('Sign up complete!', 1500, 'middle', 'toast-bright');
           this.dismiss();
         },
-        (error: string): void => this.toastService.presentErrorToast(error, this.dismiss.bind(this))
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 

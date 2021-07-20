@@ -9,15 +9,21 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
 import { mockBatch } from '../../../../test-config/mock-models';
-import { AnimationsServiceStub, ProcessServiceStub, ToastServiceStub } from '../../../../test-config/service-stubs';
+import {
+  AnimationsServiceStub,
+  ErrorReportingServiceStub,
+  ProcessServiceStub,
+  ToastServiceStub
+} from '../../../../test-config/service-stubs';
 
 import * as subjectHelpers from '../../shared/utility-functions/subject-helpers';
 
 /* Interface imports */
-import { Batch } from '../../shared/interfaces/batch';
+import { Batch } from '../../shared/interfaces';
 
 /* Service imports */
 import { AnimationsService } from '../../services/animations/animations.service';
+import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
 import { ProcessService } from '../../services/process/process.service';
 import { ToastService } from '../../services/toast/toast.service';
 
@@ -29,6 +35,7 @@ describe('ActiveBatchesComponent', (): void => {
   let fixture: ComponentFixture<ActiveBatchesComponent>;
   let batchCmp: ActiveBatchesComponent;
   let originalOnInit: any;
+  let originalOnChanges: any;
   let originalAfterInit: any;
   let originalOnDestroy: any;
   configureTestBed();
@@ -38,6 +45,8 @@ describe('ActiveBatchesComponent', (): void => {
       declarations: [ ActiveBatchesComponent ],
       imports: [ RouterTestingModule ],
       providers: [
+        { provide: AnimationsService, useClass: AnimationsServiceStub },
+        { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: ProcessService, useClass: ProcessServiceStub },
         { provide: ToastService, useClass: ToastServiceStub }
       ],
@@ -52,14 +61,14 @@ describe('ActiveBatchesComponent', (): void => {
     fixture = TestBed.createComponent(ActiveBatchesComponent);
     batchCmp = fixture.componentInstance;
     originalOnInit = batchCmp.ngOnInit;
+    originalOnChanges = batchCmp.ngOnChanges;
     originalAfterInit = batchCmp.ngAfterViewInit;
     originalOnDestroy = batchCmp.ngOnDestroy;
-    batchCmp.ngOnInit = jest
-      .fn();
-    batchCmp.ngAfterViewInit = jest
-      .fn();
-    batchCmp.ngOnDestroy = jest
-      .fn();
+    batchCmp.ngOnInit = jest.fn();
+    batchCmp.ngOnChanges = jest.fn();
+    batchCmp.ngAfterViewInit = jest.fn();
+    batchCmp.ngOnDestroy = jest.fn();
+    batchCmp.errorReporter.handleUnhandledError = jest.fn();
   });
 
   test('should create the component', (): void => {
@@ -97,41 +106,96 @@ describe('ActiveBatchesComponent', (): void => {
     });
 
     test('should get an error from processService on init', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+
       batchCmp.ngOnInit = originalOnInit;
 
       batchCmp.processService.getBatchList = jest
         .fn()
-        .mockReturnValue(throwError('test-error'));
+        .mockReturnValue(throwError(_mockError));
 
-      const toastSpy: jest.SpyInstance = jest.spyOn(batchCmp.toastService, 'presentErrorToast');
+      const errorSpy: jest.SpyInstance = jest.spyOn(batchCmp.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
       setTimeout((): void => {
-        expect(toastSpy).toHaveBeenCalledWith('Error loading batch list');
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
+    });
+
+    test('should handle on changes with show hint flag', (): void => {
+      batchCmp.ngOnChanges = originalOnChanges;
+
+      batchCmp.animationService.shouldShowHint = jest
+        .fn()
+        .mockReturnValue(true);
+
+      batchCmp.runSlidingHints = jest.fn();
+
+      const runSpy: jest.SpyInstance = jest.spyOn(batchCmp, 'runSlidingHints');
+
+      fixture.detectChanges();
+
+      batchCmp.ngOnChanges();
+
+      expect(runSpy).toHaveBeenCalled();
+    });
+
+    test('should not run animation with no show flag', (): void => {
+      batchCmp.ngOnChanges = originalOnChanges;
+
+      batchCmp.animationService.shouldShowHint = jest
+        .fn()
+        .mockReturnValue(false);
+
+      batchCmp.runSlidingHints = jest.fn();
+
+      const runSpy: jest.SpyInstance = jest.spyOn(batchCmp, 'runSlidingHints');
+
+      fixture.detectChanges();
+
+      batchCmp.ngOnChanges();
+
+      expect(runSpy).not.toHaveBeenCalled();
+    });
+
+    test('should not run animation on error', (): void => {
+      batchCmp.ngOnChanges = originalOnChanges;
+
+      batchCmp.animationService.shouldShowHint = jest
+        .fn()
+        .mockImplementation(() => { throw new Error(''); });
+
+      batchCmp.runSlidingHints = jest.fn();
+
+      const runSpy: jest.SpyInstance = jest.spyOn(batchCmp, 'runSlidingHints');
+
+      fixture.detectChanges();
+
+      batchCmp.ngOnChanges();
+
+      expect(runSpy).not.toHaveBeenCalled();
     });
 
     test('should handle after view init', (): void => {
       batchCmp.ngAfterViewInit = originalAfterInit;
 
-      batchCmp.animationService.hasHintBeenShown = jest
+      batchCmp.animationService.shouldShowHint = jest
         .fn()
         .mockReturnValueOnce(false)
         .mockReturnValueOnce(true);
 
-      batchCmp.runSlidingHints = jest
-        .fn();
+      batchCmp.runSlidingHints = jest.fn();
 
-      const hintSpy: jest.SpyInstance = jest.spyOn(batchCmp.animationService, 'hasHintBeenShown');
+      const hintSpy: jest.SpyInstance = jest.spyOn(batchCmp.animationService, 'shouldShowHint');
       const runSpy: jest.SpyInstance = jest.spyOn(batchCmp, 'runSlidingHints');
 
       fixture.detectChanges();
 
-      expect(runSpy).toHaveBeenCalled();
-
       batchCmp.ngAfterViewInit();
+
+      expect(runSpy).toHaveBeenCalled();
 
       expect(runSpy).toHaveBeenCalledTimes(1);
       expect(hintSpy).toHaveBeenCalledTimes(2);
@@ -157,8 +221,7 @@ describe('ActiveBatchesComponent', (): void => {
   describe('Navigation', (): void => {
 
     test('should nav to brew process', (): void => {
-      batchCmp.router.navigate = jest
-        .fn();
+      batchCmp.router.navigate = jest.fn();
 
       const _mockBatch: Batch = mockBatch();
 
@@ -238,6 +301,14 @@ describe('ActiveBatchesComponent', (): void => {
       expect(elem).toStrictEqual(ionContent);
     });
 
+    test('should get null if batchSlidingItemsList is not defined', (): void => {
+      batchCmp.batchSlidingItemsList = undefined;
+
+      fixture.detectChanges();
+
+      expect(batchCmp.getTopLevelContainer()).toBeNull();
+    });
+
     test('should run sliding hints', (done: jest.DoneCallback): void => {
       const _mockElem: HTMLElement = global.document.createElement('div');
 
@@ -245,15 +316,17 @@ describe('ActiveBatchesComponent', (): void => {
         .fn()
         .mockReturnValue(_mockElem);
 
-      batchCmp.toggleSlidingItemClass = jest
-        .fn();
+      batchCmp.toggleSlidingItemClass = jest.fn();
 
       batchCmp.animationService.playCombinedSlidingHintAnimations = jest
         .fn()
         .mockReturnValue(of([]));
 
-      batchCmp.animationService.setHintShownFlag = jest
-        .fn();
+      batchCmp.animationService.getEstimatedItemOptionWidth = jest
+        .fn()
+        .mockReturnValue(150);
+
+      batchCmp.animationService.setHintShownFlag = jest.fn();
 
       const toggleSpy: jest.SpyInstance = jest.spyOn(batchCmp, 'toggleSlidingItemClass');
       const setSpy: jest.SpyInstance = jest.spyOn(batchCmp.animationService, 'setHintShownFlag');
@@ -276,36 +349,40 @@ describe('ActiveBatchesComponent', (): void => {
         .fn()
         .mockReturnValue(null);
 
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
-
       fixture.detectChanges();
 
-      batchCmp.runSlidingHints();
-
-      expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0])
-        .toMatch('Animation error: cannot find content container');
+      expect((): void => {
+        batchCmp.runSlidingHints();
+      }).toThrowError('Animation error: cannot find content container');
     });
 
     test('should get an error running sliding hints with animation error', (done: jest.DoneCallback): void => {
       const _mockElem: HTMLElement = global.document.createElement('div');
+      const _mockError: Error = new Error('test-error');
 
       batchCmp.getTopLevelContainer = jest
         .fn()
         .mockReturnValue(_mockElem);
 
-      batchCmp.toggleSlidingItemClass = jest
-        .fn();
+      batchCmp.toggleSlidingItemClass = jest.fn();
 
       batchCmp.animationService.playCombinedSlidingHintAnimations = jest
         .fn()
-        .mockReturnValue(throwError('test-error'));
+        .mockReturnValue(throwError(_mockError));
 
-      batchCmp.animationService.setHintShownFlag = jest
-        .fn();
+      batchCmp.animationService.getEstimatedItemOptionWidth = jest
+        .fn()
+        .mockReturnValue(150);
 
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+      batchCmp.animationService.setHintShownFlag = jest.fn();
+
+      batchCmp.errorReporter.getCustomReportFromError = jest
+        .fn()
+        .mockReturnValue(_mockError);
+
       const toggleSpy: jest.SpyInstance = jest.spyOn(batchCmp, 'toggleSlidingItemClass');
       const setSpy: jest.SpyInstance = jest.spyOn(batchCmp.animationService, 'setHintShownFlag');
+      const reportSpy: jest.SpyInstance = jest.spyOn(batchCmp.errorReporter, 'setErrorReport');
 
       fixture.detectChanges();
 
@@ -316,9 +393,7 @@ describe('ActiveBatchesComponent', (): void => {
       setTimeout((): void => {
         expect(toggleSpy).toHaveBeenCalledTimes(2);
         expect(setSpy).not.toHaveBeenCalled();
-        const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
-        expect(consoleCalls[0]).toMatch('Animation error');
-        expect(consoleCalls[1]).toMatch('test-error');
+        expect(reportSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
     });
@@ -326,8 +401,7 @@ describe('ActiveBatchesComponent', (): void => {
     test('should toggle sliding item class', (): void => {
       const _mockElem: HTMLElement = global.document.createElement('div');
 
-      batchCmp.animationService.toggleSlidingItemClass = jest
-        .fn();
+      batchCmp.animationService.toggleSlidingItemClass = jest.fn();
 
       const toggleSpy: jest.SpyInstance = jest.spyOn(batchCmp.animationService, 'toggleSlidingItemClass');
 

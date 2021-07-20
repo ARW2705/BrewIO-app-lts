@@ -4,7 +4,7 @@ import { Camera } from '@ionic-native/camera/ngx';
 import { Entry } from '@ionic-native/file/ngx';
 import { Crop } from '@ionic-native/crop/ngx';
 import { ImageResizer } from '@ionic-native/image-resizer/ngx';
-import { Observable, of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
@@ -12,18 +12,23 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 /* Mock imports */
 import { mockImage, mockImageRequestFormData, mockEntry, mockFileMetadata  } from '../../../../test-config/mock-models';
 import { CameraStub, CropStub, ImageResizerStub } from '../../../../test-config/ionic-stubs';
-import { ClientIdServiceStub, FileServiceStub } from '../../../../test-config/service-stubs';
+import { ClientIdServiceStub, ErrorReportingServiceStub, FileServiceStub, TypeGuardServiceStub } from '../../../../test-config/service-stubs';
 
 /* Default imports */
-import { defaultImage } from '../../shared/defaults/default-image';
+import { defaultImage } from '../../shared/defaults';
 
 /* Interface imports */
-import { Image, ImageRequestFormData, ImageRequestMetadata } from '../../shared/interfaces/image';
+import { Image, ImageRequestFormData, ImageRequestMetadata } from '../../shared/interfaces';
+
+/* Type imports */
+import { CustomError } from '../../shared/types';
 
 /* Service imports */
 import { ImageService } from './image.service';
 import { ClientIdService } from '../client-id/client-id.service';
+import { ErrorReportingService } from '../error-reporting/error-reporting.service';
 import { FileService } from '../file/file.service';
+import { TypeGuardService } from '../type-guard/type-guard.service';
 
 
 describe('ImageService', (): void => {
@@ -36,10 +41,12 @@ describe('ImageService', (): void => {
       providers: [
         ImageService,
         { provide: ClientIdService, useClass: ClientIdServiceStub },
+        { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: FileService, useClass: FileServiceStub },
         { provide: Camera, useClass: CameraStub },
         { provide: Crop, useClass: CropStub },
-        { provide: ImageResizer, useClass: ImageResizerStub }
+        { provide: ImageResizer, useClass: ImageResizerStub },
+        { provide: TypeGuardService, useClass: TypeGuardServiceStub }
       ]
     });
   }));
@@ -47,6 +54,12 @@ describe('ImageService', (): void => {
   beforeEach((): void => {
     injector = getTestBed();
     imageService = injector.get(ImageService);
+
+    imageService.errorReporter.handleGenericCatchError = jest
+      .fn()
+      .mockImplementation((): (error: any) => Observable<never> => {
+        return (error: any): Observable<never> => throwError(error);
+      });
   });
 
   test('should create the service', () => {
@@ -116,8 +129,8 @@ describe('ImageService', (): void => {
           console.log('Should not get a result', results);
           expect(true).toBe(false);
         },
-        (error: string): void => {
-          expect(error).toMatch('Deletion error: invalid file path: null');
+        (error: CustomError): void => {
+          expect(error.message).toMatch('Deletion error: invalid file path: null');
           done();
         }
       );
@@ -413,6 +426,18 @@ describe('ImageService', (): void => {
     expect(imageService.isTempImage(_mockImage)).toBe(false);
 
     expect(imageService.isTempImage(null)).toBe(false);
+  });
+
+  test('should type check a given image', (): void => {
+    const _mockImage: Image = mockImage();
+
+    imageService.typeGuard.hasValidProperties = jest
+      .fn()
+      .mockReturnValueOnce(true)
+      .mockReturnValueOnce(false);
+
+    expect(imageService.isSafeImage(_mockImage)).toBe(true);
+    expect(imageService.isSafeImage(null)).toBe(false);
   });
 
   test('should set image\'s initial url', (): void => {

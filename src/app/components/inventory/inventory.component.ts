@@ -5,18 +5,26 @@ import { Subject, from } from 'rxjs';
 import { finalize, take, takeUntil } from 'rxjs/operators';
 
 /* Constant imports */
-import { BASE_URL } from '../../shared/constants/base-url';
-import { API_VERSION } from '../../shared/constants/api-version';
-import { MISSING_IMAGE_URL } from '../../shared/constants/missing-image-url';
-import { SELECT_OPTIONS } from '../../shared/constants/select-options';
+import {
+  API_VERSION,
+  BASE_URL,
+  MISSING_IMAGE_URL,
+  SELECT_OPTIONS
+} from '../../shared/constants';
 
 /* Interface imports */
-import { Batch } from '../../shared/interfaces/batch';
-import { Image } from '../../shared/interfaces/image';
-import { InventoryItem } from '../../shared/interfaces/inventory-item';
+import {
+  Batch,
+  ErrorReport,
+  Image,
+  InventoryItem
+} from '../../shared/interfaces';
+
+/* Type imports */
+import { CustomError } from '../../shared/types';
 
 /* Default imports */
-import { defaultImage } from '../../shared/defaults/default-image';
+import { defaultImage } from '../../shared/defaults';
 
 /* Page imports */
 import { InventoryFormPage } from '../../pages/forms/inventory-form/inventory-form.page';
@@ -26,6 +34,7 @@ import { QuantityHelperComponent } from '../quantity-helper/quantity-helper.comp
 
 /* Service imports */
 import { AnimationsService } from '../../services/animations/animations.service';
+import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
 import { EventService } from '../../services/event/event.service';
 import { ImageService } from '../../services/image/image.service';
 import { InventoryService } from '../../services/inventory/inventory.service';
@@ -58,6 +67,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
   constructor(
     public renderer: Renderer2,
     public animationService: AnimationsService,
+    public errorReporter: ErrorReportingService,
     public event: EventService,
     public imageService: ImageService,
     public inventoryService: InventoryService,
@@ -81,7 +91,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
   }
 
   ngAfterViewInit() {
-    if (!this.animationService.hasHintBeenShown('sliding', 'inventory')) {
+    if (this.animationService.shouldShowHint('sliding', 'inventory')) {
       this.runSlidingHints();
     }
   }
@@ -101,7 +111,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
    * Set expanded item index, or -1 if selecting expanded items.
    * Scroll to top of item if expanding
    *
-   * @params: index - list index to expand or collapse
+   * @param: index - list index to expand or collapse
    *
    * @return: none
    */
@@ -111,8 +121,9 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
     } else {
       this.itemIndex = index;
 
-      const accordionElement: HTMLElement
-        = document.getElementById(`scroll-landmark-${index}`);
+      const accordionElement: HTMLElement = document.querySelector(
+        `accordion[data-scroll-landmark="${index}"]`
+      );
 
       this.event.emit(
         'scroll-in-sub-component',
@@ -128,8 +139,8 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
    * On image error, change url to either backup image, or not found
    * image if the backup has also errored
    *
-   * @params: imageType - property name for image type
-   * @params: item - item that owns the image
+   * @param: imageType - property name for image type
+   * @param: item - item that owns the image
    *
    * @return: none
    */
@@ -141,7 +152,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
   /**
    * Reset the display inventory list based on chosen sorting
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   resetDisplayList(): void {
@@ -163,7 +174,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
   /**
    * Create a new item from form values
    *
-   * @params: itemFormValues - form results
+   * @param: itemFormValues - form results
    *
    * @return: none
    */
@@ -174,9 +185,15 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
         (): void => {
           this.toastService.presentToast('Added new item to inventory!', 1500);
         },
-        (error: string): void => {
-          console.log('Inventory error', error);
-          this.toastService.presentErrorToast('Failed to add inventory item');
+        (error: any): void => {
+          const report: ErrorReport = this.errorReporter.getCustomReportFromError(
+            error,
+            {
+              name: 'InventoryItemError',
+              userMessage: `Inventory Item Error: ${error.message}`
+            }
+          );
+          this.errorReporter.setErrorReport(report);
         }
       );
   }
@@ -185,7 +202,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
    * Decrement the item count by 1; display confirmation message
    * with new remaining total
    *
-   * @params: item - the item instance to lower its count
+   * @param: item - the item instance to lower its count
    *
    * @return: none
    */
@@ -201,8 +218,8 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
   /**
    * Generate a new inventory item based on a finished batch
    *
-   * @params: batch - the batch on which to base the item
-   * @params: itemFormValues - additional item data from form to create item
+   * @param: batch - the batch on which to base the item
+   * @param: itemFormValues - additional item data from form to create item
    *
    * @return: none
    */
@@ -214,17 +231,14 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
           this.toastService.presentToast('Added new item to inventory!', 1500);
           this.optionalData = null;
         },
-        (error: string): void => {
-          console.log('Inventory error', error);
-          this.toastService.presentErrorToast('Failed to create item from batch');
-        }
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
   /**
    * Format the toast message to display after count decrement
    *
-   * @params: item - inventory item that was updated or null if out of stock
+   * @param: item - inventory item that was updated or null if out of stock
    *
    * @return: the toast message to display
    */
@@ -242,8 +256,8 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
    * Decrement the item count by 1; display confirmation message
    * with new remaining total
    *
-   * @params: item - the item instance to lower its count
-   * @params: decrementCount - number to decrease count by
+   * @param: item - the item instance to lower its count
+   * @param: decrementCount - number to decrease count by
    *
    * @return: none
    */
@@ -262,17 +276,14 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
         const cssClass: string = updatedItem === null ? 'toast-warn' : '';
         this.toastService.presentToast(message, 1500, 'bottom', cssClass);
       },
-      (error: string): void => {
-        console.log('Item decrement error', error);
-        this.toastService.presentErrorToast('Failed to decrement item count');
-      }
+      (error: any): void => this.errorReporter.handleUnhandledError(error)
     );
   }
 
   /**
    * Load the inventory list
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   loadInventoryList(): void {
@@ -289,18 +300,15 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
             });
           this.resetDisplayList();
         },
-        (error: string): void => {
-          console.log('Error loading inventory', error);
-          this.toastService.presentErrorToast('Error loading inventory');
-        }
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
   /**
    * Update an item with form values
    *
-   * @params: item - the item to update
-   * @params: itemFormValues - values to apply to update
+   * @param: item - the item to update
+   * @param: itemFormValues - values to apply to update
    *
    * @return: none
    */
@@ -311,17 +319,14 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
         (): void => {
           this.toastService.presentToast('Updated item', 2000);
         },
-        (error: string): void => {
-          console.log('Inventory error', error);
-          this.toastService.presentErrorToast('Failed to update item');
-        }
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
   /**
    * Remove an item from list
    *
-   * @params: itemId - item instance id
+   * @param: itemId - item instance id
    *
    * @return: none
    */
@@ -330,10 +335,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
       .pipe(take(1))
       .subscribe(
         (): void => {},
-        (error: string): void => {
-          console.log('Error removing item', error);
-          this.toastService.presentErrorToast('Failed to remove item');
-        }
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
@@ -345,7 +347,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
   /**
    * Get quantity helper modal error handler
    *
-   * @params: none
+   * @param: none
    *
    * @return: modal error handling function
    */
@@ -359,7 +361,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
   /**
    * Get quantity helper modal success handler
    *
-   * @params: none
+   * @param: none
    *
    * @return: modal success handling function
    */
@@ -375,7 +377,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
   /**
    * Open the quatity helper modal
    *
-   * @params: item - inventory item with quantity data
+   * @param: item - inventory item with quantity data
    *
    * @return: none
    */
@@ -400,7 +402,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
   /**
    * Get inventory form modal error handler
    *
-   * @params: none
+   * @param: none
    *
    * @return: modal error handling function
    */
@@ -414,7 +416,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
   /**
    * Get quantity helper modal success handler
    *
-   * @params: none
+   * @param: none
    *
    * @return: modal success handling function
    */
@@ -438,7 +440,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
   /**
    * Open the inventory form modal
    *
-   * @params: options - may contain an item to update, a batch to base a new
+   * @param: options - may contain an item to update, a batch to base a new
    * item on, or an empty object to set form to default values instead
    *
    * @return: none
@@ -471,7 +473,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
   /**
    * Handle sorting direction change
    *
-   * @params: isAscending - true if should be in ascending order
+   * @param: isAscending - true if should be in ascending order
    *
    * @return: none
    */
@@ -483,7 +485,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
   /**
    * Handle sorting category
    *
-   * @params: sortBy - string of sorting category
+   * @param: sortBy - string of sorting category
    *
    * @return: none
    */
@@ -495,7 +497,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
   /**
    * Sort display inventory list alphabetically
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   sortByAlphabetical(): void {
@@ -511,7 +513,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
   /**
    * Sort display inventory list by count remaining
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   sortByRemaining(): void {
@@ -527,7 +529,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
   /**
    * Sort display inventory list by source type
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   sortBySource(): void {
@@ -561,11 +563,15 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
   /**
    * Get the IonContent HTMLElement of the current view
    *
-   * @params: none
+   * @param: none
    *
    * @return: IonContent element
    */
   getTopLevelContainer(): HTMLElement {
+    if (!this.slidingItemsListRef) {
+      return null;
+    }
+
     let currentElem: HTMLElement = this.slidingItemsListRef.nativeElement;
     while (currentElem && currentElem.tagName !== 'ION-CONTENT') {
       currentElem = currentElem.parentElement;
@@ -576,14 +582,14 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
   /**
    * Trigger horizontally sliding gesture hint animations
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   runSlidingHints(): void {
     const topLevelContent: HTMLElement = this.getTopLevelContainer();
     if (!topLevelContent) {
-      console.log('Animation error: cannot find content container');
-      return;
+      const message: string = 'Animation error: cannot find content container';
+      throw new CustomError('AnimationError', message, 4, message);
     }
 
     this.toggleSlidingItemClass(true);
@@ -596,7 +602,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
     .pipe(finalize((): void => this.toggleSlidingItemClass(false)))
     .subscribe(
       (): void => this.animationService.setHintShownFlag('sliding', 'inventory'),
-      (error: string): void => console.log('Animation error', error)
+      (error: any): void => this.errorReporter.handleUnhandledError(error)
     );
   }
 
@@ -604,7 +610,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
    * Toggle classes on IonItemSliding for hint animations;
    * This will show the IonOptions underneath the IonItem
    *
-   * @params: show - true if classes should be added prior to animation; false to remove classes
+   * @param: show - true if classes should be added prior to animation; false to remove classes
    *  after animations have completed
    *
    * @return: none

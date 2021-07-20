@@ -14,12 +14,16 @@ import { HeaderComponentStub } from '../../../../../test-config/component-stubs'
 import { ModalControllerStub } from '../../../../../test-config/ionic-stubs';
 
 /* Interface imports */
-import { Grains, Hops, Yeast } from '../../../shared/interfaces/library';
-import { GrainBill } from '../../../shared/interfaces/grain-bill';
-import { HopsSchedule } from '../../../shared/interfaces/hops-schedule';
-import { YeastBatch } from '../../../shared/interfaces/yeast-batch';
-import { OtherIngredients } from '../../../shared/interfaces/other-ingredients';
-import { SelectedUnits } from '../../../shared/interfaces/units';
+import {
+  Grains,
+  GrainBill,
+  Hops,
+  HopsSchedule,
+  OtherIngredients,
+  SelectedUnits,
+  Yeast,
+  YeastBatch
+} from '../../../shared/interfaces';
 
 /* Service imports */
 import { CalculationsService } from '../../../services/calculations/calculations.service';

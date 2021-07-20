@@ -7,7 +7,12 @@ import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from
 import { toTitleCase } from '../../../shared/utility-functions/utilities';
 
 /* Interface imports */
-import { Process } from '../../../shared/interfaces/process';
+import {
+  CalendarProcess,
+  ManualProcess,
+  Process,
+  TimerProcess
+} from '../../../shared/interfaces';
 
 
 @Component({
@@ -116,13 +121,13 @@ export class ProcessFormPage implements OnInit {
       control['description'].setValue(this.update.description);
 
       if (this.update.type === 'manual') {
-        control['expectedDuration'].setValue(this.update.expectedDuration);
+        control['expectedDuration'].setValue((<ManualProcess>this.update).expectedDuration);
       } else {
         if (this.update.type === 'timer') {
-          control['concurrent'].setValue(this.update.concurrent);
-          control['splitInterval'].setValue(this.update.splitInterval);
+          control['concurrent'].setValue((<TimerProcess>this.update).concurrent);
+          control['splitInterval'].setValue((<TimerProcess>this.update).splitInterval);
         }
-        control['duration'].setValue(this.update.duration);
+        control['duration'].setValue((<CalendarProcess | TimerProcess>this.update).duration);
       }
     }
   }

@@ -2,7 +2,7 @@
 import { Component, Input } from '@angular/core';
 
 /* Interface imports */
-import { YeastBatch } from '../../shared/interfaces/yeast-batch';
+import { YeastBatch } from '../../shared/interfaces';
 
 
 @Component({

@@ -6,8 +6,7 @@ import * as moment from 'moment';
 import { getId } from '../../shared/utility-functions/id-helpers';
 
 /* Interface imports */
-import { Alert } from '../../shared/interfaces/alert';
-import { CalendarDate } from '../../shared/interfaces/calendar-date';
+import { Alert, CalendarDate } from '../../shared/interfaces';
 
 
 @Component({

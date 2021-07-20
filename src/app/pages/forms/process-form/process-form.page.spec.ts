@@ -13,7 +13,7 @@ import { HeaderComponentStub } from '../../../../../test-config/component-stubs'
 import { ModalControllerStub } from '../../../../../test-config/ionic-stubs';
 
 /* Interface imports */
-import { Process } from '../../../shared/interfaces/process';
+import { CalendarProcess, ManualProcess, Process, TimerProcess } from '../../../shared/interfaces';
 
 /* Page imports */
 import { ProcessFormPage } from './process-form.page';
@@ -173,10 +173,7 @@ describe('ProcessFormPage', (): void => {
     });
 
     test('should map manual type update to form', (): void => {
-      const _mockManualProcess: Process = mockProcessSchedule()
-        .find((process: Process): boolean => {
-          return process.type.toLowerCase() === 'manual';
-        });
+      const _mockManualProcess: ManualProcess = <ManualProcess>(mockProcessSchedule())[0];
 
       processFormPage.processForm = initDefaultForm();
       processFormPage.processForm.controls.type.setValue('manual');
@@ -195,10 +192,7 @@ describe('ProcessFormPage', (): void => {
     });
 
     test('should map timer type update to form', (): void => {
-      const _mockTimerProcess: Process = mockProcessSchedule()
-        .find((process: Process): boolean => {
-          return process.type.toLowerCase() === 'timer';
-        });
+      const _mockTimerProcess: TimerProcess = <TimerProcess>(mockProcessSchedule())[2];
 
       processFormPage.processForm = initDefaultForm();
       processFormPage.processForm.controls.type.setValue('timer');
@@ -221,10 +215,7 @@ describe('ProcessFormPage', (): void => {
     });
 
     test('should map calendar type update to form', (): void => {
-      const _mockCalendarProcess: Process = mockProcessSchedule()
-        .find((process: Process): boolean => {
-          return process.type.toLowerCase() === 'calendar';
-        });
+      const _mockCalendarProcess: CalendarProcess = <CalendarProcess>(mockProcessSchedule())[13];
 
       processFormPage.processForm = initDefaultForm();
       processFormPage.processForm.controls.type.setValue('calendar');
@@ -277,16 +268,13 @@ describe('ProcessFormPage', (): void => {
 
 
   describe('Render Template', (): void => {
-    const _mockProcessSchedule: Process[] = mockProcessSchedule();
 
     test('should render form controls', (): void => {
       processFormPage.ngOnInit = originalOnInit;
       processFormPage.processType = 'manual';
       processFormPage.formMode = 'update';
-      const _mockManualProcess: Process = _mockProcessSchedule
-        .find((process: Process): boolean => {
-          return process.type.toLowerCase() === 'manual';
-        });
+
+      const _mockManualProcess: ManualProcess = <ManualProcess>(mockProcessSchedule())[0];
       _mockManualProcess.expectedDuration = 30;
       processFormPage.update = _mockManualProcess;
 
@@ -303,10 +291,8 @@ describe('ProcessFormPage', (): void => {
       processFormPage.ngOnInit = originalOnInit;
       processFormPage.processType = 'manual';
       processFormPage.formMode = 'update';
-      const _mockManualProcess: Process = _mockProcessSchedule
-        .find((process: Process): boolean => {
-          return process.type.toLowerCase() === 'manual';
-        });
+
+      const _mockManualProcess: ManualProcess = <ManualProcess>(mockProcessSchedule())[0];
       _mockManualProcess.expectedDuration = 30;
       processFormPage.update = _mockManualProcess;
 
@@ -331,10 +317,8 @@ describe('ProcessFormPage', (): void => {
       processFormPage.ngOnInit = originalOnInit;
       processFormPage.processType = 'manual';
       processFormPage.formMode = 'update';
-      const _mockManualProcess: Process = _mockProcessSchedule
-        .find((process: Process): boolean => {
-          return process.type.toLowerCase() === 'manual';
-        });
+
+      const _mockManualProcess: Process = <ManualProcess>(mockProcessSchedule())[0];
       _mockManualProcess.name = 'a';
       _mockManualProcess.description = Array(501).fill('a').join('');
       processFormPage.update = _mockManualProcess;
@@ -358,11 +342,8 @@ describe('ProcessFormPage', (): void => {
       processFormPage.ngOnInit = originalOnInit;
       processFormPage.processType = 'timer';
       processFormPage.formMode = 'update';
-      const _mockTimerProcess: Process = _mockProcessSchedule
-        .find((process: Process): boolean => {
-          return process.type.toLowerCase() === 'timer';
-        });
-      _mockTimerProcess.expectedDuration = 30;
+
+      const _mockTimerProcess: TimerProcess = <TimerProcess>(mockProcessSchedule())[2];
       processFormPage.update = _mockTimerProcess;
 
       fixture.detectChanges();
@@ -394,10 +375,8 @@ describe('ProcessFormPage', (): void => {
       processFormPage.ngOnInit = originalOnInit;
       processFormPage.processType = 'timer';
       processFormPage.formMode = 'update';
-      const _mockTimerProcess: Process = _mockProcessSchedule
-        .find((process: Process): boolean => {
-          return process.type.toLowerCase() === 'timer';
-        });
+
+      const _mockTimerProcess: TimerProcess = <TimerProcess>(mockProcessSchedule())[2];
       _mockTimerProcess.name = 'a';
       _mockTimerProcess.description = Array(501).fill('a').join('');
       _mockTimerProcess.duration = -1;
@@ -427,10 +406,8 @@ describe('ProcessFormPage', (): void => {
       processFormPage.ngOnInit = originalOnInit;
       processFormPage.processType = 'calendar';
       processFormPage.formMode = 'update';
-      const _mockCalendarProcess: Process = _mockProcessSchedule
-        .find((process: Process): boolean => {
-          return process.type.toLowerCase() === 'calendar';
-        });
+
+      const _mockCalendarProcess: CalendarProcess = <CalendarProcess>(mockProcessSchedule())[13];
       _mockCalendarProcess.duration = 30;
       processFormPage.update = _mockCalendarProcess;
 
@@ -455,14 +432,12 @@ describe('ProcessFormPage', (): void => {
       processFormPage.ngOnInit = originalOnInit;
       processFormPage.processType = 'calendar';
       processFormPage.formMode = 'update';
-      const _mockTimerProcess: Process = _mockProcessSchedule
-        .find((process: Process): boolean => {
-          return process.type.toLowerCase() === 'calendar';
-        });
-      _mockTimerProcess.name = 'a';
-      _mockTimerProcess.description = Array(501).fill('a').join('');
-      _mockTimerProcess.duration = -1;
-      processFormPage.update = _mockTimerProcess;
+
+      const _mockCalendarProcess: CalendarProcess = <CalendarProcess>(mockProcessSchedule())[13];
+      _mockCalendarProcess.name = 'a';
+      _mockCalendarProcess.description = Array(501).fill('a').join('');
+      _mockCalendarProcess.duration = -1;
+      processFormPage.update = _mockCalendarProcess;
 
       fixture.detectChanges();
 

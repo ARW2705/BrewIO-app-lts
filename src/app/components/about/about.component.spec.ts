@@ -6,8 +6,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Constant imports */
-import { API_VERSION } from '../../shared/constants/api-version';
-import { APP_VERSION } from '../../shared/constants/app-version';
+import { API_VERSION, APP_VERSION } from '../../shared/constants';
 
 /* Component imports */
 import { AboutComponent } from './about.component';

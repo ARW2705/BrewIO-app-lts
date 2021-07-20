@@ -7,12 +7,16 @@ import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
 import { compareWith, roundToDecimalPlace, toTitleCase } from '../../../shared/utility-functions/utilities';
 
 /* Interface imports */
-import { Grains, Hops, Yeast } from '../../../shared/interfaces/library';
-import { GrainBill } from '../../../shared/interfaces/grain-bill';
-import { HopsSchedule } from '../../../shared/interfaces/hops-schedule';
-import { YeastBatch } from '../../../shared/interfaces/yeast-batch';
-import { OtherIngredients } from '../../../shared/interfaces/other-ingredients';
-import { SelectedUnits } from '../../../shared/interfaces/units';
+import {
+  GrainBill,
+  Grains,
+  HopsSchedule,
+  Hops,
+  OtherIngredients,
+  SelectedUnits,
+  YeastBatch,
+  Yeast
+} from '../../../shared/interfaces';
 
 /* Service imports */
 import { CalculationsService } from '../../../services/calculations/calculations.service';

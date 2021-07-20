@@ -2,8 +2,7 @@
 import { Component, Input, OnChanges, ViewChild } from '@angular/core';
 
 /* Interface imports */
-import { Alert } from '../../shared/interfaces/alert';
-import { Process } from '../../shared/interfaces/process';
+import { Alert, CalendarProcess } from '../../shared/interfaces';
 
 /* Utility imports */
 import { getId } from '../../shared/utility-functions/id-helpers';
@@ -23,7 +22,7 @@ import { EventService } from '../../services/event/event.service';
 export class ProcessCalendarComponent implements OnChanges {
   @Input() alerts: Alert[];
   @Input() isPreview: boolean;
-  @Input() stepData: Process;
+  @Input() stepData: CalendarProcess;
   @ViewChild('calendar') calendarRef: CalendarComponent;
   closestAlert: Alert = null;
   currentStepCalendarData: object = {};

@@ -4,13 +4,13 @@ import { BehaviorSubject, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 /* Interface imports */
-import { Process } from '../../shared/interfaces/process';
-import { Timer } from '../../shared/interfaces/timer';
+import { TimerProcess, Timer } from '../../shared/interfaces';
 
 /* Utility imports */
 import { hasId } from '../../shared/utility-functions/id-helpers';
 
 /* Service imports */
+import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
 import { TimerService } from '../../services/timer/timer.service';
 import { ToastService } from '../../services/toast/toast.service';
 
@@ -23,7 +23,7 @@ import { ToastService } from '../../services/toast/toast.service';
 export class ProcessTimerComponent implements OnInit, OnChanges, OnDestroy {
   @Input() batchId: string;
   @Input() isPreview: boolean;
-  @Input() stepData: Process[];
+  @Input() stepData: TimerProcess[];
   @ViewChildren('slidingTimers') slidingTimers: QueryList<ElementRef>;
   destroy$: Subject<boolean> = new Subject<boolean>();
   isConcurrent: boolean = false;
@@ -38,6 +38,7 @@ export class ProcessTimerComponent implements OnInit, OnChanges, OnDestroy {
   timers: Timer[] = [];
 
   constructor(
+    public errorReporter: ErrorReportingService,
     public timerService: TimerService,
     public toastService: ToastService
   ) {
@@ -101,12 +102,7 @@ export class ProcessTimerComponent implements OnInit, OnChanges, OnDestroy {
     this.timerService.addTimeToTimer(this.batchId, timer.cid)
       .subscribe(
         (): void => console.log('added time to timer', timer.cid),
-        (error: string): void => {
-          console.log('error adding time to timer', error);
-          this.toastService.presentErrorToast(
-            'Error: unable to add time to timer'
-          );
-        }
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
@@ -128,18 +124,15 @@ export class ProcessTimerComponent implements OnInit, OnChanges, OnDestroy {
    * @return: none
    */
   resetSingleTimer(timer: Timer): void {
-    const process: Process = this.stepData
-      .find((_process: Process): boolean => {
+    const process: TimerProcess = this.stepData
+      .find((_process: TimerProcess): boolean => {
         return hasId(_process, timer.timer.cid);
       });
 
     this.timerService.resetTimer(this.batchId, timer.cid, process.duration)
       .subscribe(
         (): void => console.log('reset timer', timer.cid),
-        (error: string): void => {
-          console.log('error resetting timer', error);
-          this.toastService.presentErrorToast('Error: unable to reset timer');
-        }
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
@@ -164,10 +157,7 @@ export class ProcessTimerComponent implements OnInit, OnChanges, OnDestroy {
     this.timerService.startTimer(this.batchId, timer.cid)
       .subscribe(
         (): void => console.log('started timer', timer.cid),
-        (error: string): void => {
-          console.log('error starting timer', error);
-          this.toastService.presentErrorToast('Error: unable to start timer');
-        }
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
@@ -192,10 +182,7 @@ export class ProcessTimerComponent implements OnInit, OnChanges, OnDestroy {
     this.timerService.stopTimer(this.batchId, timer.cid)
       .subscribe(
         (): void => console.log('stopped timer', timer.cid),
-        (error: string): void => {
-          console.log('error stopping timer', error);
-          this.toastService.presentErrorToast('Error: unable to stop timer');
-        }
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 

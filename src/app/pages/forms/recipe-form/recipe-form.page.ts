@@ -3,22 +3,27 @@ import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute, Navigation } from '@angular/router';
 import { ModalController, IonContent } from '@ionic/angular';
 import { Observable, Subject, from, of, throwError } from 'rxjs';
-import { mergeMap, takeUntil } from 'rxjs/operators';
+import { catchError, mergeMap, takeUntil } from 'rxjs/operators';
 
 /* Interface imports */
-import { Grains, Hops, Yeast, Style } from '../../../shared/interfaces/library';
-import { GrainBill } from '../../../shared/interfaces/grain-bill';
-import { HopsSchedule } from '../../../shared/interfaces/hops-schedule';
-import { OtherIngredients } from '../../../shared/interfaces/other-ingredients';
-import { Process } from '../../../shared/interfaces/process';
-import { RecipeMaster } from '../../../shared/interfaces/recipe-master';
-import { RecipeVariant } from '../../../shared/interfaces/recipe-variant';
-import { SelectedUnits } from '../../../shared/interfaces/units';
-import { YeastBatch } from '../../../shared/interfaces/yeast-batch';
+import {
+  GrainBill,
+  Grains,
+  HopsSchedule,
+  Hops,
+  OtherIngredients,
+  Process,
+  RecipeMaster,
+  RecipeVariant,
+  SelectedUnits,
+  Style,
+  TimerProcess,
+  YeastBatch,
+  Yeast
+} from '../../../shared/interfaces';
 
 /* Default imports */
-import { defaultRecipeMaster } from '../../../shared/defaults/default-recipe-master';
-import { defaultStyle } from '../../../shared/defaults/default-style';
+import { defaultRecipeMaster, defaultStyle } from '../../../shared/defaults';
 
 /* Utility function imports */
 import { clone } from '../../../shared/utility-functions/clone';
@@ -37,6 +42,7 @@ import { NoteListComponent } from '../../../components/note-list/note-list.compo
 import { ActionSheetService } from '../../../services/action-sheet/action-sheet.service';
 import { CalculationsService } from '../../../services/calculations/calculations.service';
 import { ClientIdService } from '../../../services/client-id/client-id.service';
+import { ErrorReportingService } from '../../../services/error-reporting/error-reporting.service';
 import { LibraryService } from '../../../services/library/library.service';
 import { PreferencesService } from '../../../services/preferences/preferences.service';
 import { RecipeService } from '../../../services/recipe/recipe.service';
@@ -83,6 +89,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
     public actionService: ActionSheetService,
     public calculator: CalculationsService,
     public clientIdService: ClientIdService,
+    public errorReporter: ErrorReportingService,
     public libraryService: LibraryService,
     public modalCtrl: ModalController,
     public preferenceService: PreferencesService,
@@ -136,10 +143,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
           this.yeastLibrary = <Yeast[]>yeastLibrary;
           this.styleLibrary = <Style[]>styleLibrary;
         },
-        (error: string): void => {
-          console.log('Library error', error);
-          this.onInitError('Error loading ingredient libraries');
-        }
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
@@ -155,27 +159,23 @@ export class RecipeFormPage implements OnInit, OnDestroy {
       .pipe(
         takeUntil(this.destroy$),
         mergeMap((): Observable<null> => {
-          try {
-            const nav: Navigation = this.router.getCurrentNavigation();
-            const options: object = nav.extras.state;
-            this.setFormTypeConfiguration(
-              options['formType'],
-              options['docMethod'],
-              options['masterData'],
-              options['variantData']
-            );
-            this.isLoaded = true;
-            this.refreshPipes = !this.refreshPipes;
-            return of(null);
-          } catch (error) {
-            console.log('Navigation/Setup error', error);
-            return throwError(error.message);
-          }
-        })
+          const nav: Navigation = this.router.getCurrentNavigation();
+          const options: object = nav.extras.state;
+          this.setFormTypeConfiguration(
+            options['formType'],
+            options['docMethod'],
+            options['masterData'],
+            options['variantData']
+          );
+          this.isLoaded = true;
+          this.refreshPipes = !this.refreshPipes;
+          return of(null);
+        }),
+        catchError(this.errorReporter.handleGenericCatchError())
       )
       .subscribe(
         (): void => {},
-        (error: string): void => this.onInitError(error)
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
@@ -197,21 +197,6 @@ export class RecipeFormPage implements OnInit, OnDestroy {
     }
 
     return message;
-  }
-
-  /**
-   * Present toast errors on initialization error
-   * then navigate to previous route on toast dismiss
-   *
-   * @params: message - error message to display
-   *
-   * @return: none
-   */
-  onInitError(message: string): void {
-    this.toastService.presentErrorToast(
-      message,
-      this.navToPreviousRoute.bind(this)
-    );
   }
 
   /***** End Initializations *****/
@@ -628,7 +613,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
     const boilIndex: number = this.getProcessIndex('name', 'Boil');
 
     if (boilIndex === -1) {
-      this.variant.processSchedule.push({
+      this.variant.processSchedule.push(<TimerProcess>{
         cid: this.clientIdService.getNewId(),
         type: 'timer',
         name: 'Boil',
@@ -638,7 +623,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
         splitInterval: 1
       });
     } else {
-      const boilStep: Process = this.variant.processSchedule[boilIndex];
+      const boilStep: TimerProcess = <TimerProcess>this.variant.processSchedule[boilIndex];
       if (boilStep.duration !== boilDuration) {
         boilStep.duration = boilDuration;
         this.autoSetHopsAdditions();
@@ -689,7 +674,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
 
       // set boil step timer as concurrent is timers were added
       const finalBoilIndex: number = updatedBoilIndex + hopsProcesses.length;
-      this.variant.processSchedule[finalBoilIndex].concurrent = !!hopsProcesses.length;
+      (<TimerProcess>this.variant.processSchedule[finalBoilIndex]).concurrent = !!hopsProcesses.length;
     }
   }
 
@@ -704,7 +689,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
     const mashIndex: number = this.getProcessIndex('name', 'Mash');
 
     if (mashIndex === -1) {
-      this.variant.processSchedule.push({
+      this.variant.processSchedule.push(<TimerProcess>{
         cid: this.clientIdService.getNewId(),
         type: 'timer',
         name: 'Mash',
@@ -714,7 +699,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
         splitInterval: 1
       });
     } else {
-      this.variant.processSchedule[mashIndex].duration = mashDuration;
+      (<TimerProcess>this.variant.processSchedule[mashIndex]).duration = mashDuration;
     }
   }
 
@@ -746,7 +731,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
     return this.variant.hops
       .filter((hops: HopsSchedule): boolean => !hops.dryHop)
       .sort((h1: HopsSchedule, h2: HopsSchedule): number => h2.duration - h1.duration)
-      .map((hopsAddition: HopsSchedule): Process => {
+      .map((hopsAddition: HopsSchedule): TimerProcess => {
         return {
           cid: this.clientIdService.getNewId(),
           type: 'timer',

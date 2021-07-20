@@ -2,6 +2,7 @@
 import { Injectable } from '@angular/core';
 import { Platform } from '@ionic/angular';
 import { Network } from '@ionic-native/network/ngx';
+import { Observable, EMPTY } from 'rxjs';
 
 
 @Injectable({
@@ -34,7 +35,7 @@ export class ConnectionService {
   /**
    * Check if device is connected to a network
    *
-   * @params: none
+   * @param: none
    *
    * @return: true if connected to a network
    */
@@ -43,9 +44,20 @@ export class ConnectionService {
   }
 
   /**
+   * Get listener for network on connect event
+   *
+   * @param: none
+   *
+   * @return: observable of network connection listener
+   */
+  listenForConnection(): Observable<any> {
+    return this.platform.is('cordova') ? this.network.onConnect() : EMPTY;
+  }
+
+  /**
    * Set up network connection monitors
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   monitor(): void {
@@ -68,7 +80,7 @@ export class ConnectionService {
   /**
    * Toggle offline mode
    *
-   * @params: offline - true if offline mode should be active
+   * @param: offline - true if offline mode should be active
    *
    * @return: none
    */

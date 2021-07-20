@@ -2,7 +2,7 @@
 import { Component, Input } from '@angular/core';
 
 /* Interface imports */
-import { Process } from '../../shared/interfaces/process';
+import { ManualProcess } from '../../shared/interfaces';
 
 
 @Component({
@@ -11,7 +11,7 @@ import { Process } from '../../shared/interfaces/process';
   styleUrls: ['./process-manual.component.scss']
 })
 export class ProcessManualComponent {
-  @Input() stepData: Process;
+  @Input() stepData: ManualProcess;
 
   constructor() { }
 

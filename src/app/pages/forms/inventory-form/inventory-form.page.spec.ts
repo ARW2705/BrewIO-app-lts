@@ -10,19 +10,16 @@ import { configureTestBed } from '../../../../../test-config/configure-test-bed'
 
 /* Mock imports */
 import { mockAuthor, mockBatch, mockInventoryItem, mockImage, mockStyles } from '../../../../../test-config/mock-models';
-import { CalculationsServiceStub, ImageServiceStub, LibraryServiceStub, PreferencesServiceStub, RecipeServiceStub, ToastServiceStub, UserServiceStub } from '../../../../../test-config/service-stubs';
+import { CalculationsServiceStub, ErrorReportingServiceStub, ImageServiceStub, LibraryServiceStub, PreferencesServiceStub, RecipeServiceStub, ToastServiceStub, UserServiceStub } from '../../../../../test-config/service-stubs';
 import { HeaderComponentStub, QuantityHelperComponentStub } from '../../../../../test-config/component-stubs';
 import { LoadingControllerStub, ModalControllerStub, ModalStub } from '../../../../../test-config/ionic-stubs';
 
 /* Interface imports */
-import { Author } from '../../../shared/interfaces/author';
-import { Batch } from '../../../shared/interfaces/batch';
-import { Image } from '../../../shared/interfaces/image';
-import { InventoryItem } from '../../../shared/interfaces/inventory-item';
-import { Style } from '../../../shared/interfaces/library';
+import { Author, Batch, Image, InventoryItem, Style } from '../../../shared/interfaces';
 
 /* Service imports */
 import { CalculationsService } from '../../../services/calculations/calculations.service';
+import { ErrorReportingService } from '../../../services/error-reporting/error-reporting.service';
 import { ImageService } from '../../../services/image/image.service';
 import { LibraryService } from '../../../services/library/library.service';
 import { PreferencesService } from '../../../services/preferences/preferences.service';
@@ -71,6 +68,7 @@ describe('InventoryFormPage', (): void => {
       ],
       providers: [
         { provide: CalculationsService, useClass: CalculationsServiceStub },
+        { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: ImageService, useClass: ImageServiceStub },
         { provide: LibraryService, useClass: LibraryServiceStub },
         { provide: LoadingController, useClass: LoadingControllerStub },
@@ -133,6 +131,10 @@ describe('InventoryFormPage', (): void => {
         .fn()
         .mockReturnValue(Promise.resolve());
 
+      invFormPage.loadingCtrl.getTop = jest
+        .fn()
+        .mockReturnValue(Promise.resolve(true));
+
       const getSpy: jest.SpyInstance = jest.spyOn(invFormPage, 'getAuthor');
       const initSpy: jest.SpyInstance = jest.spyOn(invFormPage, 'initForm');
 
@@ -149,13 +151,14 @@ describe('InventoryFormPage', (): void => {
     });
 
     test('should get error on component init', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
       const _mockAuthor: Author = mockAuthor();
       invFormPage.options = {};
       invFormPage.ngOnInit = originalOnInit;
 
       invFormPage.getStyleLibrary = jest
         .fn()
-        .mockReturnValue(throwError('test-error'));
+        .mockReturnValue(throwError(_mockError));
 
       invFormPage.getAuthor = jest
         .fn()
@@ -168,15 +171,19 @@ describe('InventoryFormPage', (): void => {
         .fn()
         .mockImplementation((page: InventoryFormPage): () => void => page.dismiss);
 
-      const toastSpy: jest.SpyInstance = jest.spyOn(invFormPage.toastService, 'presentErrorToast');
+      invFormPage.loadingCtrl.getTop = jest
+        .fn()
+        .mockReturnValue(Promise.resolve(false));
+
+      invFormPage.errorReporter.handleUnhandledError = jest
+        .fn();
+
+      const errorSpy: jest.SpyInstance = jest.spyOn(invFormPage.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
       setTimeout((): void => {
-        expect(toastSpy).toHaveBeenCalledWith(
-          'Error loading inventory form',
-          invFormPage.dismiss
-        );
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
     });

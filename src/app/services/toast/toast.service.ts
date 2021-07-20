@@ -3,17 +3,21 @@ import { Injectable } from '@angular/core';
 import { ToastController } from '@ionic/angular';
 
 /* Interface imports */
-import { ToastButton } from '../../shared/interfaces/toast-button';
+import { ToastButton } from '../../shared/interfaces';
+
+/* Type imports */
+import { CustomError } from '../../shared/types';
 
 /* Default imports */
-import { defaultDismissButton } from '../../shared/defaults/default-dismiss-button';
+import { defaultDismissButton } from '../../shared/defaults';
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class ToastService {
 
-  constructor(private toastCtrl: ToastController) { }
+  constructor(public toastCtrl: ToastController) { }
 
   /**
    * Construct an error toast to present
@@ -60,7 +64,7 @@ export class ToastService {
     const toastOptions: object = {
       message: message,
       cssClass: 'toast-main',
-      buttons: [ defaultDismissButton ]
+      buttons: [ defaultDismissButton() ]
     };
 
     if (duration) {

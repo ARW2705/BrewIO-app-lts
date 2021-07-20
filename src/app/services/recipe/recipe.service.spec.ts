@@ -8,38 +8,99 @@ import { BehaviorSubject, Observable, Subject, forkJoin, of, throwError } from '
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockAuthor, mockHopsSchedule, mockOtherIngredients, mockImage, mockImageRequestMetadata, mockRecipeMasterActive, mockRecipeMasterInactive, mockRecipeVariantComplete, mockRecipeVariantIncomplete, mockErrorResponse, mockProcessSchedule, mockStyles, mockUser, mockSyncError, mockSyncMetadata, mockSyncResponse } from '../../../../test-config/mock-models';
-import { ClientIdServiceStub, ConnectionServiceStub, EventServiceStub, HttpErrorServiceStub, ImageServiceStub, StorageServiceStub, SyncServiceStub, ToastServiceStub, UserServiceStub } from '../../../../test-config/service-stubs';
+import {
+  mockAuthor,
+  mockOtherIngredients,
+  mockGrainBill,
+  mockHopsSchedule,
+  mockImage,
+  mockImageRequestMetadata,
+  mockRecipeMasterActive,
+  mockRecipeMasterInactive,
+  mockRecipeVariantComplete,
+  mockRecipeVariantIncomplete,
+  mockErrorResponse,
+  mockProcessSchedule,
+  mockStyles,
+  mockUser,
+  mockSyncError,
+  mockSyncMetadata,
+  mockSyncResponse,
+  mockYeastBatch
+} from '../../../../test-config/mock-models';
+
+import {
+  ClientIdServiceStub,
+  ConnectionServiceStub,
+  ErrorReportingServiceStub,
+  EventServiceStub,
+  HttpErrorServiceStub,
+  ImageServiceStub,
+  LibraryServiceStub,
+  StorageServiceStub,
+  SyncServiceStub,
+  ToastServiceStub,
+  TypeGuardServiceStub,
+  UserServiceStub
+} from '../../../../test-config/service-stubs';
 
 /* Constants imports */
-import { API_VERSION } from '../../shared/constants/api-version';
-import { BASE_URL } from '../../shared/constants/base-url';
+import { API_VERSION, BASE_URL } from '../../shared/constants';
 
 /* Interface imports */
-import { Author } from '../../shared/interfaces/author';
-import { HopsSchedule } from '../../shared/interfaces/hops-schedule';
-import { Image, ImageRequestMetadata } from '../../shared/interfaces/image';
-import { OtherIngredients } from '../../shared/interfaces/other-ingredients';
-import { Process } from '../../shared/interfaces/process';
-import { RecipeMaster } from '../../shared/interfaces/recipe-master';
-import { RecipeVariant } from '../../shared/interfaces/recipe-variant';
-import { Style } from '../../shared/interfaces/library';
-import { SyncData, SyncError, SyncRequests, SyncResponse } from '../../shared/interfaces/sync';
-import { User } from '../../shared/interfaces/user';
+import {
+  Author,
+  GrainBill,
+  HopsSchedule,
+  Image,
+  ImageRequestMetadata,
+  OtherIngredients,
+  Process,
+  RecipeMaster,
+  RecipeVariant,
+  Style,
+  SyncData,
+  SyncError,
+  SyncRequests,
+  SyncResponse,
+  User,
+  YeastBatch,
+} from '../../shared/interfaces';
+
+/* Type guard imports */
+import {
+  ProcessGuardMetadata,
+  CalendarProcessGuardMetadata,
+  ManualProcessGuardMetadata,
+  TimerProcessGuardMetadata,
+  GrainBillGuardMetadata,
+  GrainsGuardMetadata,
+  HopsScheduleGuardMetadata,
+  HopsGuardMetadata,
+  YeastBatchGuardMetadata,
+  YeastGuardMetadata,
+  OtherIngredientsGuardMetadata
+} from '../../shared/type-guard-metadata';
+
+/* Type imports */
+import { CustomError } from '../../shared/types';
 
 /* Default imports */
-import { defaultImage } from '../../shared/defaults/default-image';
+import { defaultImage } from '../../shared/defaults';
 
 /* Service imports */
 import { RecipeService } from './recipe.service';
 import { ClientIdService } from '../client-id/client-id.service';
 import { ConnectionService } from '../connection/connection.service';
+import { ErrorReportingService } from '../error-reporting/error-reporting.service';
 import { EventService } from '../event/event.service';
 import { HttpErrorService } from '../http-error/http-error.service';
 import { ImageService } from '../image/image.service';
+import { LibraryService } from '../library/library.service';
 import { StorageService } from '../storage/storage.service';
 import { SyncService } from '../sync/sync.service';
 import { ToastService } from '../toast/toast.service';
+import { TypeGuardService } from '../type-guard/type-guard.service';
 import { UserService } from '../user/user.service';
 
 
@@ -51,6 +112,8 @@ describe('RecipeService', (): void => {
   let originalRequest: any;
   let originalSync: any;
   let originalCan: any;
+  let originalMissingError: any;
+  let originalCheck: any;
   configureTestBed();
 
   beforeAll(async((): void => {
@@ -60,12 +123,15 @@ describe('RecipeService', (): void => {
         RecipeService,
         { provide: ClientIdService, useClass: ClientIdServiceStub },
         { provide: ConnectionService, useClass: ConnectionServiceStub },
+        { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: EventService, useClass: EventServiceStub },
         { provide: HttpErrorService, useClass: HttpErrorServiceStub },
         { provide: ImageService, useClass: ImageServiceStub },
+        { provide: LibraryService, useClass: LibraryServiceStub },
         { provide: StorageService, useClass: StorageServiceStub },
         { provide: SyncService, useClass: SyncServiceStub },
         { provide: ToastService, useClass: ToastServiceStub },
+        { provide: TypeGuardService, useClass: TypeGuardServiceStub },
         { provide: UserService, useClass: UserServiceStub }
       ]
     });
@@ -75,6 +141,12 @@ describe('RecipeService', (): void => {
     originalRequest = recipeService.requestInBackground;
     originalSync = recipeService.addSyncFlag;
     originalCan = recipeService.canSendRequest;
+    originalMissingError = recipeService.getMissingError;
+    recipeService.getMissingError = jest
+      .fn()
+      .mockImplementation((message: string, additional: string): Error => {
+        return new Error(`${message} ${additional}`);
+      });
   }));
 
   beforeEach((): void => {
@@ -87,6 +159,12 @@ describe('RecipeService', (): void => {
       .mockImplementation((error: HttpErrorResponse): Observable<never> => {
         return throwError(`<${error.status}> ${error.statusText}`);
       });
+    originalCheck = recipeService.checkTypeSafety;
+    recipeService.checkTypeSafety = jest
+      .fn()
+      .mockReturnValue(true);
+    recipeService.errorReporter.handleUnhandledError = jest
+      .fn();
     recipeService.requestInBackground = jest
       .fn();
     recipeService.addSyncFlag = jest
@@ -125,6 +203,8 @@ describe('RecipeService', (): void => {
       recipeService.event.emit = jest
         .fn();
 
+      recipeService.errorReporter.handleGenericCatchError = jest.fn();
+
       const emitSpy: jest.SpyInstance = jest.spyOn(recipeService.event, 'emit');
       const mapSpy: jest.SpyInstance = jest.spyOn(recipeService, 'mapRecipeMasterArrayToSubjects');
       const updateSpy: jest.SpyInstance = jest.spyOn(recipeService, 'updateRecipeStorage');
@@ -144,6 +224,8 @@ describe('RecipeService', (): void => {
     });
 
     test('should get an error trying to init from server', (done: jest.DoneCallback): void => {
+      const _mockHttpError: HttpErrorResponse = mockErrorResponse(404, 'not found');
+
       recipeService.syncOnConnection = jest
         .fn()
         .mockReturnValue(of(true));
@@ -151,20 +233,32 @@ describe('RecipeService', (): void => {
       recipeService.event.emit = jest
         .fn();
 
+      recipeService.errorReporter.handleGenericCatchError = jest
+        .fn()
+        .mockReturnValue((error: any): Observable<never> => {
+          console.log('GOT ERROR', error);
+          return throwError(null);
+        });
+
+      recipeService.errorReporter.handleUnhandledError = jest
+        .fn();
+
       const emitSpy: jest.SpyInstance = jest.spyOn(recipeService.event, 'emit');
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+      const errorSpy: jest.SpyInstance = jest.spyOn(recipeService.errorReporter, 'handleGenericCatchError');
+      const customSpy: jest.SpyInstance = jest.spyOn(recipeService.errorReporter, 'handleUnhandledError');
 
       recipeService.initFromServer();
 
       setTimeout((): void => {
         expect(emitSpy).toHaveBeenCalledWith('init-batches');
-        expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('Initialization message: <404> not found');
+        expect(errorSpy).toHaveBeenCalled();
+        expect(customSpy).toHaveBeenCalledWith(null);
         done();
       }, 10);
 
       const getReq: TestRequest = httpMock.expectOne(`${BASE_URL}/${API_VERSION}/recipes/private`);
       expect(getReq.request.method).toMatch('GET');
-      getReq.flush(null, mockErrorResponse(404, 'not found'));
+      getReq.flush(null, _mockHttpError);
     });
 
     test('should init from storage', (done: jest.DoneCallback): void => {
@@ -187,19 +281,21 @@ describe('RecipeService', (): void => {
       }, 10);
     });
 
-    test('should get an error trying to init from storage', (done: jest.DoneCallback): void => {
+    test('should get an error trying to init from storage', (): void => {
+      const _mockError: Error = new Error('test-error');
+      const _mockSubject: Subject<any> = new Subject<any>();
+
       recipeService.storageService.getRecipes = jest
         .fn()
-        .mockReturnValue(throwError('test-error'));
+        .mockReturnValue(_mockSubject);
 
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+      const customSpy: jest.SpyInstance = jest.spyOn(recipeService.errorReporter, 'handleUnhandledError');
 
       recipeService.initFromStorage();
 
-      setTimeout((): void => {
-        expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('test-error: awaiting data from server');
-        done();
-      }, 10);
+      _mockSubject.error(_mockError);
+
+      expect(customSpy).toHaveBeenCalledWith(_mockError);
     });
 
     test('should initialize recipe list', (): void => {
@@ -364,11 +460,12 @@ describe('RecipeService', (): void => {
         );
     });
 
-    test('should get an error getting public author due to missing recipe id', (done: jest.DoneCallback): void => {
+    test('should get missing author is recipe master does not have a server id', (done: jest.DoneCallback): void => {
       const _mockUser: User = mockUser();
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
       _mockRecipeMasterActive.owner = 'other';
       delete _mockRecipeMasterActive._id;
+      const _defaultImage: Image = defaultImage();
 
       recipeService.getRecipeMasterById = jest
         .fn()
@@ -380,13 +477,17 @@ describe('RecipeService', (): void => {
 
       recipeService.getPublicAuthorByRecipeId('0123456789012')
         .subscribe(
-          (results: any): void => {
-            console.log('Should not get results', results);
-            expect(true).toBe(false);
-          },
-          (error: string): void => {
-            expect(error).toMatch('Missing server id');
+          (author: Author): void => {
+            expect(author).toStrictEqual({
+              username: 'Not Found',
+              userImage: _defaultImage,
+              breweryLabelImage: _defaultImage
+            });
             done();
+          },
+          (error: any): void => {
+            console.log('Error in: should get missing author is recipe master does not have a server id', error);
+            expect(true).toBe(false);
           }
         );
     });
@@ -433,8 +534,6 @@ describe('RecipeService', (): void => {
         .fn()
         .mockImplementation(() => { throw new Error('unknown error'); });
 
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
-
       recipeService.getPublicAuthorByRecipeId('')
         .subscribe(
           (author: Author): void => {
@@ -443,9 +542,6 @@ describe('RecipeService', (): void => {
               userImage: _defaultImage,
               breweryLabelImage: _defaultImage
             });
-            const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
-            expect(consoleCalls[0]).toMatch('Error finding recipe');
-            expect(consoleCalls[1].message).toMatch('unknown error');
             done();
           },
           (error: any): void => {
@@ -457,6 +553,8 @@ describe('RecipeService', (): void => {
 
     test('should fetch public recipe master', (done: jest.DoneCallback): void => {
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
+
+      recipeService.errorReporter.handleGenericCatchError = jest.fn();
 
       recipeService.getPublicRecipeMasterById(_mockRecipeMasterActive._id)
         .subscribe(
@@ -476,14 +574,24 @@ describe('RecipeService', (): void => {
     });
 
     test('should get an error fetching public recipe master', (done: jest.DoneCallback): void => {
+      let handledError: boolean = false;
+
+      recipeService.errorReporter.handleGenericCatchError = jest
+        .fn()
+        .mockReturnValue((error: any): Observable<never> => {
+          handledError = true;
+          return throwError(null);
+        });
+
       recipeService.getPublicRecipeMasterById('test-id')
         .subscribe(
           (results: any): void => {
             console.log('Should not get results', results);
             expect(true).toBe(false);
           },
-          (error: string): void => {
-            expect(error).toMatch('<404> not found');
+          (error: any): void => {
+            expect(error).toBeNull();
+            expect(handledError).toBe(true);
             done();
           }
         );
@@ -497,6 +605,8 @@ describe('RecipeService', (): void => {
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
       const _mockRecipeMasterInactive: RecipeMaster = mockRecipeMasterInactive();
       const list: RecipeMaster[] = [ _mockRecipeMasterActive, _mockRecipeMasterInactive ];
+
+      recipeService.errorReporter.handleGenericCatchError = jest.fn();
 
       recipeService.getPublicRecipeMasterListByUser('user-id')
         .subscribe(
@@ -516,14 +626,24 @@ describe('RecipeService', (): void => {
     });
 
     test('should get an error trying to get a list of public recipe masters by user', (done: jest.DoneCallback): void => {
+      let handledError: boolean = false;
+
+      recipeService.errorReporter.handleGenericCatchError = jest
+        .fn()
+        .mockReturnValue((error: any): Observable<never> => {
+          handledError = true;
+          return throwError(null);
+        });
+
       recipeService.getPublicRecipeMasterListByUser('user-id')
         .subscribe(
           (results: any): void => {
             console.log('Should not get results', results);
             expect(true).toBe(false);
           },
-          (error: string): void => {
-            expect(error).toMatch('<404> not found');
+          (error: any): void => {
+            expect(error).toBeNull();
+            expect(handledError).toBe(true);
             done();
           }
         );
@@ -535,6 +655,8 @@ describe('RecipeService', (): void => {
 
     test('should fetch a public recipe variant', (done: jest.DoneCallback): void => {
       const _mockRecipeVariantComplete: RecipeVariant = mockRecipeVariantComplete();
+
+      recipeService.errorReporter.handleGenericCatchError = jest.fn();
 
       recipeService.getPublicRecipeVariantById('master-id', 'variant-id')
         .subscribe(
@@ -554,14 +676,24 @@ describe('RecipeService', (): void => {
     });
 
     test('should get an error trying to fetch a public recipe variant', (done: jest.DoneCallback): void => {
+      let handledError: boolean = false;
+
+      recipeService.errorReporter.handleGenericCatchError = jest
+        .fn()
+        .mockReturnValue((error: any): Observable<never> => {
+          handledError = true;
+          return throwError(null);
+        });
+
       recipeService.getPublicRecipeVariantById('master-id', 'variant-id')
         .subscribe(
           (results: any): void => {
             console.log('Should not get results', results);
             expect(true).toBe(false);
           },
-          (error: string): void => {
-            expect(error).toMatch('<404> not found');
+          (error: any): void => {
+            expect(error).toBeNull();
+            expect(handledError).toBe(true);
             done();
           }
         );
@@ -592,6 +724,8 @@ describe('RecipeService', (): void => {
         .fn()
         .mockReturnValue(of(_mockRecipeMasterActive));
 
+      recipeService.errorReporter.handleGenericCatchError = jest.fn();
+
       const requestSpy: jest.SpyInstance = jest.spyOn(recipeService, 'requestInBackground');
       const syncSpy: jest.SpyInstance = jest.spyOn(recipeService, 'addSyncFlag');
 
@@ -620,11 +754,21 @@ describe('RecipeService', (): void => {
       }, 10);
     });
 
-    test('should get an error tyring to create a recipe master', (done: jest.DoneCallback): void => {
+    test('should get an error trying to create a recipe master', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+      let handledError: boolean = false;
+
       recipeService.formatNewRecipeMaster = jest
         .fn()
         .mockImplementation((): Error => {
-          throw new Error('test-error');
+          throw _mockError;
+        });
+
+      recipeService.errorReporter.handleGenericCatchError = jest
+        .fn()
+        .mockReturnValue((error: any): Observable<never> => {
+          handledError = true;
+          return throwError(null);
         });
 
       recipeService.createRecipeMaster({})
@@ -633,8 +777,9 @@ describe('RecipeService', (): void => {
             console.log('Should not get results', results);
             expect(true).toBe(false);
           },
-          (error: string): void => {
-            expect(error).toMatch('test-error');
+          (error: any): void => {
+            expect(error).toBeNull();
+            expect(handledError).toBe(true);
             done();
           }
         );
@@ -655,6 +800,8 @@ describe('RecipeService', (): void => {
       recipeService.addRecipeVariantToMasterInList = jest
         .fn()
         .mockReturnValue(of(_mockRecipeVariantIncomplete));
+
+      recipeService.errorReporter.handleGenericCatchError = jest.fn();
 
       const requestSpy: jest.SpyInstance = jest.spyOn(recipeService, 'requestInBackground');
       const syncSpy: jest.SpyInstance = jest.spyOn(recipeService, 'addSyncFlag');
@@ -695,8 +842,8 @@ describe('RecipeService', (): void => {
             console.log('Should not get results', results);
             expect(true).toBe(false);
           },
-          (error: string): void => {
-            expect(error).toMatch('Recipe master with id master-id not found');
+          (error: Error): void => {
+            expect(error.message).toMatch('An error occurred trying to create new variant: missing source recipe Recipe master with id master-id not found');
             done();
           }
         );
@@ -723,7 +870,19 @@ describe('RecipeService', (): void => {
         .fn()
         .mockReturnValue(of(null));
 
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+      recipeService.canSendRequest = jest
+        .fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+
+      recipeService.requestInBackground = jest
+        .fn();
+
+      recipeService.addSyncFlag = jest
+        .fn();
+
+      recipeService.errorReporter.handleGenericCatchError = jest.fn();
+
       const requestSpy: jest.SpyInstance = jest.spyOn(recipeService, 'requestInBackground');
       const syncSpy: jest.SpyInstance = jest.spyOn(recipeService, 'addSyncFlag');
 
@@ -746,7 +905,6 @@ describe('RecipeService', (): void => {
         );
 
       setTimeout((): void => {
-        expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('image deletion');
         expect(requestSpy).toHaveBeenCalledWith('delete', _mockRecipeMasterActive);
         expect(syncSpy).toHaveBeenCalledWith('delete', 'master-id');
         done();
@@ -764,8 +922,8 @@ describe('RecipeService', (): void => {
             console.log('Should not get results', results);
             expect(true).toBe(false);
           },
-          (error: string): void => {
-            expect(error).toMatch('Master recipe not found');
+          (error: Error): void => {
+            expect(error.message).toMatch('An error occurred trying to remove recipe master: missing recipe Recipe master with id master-id not found');
             done();
           }
         );
@@ -783,6 +941,8 @@ describe('RecipeService', (): void => {
       recipeService.removeRecipeFromMasterInList = jest
         .fn()
         .mockReturnValue(of(true));
+
+      recipeService.errorReporter.handleGenericCatchError = jest.fn();
 
       const requestSpy: jest.SpyInstance = jest.spyOn(recipeService, 'requestInBackground');
       const syncSpy: jest.SpyInstance = jest.spyOn(recipeService, 'addSyncFlag');
@@ -812,7 +972,7 @@ describe('RecipeService', (): void => {
       }, 10);
     });
 
-    test('should get an error trying to remove a recipe variant', (done: jest.DoneCallback): void => {
+    test('should get an error trying to remove a recipe variant with a missing master', (done: jest.DoneCallback): void => {
       recipeService.getRecipeMasterById = jest
         .fn()
         .mockReturnValue(undefined);
@@ -823,8 +983,28 @@ describe('RecipeService', (): void => {
             console.log('Should not get results', results);
             expect(true).toBe(false);
           },
-          (error: string): void => {
-            expect(error).toMatch('Variant\'s master recipe not found');
+          (error: Error): void => {
+            expect(error.message).toMatch('An error occurred trying to remove variant: missing source recipe Recipe master with id master-id not found');
+            done();
+          }
+        );
+    });
+
+    test('should get an error trying to remove a recipe variant with a missing variant', (done: jest.DoneCallback): void => {
+      const _mockRecipeMasterInactive: RecipeMaster = mockRecipeMasterInactive();
+      const _mockRecipeMasterInactive$: BehaviorSubject<RecipeMaster> = new BehaviorSubject<RecipeMaster>(_mockRecipeMasterInactive);
+      recipeService.getRecipeMasterById = jest
+        .fn()
+        .mockReturnValue(_mockRecipeMasterInactive$);
+
+      recipeService.removeRecipeVariantById('master-id', 'variant-id')
+        .subscribe(
+          (results: any): void => {
+            console.log('Should not get results', results);
+            expect(true).toBe(false);
+          },
+          (error: Error): void => {
+            expect(error.message).toMatch('An error occurred trying to remove variant: missing variant Recipe variant with id variant-id not found');
             done();
           }
         );
@@ -856,6 +1036,8 @@ describe('RecipeService', (): void => {
       recipeService.updateRecipeMasterInList = jest
         .fn()
         .mockReturnValue(of(_mockUpdatedRecipe));
+
+      recipeService.errorReporter.handleGenericCatchError = jest.fn();
 
       const requestSpy: jest.SpyInstance = jest.spyOn(recipeService, 'requestInBackground');
       const syncSpy: jest.SpyInstance = jest.spyOn(recipeService, 'addSyncFlag');
@@ -902,8 +1084,8 @@ describe('RecipeService', (): void => {
             console.log('Should not get results', results);
             expect(true).toBe(false);
           },
-          (error: string): void => {
-            expect(error).toMatch('Update error: Recipe master with id master-id not found');
+          (error: Error): void => {
+            expect(error.message).toMatch('An error occurred trying to update recipe: missing recipe master Recipe master with id master-id not found');
             done();
           }
         );
@@ -921,6 +1103,8 @@ describe('RecipeService', (): void => {
       recipeService.getRecipeMasterById = jest
         .fn()
         .mockReturnValue(_mockRecipeMasterActive$);
+
+      recipeService.errorReporter.handleGenericCatchError = jest.fn();
 
       const requestSpy: jest.SpyInstance = jest.spyOn(recipeService, 'requestInBackground');
       const syncSpy: jest.SpyInstance = jest.spyOn(recipeService, 'addSyncFlag');
@@ -950,6 +1134,32 @@ describe('RecipeService', (): void => {
       }, 10);
     });
 
+    test('should get an error after updating variant but before updating server due to missing master', (done: jest.DoneCallback): void => {
+      recipeService.getRecipeMasterById = jest
+        .fn()
+        .mockReturnValue(undefined);
+
+      recipeService.errorReporter.handleGenericCatchError = jest
+        .fn()
+        .mockReturnValue((error: any): Observable<never> => throwError(error));
+
+      recipeService.updateRecipeVariantOfMasterInList = jest
+        .fn()
+        .mockReturnValue(of(null));
+
+      recipeService.updateRecipeVariantById('master-id', 'variant-id', {})
+        .subscribe(
+          (results: any): void => {
+            console.log('Should not get results', results);
+            expect(true).toBe(false);
+          },
+          (error: any): void => {
+            expect(error.message).toMatch('An error occurred trying to update variant: missing recipe master Recipe master with id master-id not found');
+            done();
+          }
+        );
+    });
+
   });
 
 
@@ -960,6 +1170,12 @@ describe('RecipeService', (): void => {
         .fn()
         .mockReturnValue(throwError(mockErrorResponse(404, 'not found')));
 
+      recipeService.errorReporter.handleGenericCatchError = jest
+        .fn()
+        .mockReturnValue((error: any): Observable<never> => {
+          return throwError(null);
+        });
+
       let checkCount = 0;
 
       recipeService.configureBackgroundRequest<RecipeMaster>('method', false, null, null)
@@ -968,8 +1184,8 @@ describe('RecipeService', (): void => {
             console.log('Should not get results', results);
             expect(true).toBe(false);
           },
-          (error: string): void => {
-            expect(error).toMatch('<404> not found');
+          (error: any): void => {
+            expect(error).toBeNull();
             checkCount++;
           }
         );
@@ -1099,21 +1315,17 @@ describe('RecipeService', (): void => {
     test('should get an error trying to get a background request with invalid method', (done: jest.DoneCallback): void => {
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
 
-      recipeService.imageService.blobbifyImages = jest
-        .fn()
-        .mockReturnValue(of([]));
-
-      const blobSpy: jest.SpyInstance = jest.spyOn(recipeService.imageService, 'blobbifyImages');
-
       recipeService.getBackgroundRequest<RecipeVariant>('invalid', _mockRecipeMasterActive)
         .subscribe(
           (results: any): void => {
             console.log('Should not get results', results);
             expect(true).toBe(false);
           },
-          (error: string): void => {
-            expect(error).toMatch('Invalid http method');
-            expect(blobSpy).toHaveBeenCalledWith([]);
+          (error: CustomError): void => {
+            expect(error.name).toMatch('HttpRequestError');
+            expect(error.message).toMatch('Invalid http method: invalid');
+            expect(error.severity).toEqual(2);
+            expect(error.message).toMatch('Invalid http method: invalid');
             done();
           }
         );
@@ -1166,6 +1378,8 @@ describe('RecipeService', (): void => {
         .fn()
         .mockReturnValue(of(_mockRecipeMasterActive));
 
+      recipeService.errorReporter.handleGenericCatchError = jest.fn();
+
       const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
 
       recipeService.requestInBackground('post', _mockRecipeMasterActive);
@@ -1190,6 +1404,8 @@ describe('RecipeService', (): void => {
         .fn()
         .mockReturnValue(of(_mockRecipeVariantComplete));
 
+      recipeService.errorReporter.handleGenericCatchError = jest.fn();
+
       const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
 
       recipeService.requestInBackground('patch', _mockRecipeMasterActive, _mockRecipeVariantComplete);
@@ -1200,7 +1416,7 @@ describe('RecipeService', (): void => {
       }, 10);
     });
 
-    test('should make a patch request in background', (done: jest.DoneCallback): void => {
+    test('should make a delete request in background', (done: jest.DoneCallback): void => {
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
 
       recipeService.requestInBackground = originalRequest;
@@ -1212,6 +1428,8 @@ describe('RecipeService', (): void => {
       recipeService.handleBackgroundUpdateResponse = jest
         .fn()
         .mockReturnValue(of(_mockRecipeMasterActive));
+
+      recipeService.errorReporter.handleGenericCatchError = jest.fn();
 
       const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
 
@@ -1226,39 +1444,52 @@ describe('RecipeService', (): void => {
     test('should get an error making an invalid request in background', (done: jest.DoneCallback): void => {
       recipeService.requestInBackground = originalRequest;
 
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
-      const toastSpy: jest.SpyInstance = jest.spyOn(recipeService.toastService, 'presentErrorToast');
+      recipeService.errorReporter.handleGenericCatchError = jest
+        .fn()
+        .mockImplementation((): (error: Error) => Observable<never> => {
+          return (error: Error): Observable<never> => {
+            expect(error.message).toMatch('Unknown sync type: invalid');
+            return throwError(null);
+          };
+        });
+
+      const errorSpy: jest.SpyInstance = jest.spyOn(recipeService.errorReporter, 'handleUnhandledError');
 
       recipeService.requestInBackground('invalid', null);
 
       setTimeout((): void => {
-        expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('Recipe: background invalid request error');
-        expect(toastSpy).toHaveBeenCalledWith('Recipe: update failed to save to server');
+        expect(errorSpy).toHaveBeenCalledWith(null);
         done();
-      }, 10);
+      });
     });
 
     test('should get an http error making a request in background', (done: jest.DoneCallback): void => {
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
+      const _mockHttpError: HttpErrorResponse = mockErrorResponse(404, 'not found', `${BASE_URL}/${API_VERSION}`);
 
       recipeService.requestInBackground = originalRequest;
 
       recipeService.getBackgroundRequest = jest
         .fn()
-        .mockReturnValue(throwError(mockErrorResponse(404, 'not found')));
+        .mockReturnValue(throwError(_mockHttpError));
 
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
-      const toastSpy: jest.SpyInstance = jest.spyOn(recipeService.toastService, 'presentErrorToast');
+      recipeService.errorReporter.handleGenericCatchError = jest
+        .fn()
+        .mockImplementation((): (error: HttpErrorResponse) => Observable<never> => {
+          return (error: HttpErrorResponse): Observable<never> => {
+            expect(error).toStrictEqual(_mockHttpError);
+            return throwError(null);
+          };
+        });
+
+      const errorSpy: jest.SpyInstance = jest.spyOn(recipeService.errorReporter, 'handleUnhandledError');
 
       recipeService.requestInBackground('post', _mockRecipeMasterActive);
 
       setTimeout((): void => {
-        const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
-        expect(consoleCalls[0]).toMatch('Recipe: background post request error');
-        expect(consoleCalls[1]).toMatch('<404> not found');
-        expect(toastSpy).toHaveBeenCalledWith('Recipe: update failed to save to server');
+        expect(errorSpy).toHaveBeenCalledWith(null);
         done();
-      }, 10);
+      });
     });
 
   });
@@ -1306,24 +1537,6 @@ describe('RecipeService', (): void => {
 
       expect(recipeService.syncErrors.length).toEqual(2);
       expect(recipeService.syncErrors[1]).toStrictEqual(_mockSyncError3);
-    });
-
-    test('should dismiss sync errors', (): void => {
-      const _mockSyncError1: SyncError = mockSyncError();
-      const _mockSyncError2: SyncError = mockSyncError();
-      const _mockSyncError3: SyncError = mockSyncError();
-
-      recipeService.syncErrors = [ _mockSyncError1, _mockSyncError2, _mockSyncError3 ];
-
-      expect((): void => {
-        recipeService.dismissSyncError(3);
-      })
-      .toThrowError('Invalid sync error index');
-
-      expect((): void => {
-        recipeService.dismissSyncError(-1);
-      })
-      .toThrowError('Invalid sync error index');
     });
 
     test('should generate sync requests successfully', (done: jest.DoneCallback): void => {
@@ -1495,6 +1708,8 @@ describe('RecipeService', (): void => {
       recipeService.updateRecipeStorage = jest
         .fn();
 
+      recipeService.errorReporter.handleGenericCatchError = jest.fn();
+
       const processSpy: jest.SpyInstance = jest.spyOn(recipeService, 'processSyncSuccess');
       const updateSpy: jest.SpyInstance = jest.spyOn(recipeService, 'updateRecipeStorage');
 
@@ -1536,6 +1751,9 @@ describe('RecipeService', (): void => {
       recipeService.updateRecipeStorage = jest
         .fn();
 
+      recipeService.errorReporter.handleGenericCatchError = jest
+        .fn();
+
       const processSpy: jest.SpyInstance = jest.spyOn(recipeService, 'processSyncSuccess');
       const updateSpy: jest.SpyInstance = jest.spyOn(recipeService, 'updateRecipeStorage');
 
@@ -1573,28 +1791,26 @@ describe('RecipeService', (): void => {
         );
     });
 
-    test('should sync on reconnect', (done: jest.DoneCallback): void => {
+    test('should sync on reconnect', (): void => {
+      const _mockSubject: Subject<any> = new Subject<any>();
+      const _mockError: Error = new Error('test-error');
+
       recipeService.syncOnConnection = jest
         .fn()
-        .mockReturnValueOnce(of({}))
-        .mockReturnValueOnce(throwError('test-error'));
+        .mockReturnValue(_mockSubject);
 
       const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
-      const toastSpy: jest.SpyInstance = jest.spyOn(recipeService.toastService, 'presentErrorToast');
+      const customSpy: jest.SpyInstance = jest.spyOn(recipeService.errorReporter, 'handleUnhandledError');
 
       recipeService.syncOnReconnect();
 
-      setTimeout((): void => {
-        expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).not.toMatch('Reconnect sync error');
+      _mockSubject.next();
 
-        recipeService.syncOnReconnect();
+      expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('sync on reconnect complete');
 
-        setTimeout((): void => {
-          expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('test-error: error on reconnect sync');
-          expect(toastSpy).toHaveBeenCalledWith('Error syncing recipes with server');
-          done();
-        }, 10);
-      }, 10);
+      _mockSubject.error(_mockError);
+
+      expect(customSpy).toHaveBeenCalledWith(_mockError);
     });
 
     test('should sync on signup', (done: jest.DoneCallback): void => {
@@ -1630,6 +1846,9 @@ describe('RecipeService', (): void => {
       recipeService.updateRecipeStorage = jest
         .fn();
 
+      recipeService.errorReporter.handleGenericCatchError = jest
+        .fn();
+
       const processSpy: jest.SpyInstance = jest.spyOn(recipeService, 'processSyncSuccess');
       const updateSpy: jest.SpyInstance = jest.spyOn(recipeService, 'updateRecipeStorage');
       const emitSpy: jest.SpyInstance = jest.spyOn(recipeService.event, 'emit');
@@ -1644,7 +1863,8 @@ describe('RecipeService', (): void => {
       }, 10);
     });
 
-    test('should get error syncing on signup', (done: jest.DoneCallback): void => {
+    test('should get error syncing on signup', (): void => {
+      const _mockSubject: Subject<any> = new Subject<any>();
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
       const _mockRecipeMasterActive$: BehaviorSubject<RecipeMaster> = new BehaviorSubject<RecipeMaster>(_mockRecipeMasterActive);
       const _mockRecipeList$: BehaviorSubject<BehaviorSubject<RecipeMaster>[]> = new BehaviorSubject<BehaviorSubject<RecipeMaster>[]>([_mockRecipeMasterActive$]);
@@ -1661,20 +1881,23 @@ describe('RecipeService', (): void => {
 
       recipeService.syncService.sync = jest
         .fn()
-        .mockReturnValue(throwError(_mockSyncResponse));
+        .mockReturnValue(_mockSubject);
 
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+      recipeService.errorReporter.handleGenericCatchError = jest
+        .fn()
+        .mockReturnValue((error: any): Observable<never> => {
+          return throwError(null);
+        });
+
+      const customSpy: jest.SpyInstance = jest.spyOn(recipeService.errorReporter, 'handleUnhandledError');
       const emitSpy: jest.SpyInstance = jest.spyOn(recipeService.event, 'emit');
 
       recipeService.syncOnSignup();
 
-      setTimeout((): void => {
-        const consoleCall: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
-        expect(consoleCall[0]).toMatch('Recipe sync error; continuing other sync events');
-        expect(consoleCall[1]['errors'][0]['message']).toMatch('Sync error: Cannot get recipe owner\'s id');
-        expect(emitSpy).toHaveBeenCalledWith('sync-batches-on-signup');
-        done();
-      }, 10);
+      _mockSubject.error(_mockSyncResponse);
+
+      expect(customSpy).toHaveBeenCalledWith(null);
+      expect(emitSpy).toHaveBeenCalledWith('sync-batches-on-signup');
     });
 
   });
@@ -1752,8 +1975,8 @@ describe('RecipeService', (): void => {
             console.log('Should not get results', results);
             expect(true).toBe(false);
           },
-          (error: string): void => {
-            expect(error).toMatch('Recipe master with id master-id not found');
+          (error: Error): void => {
+            expect(error.message).toMatch('An error occurred trying to add a new variant to its master: missing recipe master Recipe master with id master-id not found');
             done();
           }
         );
@@ -1829,10 +2052,17 @@ describe('RecipeService', (): void => {
         .fn()
         .mockReturnValue(_mockUser$);
 
+      const _mockError: CustomError = new CustomError(
+        'RecipeError',
+        'Client Validation Error: Missing User ID',
+        2,
+        'Client Validation Error: Missing User ID'
+      );
+
       expect((): void => {
         recipeService.formatNewRecipeMaster({});
       })
-      .toThrowError('Client Validation Error: Missing User ID');
+      .toThrow(_mockError);
     });
 
     test('should clear recipes', (): void => {
@@ -1883,6 +2113,17 @@ describe('RecipeService', (): void => {
 
     test('should get undefined if combining a hops schedule that is undefined', (): void => {
       expect(recipeService.getCombinedHopsSchedule(undefined)).toBeUndefined();
+    });
+
+    test('should get a custom error for a missing recipe', (): void => {
+      recipeService.getMissingError = originalMissingError;
+      const message: string = 'test-message';
+      const additional: string = 'test-additional';
+      const customError: CustomError = <CustomError>recipeService.getMissingError(message, additional);
+      expect(customError.name).toMatch('RecipeError');
+      expect(customError.message).toMatch('test-message test-additional');
+      expect(customError.severity).toEqual(2);
+      expect(customError.userMessage).toMatch('test-message');
     });
 
     test('should get a recipe master by id', (): void => {
@@ -1950,8 +2191,8 @@ describe('RecipeService', (): void => {
             console.log('Should not get reults', results);
             expect(true).toBe(false);
           },
-          (error: string): void => {
-            expect(error).toMatch('Recipe master with id master-id not found');
+          (error: Error): void => {
+            expect(error.message).toMatch('An error occurred trying to get variant by id: missing recipe master Recipe master with id master-id not found');
             done();
           }
         );
@@ -2018,9 +2259,17 @@ describe('RecipeService', (): void => {
     });
 
     test('should get an error trying to remove a recipe variant with a missing master', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+
       recipeService.getRecipeMasterById = jest
         .fn()
         .mockReturnValue(undefined);
+
+      recipeService.getMissingError = jest
+        .fn()
+        .mockReturnValue(_mockError);
+
+      const errorSpy: jest.SpyInstance = jest.spyOn(recipeService, 'getMissingError');
 
       recipeService.removeRecipeFromMasterInList('master-id', 'variant-id')
         .subscribe(
@@ -2028,8 +2277,12 @@ describe('RecipeService', (): void => {
             console.log('Should not get results', results);
             expect(true).toBe(false);
           },
-          (error: string): void => {
-            expect(error).toMatch('Recipe master with id master-id not found');
+          (error: Error): void => {
+            expect(error).toStrictEqual(_mockError);
+            expect(errorSpy).toHaveBeenCalledWith(
+              'An error occurred trying to remove variant from recipe master: missing recipe master',
+              'Recipe master with id master-id not found'
+            );
             done();
           }
         );
@@ -2049,8 +2302,10 @@ describe('RecipeService', (): void => {
             console.log('Should not get results', results);
             expect(true).toBe(false);
           },
-          (error: string): void => {
-            expect(error).toMatch('Delete error: recipe with id variant-id not found');
+          (error: Error): void => {
+            expect(error.message).toMatch(
+              'An error occurred trying to remove variant from recipe master: missing recipe variant Recipe variant with id variant-id from master with id master-id not found'
+            );
             done();
           }
         );
@@ -2102,8 +2357,10 @@ describe('RecipeService', (): void => {
             console.log('Should not get results', results);
             expect(true).toBe(false);
           },
-          (error: string): void => {
-            expect(error).toMatch('Delete error: Recipe master with id master-id not found');
+          (error: Error): void => {
+            expect(error.message).toMatch(
+              'An error occurred trying to remove recipe master from list: missing recipe master Recipe master with id master-id not found',
+            );
             done();
           }
         );
@@ -2219,23 +2476,28 @@ describe('RecipeService', (): void => {
       }, 10);
     });
 
-    test('should get an error trying to update recipe storage', (done: jest.DoneCallback): void => {
+    test('should get an error trying to update recipe storage', (): void => {
+      const _mockError: Error = new Error('test-error');
+      const _mockSubject: Subject<any> = new Subject<any>();
+
       recipeService.storageService.setRecipes = jest
         .fn()
-        .mockReturnValue(throwError('test-error'));
+        .mockReturnValue(_mockSubject);
 
       recipeService.getMasterList = jest
         .fn()
         .mockReturnValue(new BehaviorSubject<BehaviorSubject<RecipeMaster>[]>([]));
 
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+      recipeService.errorReporter.handleUnhandledError = jest
+        .fn();
+
+      const customSpy: jest.SpyInstance = jest.spyOn(recipeService.errorReporter, 'handleUnhandledError');
 
       recipeService.updateRecipeStorage();
 
-      setTimeout((): void => {
-        expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('recipe store error: test-error');
-        done();
-      }, 10);
+      _mockSubject.error(_mockError);
+
+      expect(customSpy).toHaveBeenCalledWith(_mockError);
     });
 
     test('should update a recipe master in list', (done: jest.DoneCallback): void => {
@@ -2278,8 +2540,10 @@ describe('RecipeService', (): void => {
             console.log('Should not get results', results);
             expect(true).toBe(false);
           },
-          (error: string): void => {
-            expect(error).toMatch('Update error: Recipe master with id master-id not found');
+          (error: Error): void => {
+            expect(error.message).toMatch(
+              'An error occurred trying to update recipe master: missing recipe master Recipe master with id master-id not found'
+            );
             done();
           }
         );
@@ -2374,8 +2638,10 @@ describe('RecipeService', (): void => {
             console.log('Should not get results', results);
             expect(true).toBe(false);
           },
-          (error: string): void => {
-            expect(error).toMatch('Recipe master with id master-id not found');
+          (error: Error): void => {
+            expect(error.message).toMatch(
+              'An error occurred trying to update variant from recipe master: missing recipe master Recipe master with id master-id not found',
+            );
             done();
           }
         );
@@ -2395,11 +2661,320 @@ describe('RecipeService', (): void => {
             console.log('Should not get results', results);
             expect(true).toBe(false);
           },
-          (error: string): void => {
-            expect(error).toMatch('Recipe with id variant-id not found');
+          (error: Error): void => {
+            expect(error.message).toMatch(
+              `An error occurred trying to update variant from recipe master: missing recipe variant Recipe variant with id variant-id from master with id ${_mockRecipeMasterActive.cid} not found`
+            );
             done();
           }
         );
+    });
+
+  });
+
+
+  describe('Type Guard', (): void => {
+
+    test('should check recipe type safety', (): void => {
+      recipeService.checkTypeSafety = originalCheck;
+      const _mockRecipeMasterInactive: RecipeMaster = mockRecipeMasterInactive();
+      const _mockRecipeVariantIncomplete: RecipeVariant = mockRecipeVariantIncomplete();
+      const _mockError1: Error = new Error('test-error-1');
+      const _mockError2: Error = new Error('test-error-2');
+
+      recipeService.isSafeRecipeMaster = jest
+        .fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+
+      recipeService.isSafeRecipeVariant = jest
+        .fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(true)
+        .mockReturnValue(false);
+
+      recipeService.getUnsafeRecipeError = jest
+        .fn()
+        .mockReturnValueOnce(_mockError1)
+        .mockReturnValueOnce(_mockError2);
+
+      recipeService.checkTypeSafety(_mockRecipeMasterInactive);
+      recipeService.checkTypeSafety(_mockRecipeVariantIncomplete);
+      expect((): void => {
+        recipeService.checkTypeSafety(_mockRecipeMasterInactive);
+      }).toThrow(_mockError1);
+      expect((): void => {
+        recipeService.checkTypeSafety(_mockRecipeVariantIncomplete);
+      }).toThrow(_mockError2);
+    });
+
+    test('should get unsafe type error', (): void => {
+      const customError: CustomError = <CustomError>recipeService.getUnsafeRecipeError(null, 'variant');
+      expect(customError.name).toMatch('RecipeError');
+      expect(customError.message).toMatch('Given variant is invalid: got null');
+      expect(customError.severity).toEqual(2);
+      expect(customError.userMessage).toMatch('An internal error occurred: invalid variant');
+    });
+
+    test('should get document guard by process type', (): void => {
+      recipeService.typeGuard.concatGuards = jest
+        .fn()
+        .mockReturnValue(null);
+
+      const concatSpy: jest.SpyInstance = jest.spyOn(recipeService.typeGuard, 'concatGuards');
+
+      recipeService.getDocumentGuardByType('manual');
+      expect(concatSpy).toHaveBeenCalledWith(ProcessGuardMetadata, ManualProcessGuardMetadata);
+      recipeService.getDocumentGuardByType('timer');
+      expect(concatSpy).toHaveBeenCalledWith(ProcessGuardMetadata, TimerProcessGuardMetadata);
+      recipeService.getDocumentGuardByType('calendar');
+      expect(concatSpy).toHaveBeenCalledWith(ProcessGuardMetadata, CalendarProcessGuardMetadata);
+      expect((): void => {
+        recipeService.getDocumentGuardByType('invalid');
+      }).toThrow(<CustomError>{
+        name: 'TypeGuardError',
+        message: 'Invalid process type on type guard validation: invalid',
+        severity: 2,
+        userMessage: 'An internal check error occurred, Process is malformed'
+      });
+    });
+
+    test('should check if array of grain bills are type safe', (): void => {
+      const _mockGrainBill: GrainBill[] = mockGrainBill();
+      let failFlag: boolean = false;
+
+      recipeService.isSafeGrainBill = jest
+        .fn()
+        .mockImplementation((): boolean => !failFlag);
+
+      expect(recipeService.isSafeGrainBillCollection(_mockGrainBill)).toBe(true);
+      failFlag = true;
+      expect(recipeService.isSafeGrainBillCollection(_mockGrainBill)).toBe(false);
+    });
+
+    test('should check if single grain bill is type safe', (): void => {
+      const _mockGrainBill: GrainBill = mockGrainBill()[0];
+      let failFlag: boolean = false;
+
+      recipeService.typeGuard.hasValidProperties = jest
+        .fn()
+        .mockImplementation((): boolean => !failFlag);
+
+      const guardSpy: jest.SpyInstance = jest.spyOn(recipeService.typeGuard, 'hasValidProperties');
+
+      expect(recipeService.isSafeGrainBill(_mockGrainBill)).toBe(true);
+      expect(guardSpy).toHaveBeenNthCalledWith(1, _mockGrainBill, GrainBillGuardMetadata);
+      expect(guardSpy).toHaveBeenNthCalledWith(2, _mockGrainBill.grainType, GrainsGuardMetadata);
+      failFlag = true;
+      expect(recipeService.isSafeGrainBill(_mockGrainBill)).toBe(false);
+      expect(guardSpy).toHaveBeenNthCalledWith(3, _mockGrainBill, GrainBillGuardMetadata);
+      expect(guardSpy).toHaveBeenCalledTimes(3);
+    });
+
+    test('should check if array of hops schedules are type safe', (): void => {
+      const _mockHopsSchedule: HopsSchedule[] = mockHopsSchedule();
+      let failFlag: boolean = false;
+
+      recipeService.isSafeHopsSchedule = jest
+        .fn()
+        .mockImplementation((): boolean => !failFlag);
+
+      expect(recipeService.isSafeHopsScheduleCollection(_mockHopsSchedule)).toBe(true);
+      failFlag = true;
+      expect(recipeService.isSafeHopsScheduleCollection(_mockHopsSchedule)).toBe(false);
+    });
+
+    test('should check if single hops schedule is type safe', (): void => {
+      const _mockHopsSchedule: HopsSchedule = mockHopsSchedule()[0];
+      let failFlag: boolean = false;
+
+      recipeService.typeGuard.hasValidProperties = jest
+        .fn()
+        .mockImplementation((): boolean => !failFlag);
+
+      const guardSpy: jest.SpyInstance = jest.spyOn(recipeService.typeGuard, 'hasValidProperties');
+
+      expect(recipeService.isSafeHopsSchedule(_mockHopsSchedule)).toBe(true);
+      expect(guardSpy).toHaveBeenNthCalledWith(1, _mockHopsSchedule, HopsScheduleGuardMetadata);
+      expect(guardSpy).toHaveBeenNthCalledWith(2, _mockHopsSchedule.hopsType, HopsGuardMetadata);
+      failFlag = true;
+      expect(recipeService.isSafeHopsSchedule(_mockHopsSchedule)).toBe(false);
+      expect(guardSpy).toHaveBeenNthCalledWith(3, _mockHopsSchedule, HopsScheduleGuardMetadata);
+      expect(guardSpy).toHaveBeenCalledTimes(3);
+    });
+
+    test('should check if array of other ingredients are type safe', (): void => {
+      const _mockOtherIngredients: OtherIngredients[] = mockOtherIngredients();
+      let failFlag: boolean = false;
+
+      recipeService.isSafeOtherIngredients = jest
+        .fn()
+        .mockImplementation((): boolean => !failFlag);
+
+      expect(recipeService.isSafeOtherIngredientsCollection(_mockOtherIngredients)).toBe(true);
+      failFlag = true;
+      expect(recipeService.isSafeOtherIngredientsCollection(_mockOtherIngredients)).toBe(false);
+    });
+
+    test('should check if single other ingredient is type safe', (): void => {
+      const _mockOtherIngredients: OtherIngredients = mockOtherIngredients()[0];
+      let failFlag: boolean = false;
+
+      recipeService.typeGuard.hasValidProperties = jest
+        .fn()
+        .mockImplementation((): boolean => !failFlag);
+
+      const guardSpy: jest.SpyInstance = jest.spyOn(recipeService.typeGuard, 'hasValidProperties');
+
+      expect(recipeService.isSafeOtherIngredients(_mockOtherIngredients)).toBe(true);
+      expect(guardSpy).toHaveBeenNthCalledWith(1, _mockOtherIngredients, OtherIngredientsGuardMetadata);
+      failFlag = true;
+      expect(recipeService.isSafeOtherIngredients(_mockOtherIngredients)).toBe(false);
+      expect(guardSpy).toHaveBeenNthCalledWith(2, _mockOtherIngredients, OtherIngredientsGuardMetadata);
+      expect(guardSpy).toHaveBeenCalledTimes(2);
+    });
+
+    test('should check if process schedule items are type safe', (): void => {
+      const _mockProcessSchedule: Process[] = mockProcessSchedule();
+      let failFlag: boolean = false;
+
+      recipeService.getDocumentGuardByType = jest
+        .fn()
+        .mockReturnValue(null);
+
+      recipeService.typeGuard.hasValidProperties = jest
+        .fn()
+        .mockImplementation((): boolean => {
+          return !failFlag;
+        });
+
+      expect(recipeService.isSafeProcessSchedule(_mockProcessSchedule)).toBe(true);
+      failFlag = true;
+      expect(recipeService.isSafeProcessSchedule(_mockProcessSchedule)).toBe(false);
+    });
+
+    test('should check if recipe master is type safe', (): void => {
+      const _mockRecipeMasterInactive: RecipeMaster = mockRecipeMasterInactive();
+      const _mockRecipeVariantIncomplete: RecipeVariant = mockRecipeVariantIncomplete();
+      const _mockImage: Image = mockImage();
+      _mockRecipeMasterInactive.variants.push(_mockRecipeVariantIncomplete);
+      _mockRecipeMasterInactive.labelImage = _mockImage;
+
+      recipeService.typeGuard.hasValidProperties = jest
+        .fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+
+      recipeService.imageService.isSafeImage = jest
+        .fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+
+      recipeService.libraryService.isSafeStyle = jest
+        .fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+
+      recipeService.isSafeRecipeVariant = jest
+        .fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+
+      expect(recipeService.isSafeRecipeMaster(_mockRecipeMasterInactive)).toBe(true);
+      expect(recipeService.isSafeRecipeMaster(_mockRecipeMasterInactive)).toBe(false);
+      expect(recipeService.isSafeRecipeMaster(_mockRecipeMasterInactive)).toBe(false);
+      expect(recipeService.isSafeRecipeMaster(_mockRecipeMasterInactive)).toBe(false);
+      expect(recipeService.isSafeRecipeMaster(_mockRecipeMasterInactive)).toBe(false);
+    });
+
+    test('should check if recipe variant is type safe', (): void => {
+      const _mockRecipeVariantIncomplete: RecipeVariant = mockRecipeVariantIncomplete();
+      const _mockGrainBill: GrainBill[] = [mockGrainBill()[0]];
+      const _mockHopsSchedule: HopsSchedule[] = [mockHopsSchedule()[0]];
+      const _mockYeastBatch: YeastBatch[] = [mockYeastBatch()[0]];
+      _mockRecipeVariantIncomplete.grains = _mockGrainBill;
+      _mockRecipeVariantIncomplete.hops = _mockHopsSchedule;
+      _mockRecipeVariantIncomplete.yeast = _mockYeastBatch;
+
+      recipeService.typeGuard.hasValidProperties = jest
+        .fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+
+      recipeService.libraryService.isSafeGrains = jest
+        .fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+
+      recipeService.libraryService.isSafeHops = jest
+        .fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+
+      recipeService.libraryService.isSafeYeast = jest
+        .fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+
+      recipeService.isSafeProcessSchedule = jest
+        .fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+
+      expect(recipeService.isSafeRecipeVariant(_mockRecipeVariantIncomplete)).toBe(true);
+      expect(recipeService.isSafeRecipeVariant(_mockRecipeVariantIncomplete)).toBe(false);
+      expect(recipeService.isSafeRecipeVariant(_mockRecipeVariantIncomplete)).toBe(false);
+      expect(recipeService.isSafeRecipeVariant(_mockRecipeVariantIncomplete)).toBe(false);
+      expect(recipeService.isSafeRecipeVariant(_mockRecipeVariantIncomplete)).toBe(false);
+      expect(recipeService.isSafeRecipeVariant(_mockRecipeVariantIncomplete)).toBe(false);
+    });
+
+    test('should check if array of yeast batches are type safe', (): void => {
+      const _mockYeastBatch: YeastBatch[] = mockYeastBatch();
+      let failFlag: boolean = false;
+
+      recipeService.isSafeYeastBatch = jest
+        .fn()
+        .mockImplementation((): boolean => !failFlag);
+
+      expect(recipeService.isSafeYeastBatchCollection(_mockYeastBatch)).toBe(true);
+      failFlag = true;
+      expect(recipeService.isSafeYeastBatchCollection(_mockYeastBatch)).toBe(false);
+    });
+
+    test('should check if single yeast batch is type safe', (): void => {
+      const _mockYeastBatch: YeastBatch = mockYeastBatch()[0];
+      let failFlag: boolean = false;
+
+      recipeService.typeGuard.hasValidProperties = jest
+        .fn()
+        .mockImplementation((): boolean => !failFlag);
+
+      const guardSpy: jest.SpyInstance = jest.spyOn(recipeService.typeGuard, 'hasValidProperties');
+
+      expect(recipeService.isSafeYeastBatch(_mockYeastBatch)).toBe(true);
+      expect(guardSpy).toHaveBeenNthCalledWith(1, _mockYeastBatch, YeastBatchGuardMetadata);
+      expect(guardSpy).toHaveBeenNthCalledWith(2, _mockYeastBatch.yeastType, YeastGuardMetadata);
+      failFlag = true;
+      expect(recipeService.isSafeYeastBatch(_mockYeastBatch)).toBe(false);
+      expect(guardSpy).toHaveBeenNthCalledWith(3, _mockYeastBatch, YeastBatchGuardMetadata);
+      expect(guardSpy).toHaveBeenCalledTimes(3);
     });
 
   });

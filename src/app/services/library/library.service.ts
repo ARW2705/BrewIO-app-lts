@@ -1,19 +1,30 @@
 /* Module imports */
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, forkJoin, of, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
 /* Constants imports */
-import { API_VERSION } from '../../shared/constants/api-version';
-import { BASE_URL } from '../../shared/constants/base-url';
+import { API_VERSION, BASE_URL } from '../../shared/constants';
 
 /* Interface imports */
-import { Grains, Hops, LibraryStorage, Style, Yeast } from '../../shared/interfaces/library';
+import { Grains, Hops, LibraryStorage, Style, Yeast } from '../../shared/interfaces';
+
+/* Type imports */
+import { CustomError } from '../../shared/types';
+
+/* Type guard imports */
+import {
+  StyleGuardMetadata,
+  GrainsGuardMetadata,
+  HopsGuardMetadata,
+  YeastGuardMetadata
+} from '../../shared/type-guard-metadata';
 
 /* Service imports */
-import { HttpErrorService } from '../http-error/http-error.service';
+import { ErrorReportingService } from '../error-reporting/error-reporting.service';
 import { StorageService } from '../storage/storage.service';
+import { TypeGuardService } from '../type-guard/type-guard.service';
 
 
 @Injectable()
@@ -25,9 +36,10 @@ export class LibraryService {
   libraryNames: string[] = ['grains', 'hops', 'yeast', 'style'];
 
   constructor(
+    public errorReporter: ErrorReportingService,
     public http: HttpClient,
-    public httpError: HttpErrorService,
-    public storageService: StorageService
+    public storageService: StorageService,
+    public typeGuard: TypeGuardService
   ) { }
 
   /***** API access methods *** */
@@ -53,10 +65,8 @@ export class LibraryService {
         this.styleLibrary = styleLibrary;
         this.updateStorage();
       },
-      (error: string): void => {
-        // TODO error handle forkjoin
-        console.log(`Library fetch error: ${error}`);
-      });
+      (error: any): void => this.errorReporter.handleUnhandledError(error)
+    );
   }
 
   /**
@@ -81,7 +91,8 @@ export class LibraryService {
    */
   fetchLibrary<T>(libraryName: string): Observable<T[]> {
     if (!this.libraryNames.includes(libraryName)) {
-      return throwError(`Invalid library name: ${libraryName}`);
+      const message: string = `Invalid library name: ${libraryName}`;
+      return throwError(new CustomError('LibraryError', message, 2, message));
     }
 
     return this.http.get(`${BASE_URL}/${API_VERSION}/library/${libraryName}`)
@@ -91,9 +102,7 @@ export class LibraryService {
           this.updateStorage();
           return library;
         }),
-        catchError((error: HttpErrorResponse): Observable<never> => {
-          return this.httpError.handleError(error);
-        })
+        catchError(this.errorReporter.handleGenericCatchError())
       );
   }
 
@@ -297,9 +306,7 @@ export class LibraryService {
           if (this.yeastLibrary === null) this.yeastLibrary = libraries.yeast;
           if (this.styleLibrary === null) this.styleLibrary = libraries.style;
         },
-        (error: string): void => {
-          console.log(`${error}: awaiting data from server`);
-        }
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
@@ -334,12 +341,74 @@ export class LibraryService {
     })
     .subscribe(
       (): void => {},
-      (error: string): void => {
-        console.log(`Library store error: ${error}`);
-      }
+      (error: any): void => this.errorReporter.handleUnhandledError(error)
     );
   }
 
-  /***** End utility methods *** */
+  /***** End utility methods *****/
+
+
+  /***** Type Guard *****/
+
+  /**
+   * Check if given grains object is valid by correctly implementing the Grains interface
+   *
+   * @param: grains - expects a Grains at runtime
+   *
+   * @return: true if given grains correctly implements Grains interface
+   */
+  isSafeGrains(grains: any): boolean {
+    return this.typeGuard.hasValidProperties(grains, GrainsGuardMetadata);
+  }
+
+  /**
+   * Check if given hops object is valid by correctly implementing the Hops interface
+   *
+   * @param: hops - expects a Hops at runtime
+   *
+   * @return: true if given hops correctly implements Hops interface
+   */
+  isSafeHops(hops: any): boolean {
+    if (!this.typeGuard.hasValidProperties(hops, HopsGuardMetadata)) {
+      return false;
+    }
+    if (!hops.usedFor.every((style: Style): boolean => this.isSafeStyle(style))) {
+      return false;
+    }
+    if (!hops.alternatives.every((_hops: Hops): boolean => this.typeGuard.hasValidProperties(_hops, HopsGuardMetadata))) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Check if given yeast object is valid by correctly implementing the Yeast interface
+   *
+   * @param: yeast - expects a Yeast at runtime
+   *
+   * @return: true if given yeast correctly implements Yeast interface
+   */
+  isSafeYeast(yeast: any): boolean {
+    if (!this.typeGuard.hasValidProperties(yeast, YeastGuardMetadata)) {
+      return false;
+    }
+    if (!yeast.recommendedStyles.every((style: Style): boolean => this.isSafeStyle(style))) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Check if given style object is valid by correctly implementing the Style interface
+   *
+   * @param: style - expects a Style at runtime
+   *
+   * @return: true if given style correctly implements Style interface
+   */
+  isSafeStyle(style: any): boolean {
+    return this.typeGuard.hasValidProperties(style, StyleGuardMetadata);
+  }
+
+  /***** End Type Guard *****/
 
 }

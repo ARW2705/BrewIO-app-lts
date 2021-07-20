@@ -4,9 +4,10 @@ import { ModalController, LoadingController } from '@ionic/angular';
 import { finalize } from 'rxjs/operators';
 
 /* Interface imports */
-import { Image } from '../../../shared/interfaces/image';
+import { Image } from '../../../shared/interfaces';
 
 /* Service imports */
+import { ErrorReportingService } from '../../../services/error-reporting/error-reporting.service';
 import { ImageService } from '../../../services/image/image.service';
 
 
@@ -22,6 +23,7 @@ export class ImageFormPage implements OnInit {
 
   constructor(
     public cdRef: ChangeDetectorRef,
+    public errorReporter: ErrorReportingService,
     public imageService: ImageService,
     public loadingCtrl: LoadingController,
     public modalCtrl: ModalController
@@ -67,7 +69,7 @@ export class ImageFormPage implements OnInit {
           this.image = imageData;
           this.cdRef.detectChanges();
         },
-        (error: string): void => console.log('gallery error', error)
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 

@@ -9,14 +9,14 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 /* Mock imports */
 import { mockTimer, mockConcurrentTimers, mockProcessSchedule } from '../../../../test-config/mock-models';
 import { TimerComponentStub } from '../../../../test-config/component-stubs';
-import { TimerServiceStub, ToastServiceStub } from '../../../../test-config/service-stubs';
+import { ErrorReportingServiceStub, TimerServiceStub, ToastServiceStub } from '../../../../test-config/service-stubs';
 import { FormatTimePipeStub, UnitConversionPipeStub } from '../../../../test-config/pipe-stubs';
 
 /* Interface imports */
-import { Process } from '../../shared/interfaces/process';
-import { Timer } from '../../shared/interfaces/timer';
+import { Process, TimerProcess, Timer } from '../../shared/interfaces';
 
 /* Service imports */
+import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
 import { TimerService } from '../../services/timer/timer.service';
 import { ToastService } from '../../services/toast/toast.service';
 
@@ -40,6 +40,7 @@ describe('ProcessTimerComponent', (): void => {
         UnitConversionPipeStub
       ],
       providers: [
+        { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: TimerService, useClass: TimerServiceStub },
         { provide: ToastService, useClass: ToastServiceStub }
       ],
@@ -58,6 +59,8 @@ describe('ProcessTimerComponent', (): void => {
     processCmp.ngOnInit = jest
       .fn();
     processCmp.ngOnDestroy = jest
+      .fn();
+    processCmp.errorReporter.handleUnhandledError = jest
       .fn();
   });
 
@@ -214,19 +217,23 @@ describe('ProcessTimerComponent', (): void => {
 
     test('should get an error adding to single timer', (done: jest.DoneCallback): void => {
       const _mockTimer: Timer = mockTimer();
+      const _mockError: Error = new Error('test-error');
 
       processCmp.timerService.addTimeToTimer = jest
         .fn()
-        .mockReturnValue(throwError('test-error'));
+        .mockReturnValue(throwError(_mockError));
 
-      const toastSpy: jest.SpyInstance = jest.spyOn(processCmp.toastService, 'presentErrorToast');
+      // const toastSpy: jest.SpyInstance = jest.spyOn(processCmp.toastService, 'presentErrorToast');
+
+      const errorSpy: jest.SpyInstance = jest.spyOn(processCmp.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
       processCmp.addToSingleTimer(_mockTimer);
 
       setTimeout((): void => {
-        expect(toastSpy).toHaveBeenCalledWith('Error: unable to add time to timer');
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
+        // expect(toastSpy).toHaveBeenCalledWith('Error: unable to add time to timer');
         done();
       }, 10);
     });
@@ -251,8 +258,9 @@ describe('ProcessTimerComponent', (): void => {
     });
 
     test('should reset a single timer', (done: jest.DoneCallback): void => {
-      const _mockProcessSchedule: Process[] = mockProcessSchedule();
+      const _mockProcessSchedule: TimerProcess[] = <TimerProcess[]>mockProcessSchedule().slice(2, 4);
       const _mockTimer: Timer = mockTimer();
+      _mockTimer.timer.cid = _mockProcessSchedule[0].cid;
 
       processCmp.stepData = _mockProcessSchedule;
 
@@ -275,23 +283,25 @@ describe('ProcessTimerComponent', (): void => {
     });
 
     test('should get an error reseting a single timer', (done: jest.DoneCallback): void => {
-      const _mockProcessSchedule: Process[] = mockProcessSchedule();
+      const _mockProcessSchedule: TimerProcess[] = <TimerProcess[]>mockProcessSchedule().slice(2, 4);
       const _mockTimer: Timer = mockTimer();
+      _mockTimer.timer.cid = _mockProcessSchedule[0].cid;
+      const _mockError: Error = new Error('test-error');
 
       processCmp.stepData = _mockProcessSchedule;
 
       processCmp.timerService.resetTimer = jest
         .fn()
-        .mockReturnValue(throwError('test-error'));
+        .mockReturnValue(throwError(_mockError));
 
-      const toastSpy: jest.SpyInstance = jest.spyOn(processCmp.toastService, 'presentErrorToast');
+      const errorSpy: jest.SpyInstance = jest.spyOn(processCmp.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
       processCmp.resetSingleTimer(_mockTimer);
 
       setTimeout((): void => {
-        expect(toastSpy).toHaveBeenCalledWith('Error: unable to reset timer');
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
     });
@@ -338,19 +348,20 @@ describe('ProcessTimerComponent', (): void => {
 
     test('should get an error starting a single timer', (done: jest.DoneCallback): void => {
       const _mockTimer: Timer = mockTimer();
+      const _mockError: Error = new Error('test-error');
 
       processCmp.timerService.startTimer = jest
         .fn()
-        .mockReturnValue(throwError('test-error'));
+        .mockReturnValue(throwError(_mockError));
 
-      const toastSpy: jest.SpyInstance = jest.spyOn(processCmp.toastService, 'presentErrorToast');
+      const errorSpy: jest.SpyInstance = jest.spyOn(processCmp.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
       processCmp.startSingleTimer(_mockTimer);
 
       setTimeout((): void => {
-        expect(toastSpy).toHaveBeenCalledWith('Error: unable to start timer');
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
     });
@@ -397,19 +408,20 @@ describe('ProcessTimerComponent', (): void => {
 
     test('should get an error stopping a single timer', (done: jest.DoneCallback): void => {
       const _mockTimer: Timer = mockTimer();
+      const _mockError: Error = new Error('test-error');
 
       processCmp.timerService.stopTimer = jest
         .fn()
-        .mockReturnValue(throwError('test-error'));
+        .mockReturnValue(throwError(_mockError));
 
-      const toastSpy: jest.SpyInstance = jest.spyOn(processCmp.toastService, 'presentErrorToast');
+      const errorSpy: jest.SpyInstance = jest.spyOn(processCmp.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
       processCmp.stopSingleTimer(_mockTimer);
 
       setTimeout((): void => {
-        expect(toastSpy).toHaveBeenCalledWith('Error: unable to stop timer');
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
     });
@@ -434,7 +446,7 @@ describe('ProcessTimerComponent', (): void => {
   describe('Timer Settings', (): void => {
 
     test('should init timers', (): void => {
-      const _mockProcess: Process = mockProcessSchedule()[0];
+      const _mockProcess: TimerProcess = <TimerProcess>mockProcessSchedule()[2];
       const _mockTimers: Timer[] = mockConcurrentTimers();
 
       const _mockTimers$: BehaviorSubject<Timer>[] = _mockTimers
@@ -467,7 +479,7 @@ describe('ProcessTimerComponent', (): void => {
     });
 
     test('should not setup timers if no timers found', (): void => {
-      const _mockProcess: Process = mockProcessSchedule()[0];
+      const _mockProcess: TimerProcess = <TimerProcess>mockProcessSchedule()[2];
       const _mockConcurrentTimers: Timer[] = mockConcurrentTimers();
 
       processCmp.timerService.getTimersByProcessId = jest
@@ -556,7 +568,7 @@ describe('ProcessTimerComponent', (): void => {
 
     test('should render template as preview', (): void => {
       const _mockProcessSchedule: Process[] = mockProcessSchedule();
-      const _mockTimerProcess: Process = _mockProcessSchedule
+      const _mockTimerProcess: TimerProcess = <TimerProcess>_mockProcessSchedule
         .find((process: Process): boolean => {
           return process.type === 'timer';
         });
@@ -585,7 +597,7 @@ describe('ProcessTimerComponent', (): void => {
 
     test('should render template with timers', (): void => {
       const _mockProcessSchedule: Process[] = mockProcessSchedule();
-      const _mockTimerProcess: Process = _mockProcessSchedule
+      const _mockTimerProcess: TimerProcess = <TimerProcess>_mockProcessSchedule
         .find((process: Process): boolean => {
           return process.type === 'timer';
         });

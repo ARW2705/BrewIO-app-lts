@@ -10,7 +10,7 @@ import { mockHopsSchedule, mockRecipeVariantComplete } from '../../../../test-co
 import { CalculatePipeStub, UnitConversionPipeStub } from '../../../../test-config/pipe-stubs';
 
 /* Interface imports */
-import { HopsSchedule } from '../../shared/interfaces/hops-schedule';
+import { HopsSchedule } from '../../shared/interfaces';
 
 /* Component imports */
 import { HopsScheduleComponent } from './hops-schedule.component';

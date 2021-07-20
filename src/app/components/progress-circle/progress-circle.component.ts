@@ -2,7 +2,7 @@
 import { Component, Input } from '@angular/core';
 
 /* Interface imports */
-import { ProgressCircleSettings } from '../../shared/interfaces/progress-circle';
+import { ProgressCircleSettings } from '../../shared/interfaces';
 
 @Component({
   selector: 'progress-circle',

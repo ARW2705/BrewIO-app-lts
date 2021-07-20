@@ -10,9 +10,7 @@ import { mockEnglishUnits, mockStyles, mockRecipeVariantComplete } from '../../.
 import { TruncatePipeStub, UnitConversionPipeStub } from '../../../../test-config/pipe-stubs';
 
 /* Interface imports */
-import { SelectedUnits } from '../../shared/interfaces/units';
-import { RecipeVariant } from '../../shared/interfaces/recipe-variant';
-import { Style } from '../../shared/interfaces/library';
+import { RecipeVariant, SelectedUnits, Style } from '../../shared/interfaces';
 
 /* Component imoprts */
 import { RecipeQuickDataComponent } from './recipe-quick-data.component';

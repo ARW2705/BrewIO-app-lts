@@ -10,10 +10,10 @@ import { mockToastButtons, mockToastElement } from '../../../../test-config/mock
 import { ToastControllerStub } from '../../../../test-config/ionic-stubs';
 
 /* Interface imports */
-import { ToastButton } from '../../shared/interfaces/toast-button';
+import { ToastButton } from '../../shared/interfaces';
 
 /* Default imports */
-import { defaultDismissButton } from '../../shared/defaults/default-dismiss-button';
+import { defaultDismissButton } from '../../shared/defaults';
 
 /* Service imports */
 import { ToastService } from './toast.service';
@@ -44,6 +44,7 @@ describe('ToastService', (): void => {
 
   test('should present basic toast', (done: jest.DoneCallback): void => {
     const _mockToastElement = mockToastElement();
+    const _defaultDismissButton: object = defaultDismissButton();
 
     toastCtrl.create = jest
       .fn()
@@ -55,11 +56,10 @@ describe('ToastService', (): void => {
     toastService.presentToast('test-message');
 
     setTimeout((): void => {
-      expect(createSpy).toHaveBeenCalledWith({
-        message: 'test-message',
-        cssClass: 'toast-main',
-        buttons: [ defaultDismissButton ]
-      });
+      const createCall: object = createSpy.mock.calls[0][0];
+      expect(createCall['message']).toMatch('test-message');
+      expect(createCall['cssClass']).toMatch('toast-main');
+      expect(createCall['buttons'].length).toEqual(1);
       expect(presentSpy).toHaveBeenCalled();
       done();
     }, 10);
