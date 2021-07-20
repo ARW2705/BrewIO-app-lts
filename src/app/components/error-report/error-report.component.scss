@@ -1,0 +1,36 @@
+#reports-container {
+  /* Display */
+  width: 100%;
+
+  /* Children */
+  accordion {
+    /* Display */
+    width: 100%;
+  }
+}
+
+ion-grid {
+  /* Display */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+h2 {
+  /* Display */
+  border-bottom: 1px solid var(--ion-color-light);
+
+  /* Text */
+  font-size: 2rem;
+  text-align: center;
+}
+
+p {
+  /* Display */
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--ion-color-light);
+
+  /* Text */
+  font-size: 1.5rem;
+}
