@@ -1,5 +1,5 @@
 /* Interface imports */
-import { Grains } from '../../src/app/shared/interfaces/library';
+import { Grains } from '../../src/app/shared/interfaces';
 
 export const mockGrains: () => Grains[] = (): Grains[] => {
   const mock: Grains[] = [

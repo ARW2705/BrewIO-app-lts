@@ -1,4 +1,4 @@
-import { Alert } from '../../src/app/shared/interfaces/alert';
+import { Alert } from '../../src/app/shared/interfaces';
 
 export const mockAlertFuture: () => Alert = (): Alert => {
   const future: Date = new Date();

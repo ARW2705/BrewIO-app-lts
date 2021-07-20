@@ -1,5 +1,5 @@
 /* Interface imports */
-import { YeastBatch } from '../../src/app/shared/interfaces/yeast-batch';
+import { YeastBatch } from '../../src/app/shared/interfaces';
 
 export const mockYeastBatch: () => YeastBatch[] = (): YeastBatch[] => {
   const mock: YeastBatch[] = [

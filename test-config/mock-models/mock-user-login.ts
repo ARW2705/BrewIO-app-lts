@@ -1,5 +1,5 @@
 /* Interface imports */
-import { LoginCredentials } from '../../src/app/shared/interfaces/login-credentials';
+import { LoginCredentials } from '../../src/app/shared/interfaces';
 
 export const mockUserLogin: () => LoginCredentials = (): LoginCredentials => {
   const mock: LoginCredentials = {

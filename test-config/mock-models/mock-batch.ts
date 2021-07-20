@@ -1,7 +1,9 @@
 /* Interface imports */
-import { Batch } from '../../src/app/shared/interfaces/batch';
-import { RecipeMaster } from '../../src/app/shared/interfaces/recipe-master';
-import { RecipeVariant } from '../../src/app/shared/interfaces/recipe-variant';
+import {
+  Batch,
+  RecipeMaster,
+  RecipeVariant
+} from '../../src/app/shared/interfaces';
 
 /* Mock imports */
 import { mockBatchAnnotations } from './mock-batch-annotations';

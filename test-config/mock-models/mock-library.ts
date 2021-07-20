@@ -1,5 +1,5 @@
 /* Interface imports */
-import { LibraryStorage } from '../../src/app/shared/interfaces/library';
+import { LibraryStorage } from '../../src/app/shared/interfaces';
 
 /* Mock imports */
 import { mockGrains } from './mock-grains';

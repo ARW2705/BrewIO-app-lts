@@ -1,8 +1,8 @@
 /* Interface imports */
-import { User } from '../../src/app/shared/interfaces/user';
+import { User } from '../../src/app/shared/interfaces';
 
 /* Default imports */
-import { defaultEnglish } from '../../src/app/shared/defaults/default-units';
+import { defaultEnglishUnits } from '../../src/app/shared/defaults';
 
 /* Mock imports */
 import { mockImage } from './mock-image';
@@ -20,7 +20,7 @@ export const mockUser: () => User = (): User => {
     friendList: ['userId1', 'userId2'],
     token: 'testtoken',
     preferredUnitSystem: 'english standard',
-    units: defaultEnglish(),
+    units: defaultEnglishUnits(),
     breweryLabelImage: mockImage(),
     userImage: mockImage()
   };

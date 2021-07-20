@@ -1,12 +1,11 @@
 /* Interface imports */
-import { Process } from '../../src/app/shared/interfaces/process';
-import { Timer } from '../../src/app/shared/interfaces/timer';
+import { TimerProcess, Timer } from '../../src/app/shared/interfaces';
 
 /* Mock imports */
 import { mockProcessSchedule } from './mock-process-schedule';
 
 export const mockConcurrentTimers: () => Timer[] = (): Timer[] => {
-  const _mockTimer: Process[] = mockProcessSchedule().slice(2, 4);
+  const _mockTimer: TimerProcess[] = <TimerProcess[]>mockProcessSchedule().slice(2, 4);
   const mock1: Timer = {
     first: _mockTimer[0].cid,
     timer: _mockTimer[0],

@@ -2,7 +2,7 @@
 import { Component, Input } from '@angular/core';
 
 /* Interface imports */
-import { GrainBill } from '../../src/app/shared/interfaces/grain-bill';
+import { GrainBill } from '../../src/app/shared/interfaces';
 
 /* Component imports */
 import { GrainBillComponent } from '../../src/app/components/grain-bill/grain-bill.component';

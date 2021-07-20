@@ -5,8 +5,7 @@ import { Component, Input, OnChanges } from '@angular/core';
 import { CalendarComponentStub } from './calendar-stub.component';
 
 /* Interface imports */
-import { Alert } from '../../src/app/shared/interfaces/alert';
-import { Process } from '../../src/app/shared/interfaces/process';
+import { Alert, CalendarProcess } from '../../src/app/shared/interfaces';
 
 /* Component imports */
 import { ProcessCalendarComponent } from '../../src/app/components/process-calendar/process-calendar.component';
@@ -22,7 +21,7 @@ import { ProcessCalendarComponent } from '../../src/app/components/process-calen
 export class ProcessCalendarComponentStub implements OnChanges {
   @Input() alerts: Alert[];
   @Input() isPreview: boolean;
-  @Input() stepData: Process;
+  @Input() stepData: CalendarProcess;
   calendarRef: CalendarComponentStub;
   closestAlert: Alert = null;
   currentStepCalendarData: object = {};

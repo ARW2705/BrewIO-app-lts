@@ -2,7 +2,7 @@
 import { Component, Input } from '@angular/core';
 
 /* Interface imports */
-import { Process } from '../../src/app/shared/interfaces/process';
+import { TimerProcess } from '../../src/app/shared/interfaces';
 
 /* Component imports */
 import { ProcessTimerComponent } from '../../src/app/components/process-timer/process-timer.component';
@@ -17,5 +17,5 @@ import { ProcessTimerComponent } from '../../src/app/components/process-timer/pr
 export class ProcessTimerComponentStub {
   @Input() batchId: string;
   @Input() isPreview: boolean;
-  @Input() stepData: Process[];
+  @Input() stepData: TimerProcess[];
 }

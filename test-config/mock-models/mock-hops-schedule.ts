@@ -1,5 +1,5 @@
 /* Interface imports */
-import { HopsSchedule } from '../../src/app/shared/interfaces/hops-schedule';
+import { HopsSchedule } from '../../src/app/shared/interfaces';
 
 export const mockHopsSchedule: () => HopsSchedule[] = (): HopsSchedule[] => {
   const mock: HopsSchedule[] = [

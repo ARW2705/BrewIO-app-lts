@@ -1,18 +1,25 @@
 /* Interface imports */
-import { SelectedUnits } from '../../src/app/shared/interfaces/units';
+import { SelectedUnits } from '../../src/app/shared/interfaces';
 
 /* Constant imports */
-import * as units from '../../src/app/shared/constants/units';
+import {
+  ENGLISH_TEMPERATURE,
+  LARGE_ENGLISH_VOLUME,
+  LARGE_ENGLISH_WEIGHT,
+  SMALL_ENGLISH_VOLUME,
+  SMALL_ENGLISH_WEIGHT,
+  SPECIFIC_GRAVITY
+} from '../../src/app/shared/constants';
 
 export const mockEnglishUnits: () => SelectedUnits = (): SelectedUnits => {
   const mock: SelectedUnits = {
     system: 'englishStandard',
-    weightSmall: units.WEIGHT_ENGLISH_SMALL,
-    weightLarge: units.WEIGHT_ENGLISH_LARGE,
-    volumeSmall: units.VOLUME_ENGLISH_SMALL,
-    volumeLarge: units.VOLUME_ENGLISH_LARGE,
-    temperature: units.TEMPERATURE_ENGLISH,
-    density: units.SPECIFIC_GRAVITY
+    weightSmall: SMALL_ENGLISH_WEIGHT,
+    weightLarge: LARGE_ENGLISH_WEIGHT,
+    volumeSmall: SMALL_ENGLISH_VOLUME,
+    volumeLarge: LARGE_ENGLISH_VOLUME,
+    temperature: ENGLISH_TEMPERATURE,
+    density: SPECIFIC_GRAVITY
   };
   return mock;
 };

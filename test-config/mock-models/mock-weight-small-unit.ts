@@ -1,5 +1,5 @@
 /* Interface imports */
-import { Unit } from '../../src/app/shared/interfaces/units';
+import { Unit } from '../../src/app/shared/interfaces';
 
 export const mockWeightSmallUnit: () => Unit = (): Unit => {
   const mock: Unit = {

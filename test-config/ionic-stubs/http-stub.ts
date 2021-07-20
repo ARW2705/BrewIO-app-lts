@@ -4,8 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 /* Constant imports */
-import { API_VERSION } from '../../src/app/shared/constants/api-version';
-import { BASE_URL } from '../../src/app/shared/constants/base-url';
+import { API_VERSION, BASE_URL } from '../../src/app/shared/constants';
 
 @Injectable()
 export class HttpStub {

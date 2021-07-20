@@ -1,4 +1,4 @@
-import { BatchAnnotations } from '../../src/app/shared/interfaces/batch';
+import { BatchAnnotations } from '../../src/app/shared/interfaces';
 
 import { mockStyles } from './mock-styles';
 

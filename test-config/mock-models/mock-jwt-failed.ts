@@ -1,5 +1,5 @@
 /* Interface imports */
-import { UserResponse } from '../../src/app/shared/interfaces/user-response';
+import { UserResponse } from '../../src/app/shared/interfaces';
 
 export const mockJWTFailed: () => UserResponse = (): UserResponse => {
   const mock: UserResponse = {

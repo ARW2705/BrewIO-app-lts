@@ -1,8 +1,8 @@
 /* Interface imports */
-import { User } from '../../src/app/shared/interfaces/user';
+import { User } from '../../src/app/shared/interfaces';
 
 /* Default imports */
-import { defaultMetric } from '../../src/app/shared/defaults/default-units';
+import { defaultMetricUnits } from '../../src/app/shared/defaults';
 
 /* Mock imports */
 import { mockImage } from './mock-image';
@@ -20,7 +20,7 @@ export const mockUserUpdate: () => User = (): User => {
     friendList: [],
     token: 'updated-token',
     preferredUnitSystem: 'metric',
-    units: defaultMetric(),
+    units: defaultMetricUnits(),
     breweryLabelImage: mockImage(),
     userImage: mockImage()
   };

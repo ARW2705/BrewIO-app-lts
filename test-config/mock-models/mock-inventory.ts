@@ -1,9 +1,8 @@
 /* Constant imports */
-import { STOCK_TYPES } from '../../src/app/shared/constants/stock-types';
+import { STOCK_TYPES } from '../../src/app/shared/constants';
 
 /* Interface imports */
-import { InventoryItem } from '../../src/app/shared/interfaces/inventory-item';
-import { Style } from '../../src/app/shared/interfaces/library';
+import { InventoryItem, Style } from '../../src/app/shared/interfaces';
 
 /* Mock imports */
 import { mockOptionalItemData } from './mock-optional-item-data';

@@ -2,7 +2,7 @@
 import { Component, Input } from '@angular/core';
 
 /* Interface imports */
-import { Process } from '../../src/app/shared/interfaces/process';
+import { ManualProcess } from '../../src/app/shared/interfaces';
 
 /* Component imports */
 import { ProcessManualComponent } from '../../src/app/components/process-manual/process-manual.component';
@@ -15,5 +15,5 @@ import { ProcessManualComponent } from '../../src/app/components/process-manual/
   ]
 })
 export class ProcessManualComponentStub {
-  @Input() stepData: Process;
+  @Input() stepData: ManualProcess;
 }

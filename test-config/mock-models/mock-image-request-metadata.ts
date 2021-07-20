@@ -1,5 +1,5 @@
 /* Interface imports */
-import { ImageRequestMetadata } from '../../src/app/shared/interfaces/image';
+import { ImageRequestMetadata } from '../../src/app/shared/interfaces';
 
 export const mockImageRequestMetadata: (options?: { name?: string, blob?: Blob, filename?: string }) => ImageRequestMetadata = (options?: { name?: string, blob?: Blob, filename?: string }): ImageRequestMetadata => {
   const mock: ImageRequestMetadata = {

@@ -1,7 +1,7 @@
 /* Interface imports */
-import { ToastButton } from '../../src/app/shared/interfaces/toast-button';
+import { ToastButton } from '../../src/app/shared/interfaces';
 
-export const mockToastButtons = () => {
+export const mockToastButtons: () => ToastButton[] = () => {
   const mock: ToastButton[] = [
     {
       text: 'Choice 1',

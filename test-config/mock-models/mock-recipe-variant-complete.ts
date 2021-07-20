@@ -1,5 +1,5 @@
 /* Interface imports */
-import { RecipeVariant } from '../../src/app/shared/interfaces/recipe-variant';
+import { RecipeVariant } from '../../src/app/shared/interfaces';
 
 /* Mock imports */
 import { mockGrainBill } from './mock-grain-bill';

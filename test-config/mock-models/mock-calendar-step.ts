@@ -1,8 +1,8 @@
 /* Interface imports */
-import { Process } from '../../src/app/shared/interfaces/process';
+import { CalendarProcess } from '../../src/app/shared/interfaces';
 
-export const mockCalendarStep: () => Process = (): Process => {
-  const mock: Process = {
+export const mockCalendarStep: () => CalendarProcess = (): CalendarProcess => {
+  const mock: CalendarProcess = {
     _id: 'calendar-step',
     cid: '0123456789012',
     type: 'calendar',

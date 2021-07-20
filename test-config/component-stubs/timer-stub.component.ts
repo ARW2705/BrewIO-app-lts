@@ -2,7 +2,7 @@
 import { Component, Input } from '@angular/core';
 
 /* Interface imports */
-import { Timer } from '../../src/app/shared/interfaces/timer';
+import { Timer } from '../../src/app/shared/interfaces';
 
 /* Component imports */
 import { TimerComponent } from '../../src/app/components/timer/timer.component';

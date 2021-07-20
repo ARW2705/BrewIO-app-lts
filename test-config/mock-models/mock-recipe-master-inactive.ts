@@ -1,5 +1,5 @@
 /* Interface imports */
-import { RecipeMaster } from '../../src/app/shared/interfaces/recipe-master';
+import { RecipeMaster } from '../../src/app/shared/interfaces';
 
 /* Mock imports */
 import { mockStyles } from './mock-styles';

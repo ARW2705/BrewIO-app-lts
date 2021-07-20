@@ -1,5 +1,5 @@
 /* Interface imports */
-import { RecipeVariant } from '../../src/app/shared/interfaces/recipe-variant';
+import { RecipeVariant } from '../../src/app/shared/interfaces';
 
 export const mockRecipeVariantIncomplete: () => RecipeVariant = (): RecipeVariant => {
   const mock: RecipeVariant = {

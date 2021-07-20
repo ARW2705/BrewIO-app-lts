@@ -2,8 +2,7 @@
 import { Component, Input, OnChanges, OnInit } from '@angular/core';
 
 /* Interface imports */
-import { Alert } from '../../src/app/shared/interfaces/alert';
-import { CalendarDate } from '../../src/app/shared/interfaces/calendar-date';
+import { Alert, CalendarDate } from '../../src/app/shared/interfaces';
 
 /* Component imports */
 import { CalendarComponent } from '../../src/app/components/calendar/calendar.component';

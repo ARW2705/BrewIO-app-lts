@@ -1,23 +1,26 @@
 /* Interface imports */
-import { Process } from '../../src/app/shared/interfaces/process';
+import { Process, ManualProcess, CalendarProcess, TimerProcess } from '../../src/app/shared/interfaces';
 
+/**
+ * Indicies by type...
+ *
+ * Calendar: 13, 14, 18
+ *
+ * Manual: 0, 1, 4, 8, 9, 11, 12, 16, 17, 19
+ *
+ * Timer: 2, 3, 5, 6, 7, 10, 15
+ *
+ */
 export const mockProcessSchedule: () => Process[] = (): Process[] => {
-  const mock: Process[] = [
+  const mock: (CalendarProcess | ManualProcess | TimerProcess)[] = [
     {
-      splitInterval: 1,
-      duration: 0,
-      concurrent: false,
       _id: '5d02b47a78264160488b6397',
       cid: '1234567890123',
       type: 'manual',
       name: 'Gather ingredients',
-      description: 'RO water, ice, grains, hops, and yeast',
-      expectedDuration: null
+      description: 'RO water, ice, grains, hops, and yeast'
     },
     {
-      splitInterval: 1,
-      duration: 0,
-      concurrent: false,
       _id: '5d02b47a78264160488b6396',
       cid: '1234567890124',
       type: 'manual',
@@ -46,9 +49,6 @@ export const mockProcessSchedule: () => Process[] = (): Process[] => {
       description: 'Heat 2 gallons of water to 170F, start 15 minutes before end of mash'
     },
     {
-      splitInterval: 1,
-      duration: 0,
-      concurrent: false,
       _id: '5d02b47a78264160488b6393',
       cid: '1234567890127',
       type: 'manual',
@@ -87,9 +87,6 @@ export const mockProcessSchedule: () => Process[] = (): Process[] => {
       description: 'Boil wort'
     },
     {
-      splitInterval: 1,
-      duration: 0,
-      concurrent: false,
       _id: '5d02b47a78264160488b638f',
       cid: '1234567890131',
       type: 'manual',
@@ -98,9 +95,6 @@ export const mockProcessSchedule: () => Process[] = (): Process[] => {
       expectedDuration: 30
     },
     {
-      splitInterval: 1,
-      duration: 0,
-      concurrent: false,
       _id: '5d02b47a78264160488b638e',
       cid: '1234567890132',
       type: 'manual',
@@ -119,31 +113,21 @@ export const mockProcessSchedule: () => Process[] = (): Process[] => {
       description: 'Install aeration pump - watch for foam overflow'
     },
     {
-      splitInterval: 1,
-      duration: 0,
-      concurrent: false,
       _id: '5d02b47a78264160488b638c',
       cid: '1234567890134',
       type: 'manual',
       name: 'Pitch yeast',
-      description: 'Pitch entire yeast slurry from flask to fermenter',
-      expectedDuration: null
+      description: 'Pitch entire yeast slurry from flask to fermenter'
     },
     {
-      splitInterval: 1,
-      duration: 0,
-      concurrent: false,
       _id: '5d02b47a78264160488b638b',
       cid: '1234567890135',
       type: 'manual',
       name: 'Store fermenter',
-      description: 'Place fermenter in it\'s fermentation location.  Install appropriate airlock.',
-      expectedDuration: null
+      description: 'Place fermenter in it\'s fermentation location.  Install appropriate airlock.'
     },
     {
-      splitInterval: 1,
       duration: 14,
-      concurrent: false,
       _id: '5d02b47a78264160488b638a',
       cid: '1234567890136',
       type: 'calendar',
@@ -151,9 +135,7 @@ export const mockProcessSchedule: () => Process[] = (): Process[] => {
       description: 'Check gravity at 7 days and 14 days'
     },
     {
-      splitInterval: 1,
       duration: 2,
-      concurrent: false,
       _id: '5d02b47a78264160488b6389',
       cid: '1234567890137',
       type: 'calendar',
@@ -171,9 +153,6 @@ export const mockProcessSchedule: () => Process[] = (): Process[] => {
       description: 'Add priming sugar to 2 cups water and boil'
     },
     {
-      splitInterval: 1,
-      duration: 0,
-      concurrent: false,
       _id: '5d02b47a78264160488b6387',
       cid: '1234567890139',
       type: 'manual',
@@ -182,9 +161,6 @@ export const mockProcessSchedule: () => Process[] = (): Process[] => {
       expectedDuration: 90
     },
     {
-      splitInterval: 1,
-      duration: 0,
-      concurrent: false,
       _id: '5d02b47a78264160488b6386',
       cid: '1234567890140',
       type: 'manual',
@@ -193,9 +169,7 @@ export const mockProcessSchedule: () => Process[] = (): Process[] => {
       expectedDuration: 60
     },
     {
-      splitInterval: 1,
       duration: 42,
-      concurrent: false,
       _id: '5d02b47a78264160488b6385',
       cid: '1234567890141',
       type: 'calendar',
@@ -203,9 +177,6 @@ export const mockProcessSchedule: () => Process[] = (): Process[] => {
       description: 'Check one at half way point'
     },
     {
-      splitInterval: 1,
-      duration: 0,
-      concurrent: false,
       _id: '5d02b47a78264160488b6384',
       cid: '1234567890142',
       type: 'manual',

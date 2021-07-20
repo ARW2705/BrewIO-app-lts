@@ -2,8 +2,7 @@
 import { Component, Input } from '@angular/core';
 
 /* Interface imports */
-import { HopsSchedule } from '../../src/app/shared/interfaces/hops-schedule';
-import { RecipeVariant } from '../../src/app/shared/interfaces/recipe-variant';
+import { HopsSchedule, RecipeVariant } from '../../src/app/shared/interfaces';
 /* Component imports */
 import { HopsScheduleComponent } from '../../src/app/components/hops-schedule/hops-schedule.component';
 

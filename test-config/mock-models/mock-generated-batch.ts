@@ -1,9 +1,11 @@
 /* Interface imports */
-import { Batch } from '../../src/app/shared/interfaces/batch';
-import { RecipeMaster } from '../../src/app/shared/interfaces/recipe-master';
-import { RecipeVariant } from '../../src/app/shared/interfaces/recipe-variant';
-import { Process } from '../../src/app/shared/interfaces/process';
-import { User } from '../../src/app/shared/interfaces/user';
+import {
+  Batch,
+  Process,
+  RecipeMaster,
+  RecipeVariant,
+  User
+} from '../../src/app/shared/interfaces';
 
 /* Mock imports */
 import { mockProcessSchedule } from './mock-process-schedule';

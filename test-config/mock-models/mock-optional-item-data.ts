@@ -1,5 +1,5 @@
 /* Interface imports */
-import { OptionalItemData } from '../../src/app/shared/interfaces/inventory-item';
+import { OptionalItemData } from '../../src/app/shared/interfaces';
 
 /* Mock imports */
 import { mockImage } from './mock-image';

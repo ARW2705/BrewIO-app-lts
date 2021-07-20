@@ -1,5 +1,5 @@
 /* Interface imports */
-import { ProgressCircleSettings } from '../../src/app/shared/interfaces/progress-circle';
+import { ProgressCircleSettings } from '../../src/app/shared/interfaces';
 
 export const mockProgressCircle: () => ProgressCircleSettings = (): ProgressCircleSettings => {
   const mock: ProgressCircleSettings = {

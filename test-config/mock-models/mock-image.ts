@@ -1,5 +1,5 @@
 /* Interface imports */
-import { Image } from '../../src/app/shared/interfaces/image';
+import { Image } from '../../src/app/shared/interfaces';
 
 export const mockImage: () => Image = (): Image => {
   const mock: Image = {

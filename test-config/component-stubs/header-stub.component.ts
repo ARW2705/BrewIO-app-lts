@@ -3,7 +3,7 @@ import { Component, Input } from '@angular/core';
 import { Subject } from 'rxjs';
 
 /* Interface imports */
-import { User } from '../../src/app/shared/interfaces/user';
+import { User } from '../../src/app/shared/interfaces';
 
 /* Component imports */
 import { HeaderComponent } from '../../src/app/components/header/header.component';

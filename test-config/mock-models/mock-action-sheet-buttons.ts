@@ -1,6 +1,6 @@
-import { ActionSheetButton } from '../../src/app/shared/interfaces/action-sheet-buttons';
+import { ActionSheetButton } from '../../src/app/shared/interfaces';
 
-export const mockActionSheetButtons = () => {
+export const mockActionSheetButtons: () => ActionSheetButton[] = () => {
   const mock: ActionSheetButton[] = [
     {
       text: 'Choice 1',

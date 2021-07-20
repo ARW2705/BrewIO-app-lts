@@ -1,5 +1,5 @@
 /* Interface imports */
-import { GrainBill } from '../../src/app/shared/interfaces/grain-bill';
+import { GrainBill } from '../../src/app/shared/interfaces';
 
 export const mockGrainBill: () => GrainBill[] = (): GrainBill[] => {
   const mock: GrainBill[] = [

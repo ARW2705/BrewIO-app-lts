@@ -1,5 +1,5 @@
 /* Interface imports */
-import { ImageRequestFormData } from '../../src/app/shared/interfaces/image';
+import { ImageRequestFormData } from '../../src/app/shared/interfaces';
 
 /* Mock imports */
 import { mockImage } from './mock-image';

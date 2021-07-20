@@ -3,7 +3,7 @@ import { Component, Input } from '@angular/core';
 import { Subject } from 'rxjs';
 
 /* Interface imports */
-import { Batch } from '../../src/app/shared/interfaces/batch';
+import { Batch } from '../../src/app/shared/interfaces';
 
 /* Component imports */
 import { ActiveBatchesComponent } from '../../src/app/components/active-batches/active-batches.component';

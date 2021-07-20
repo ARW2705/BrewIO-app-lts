@@ -1,5 +1,5 @@
 /* Interface imports */
-import { Hops } from '../../src/app/shared/interfaces/library';
+import { Hops } from '../../src/app/shared/interfaces';
 
 export const mockHops: () => Hops[] = (): Hops[] => {
   const mock: Hops[] = [

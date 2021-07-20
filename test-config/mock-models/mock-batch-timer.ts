@@ -2,7 +2,7 @@
 import { BehaviorSubject } from 'rxjs';
 
 /* Interface imports */
-import { Timer, BatchTimer } from '../../src/app/shared/interfaces/timer';
+import { Timer, BatchTimer } from '../../src/app/shared/interfaces';
 
 /* Mock imports */
 import { mockBatch } from './mock-batch';

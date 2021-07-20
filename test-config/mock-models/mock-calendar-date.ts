@@ -2,7 +2,7 @@
 import * as moment from 'moment';
 
 /* Interface imports */
-import { CalendarDate } from '../../src/app/shared/interfaces/calendar-date';
+import { CalendarDate } from '../../src/app/shared/interfaces';
 
 export const mockCalendarDate: () => CalendarDate = (): CalendarDate => {
   const mock: CalendarDate = {

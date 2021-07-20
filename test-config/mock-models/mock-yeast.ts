@@ -1,5 +1,5 @@
 /* Interface imports */
-import { Yeast } from '../../src/app/shared/interfaces/library';
+import { Yeast } from '../../src/app/shared/interfaces';
 
 export const mockYeast: () => Yeast[] = (): Yeast[] => {
   const mock: Yeast[] = [

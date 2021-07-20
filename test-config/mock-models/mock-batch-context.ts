@@ -1,5 +1,5 @@
 /* Interface imports */
-import { BatchContext } from '../../src/app/shared/interfaces/batch';
+import { BatchContext } from '../../src/app/shared/interfaces';
 
 /* Mock imports */
 import { mockGrainBill } from './mock-grain-bill';

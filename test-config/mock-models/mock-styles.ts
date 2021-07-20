@@ -1,5 +1,5 @@
 /* Interface imports */
-import { Style } from '../../src/app/shared/interfaces/library';
+import { Style } from '../../src/app/shared/interfaces';
 
 export const mockStyles: () => Style[] = (): Style[] => {
   const mock: Style[] = [

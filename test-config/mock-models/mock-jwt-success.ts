@@ -1,5 +1,5 @@
 /* Interface imports */
-import { UserResponse } from '../../src/app/shared/interfaces/user-response';
+import { UserResponse } from '../../src/app/shared/interfaces';
 
 /* Mock imports */
 import { mockUser } from './mock-user';

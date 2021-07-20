@@ -3,6 +3,7 @@ import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 
 /* Service imports */
+import { ErrorReportingService } from '../../src/app/services/error-reporting/error-reporting.service';
 import { RecipeService } from '../../src/app/services/recipe/recipe.service';
 import { ToastService } from '../../src/app/services/toast/toast.service';
 
@@ -23,6 +24,7 @@ export class NoteListComponentStub implements OnInit, OnDestroy {
   @Input() notes: string[] = [];
 
   constructor(
+    public errorReporter: ErrorReportingService,
     public modalCtrl: ModalController,
     public recipeService: RecipeService,
     public toastService: ToastService

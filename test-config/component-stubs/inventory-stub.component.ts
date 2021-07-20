@@ -2,7 +2,7 @@
 import { Component, Input } from '@angular/core';
 
 /* Interface imports */
-import { Batch } from '../../src/app/shared/interfaces/batch';
+import { Batch } from '../../src/app/shared/interfaces';
 
 /* Page imports */
 import { InventoryComponent } from '../../src/app/components/inventory/inventory.component';

@@ -1,4 +1,4 @@
-import { Author } from '../../src/app/shared/interfaces/author';
+import { Author } from '../../src/app/shared/interfaces';
 
 import { mockImage } from './mock-image';
 

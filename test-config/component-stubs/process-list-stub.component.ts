@@ -2,7 +2,7 @@
 import { Component, Input } from '@angular/core';
 
 /* Interface imports */
-import { Process } from '../../src/app/shared/interfaces/process';
+import { Process } from '../../src/app/shared/interfaces';
 
 /* Component imports */
 import { ProcessListComponent } from '../../src/app/components/process-list/process-list.component';
