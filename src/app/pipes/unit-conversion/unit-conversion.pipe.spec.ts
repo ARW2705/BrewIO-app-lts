@@ -9,10 +9,10 @@ import { mockEnglishUnits, mockMetricUnits } from '../../../../test-config/mock-
 import { CalculationsServiceStub, PreferencesServiceStub } from '../../../../test-config/service-stubs';
 
 /* Constant imports */
-import * as Units from '../../shared/constants/units';
+import { SPECIFIC_GRAVITY } from '../../shared/constants';
 
 /* Interface imports */
-import { SelectedUnits } from '../../shared/interfaces/units';
+import { SelectedUnits } from '../../shared/interfaces';
 
 /* Service imports */
 import { CalculationsService } from '../../services/calculations/calculations.service';
@@ -138,7 +138,7 @@ describe('UnitConversionPipe', (): void => {
     expect(convertSpy).toHaveBeenNthCalledWith(
       1,
       1.05,
-      Units.SPECIFIC_GRAVITY.longName,
+      SPECIFIC_GRAVITY.longName,
       _mockMetricUnits.density.longName
     );
     expect(convertSpy).toHaveBeenCalledTimes(2);

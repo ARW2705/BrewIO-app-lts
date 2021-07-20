@@ -9,8 +9,7 @@ import { mockHopsSchedule, mockRecipeVariantComplete } from '../../../../test-co
 import { CalculationsServiceStub } from '../../../../test-config/service-stubs';
 
 /* Interface imports */
-import { HopsSchedule } from '../../shared/interfaces/hops-schedule';
-import { RecipeVariant } from '../../shared/interfaces/recipe-variant';
+import { HopsSchedule, RecipeVariant } from '../../shared/interfaces';
 
 /* Service imports */
 import { CalculationsService } from '../../services/calculations/calculations.service';

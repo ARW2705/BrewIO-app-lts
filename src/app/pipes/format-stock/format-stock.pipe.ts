@@ -2,11 +2,10 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 /* Constant imports */
-import { STOCK_TYPES } from '../../shared/constants/stock-types';
+import { STOCK_TYPES } from '../../shared/constants';
 
 /* Interface imports */
-import { InventoryItem } from '../../shared/interfaces/inventory-item';
-import { StockType } from '../../shared/interfaces/stocktype';
+import { InventoryItem, StockType } from '../../shared/interfaces';
 
 
 @Pipe({

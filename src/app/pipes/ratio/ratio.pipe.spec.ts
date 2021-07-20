@@ -5,7 +5,7 @@ import { RatioPipe } from './ratio.pipe';
 import { mockGrainBill } from '../../../../test-config/mock-models';
 
 /* Interface imports */
-import { GrainBill } from '../../shared/interfaces/grain-bill';
+import { GrainBill } from '../../shared/interfaces';
 
 
 describe('RatioPipe', (): void => {

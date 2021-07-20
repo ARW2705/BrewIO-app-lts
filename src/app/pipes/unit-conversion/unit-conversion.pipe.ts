@@ -2,10 +2,10 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 /* Constant imports */
-import * as Units from '../../shared/constants/units';
+import { SPECIFIC_GRAVITY } from '../../shared/constants';
 
 /* Interface imports */
-import { SelectedUnits } from '../../shared/interfaces/units';
+import { SelectedUnits } from '../../shared/interfaces';
 
 /* Service imports */
 import { CalculationsService } from '../../services/calculations/calculations.service';
@@ -82,7 +82,7 @@ export class UnitConversionPipe implements PipeTransform {
       return (
           this.calculator.convertDensity(
             <number>value,
-            Units.SPECIFIC_GRAVITY.longName,
+            SPECIFIC_GRAVITY.longName,
             units.density.longName
           )
           .toFixed(1)
