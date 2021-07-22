@@ -1,8 +1,14 @@
 /* Module imports */
 import { Component, Input, OnChanges, OnInit } from '@angular/core';
 
+/* Mock imports */
+import { IdServiceStub } from '../service-stubs';
+
 /* Interface imports */
-import { Alert, CalendarDate } from '../../src/app/shared/interfaces';
+import { CalendarDate } from '../../src/app/shared/interfaces';
+
+/* Service imports */
+import { IdService } from '../../src/app/services/services';
 
 /* Component imports */
 import { CalendarComponent } from '../../src/app/components/calendar/calendar.component';
@@ -11,7 +17,8 @@ import { CalendarComponent } from '../../src/app/components/calendar/calendar.co
   selector: 'calendar',
   template: '',
   providers: [
-    { provide: CalendarComponent, useClass: CalendarComponentStub }
+    { provide: CalendarComponent, useClass: CalendarComponentStub },
+    { provide: IdService, useClass: IdServiceStub }
   ]
 })
 export class CalendarComponentStub implements OnInit, OnChanges {
@@ -27,7 +34,7 @@ export class CalendarComponentStub implements OnInit, OnChanges {
   startDate: CalendarDate = null;
   weekdays: string[] = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
-  constructor() {}
+  constructor(public idService: IdService) {}
 
   ngOnInit() {}
   ngOnChanges() {}

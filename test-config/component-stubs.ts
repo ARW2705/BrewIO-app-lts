@@ -6,7 +6,7 @@ export { SignupPageStub } from './component-stubs/signup-stub.component';
 export { TimerComponentStub } from './component-stubs/timer-stub.component';
 export { FriendsComponentStub } from './component-stubs/friends-stub.component';
 export { ProfileComponentStub } from './component-stubs/profile-stub.component';
-export { ConfirmationComponentStub } from './component-stubs/confirmation-stub.component';
+export { ConfirmationPageStub } from './component-stubs/confirmation-stub.page';
 export { HeaderComponentStub } from './component-stubs/header-stub.component';
 export { NoteListComponentStub } from './component-stubs/note-list-stub.component';
 export { IngredientListComponentStub } from './component-stubs/ingredient-list-stub.component';
@@ -20,7 +20,7 @@ export { ProcessManualComponentStub } from './component-stubs/process-manual-stu
 export { ProcessTimerComponentStub } from './component-stubs/process-timer-stub.component';
 export { ProcessMeasurementsFormPageStub } from './component-stubs/process-measurements-form-stub.component';
 export { ProcessControlsComponentStub } from './component-stubs/process-controls-stub.component';
-export { QuantityHelperComponentStub } from './component-stubs/quantity-helper-stub.component';
+export { QuantityHelperPageStub } from './component-stubs/quantity-helper-stub.page';
 export { GrainBillComponentStub } from './component-stubs/grain-bill-stub.component';
 export { HopsScheduleComponentStub } from './component-stubs/hops-schedule-stub.component';
 export { OtherIngredientsComponentStub } from './component-stubs/other-ingredients-stub.component';
