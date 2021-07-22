@@ -1,5 +1,5 @@
 /* Module imports */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, getTestBed, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { IonicModule, ModalController } from '@ionic/angular';
@@ -11,20 +11,15 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
 import { mockBatch, mockAlert, mockAlertPresent, mockAlertFuture } from '../../../../test-config/mock-models';
-import { ErrorReportingServiceStub, EventServiceStub, ProcessServiceStub, TimerServiceStub, ToastServiceStub, UserServiceStub } from '../../../../test-config/service-stubs';
+import { ErrorReportingServiceStub, EventServiceStub, IdServiceStub, ProcessServiceStub, TimerServiceStub, ToastServiceStub, UserServiceStub } from '../../../../test-config/service-stubs';
 import { HeaderComponentStub, ProcessCalendarComponentStub, ProcessManualComponentStub, ProcessTimerComponentStub, ProcessMeasurementsFormPageStub, ProcessControlsComponentStub } from '../../../../test-config/component-stubs';
 import { ModalControllerStub, ModalStub, ActivatedRouteStub } from '../../../../test-config/ionic-stubs';
 
 /* Interface imports */
-import { Alert, Batch, CalendarProcess, ManualProcess, Process, TimerProcess } from '../../shared/interfaces';
+import { Alert, Batch, CalendarProcess, Process } from '../../shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
-import { EventService } from '../../services/event/event.service';
-import { ProcessService } from '../../services/process/process.service';
-import { TimerService } from '../../services/timer/timer.service';
-import { ToastService } from '../../services/toast/toast.service';
-import { UserService } from '../../services/user/user.service';
+import { ErrorReportingService, EventService, IdService, ProcessService, TimerService, ToastService, UserService } from '../../services/services';
 
 /* Page imports */
 import { ProcessPage } from './process.page';
@@ -34,6 +29,7 @@ import { ProcessMeasurementsFormPage } from '../forms/process-measurements-form/
 describe('ProcessPage', (): void => {
   let fixture: ComponentFixture<ProcessPage>;
   let processPage: ProcessPage;
+  let injector: TestBed;
   let originalOnInit: any;
   let originalOnDestroy: any;
   let originalQuery: any;
@@ -59,6 +55,7 @@ describe('ProcessPage', (): void => {
         { provide: ModalController, useClass: ModalControllerStub },
         { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: EventService, useClass: EventServiceStub },
+        { provide: IdService, useClass: IdServiceStub },
         { provide: ProcessService, useClass: ProcessServiceStub },
         { provide: TimerService, useClass: TimerServiceStub },
         { provide: ToastService, useClass: ToastServiceStub },
@@ -92,6 +89,7 @@ describe('ProcessPage', (): void => {
       .mockImplementation((): (error: any) => Observable<never> => {
         return (error: any): Observable<never> => throwError(error);
       });
+    injector = getTestBed();
   });
 
   afterEach((): void => {
@@ -118,6 +116,10 @@ describe('ProcessPage', (): void => {
 
       processPage.changeDateEventHandler = jest
         .fn();
+
+      processPage.idService.getId = jest
+        .fn()
+        .mockReturnValue('');
 
       const changeSpy: jest.SpyInstance = jest.spyOn(processPage, 'changeDateEventHandler');
 
@@ -165,6 +167,10 @@ describe('ProcessPage', (): void => {
       processPage.goToActiveStep = jest
         .fn();
 
+      processPage.idService.getId = jest
+        .fn()
+        .mockReturnValue('');
+
       const gotoSpy: jest.SpyInstance = jest.spyOn(processPage, 'goToActiveStep');
 
       fixture.detectChanges();
@@ -188,6 +194,10 @@ describe('ProcessPage', (): void => {
 
       processPage.updateViewData = jest
         .fn();
+
+      processPage.idService.getId = jest
+        .fn()
+        .mockReturnValue('');
 
       const viewSpy: jest.SpyInstance = jest.spyOn(processPage, 'updateViewData');
 
@@ -213,6 +223,10 @@ describe('ProcessPage', (): void => {
 
       processPage.goToActiveStep = jest
         .fn();
+
+      processPage.idService.getId = jest
+        .fn()
+        .mockReturnValue('');
 
       const errorSpy: jest.SpyInstance = jest.spyOn(processPage.errorReporter, 'handleUnhandledError');
 
@@ -343,6 +357,10 @@ describe('ProcessPage', (): void => {
       processPage.listenForBatchChanges = jest
         .fn();
 
+      processPage.idService.getId = jest
+        .fn()
+        .mockReturnValue('');
+
       const listenSpy: jest.SpyInstance = jest.spyOn(processPage, 'listenForBatchChanges');
 
       fixture.detectChanges();
@@ -385,12 +403,16 @@ describe('ProcessPage', (): void => {
         .fn()
         .mockReturnValue(undefined);
 
+      processPage.idService.getId = jest
+        .fn()
+        .mockReturnValue('');
+
       processPage.errorReporter.handleGenericCatchError = jest
         .fn()
         .mockImplementation((): (error: any) => Observable<never> => {
           return (error: any): Observable<never> => {
             expect(error.message).toMatch('An error occurred trying to start a new batch: new batch not found');
-            return throwError(error);
+            return throwError(null);
           };
         });
 
@@ -401,7 +423,7 @@ describe('ProcessPage', (): void => {
       processPage.startNewBatch();
 
       setTimeout((): void => {
-        expect(errorSpy).toHaveBeenCalled();
+        expect(errorSpy).toHaveBeenCalledWith(null);
         done();
       }, 10);
     });
@@ -661,6 +683,10 @@ describe('ProcessPage', (): void => {
         .fn()
         .mockReturnValue(of({}));
 
+      processPage.idService.getId = jest
+        .fn()
+        .mockReturnValue(_mockBatch._id);
+
       const removeSpy: jest.SpyInstance = jest.spyOn(processPage.timerService, 'removeBatchTimer');
       const openSpy: jest.SpyInstance = jest.spyOn(processPage, 'openMeasurementFormModal');
       const endSpy: jest.SpyInstance = jest.spyOn(processPage.processService, 'endBatchById');
@@ -694,6 +720,10 @@ describe('ProcessPage', (): void => {
       processPage.processService.endBatchById = jest
         .fn()
         .mockReturnValue(throwError(_mockError));
+
+      processPage.idService.getId = jest
+        .fn()
+        .mockReturnValue('');
 
       const errorSpy: jest.SpyInstance = jest.spyOn(processPage.errorReporter, 'handleUnhandledError');
 
@@ -919,11 +949,16 @@ describe('ProcessPage', (): void => {
         .fn()
         .mockReturnValue(of(null));
 
+      processPage.idService.getId = jest
+        .fn()
+        .mockReturnValue('');
+
       const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
 
       fixture.detectChanges();
 
-      processPage.calendarRef = new ProcessCalendarComponentStub();
+      const _stubIdService: IdService = injector.get(IdService);
+      processPage.calendarRef = new ProcessCalendarComponentStub(_stubIdService);
 
       processPage.calendarRef.startCalendar = jest
         .fn();
@@ -943,11 +978,16 @@ describe('ProcessPage', (): void => {
         .fn()
         .mockReturnValue(throwError(_mockError));
 
+      processPage.idService.getId = jest
+        .fn()
+        .mockReturnValue('');
+
       const errorSpy: jest.SpyInstance = jest.spyOn(processPage.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
-      processPage.calendarRef = new ProcessCalendarComponentStub();
+      const _stubIdService: IdService = injector.get(IdService);
+      processPage.calendarRef = new ProcessCalendarComponentStub(_stubIdService);
 
       processPage.calendarRef.startCalendar = jest
         .fn();

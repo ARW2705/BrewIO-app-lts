@@ -1,25 +1,15 @@
 /* Module imports */
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
-import { Router, ActivatedRoute, Navigation } from '@angular/router';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute, Navigation, Router } from '@angular/router';
 import { ModalController } from '@ionic/angular';
-import { BehaviorSubject, Observable, Subject, from, of, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, from, of, Subject, throwError } from 'rxjs';
 import { catchError, mergeMap, takeUntil, tap } from 'rxjs/operators';
 
 /* Interface imports */
-import {
-  Alert,
-  Batch,
-  BatchProcess,
-  PrimaryValues,
-  Process,
-  TimerProcess
-} from '../../shared/interfaces';
+import { Alert, Batch, BatchProcess, PrimaryValues, Process, TimerProcess } from '../../shared/interfaces';
 
 /* Type imports */
 import { CustomError } from '../../shared/types';
-
-/* Utility function imports */
-import { getId } from '../../shared/utility-functions/id-helpers';
 
 /* Component imports */
 import { ProcessCalendarComponent } from '../../components/process-calendar/process-calendar.component';
@@ -28,12 +18,7 @@ import { ProcessCalendarComponent } from '../../components/process-calendar/proc
 import { ProcessMeasurementsFormPage } from '../forms/process-measurements-form/process-measurements-form.page';
 
 /* Service imports */
-import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
-import { EventService } from '../../services/event/event.service';
-import { ProcessService } from '../../services/process/process.service';
-import { TimerService } from '../../services/timer/timer.service';
-import { ToastService } from '../../services/toast/toast.service';
-import { UserService } from '../../services/user/user.service';
+import { ErrorReportingService, EventService, IdService, ProcessService, TimerService, ToastService, UserService } from '../../services/services';
 
 
 @Component({
@@ -76,6 +61,7 @@ export class ProcessPage implements OnInit, OnDestroy {
   constructor(
     public errorReporter: ErrorReportingService,
     public event: EventService,
+    public idService: IdService,
     public modalCtrl: ModalController,
     public processService: ProcessService,
     public route: ActivatedRoute,
@@ -123,7 +109,7 @@ export class ProcessPage implements OnInit, OnDestroy {
         (selectedBatch: Batch): void => {
           console.log('batch change', selectedBatch);
           this.selectedBatch = selectedBatch;
-          this.selectedBatchId = getId(selectedBatch);
+          this.selectedBatchId = this.idService.getId(selectedBatch);
           this.title = selectedBatch.contextInfo.recipeMasterName;
           this.timerService.addBatchTimer(selectedBatch);
           if (onContinue) {
@@ -196,7 +182,7 @@ export class ProcessPage implements OnInit, OnDestroy {
     )
     .pipe(
       mergeMap((newBatch: Batch): Observable<null> => {
-        this.selectedBatch$ = this.processService.getBatchById(getId(newBatch));
+        this.selectedBatch$ = this.processService.getBatchById(this.idService.getId(newBatch));
 
         if (!this.selectedBatch$) {
           const message: string = 'An error occurred trying to start a new batch: new batch not found';
@@ -359,7 +345,7 @@ export class ProcessPage implements OnInit, OnDestroy {
   endBatch(): void {
     this.timerService.removeBatchTimer(this.selectedBatch.cid);
     this.openMeasurementFormModal(true);
-    this.processService.endBatchById(getId(this.selectedBatch))
+    this.processService.endBatchById(this.idService.getId(this.selectedBatch))
       .subscribe(
         (): void => console.log('batch completed'),
         (error: any): void => this.errorReporter.handleUnhandledError(error)
@@ -528,7 +514,7 @@ export class ProcessPage implements OnInit, OnDestroy {
    */
   startCalendar(): void {
     const values: object = this.calendarRef.startCalendar();
-    this.processService.updateStepById(getId(this.selectedBatch), values)
+    this.processService.updateStepById(this.idService.getId(this.selectedBatch), values)
       .subscribe(
         (): void => console.log('Started calendar'),
         (error: any): void => this.errorReporter.handleUnhandledError(error)
