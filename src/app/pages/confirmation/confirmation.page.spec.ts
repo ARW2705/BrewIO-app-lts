@@ -1,5 +1,5 @@
 /* Module imports */
-import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 
@@ -9,18 +9,18 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 /* Mock imports */
 import { ModalControllerStub } from '../../../../test-config/ionic-stubs';
 
-/* Component imports */
-import { ConfirmationComponent } from './confirmation.component';
+/* Page imports */
+import { ConfirmationPage } from './confirmation.page';
 
 
-describe('ConfirmationComponent', (): void => {
-  let fixture: ComponentFixture<ConfirmationComponent>;
-  let confirmCmp: ConfirmationComponent;
+describe('ConfirmationPage', (): void => {
+  let fixture: ComponentFixture<ConfirmationPage>;
+  let confirmPage: ConfirmationPage;
   configureTestBed();
 
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
-      declarations: [ ConfirmationComponent ],
+      declarations: [ ConfirmationPage ],
       providers: [
         { provide: ModalController, useClass: ModalControllerStub }
       ],
@@ -32,38 +32,38 @@ describe('ConfirmationComponent', (): void => {
   .catch(done.fail));
 
   beforeEach((): void => {
-    fixture = TestBed.createComponent(ConfirmationComponent);
-    confirmCmp = fixture.componentInstance;
+    fixture = TestBed.createComponent(ConfirmationPage);
+    confirmPage = fixture.componentInstance;
   });
 
   test('should create the component', (): void => {
     fixture.detectChanges();
 
-    expect(confirmCmp).toBeDefined();
+    expect(confirmPage).toBeDefined();
   });
 
   test('should assign back click handler', (): void => {
     fixture.detectChanges();
 
-    expect(confirmCmp.onBackClick).toBeDefined();
+    expect(confirmPage.onBackClick).toBeDefined();
   });
 
   test('should dismiss the modal with a result', (): void => {
-    confirmCmp.modalCtrl.dismiss = jest
+    confirmPage.modalCtrl.dismiss = jest
       .fn();
 
-    const dismissSpy: jest.SpyInstance = jest.spyOn(confirmCmp.modalCtrl, 'dismiss');
+    const dismissSpy: jest.SpyInstance = jest.spyOn(confirmPage.modalCtrl, 'dismiss');
 
     fixture.detectChanges();
 
-    confirmCmp.submit(true);
+    confirmPage.submit(true);
 
     expect(dismissSpy).toHaveBeenCalledWith(true);
   });
 
   test('should render the template', (): void => {
-    confirmCmp.message = 'test message';
-    confirmCmp.subMessage = 'test sub message';
+    confirmPage.message = 'test message';
+    confirmPage.subMessage = 'test sub message';
 
     fixture.detectChanges();
 
