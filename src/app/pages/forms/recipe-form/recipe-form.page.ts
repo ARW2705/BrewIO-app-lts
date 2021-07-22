@@ -1,52 +1,26 @@
 /* Module imports */
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
-import { Router, ActivatedRoute, Navigation } from '@angular/router';
-import { ModalController, IonContent } from '@ionic/angular';
-import { Observable, Subject, from, of, throwError } from 'rxjs';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute, Navigation, Router } from '@angular/router';
+import { IonContent, ModalController } from '@ionic/angular';
+import { from, of, Observable, Subject } from 'rxjs';
 import { catchError, mergeMap, takeUntil } from 'rxjs/operators';
 
 /* Interface imports */
-import {
-  GrainBill,
-  Grains,
-  HopsSchedule,
-  Hops,
-  OtherIngredients,
-  Process,
-  RecipeMaster,
-  RecipeVariant,
-  SelectedUnits,
-  Style,
-  TimerProcess,
-  YeastBatch,
-  Yeast
-} from '../../../shared/interfaces';
+import { GrainBill, Grains, HopsSchedule, Hops, OtherIngredients, Process, RecipeMaster, RecipeVariant, SelectedUnits, Style, TimerProcess, YeastBatch, Yeast } from '../../../shared/interfaces';
 
 /* Default imports */
 import { defaultRecipeMaster, defaultStyle } from '../../../shared/defaults';
-
-/* Utility function imports */
-import { clone } from '../../../shared/utility-functions/clone';
-import { getId } from '../../../shared/utility-functions/id-helpers';
-import { stripSharedProperties } from '../../../shared/utility-functions/strip-shared-properties';
-import { roundToDecimalPlace } from '../../../shared/utility-functions/utilities';
 
 /* Page imports */
 import { GeneralFormPage } from '../general-form/general-form.page';
 import { IngredientFormPage } from '../ingredient-form/ingredient-form.page';
 import { ProcessFormPage } from '../process-form/process-form.page';
 
+/* Component imports */
 import { NoteListComponent } from '../../../components/note-list/note-list.component';
 
 /* Service imports */
-import { ActionSheetService } from '../../../services/action-sheet/action-sheet.service';
-import { CalculationsService } from '../../../services/calculations/calculations.service';
-import { ClientIdService } from '../../../services/client-id/client-id.service';
-import { ErrorReportingService } from '../../../services/error-reporting/error-reporting.service';
-import { LibraryService } from '../../../services/library/library.service';
-import { PreferencesService } from '../../../services/preferences/preferences.service';
-import { RecipeService } from '../../../services/recipe/recipe.service';
-import { ToastService } from '../../../services/toast/toast.service';
+import { ActionSheetService, CalculationsService, IdService, ErrorReportingService, LibraryService, PreferencesService, RecipeService, ToastService, UtilityService } from '../../../services/services';
 
 
 @Component({
@@ -88,7 +62,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
   constructor(
     public actionService: ActionSheetService,
     public calculator: CalculationsService,
-    public clientIdService: ClientIdService,
+    public idService: IdService,
     public errorReporter: ErrorReportingService,
     public libraryService: LibraryService,
     public modalCtrl: ModalController,
@@ -96,7 +70,8 @@ export class RecipeFormPage implements OnInit, OnDestroy {
     public recipeService: RecipeService,
     public route: ActivatedRoute,
     public router: Router,
-    public toastService: ToastService
+    public toastService: ToastService,
+    public utilService: UtilityService
   ) {
     this.onNoteDismiss = this.onNoteModalDismiss.bind(this);
     this.onRecipeAction = this.onRecipeActionHandler.bind(this);
@@ -614,7 +589,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
 
     if (boilIndex === -1) {
       this.variant.processSchedule.push(<TimerProcess>{
-        cid: this.clientIdService.getNewId(),
+        cid: this.idService.getNewId(),
         type: 'timer',
         name: 'Boil',
         description: 'Boil wort',
@@ -690,7 +665,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
 
     if (mashIndex === -1) {
       this.variant.processSchedule.push(<TimerProcess>{
-        cid: this.clientIdService.getNewId(),
+        cid: this.idService.getNewId(),
         type: 'timer',
         name: 'Mash',
         description: 'Mash grains',
@@ -716,7 +691,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
     if (this.calculator.requiresConversion('weightSmall', this.units)) {
       hopsQuantity = this.calculator.convertWeight(hops.quantity, false, false);
     }
-    hopsQuantity = roundToDecimalPlace(hopsQuantity, 2);
+    hopsQuantity = this.utilService.roundToDecimalPlace(hopsQuantity, 2);
     return `Hops addition: ${hopsQuantity}${this.units.weightSmall.shortName}`;
   }
 
@@ -733,7 +708,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
       .sort((h1: HopsSchedule, h2: HopsSchedule): number => h2.duration - h1.duration)
       .map((hopsAddition: HopsSchedule): TimerProcess => {
         return {
-          cid: this.clientIdService.getNewId(),
+          cid: this.idService.getNewId(),
           type: 'timer',
           name: `Add ${hopsAddition.hopsType.name} hops`,
           concurrent: true,
@@ -817,13 +792,13 @@ export class RecipeFormPage implements OnInit, OnDestroy {
     this.isGeneralFormComplete = false;
     this.title = 'Add Variant';
     this.master = recipeMaster;
-    this.variant = clone(
+    this.variant = this.utilService.clone(
       recipeMaster.variants.find((variant: RecipeVariant): boolean => variant.isMaster)
     );
     this.variant.notes = [];
-    stripSharedProperties(this.variant);
+    this.utilService.stripSharedProperties(this.variant);
     this.variant.variantName = '';
-    this.previousRoute = `/tabs/recipe/${getId(this.master)}`;
+    this.previousRoute = `/tabs/recipe/${this.idService.getId(this.master)}`;
   }
 
   /**
@@ -837,11 +812,11 @@ export class RecipeFormPage implements OnInit, OnDestroy {
     this.submitSuccessMessage = 'Recipe Update Successful';
     this.isGeneralFormComplete = true;
     this.title = 'Update Recipe';
-    this.master = clone(recipeMaster);
-    this.variant = clone(
+    this.master = this.utilService.clone(recipeMaster);
+    this.variant = this.utilService.clone(
       recipeMaster.variants.find((variant: RecipeVariant): boolean => variant.isMaster)
     );
-    this.previousRoute = `/tabs/recipe/${getId(this.master)}`;
+    this.previousRoute = `/tabs/recipe/${this.idService.getId(this.master)}`;
   }
 
   /**
@@ -856,9 +831,9 @@ export class RecipeFormPage implements OnInit, OnDestroy {
     this.submitSuccessMessage = 'Variant Update Successful';
     this.isGeneralFormComplete = true;
     this.title = 'Update Variant';
-    this.master = clone(recipeMaster);
-    this.variant = clone(recipeVariant);
-    this.previousRoute = `/tabs/recipe/${getId(this.master)}`;
+    this.master = this.utilService.clone(recipeMaster);
+    this.variant = this.utilService.clone(recipeVariant);
+    this.previousRoute = `/tabs/recipe/${this.idService.getId(this.master)}`;
   }
 
   /**
@@ -943,7 +918,10 @@ export class RecipeFormPage implements OnInit, OnDestroy {
    * @return: observable of updated recipe master
    */
   submitRecipeMasterPatch(): Observable<RecipeMaster> {
-    return this.recipeService.updateRecipeMasterById(getId(this.master), this.constructPayload());
+    return this.recipeService.updateRecipeMasterById(
+      this.idService.getId(this.master),
+      this.constructPayload()
+    );
   }
 
   /**
@@ -955,8 +933,8 @@ export class RecipeFormPage implements OnInit, OnDestroy {
    */
   submitRecipeVariantPatch(): Observable<RecipeVariant> {
     return this.recipeService.updateRecipeVariantById(
-      getId(this.master),
-      getId(this.variant),
+      this.idService.getId(this.master),
+      this.idService.getId(this.variant),
       this.constructPayload()
     );
   }
@@ -981,7 +959,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
    */
   submitRecipeVariantPost(): Observable<RecipeVariant> {
     return this.recipeService.createRecipeVariant(
-      getId(this.master),
+      this.idService.getId(this.master),
       <RecipeVariant>this.constructPayload()
     );
   }

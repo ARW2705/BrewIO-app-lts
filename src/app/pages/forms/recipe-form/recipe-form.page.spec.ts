@@ -1,5 +1,5 @@
 /* Module imports */
-import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
@@ -11,7 +11,7 @@ import { configureTestBed } from '../../../../../test-config/configure-test-bed'
 
 /* Mock imports */
 import { mockYeastBatch, mockHopsSchedule, mockProcessSchedule, mockGrainBill, mockRecipeMasterActive, mockRecipeVariantComplete, mockEnglishUnits, mockMetricUnits, mockGrains, mockHops, mockYeast, mockStyles } from '../../../../../test-config/mock-models';
-import { ActionSheetServiceStub, CalculationsServiceStub, ClientIdServiceStub, ErrorReportingServiceStub, LibraryServiceStub, PreferencesServiceStub, RecipeServiceStub, ToastServiceStub } from '../../../../../test-config/service-stubs';
+import { ActionSheetServiceStub, CalculationsServiceStub, IdServiceStub, ErrorReportingServiceStub, LibraryServiceStub, PreferencesServiceStub, RecipeServiceStub, ToastServiceStub, UtilityServiceStub } from '../../../../../test-config/service-stubs';
 import { HeaderComponentStub, GrainBillComponentStub, HopsScheduleComponentStub, OtherIngredientsComponentStub, ProcessListComponentStub, RecipeQuickDataComponentStub, YeastBatchComponentStub, NoteListComponentStub } from '../../../../../test-config/component-stubs';
 import { ActivatedRouteStub, ModalControllerStub, ModalStub } from '../../../../../test-config/ionic-stubs';
 import { TruncatePipeStub } from '../../../../../test-config/pipe-stubs';
@@ -19,34 +19,11 @@ import { TruncatePipeStub } from '../../../../../test-config/pipe-stubs';
 /* Default imports */
 import { defaultRecipeMaster } from '../../../shared/defaults';
 
-/* Utility imports */
-import { toTitleCase } from '../../../shared/utility-functions/utilities';
-
 /* Interface imports */
-import {
-  Grains,
-  GrainBill,
-  Hops,
-  HopsSchedule,
-  Process,
-  RecipeMaster,
-  RecipeVariant,
-  SelectedUnits,
-  TimerProcess,
-  Yeast,
-  YeastBatch,
-  Style
-} from '../../../shared/interfaces';
+import { Grains, GrainBill, Hops, HopsSchedule, Process, RecipeMaster, RecipeVariant, SelectedUnits, TimerProcess, Yeast, YeastBatch, Style } from '../../../shared/interfaces';
 
 /* Service imports */
-import { ActionSheetService } from '../../../services/action-sheet/action-sheet.service';
-import { CalculationsService } from '../../../services/calculations/calculations.service';
-import { ClientIdService } from '../../../services/client-id/client-id.service';
-import { ErrorReportingService } from '../../../services/error-reporting/error-reporting.service';
-import { LibraryService } from '../../../services/library/library.service';
-import { PreferencesService } from '../../../services/preferences/preferences.service';
-import { RecipeService } from '../../../services/recipe/recipe.service';
-import { ToastService } from '../../../services/toast/toast.service';
+import { ActionSheetService, CalculationsService, IdService, ErrorReportingService, LibraryService, PreferencesService, RecipeService, ToastService, UtilityService } from '../../../services/services';
 
 /* Page imports */
 import { RecipeFormPage } from './recipe-form.page';
@@ -81,13 +58,14 @@ describe('RecipeFormPage', (): void => {
         { provide: ActivatedRoute, useClass: ActivatedRouteStub },
         { provide: ActionSheetService, useClass: ActionSheetServiceStub },
         { provide: CalculationsService, useClass: CalculationsServiceStub },
-        { provide: ClientIdService, useClass: ClientIdServiceStub },
+        { provide: IdService, useClass: IdServiceStub },
         { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: LibraryService, useClass: LibraryServiceStub },
         { provide: ModalController, useClass: ModalControllerStub },
         { provide: PreferencesService, useClass: PreferencesServiceStub },
         { provide: RecipeService, useClass: RecipeServiceStub },
         { provide: ToastService, useClass: ToastServiceStub },
+        { provide: UtilityService, useClass: UtilityServiceStub }
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
@@ -107,6 +85,9 @@ describe('RecipeFormPage', (): void => {
     recipeFormPage.toastService.presentErrorToast = jest.fn();
     recipeFormPage.modalCtrl.dismiss = jest.fn();
     recipeFormPage.errorReporter.handleUnhandledError = jest.fn();
+    recipeFormPage.utilService.clone = jest
+      .fn()
+      .mockImplementation((recipe: any): any => recipe);
   });
 
   test('should create the component', (): void => {
@@ -896,7 +877,7 @@ describe('RecipeFormPage', (): void => {
         .mockReturnValueOnce(-1)
         .mockReturnValueOnce(boilIndex);
 
-      recipeFormPage.clientIdService.getNewId = jest
+      recipeFormPage.idService.getNewId = jest
         .fn()
         .mockReturnValue('1');
 
@@ -999,7 +980,7 @@ describe('RecipeFormPage', (): void => {
         .mockReturnValueOnce(-1)
         .mockReturnValueOnce(mashIndex);
 
-      recipeFormPage.clientIdService.getNewId = jest
+      recipeFormPage.idService.getNewId = jest
         .fn()
         .mockReturnValue('1');
 
@@ -1039,6 +1020,12 @@ describe('RecipeFormPage', (): void => {
         .fn()
         .mockImplementation((value: number, ...options: any[]): number => value * 2);
 
+      recipeFormPage.utilService.roundToDecimalPlace = jest
+        .fn()
+        .mockImplementation((value: number, places: number): number => {
+          return Math.floor(value);
+        });
+
       fixture.detectChanges();
 
       expect(recipeFormPage.formatHopsDescription(_mockHopsSchedule)).toMatch('Hops addition: 2oz');
@@ -1056,7 +1043,7 @@ describe('RecipeFormPage', (): void => {
 
       recipeFormPage.variant = _mockRecipeVariantComplete;
 
-      recipeFormPage.clientIdService.getNewId = jest
+      recipeFormPage.idService.getNewId = jest
         .fn()
         .mockReturnValue('1');
 
@@ -1143,6 +1130,10 @@ describe('RecipeFormPage', (): void => {
     test('should init the form in variant creation mode', (): void => {
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
 
+      recipeFormPage.idService.getId = jest
+        .fn()
+        .mockReturnValue(_mockRecipeMasterActive._id);
+
       fixture.detectChanges();
 
       recipeFormPage.initCreateVariantForm(_mockRecipeMasterActive);
@@ -1153,11 +1144,14 @@ describe('RecipeFormPage', (): void => {
       expect(recipeFormPage.master).toStrictEqual(_mockRecipeMasterActive);
       expect(recipeFormPage.previousRoute).toMatch('/tabs/recipe');
       expect(recipeFormPage.variant.variantName.length).toEqual(0);
-      expect(recipeFormPage.variant._id).toBeUndefined();
     });
 
     test('should init the form in master update mode', (): void => {
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
+
+      recipeFormPage.idService.getId = jest
+        .fn()
+        .mockReturnValue(_mockRecipeMasterActive._id);
 
       fixture.detectChanges();
 
@@ -1174,6 +1168,10 @@ describe('RecipeFormPage', (): void => {
     test('should init the form in variant update mode', (): void => {
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
       const _mockRecipeVariantComplete: RecipeVariant = _mockRecipeMasterActive.variants[0];
+
+      recipeFormPage.idService.getId = jest
+        .fn()
+        .mockReturnValue(_mockRecipeMasterActive._id);
 
       fixture.detectChanges();
 
@@ -1434,6 +1432,10 @@ describe('RecipeFormPage', (): void => {
         .fn()
         .mockReturnValue(of(null));
 
+      recipeFormPage.idService.getId = jest
+        .fn()
+        .mockReturnValue(_mockRecipeMasterActive._id);
+
       const updateSpy: jest.SpyInstance = jest.spyOn(recipeFormPage.recipeService, 'updateRecipeMasterById');
 
       fixture.detectChanges();
@@ -1457,6 +1459,11 @@ describe('RecipeFormPage', (): void => {
       recipeFormPage.recipeService.updateRecipeVariantById = jest
         .fn()
         .mockReturnValue(of(null));
+
+      recipeFormPage.idService.getId = jest
+        .fn()
+        .mockReturnValueOnce(_mockRecipeMasterActive._id)
+        .mockReturnValueOnce(_mockRecipeVariantComplete._id);
 
       const updateSpy: jest.SpyInstance = jest.spyOn(recipeFormPage.recipeService, 'updateRecipeVariantById');
 
@@ -1501,6 +1508,10 @@ describe('RecipeFormPage', (): void => {
       recipeFormPage.recipeService.createRecipeVariant = jest
         .fn()
         .mockReturnValue(of(null));
+
+      recipeFormPage.idService.getId = jest
+        .fn()
+        .mockReturnValue(_mockRecipeMasterActive._id);
 
       const updateSpy: jest.SpyInstance = jest.spyOn(recipeFormPage.recipeService, 'createRecipeVariant');
 
@@ -1936,6 +1947,9 @@ describe('RecipeFormPage', (): void => {
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
 
       beforeEach((): void => {
+        recipeFormPage.idService.getId = jest
+          .fn()
+          .mockReturnValue(_mockRecipeMasterActive._id);
         recipeFormPage.initUpdateMasterForm(_mockRecipeMasterActive);
 
         recipeFormPage.formType = 'master';
@@ -1948,7 +1962,7 @@ describe('RecipeFormPage', (): void => {
 
         const genFormButton: HTMLElement = fixture.nativeElement.querySelector('#generalInfoModalButton');
         const topRow: HTMLElement = <HTMLElement>genFormButton.children[0];
-        expect(topRow.children[0].textContent).toMatch((toTitleCase(_mockRecipeMasterActive.name)));
+        expect(topRow.children[0].textContent).toMatch('Active');
         const bottomRow: HTMLElement = <HTMLElement>genFormButton.children[1];
         expect(bottomRow.children[0].textContent).toMatch(`${_mockRecipeMasterActive.variants[0].ABV}% ABV`);
         expect(bottomRow.children[1].textContent).toMatch(`${_mockRecipeMasterActive.style.name}`);
@@ -1980,6 +1994,10 @@ describe('RecipeFormPage', (): void => {
       const _mockRecipeVariantComplete: RecipeVariant = _mockRecipeMasterActive.variants[0];
 
       beforeEach((): void => {
+        recipeFormPage.utilService.stripSharedProperties = jest.fn();
+        recipeFormPage.idService.getId = jest
+          .fn()
+          .mockReturnValue(_mockRecipeMasterActive._id);
         recipeFormPage.initCreateVariantForm(_mockRecipeMasterActive);
 
         recipeFormPage.formType = 'variant';
@@ -2089,6 +2107,9 @@ describe('RecipeFormPage', (): void => {
       const _mockRecipeVariantComplete: RecipeVariant = _mockRecipeMasterActive.variants[0];
 
       beforeEach((): void => {
+        recipeFormPage.idService.getId = jest
+          .fn()
+          .mockReturnValue(_mockRecipeMasterActive._id);
         recipeFormPage.initUpdateVariantForm(_mockRecipeMasterActive, _mockRecipeVariantComplete);
 
         recipeFormPage.formType = 'variant';

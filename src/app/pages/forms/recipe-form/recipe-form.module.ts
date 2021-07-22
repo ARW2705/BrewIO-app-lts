@@ -24,7 +24,7 @@ import { ProcessFormPageModule } from '../process-form/process-form.module';
 import { RecipeFormPage } from './recipe-form.page';
 
 /* Pipe imports */
-import { TruncatePipeModule } from '../../../pipes/truncate/truncate.module';
+import { TruncatePipeModule } from '../../../pipes/pipes';
 
 
 @NgModule({
