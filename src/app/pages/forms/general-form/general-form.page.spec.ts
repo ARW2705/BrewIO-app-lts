@@ -1,5 +1,5 @@
 /* Module imports */
-import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
@@ -10,7 +10,7 @@ import { configureTestBed } from '../../../../../test-config/configure-test-bed'
 
 /* Mock imports */
 import { mockEnglishUnits, mockMetricUnits, mockImage, mockStyles } from '../../../../../test-config/mock-models';
-import { CalculationsServiceStub, PreferencesServiceStub, ToastServiceStub } from '../../../../../test-config/service-stubs';
+import { CalculationsServiceStub, PreferencesServiceStub, ToastServiceStub, UtilityServiceStub } from '../../../../../test-config/service-stubs';
 import { HeaderComponentStub } from '../../../../../test-config/component-stubs';
 import { ActivatedRouteStub, ModalControllerStub, ModalStub } from '../../../../../test-config/ionic-stubs';
 
@@ -21,9 +21,7 @@ import { defaultImage } from '../../../shared/defaults';
 import { Image, SelectedUnits, Style } from '../../../shared/interfaces';
 
 /* Service imports */
-import { CalculationsService } from '../../../services/calculations/calculations.service';
-import { PreferencesService } from '../../../services/preferences/preferences.service';
-import { ToastService } from '../../../services/toast/toast.service';
+import { CalculationsService, PreferencesService, ToastService, UtilityService } from '../../../services/services';
 
 /* Page imports */
 import { GeneralFormPage } from './general-form.page';
@@ -65,7 +63,8 @@ describe('GeneralFormPage', (): void => {
         { provide: CalculationsService, useClass: CalculationsServiceStub },
         { provide: ModalController, useClass: ModalControllerStub },
         { provide: PreferencesService, useClass: PreferencesServiceStub },
-        { provide: ToastService, useClass: ToastServiceStub }
+        { provide: ToastService, useClass: ToastServiceStub },
+        { provide: UtilityService, useClass: UtilityServiceStub }
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
@@ -222,6 +221,15 @@ describe('GeneralFormPage', (): void => {
         .mockImplementation((key: string): boolean => {
           shouldRequire = !shouldRequire;
           return shouldRequire;
+        });
+
+      genformPage.utilService.roundToDecimalPlace = jest
+        .fn()
+        .mockImplementation((value: number, places: number): number => {
+          if (places < 0) {
+            return -1;
+          }
+          return Math.round(value * Math.pow(10, places)) / Math.pow(10, places);
         });
 
       genformPage.calculator.convertVolume = jest

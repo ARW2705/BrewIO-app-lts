@@ -5,10 +5,6 @@ import { ModalController, IonSelect } from '@ionic/angular';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { from } from 'rxjs';
 
-/* Utility imports */
-import { roundToDecimalPlace } from '../../../shared/utility-functions/utilities';
-import { compareWith } from '../../../shared/utility-functions/utilities';
-
 /* Default imports */
 import { defaultImage } from '../../../shared/defaults';
 
@@ -19,9 +15,8 @@ import { Image, SelectedUnits, Style } from '../../../shared/interfaces';
 import { ImageFormPage } from '../image-form/image-form.page';
 
 /* Service imports */
-import { CalculationsService } from '../../../services/calculations/calculations.service';
-import { PreferencesService } from '../../../services/preferences/preferences.service';
-import { ToastService } from '../../../services/toast/toast.service';
+import { CalculationsService, PreferencesService, ToastService, UtilityService } from '../../../services/services';
+
 
 
 @Component({
@@ -36,7 +31,7 @@ export class GeneralFormPage implements OnInit {
   @Input() styles: Style[];
   @ViewChild('styleSelect') styleSelect: IonSelect;
   brewingTouched: boolean = false;
-  compareWithFn: (o1: any, o2: any) => boolean = compareWith;
+  compareWithFn: (o1: any, o2: any) => boolean;
   controlsToConvertToNumber: string[] = [
     'efficiency',
     'batchVolume',
@@ -66,8 +61,10 @@ export class GeneralFormPage implements OnInit {
     public modalCtrl: ModalController,
     public calculator: CalculationsService,
     public preferenceService: PreferencesService,
-    public toastService: ToastService
+    public toastService: ToastService,
+    public utilService: UtilityService
   ) {
+    this.compareWithFn = this.utilService.compareWith.bind(this);
     this.onBackClick = this.dismiss.bind(this);
   }
 
@@ -184,7 +181,9 @@ export class GeneralFormPage implements OnInit {
             if (this.calculator.requiresConversion('volumeLarge', this.units)) {
               this.data[key] = this.calculator.convertVolume(this.data[key], true, false);
             }
-            this.generalForm.controls[key].setValue(roundToDecimalPlace(this.data[key], 2));
+            this.generalForm.controls[key].setValue(
+              this.utilService.roundToDecimalPlace(this.data[key], 2)
+            );
           } else {
             this.generalForm.controls[key].setValue(this.data[key]);
           }
