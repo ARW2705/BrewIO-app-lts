@@ -8,10 +8,10 @@ import { ErrorReport } from '../../shared/interfaces';
 
 @Component({
   selector: 'app-error-report',
-  templateUrl: './error-report.component.html',
-  styleUrls: ['./error-report.component.scss'],
+  templateUrl: './error-report.page.html',
+  styleUrls: ['./error-report.page.scss'],
 })
-export class ErrorReportComponent {
+export class ErrorReportPage {
   @Input() reports: ErrorReport[] = [];
   @Input() shouldHideLoginButton: boolean = false;
   showReports: boolean = false;

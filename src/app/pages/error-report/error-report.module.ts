@@ -5,7 +5,9 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 /* Page imports */
-import { ErrorReportComponent } from './error-report.component';
+import { ErrorReportPage } from './error-report.page';
+
+/* Component imports */
 import { AccordionComponentModule } from '../../components/accordion/accordion.module';
 import { HeaderComponentModule } from '../../components/header/header.module';
 
@@ -19,10 +21,10 @@ import { HeaderComponentModule } from '../../components/header/header.module';
     IonicModule
   ],
   declarations: [
-    ErrorReportComponent
+    ErrorReportPage
   ],
   exports: [
-    ErrorReportComponent
+    ErrorReportPage
   ]
 })
-export class ErrorReportComponentModule {}
+export class ErrorReportPageModule {}

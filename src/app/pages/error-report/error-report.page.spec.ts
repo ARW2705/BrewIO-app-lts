@@ -10,19 +10,19 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 import { ModalControllerStub } from '../../../../test-config/ionic-stubs';
 import { AccordionComponentStub } from '../../../../test-config/component-stubs';
 
-/* Component imports */
-import { ErrorReportComponent } from './error-report.component';
+/* Page imports */
+import { ErrorReportPage } from './error-report.page';
 
 
-describe('ErrorReportComponent', () => {
-  let reportCmp: ErrorReportComponent;
-  let fixture: ComponentFixture<ErrorReportComponent>;
+describe('ErrorReportPage', () => {
+  let reportPage: ErrorReportPage;
+  let fixture: ComponentFixture<ErrorReportPage>;
   configureTestBed();
 
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
       declarations: [
-        ErrorReportComponent,
+        ErrorReportPage,
         AccordionComponentStub
       ],
       providers: [
@@ -36,32 +36,32 @@ describe('ErrorReportComponent', () => {
   .catch(done.fail));
 
   beforeEach((): void => {
-    fixture = TestBed.createComponent(ErrorReportComponent);
-    reportCmp = fixture.componentInstance;
-    reportCmp.modalCtrl.dismiss = jest
+    fixture = TestBed.createComponent(ErrorReportPage);
+    reportPage = fixture.componentInstance;
+    reportPage.modalCtrl.dismiss = jest
       .fn();
   });
 
   test('should create the component', (): void => {
-    expect(reportCmp).toBeTruthy();
+    expect(reportPage).toBeTruthy();
   });
 
   test('should cancel the modal', (): void => {
-    const dismissSpy: jest.SpyInstance = jest.spyOn(reportCmp.modalCtrl, 'dismiss');
+    const dismissSpy: jest.SpyInstance = jest.spyOn(reportPage.modalCtrl, 'dismiss');
 
     fixture.detectChanges();
 
-    reportCmp.cancel();
+    reportPage.cancel();
 
     expect(dismissSpy).toHaveBeenCalledWith();
   });
 
   test('should submit error modal', (): void => {
-    const dismissSpy: jest.SpyInstance = jest.spyOn(reportCmp.modalCtrl, 'dismiss');
+    const dismissSpy: jest.SpyInstance = jest.spyOn(reportPage.modalCtrl, 'dismiss');
 
     fixture.detectChanges();
 
-    reportCmp.submitError();
+    reportPage.submitError();
 
     expect(dismissSpy).toHaveBeenCalledWith({ log: true });
   });
@@ -69,15 +69,15 @@ describe('ErrorReportComponent', () => {
   test('should toggle error report visibilty', (): void => {
     fixture.detectChanges();
 
-    reportCmp.showReports = false;
+    reportPage.showReports = false;
 
-    reportCmp.toggleReports();
+    reportPage.toggleReports();
 
-    expect(reportCmp.showReports).toBe(true);
+    expect(reportPage.showReports).toBe(true);
 
-    reportCmp.toggleReports();
+    reportPage.toggleReports();
 
-    expect(reportCmp.showReports).toBe(false);
+    expect(reportPage.showReports).toBe(false);
   });
 
 });
