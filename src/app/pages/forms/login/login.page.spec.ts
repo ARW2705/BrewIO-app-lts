@@ -1,5 +1,5 @@
 /* Module imports */
-import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { IonicModule, LoadingController, ModalController } from '@ionic/angular';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
@@ -18,9 +18,7 @@ import { LoadingControllerStub, LoadingStub, ModalControllerStub } from '../../.
 import { User } from '../../../shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService } from '../../../services/error-reporting/error-reporting.service';
-import { ToastService } from '../../../services/toast/toast.service';
-import { UserService } from '../../../services/user/user.service';
+import { ErrorReportingService, ToastService, UserService } from '../../../services/services';
 
 /* Page imports */
 import { LoginPage } from './login.page';

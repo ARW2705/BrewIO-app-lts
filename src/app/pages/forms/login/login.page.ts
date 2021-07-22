@@ -1,5 +1,5 @@
 /* Module imports */
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { LoadingController, ModalController } from '@ionic/angular';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
@@ -8,9 +8,7 @@ import { finalize } from 'rxjs/operators';
 import { User } from '../../../shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService } from '../../../services/error-reporting/error-reporting.service';
-import { ToastService } from '../../../services/toast/toast.service';
-import { UserService } from '../../../services/user/user.service';
+import { ErrorReportingService, ToastService, UserService } from '../../../services/services';
 
 
 @Component({

@@ -1,5 +1,5 @@
 /* Module imports */
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { IonContent } from '@ionic/angular';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -8,10 +8,8 @@ import { takeUntil } from 'rxjs/operators';
 import { User } from '../../shared/interfaces';
 
 /* Provider imports */
-import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
-import { EventService } from '../../services/event/event.service';
-import { ToastService } from '../../services/toast/toast.service';
-import { UserService } from '../../services/user/user.service';
+import { ErrorReportingService, EventService, ToastService, UserService } from '../../services/services';
+
 
 @Component({
   selector: 'page-home',
@@ -20,8 +18,8 @@ import { UserService } from '../../services/user/user.service';
 })
 export class HomePage implements OnInit, OnDestroy {
   @ViewChild(IonContent, { static: false }) ionContent: IonContent;
-  destroy$: Subject<boolean> = new Subject<boolean>();
   accordionAnimationDuration: number = 250;
+  destroy$: Subject<boolean> = new Subject<boolean>();
   firstActiveBatchesLoad: boolean = true;
   firstInventoryLoad: boolean = true;
   isLoggedIn: boolean = false;

@@ -1,14 +1,13 @@
 /* Module imports */
-import { Component, Input, OnInit, ChangeDetectorRef } from '@angular/core';
-import { ModalController, LoadingController } from '@ionic/angular';
+import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { LoadingController, ModalController } from '@ionic/angular';
 import { finalize } from 'rxjs/operators';
 
 /* Interface imports */
 import { Image } from '../../../shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService } from '../../../services/error-reporting/error-reporting.service';
-import { ImageService } from '../../../services/image/image.service';
+import { ErrorReportingService, ImageService } from '../../../services/services';
 
 
 @Component({

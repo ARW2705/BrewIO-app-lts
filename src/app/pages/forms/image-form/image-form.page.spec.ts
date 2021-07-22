@@ -1,5 +1,5 @@
 /* Module imports */
-import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { LoadingController, ModalController } from '@ionic/angular';
 import { of, throwError } from 'rxjs';
@@ -8,20 +8,16 @@ import { of, throwError } from 'rxjs';
 import { configureTestBed } from '../../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockEnglishUnits, mockMetricUnits, mockImage, mockStyles } from '../../../../../test-config/mock-models';
+import { mockImage } from '../../../../../test-config/mock-models';
 import { ErrorReportingServiceStub, ImageServiceStub } from '../../../../../test-config/service-stubs';
 import { HeaderComponentStub } from '../../../../../test-config/component-stubs';
-import { LoadingControllerStub, LoadingStub, ModalControllerStub, ModalStub } from '../../../../../test-config/ionic-stubs';
-
-/* Default imports */
-import { defaultImage } from '../../../shared/defaults';
+import { LoadingControllerStub, LoadingStub, ModalControllerStub } from '../../../../../test-config/ionic-stubs';
 
 /* Interface imports */
 import { Image } from '../../../shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService } from '../../../services/error-reporting/error-reporting.service';
-import { ImageService } from '../../../services/image/image.service';
+import { ErrorReportingService, ImageService } from '../../../services/services';
 
 /* Page imports */
 import { ImageFormPage } from './image-form.page';

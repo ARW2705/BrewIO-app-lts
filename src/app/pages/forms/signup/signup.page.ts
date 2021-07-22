@@ -1,5 +1,5 @@
 /* Module imports */
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { LoadingController, ModalController } from '@ionic/angular';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { from } from 'rxjs';
@@ -15,11 +15,7 @@ import { Image, User } from '../../../shared/interfaces';
 import { ImageFormPage } from '../image-form/image-form.page';
 
 /* Service imports */
-import { ErrorReportingService } from '../../../services/error-reporting/error-reporting.service';
-import { FormValidationService } from '../../../services/form-validation/form-validation.service';
-import { ImageService } from '../../../services/image/image.service';
-import { ToastService } from '../../../services/toast/toast.service';
-import { UserService } from '../../../services/user/user.service';
+import { ErrorReportingService, FormValidationService, ImageService, ToastService, UserService } from '../../../services/services';
 
 
 @Component({

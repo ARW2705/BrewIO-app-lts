@@ -7,8 +7,8 @@ import { IonicModule } from '@ionic/angular';
 /* Component imports */
 import { AccordionComponentModule } from '../../components/accordion/accordion.module';
 import { ActiveBatchesComponentModule } from '../../components/active-batches/active-batches.module';
-import { InventoryComponentModule } from '../../components/inventory/inventory.module';
 import { HeaderComponentModule } from '../../components/header/header.module';
+import { InventoryComponentModule } from '../../components/inventory/inventory.module';
 
 /* Page imports */
 import { HomePage } from './home.page';
