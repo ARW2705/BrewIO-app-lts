@@ -10,16 +10,16 @@
 
       <ion-col size="12">
 
-        <h2>System Error</h2>
+        <h2>System Error{{ reports.length > 1 ? 's' : '' }}</h2>
 
       </ion-col>
 
       <ion-col size="12">
 
-        <ion-button (color)="primary"
+        <ion-button color="primary"
                     (click)="toggleReports()"
                     class="form-button">
-          {{ showReports ? 'Hide' : 'Show' }} Reports
+          {{ showReports ? 'Hide' : 'Show ' + reports.length }} Report{{ reports.length > 1 ? 's' : '' }}
         </ion-button>
 
       </ion-col>
@@ -42,20 +42,20 @@
 
     <ion-row>
 
-      <!-- Form cancel button -->
-      <ion-button *ngIf="!shouldHideLoginButton"
-                  (color)="primary"
-                  (click)="cancel()"
-                  class="form-button">
-        Cancel
-      </ion-button>
-
       <!-- Form submit button -->
       <ion-button color="primary"
                   (click)="submitError()"
                   class="form-button">
-        Send Reports and Continue
+        Send Reports And Continue
       </ion-button>
+
+      <!-- Form cancel button -->
+      <ion-button color="warning"
+                  (click)="cancel()"
+                  class="form-button">
+        Continue Without Sending Report
+      </ion-button>
+
 
     </ion-row>
 
