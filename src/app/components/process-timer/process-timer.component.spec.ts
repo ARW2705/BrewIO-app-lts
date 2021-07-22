@@ -1,24 +1,22 @@
 /* Module imports */
-import { TestBed, ComponentFixture } from '@angular/core/testing';
-import { SimpleChanges, SimpleChange, NO_ERRORS_SCHEMA } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA, SimpleChange, SimpleChanges } from '@angular/core';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockTimer, mockConcurrentTimers, mockProcessSchedule } from '../../../../test-config/mock-models';
+import { mockConcurrentTimers, mockProcessSchedule, mockTimer } from '../../../../test-config/mock-models';
 import { TimerComponentStub } from '../../../../test-config/component-stubs';
-import { ErrorReportingServiceStub, TimerServiceStub, ToastServiceStub } from '../../../../test-config/service-stubs';
+import { ErrorReportingServiceStub, IdServiceStub, TimerServiceStub, ToastServiceStub } from '../../../../test-config/service-stubs';
 import { FormatTimePipeStub, UnitConversionPipeStub } from '../../../../test-config/pipe-stubs';
 
 /* Interface imports */
 import { Process, TimerProcess, Timer } from '../../shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
-import { TimerService } from '../../services/timer/timer.service';
-import { ToastService } from '../../services/toast/toast.service';
+import { ErrorReportingService, IdService, TimerService, ToastService } from '../../services/services';
 
 /* Component imports */
 import { ProcessTimerComponent } from './process-timer.component';
@@ -41,6 +39,7 @@ describe('ProcessTimerComponent', (): void => {
       ],
       providers: [
         { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
+        { provide: IdService, useClass: IdServiceStub },
         { provide: TimerService, useClass: TimerServiceStub },
         { provide: ToastService, useClass: ToastServiceStub }
       ],
@@ -268,6 +267,10 @@ describe('ProcessTimerComponent', (): void => {
         .fn()
         .mockReturnValue(of(_mockTimer));
 
+      processCmp.idService.hasId = jest
+        .fn()
+        .mockReturnValue(true);
+
       const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
 
       fixture.detectChanges();
@@ -282,11 +285,15 @@ describe('ProcessTimerComponent', (): void => {
       }, 10);
     });
 
-    test('should get an error reseting a single timer', (done: jest.DoneCallback): void => {
+    test('should get an error resetting a single timer', (done: jest.DoneCallback): void => {
       const _mockProcessSchedule: TimerProcess[] = <TimerProcess[]>mockProcessSchedule().slice(2, 4);
       const _mockTimer: Timer = mockTimer();
       _mockTimer.timer.cid = _mockProcessSchedule[0].cid;
       const _mockError: Error = new Error('test-error');
+
+      processCmp.idService.hasId = jest
+        .fn()
+        .mockReturnValue(true);
 
       processCmp.stepData = _mockProcessSchedule;
 

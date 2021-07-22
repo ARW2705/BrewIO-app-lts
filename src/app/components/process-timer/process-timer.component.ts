@@ -1,18 +1,13 @@
 /* Module imports */
-import { Component, ElementRef, Input, OnInit, OnChanges, OnDestroy, QueryList, SimpleChange, SimpleChanges, ViewChildren } from '@angular/core';
+import { Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, QueryList, SimpleChange, SimpleChanges, ViewChildren } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 /* Interface imports */
-import { TimerProcess, Timer } from '../../shared/interfaces';
-
-/* Utility imports */
-import { hasId } from '../../shared/utility-functions/id-helpers';
+import { Timer, TimerProcess } from '../../shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
-import { TimerService } from '../../services/timer/timer.service';
-import { ToastService } from '../../services/toast/toast.service';
+import { ErrorReportingService, IdService, TimerService, ToastService } from '../../services/services';
 
 
 @Component({
@@ -39,6 +34,7 @@ export class ProcessTimerComponent implements OnInit, OnChanges, OnDestroy {
 
   constructor(
     public errorReporter: ErrorReportingService,
+    public idService: IdService,
     public timerService: TimerService,
     public toastService: ToastService
   ) {
@@ -126,7 +122,7 @@ export class ProcessTimerComponent implements OnInit, OnChanges, OnDestroy {
   resetSingleTimer(timer: Timer): void {
     const process: TimerProcess = this.stepData
       .find((_process: TimerProcess): boolean => {
-        return hasId(_process, timer.timer.cid);
+        return this.idService.hasId(_process, timer.timer.cid);
       });
 
     this.timerService.resetTimer(this.batchId, timer.cid, process.duration)

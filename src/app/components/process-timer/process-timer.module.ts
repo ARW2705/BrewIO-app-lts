@@ -2,12 +2,14 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { FormatTimePipeModule } from '../../pipes/format-time/format-time.module';
-import { UnitConversionPipeModule } from '../../pipes/unit-conversion/unit-conversion.module';
-import { TimerComponentModule } from '../timer/timer.module';
+
+/* Pipe imports */
+import { FormatTimePipeModule, UnitConversionPipeModule } from '../../pipes/pipes';
 
 /* Component imports */
 import { ProcessTimerComponent } from './process-timer.component';
+import { TimerComponentModule } from '../timer/timer.module';
+
 
 @NgModule({
   imports: [
