@@ -1,5 +1,5 @@
 /* Module imports */
-import { Component, ChangeDetectorRef, OnChanges, OnDestroy, Input, OnInit, AfterViewInit, ElementRef, Renderer2, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { finalize, takeUntil } from 'rxjs/operators';
@@ -10,15 +10,8 @@ import { Batch } from '../../shared/interfaces';
 /* Type imports */
 import { CustomError } from '../../shared/types';
 
-/* Utility function imports */
-import { getId } from '../../shared/utility-functions/id-helpers';
-import { getArrayFromSubjects } from '../../shared/utility-functions/subject-helpers';
-
 /* Service imports */
-import { AnimationsService } from '../../services/animations/animations.service';
-import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
-import { ProcessService } from '../../services/process/process.service';
-import { ToastService } from '../../services/toast/toast.service';
+import { AnimationsService, ErrorReportingService, IdService, ProcessService, ToastService, UtilityService } from '../../services/services';
 
 
 @Component({
@@ -35,13 +28,15 @@ export class ActiveBatchesComponent implements OnInit, OnChanges, OnDestroy, Aft
   destroy$: Subject<boolean> = new Subject<boolean>();
 
   constructor(
+    public animationService: AnimationsService,
     public cdRef: ChangeDetectorRef,
+    public errorReporter: ErrorReportingService,
+    public idService: IdService,
+    public processService: ProcessService,
     public renderer: Renderer2,
     public router: Router,
-    public animationService: AnimationsService,
-    public errorReporter: ErrorReportingService,
-    public processService: ProcessService,
-    public toastService: ToastService
+    public toastService: ToastService,
+    public utilService: UtilityService
   ) { }
 
   /***** Lifecycle Hooks *** */
@@ -53,7 +48,7 @@ export class ActiveBatchesComponent implements OnInit, OnChanges, OnDestroy, Aft
       .pipe(takeUntil(this.destroy$))
       .subscribe(
         (activeBatchesList$: BehaviorSubject<Batch>[]): void => {
-          this.activeBatchesList = getArrayFromSubjects<Batch>(activeBatchesList$);
+          this.activeBatchesList = this.utilService.getArrayFromSubjects<Batch>(activeBatchesList$);
         },
         (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
@@ -97,7 +92,7 @@ export class ActiveBatchesComponent implements OnInit, OnChanges, OnDestroy, Aft
       {
         state: {
           requestedUserId: batch.owner,
-          selectedBatchId: getId(batch),
+          selectedBatchId: this.idService.getId(batch),
           rootURL: this.rootURL
         }
       }

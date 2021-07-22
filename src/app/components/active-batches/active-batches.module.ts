@@ -6,6 +6,7 @@ import { IonicModule } from '@ionic/angular';
 /* Component imports */
 import { ActiveBatchesComponent } from './active-batches.component';
 
+
 @NgModule({
   imports: [
     CommonModule,

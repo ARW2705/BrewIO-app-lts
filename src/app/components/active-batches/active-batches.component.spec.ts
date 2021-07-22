@@ -9,23 +9,13 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
 import { mockBatch } from '../../../../test-config/mock-models';
-import {
-  AnimationsServiceStub,
-  ErrorReportingServiceStub,
-  ProcessServiceStub,
-  ToastServiceStub
-} from '../../../../test-config/service-stubs';
-
-import * as subjectHelpers from '../../shared/utility-functions/subject-helpers';
+import { AnimationsServiceStub, ErrorReportingServiceStub, IdServiceStub, ProcessServiceStub, ToastServiceStub, UtilityServiceStub } from '../../../../test-config/service-stubs';
 
 /* Interface imports */
 import { Batch } from '../../shared/interfaces';
 
 /* Service imports */
-import { AnimationsService } from '../../services/animations/animations.service';
-import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
-import { ProcessService } from '../../services/process/process.service';
-import { ToastService } from '../../services/toast/toast.service';
+import { AnimationsService, ErrorReportingService, IdService, ProcessService, ToastService, UtilityService } from '../../services/services';
 
 /* Component imports */
 import { ActiveBatchesComponent } from './active-batches.component';
@@ -47,8 +37,10 @@ describe('ActiveBatchesComponent', (): void => {
       providers: [
         { provide: AnimationsService, useClass: AnimationsServiceStub },
         { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
+        { provide: IdService, useClass: IdServiceStub },
         { provide: ProcessService, useClass: ProcessServiceStub },
-        { provide: ToastService, useClass: ToastServiceStub }
+        { provide: ToastService, useClass: ToastServiceStub },
+        { provide: UtilityService, useClass: UtilityServiceStub }
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
@@ -92,15 +84,14 @@ describe('ActiveBatchesComponent', (): void => {
         .fn()
         .mockReturnValue(list$);
 
-      const getSpy: jest.SpyInstance = jest.spyOn(subjectHelpers, 'getArrayFromSubjects')
-        .mockImplementation((): Batch[] => {
-          return [_mockBatch, _mockBatch];
-        });
+      batchCmp.utilService.getArrayFromSubjects = jest
+        .fn()
+        .mockReturnValue([_mockBatch, _mockBatch]);
 
       fixture.detectChanges();
 
       setTimeout((): void => {
-        expect(getSpy).toHaveBeenCalled();
+        expect(batchCmp.activeBatchesList).toStrictEqual([_mockBatch, _mockBatch]);
         done();
       }, 10);
     });
@@ -225,6 +216,10 @@ describe('ActiveBatchesComponent', (): void => {
 
       const _mockBatch: Batch = mockBatch();
 
+      batchCmp.idService.getId = jest
+        .fn()
+        .mockReturnValue(_mockBatch._id);
+
       const navSpy: jest.SpyInstance = jest.spyOn(batchCmp.router, 'navigate');
 
       fixture.detectChanges();
@@ -252,14 +247,14 @@ describe('ActiveBatchesComponent', (): void => {
       batchCmp.ngOnInit = originalOnInit;
 
       const _mockBatch: Batch = mockBatch();
-      const list$: BehaviorSubject<BehaviorSubject<Batch>[]> = new BehaviorSubject<BehaviorSubject<Batch>[]>([
-        new BehaviorSubject<Batch>(_mockBatch),
-        new BehaviorSubject<Batch>(_mockBatch)
-      ]);
 
       batchCmp.processService.getBatchList = jest
         .fn()
-        .mockReturnValue(list$);
+        .mockReturnValue(of(null));
+
+      batchCmp.utilService.getArrayFromSubjects = jest
+        .fn()
+        .mockReturnValue([_mockBatch, _mockBatch]);
 
       fixture.detectChanges();
 
