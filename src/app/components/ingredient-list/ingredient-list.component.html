@@ -20,7 +20,13 @@
   <!-- Ingredient List -->
   <ion-card-content>
 
-    <ion-list *ngIf="recipeVariant">
+    <div *ngIf="!hasIngredients">
+
+      <p class="no-ingredients">No Ingredients Provided Yet!</p>
+
+    </div>
+
+    <ion-list *ngIf="hasIngredients">
 
       <!-- Grain Bill -->
       <ion-item-group *ngIf="recipeVariant.grains.length">
