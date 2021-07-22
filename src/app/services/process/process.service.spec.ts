@@ -9,85 +9,24 @@ import { catchError } from 'rxjs/operators';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import {
-  mockAlert,
-  mockBatch,
-  mockGeneratedBatch,
-  mockSyncError,
-  mockSyncMetadata,
-  mockSyncResponse,
-  mockRecipeMasterActive,
-  mockPrimaryValues,
-  mockProcessSchedule,
-  mockErrorResponse,
-  mockUser
-} from '../../../../test-config/mock-models';
-import {
-  CalculationsServiceStub,
-  ClientIdServiceStub,
-  ConnectionServiceStub,
-  ErrorReportingServiceStub,
-  EventServiceStub,
-  HttpErrorServiceStub,
-  LibraryServiceStub,
-  RecipeServiceStub,
-  StorageServiceStub,
-  SyncServiceStub,
-  ToastServiceStub,
-  UserServiceStub,
-  TypeGuardServiceStub
-} from '../../../../test-config/service-stubs';
+import { mockAlert, mockBatch, mockGeneratedBatch, mockSyncError, mockSyncMetadata, mockSyncResponse, mockRecipeMasterActive, mockPrimaryValues, mockProcessSchedule, mockErrorResponse, mockUser } from '../../../../test-config/mock-models';
+import { CalculationsServiceStub, IdServiceStub, ConnectionServiceStub, ErrorReportingServiceStub, EventServiceStub, HttpErrorServiceStub, LibraryServiceStub, RecipeServiceStub, StorageServiceStub, SyncServiceStub, ToastServiceStub, UserServiceStub, TypeGuardServiceStub, UtilityServiceStub } from '../../../../test-config/service-stubs';
 
 /* Constants imports */
 import { API_VERSION, BASE_URL } from '../../shared/constants';
 
 /* Interface imports */
-import {
-  Alert,
-  Batch,
-  BatchAnnotations,
-  BatchContext,
-  BatchProcess,
-  CalendarProcess,
-  PrimaryValues,
-  Process,
-  RecipeMaster,
-  SyncData,
-  SyncError,
-  SyncRequests,
-  SyncResponse,
-  TimerProcess,
-  User
-} from '../../shared/interfaces';
+import { Alert, Batch, BatchAnnotations, BatchContext, BatchProcess, CalendarProcess, PrimaryValues, Process, RecipeMaster, SyncData, SyncError, SyncRequests, SyncResponse, TimerProcess, User } from '../../shared/interfaces';
 
 /* Type imports */
 import { CustomError } from '../../shared/types';
 
 /* Type guard imports */
-import {
-  AlertGuardMetadata,
-  BatchGuardMetadata,
-  BatchContextGuardMetadata,
-  BatchAnnotationsGuardMetadata,
-  BatchProcessGuardMetadata,
-  PrimaryValuesGuardMetadata
-} from '../../shared/type-guard-metadata';
+import { AlertGuardMetadata, BatchGuardMetadata, BatchContextGuardMetadata, BatchAnnotationsGuardMetadata, BatchProcessGuardMetadata, PrimaryValuesGuardMetadata } from '../../shared/type-guard-metadata';
 
 /* Service imports */
 import { ProcessService } from './process.service';
-import { CalculationsService } from '../calculations/calculations.service';
-import { ClientIdService } from '../client-id/client-id.service';
-import { ConnectionService } from '../connection/connection.service';
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
-import { EventService } from '../event/event.service';
-import { HttpErrorService } from '../http-error/http-error.service';
-import { LibraryService } from '../library/library.service';
-import { RecipeService } from '../recipe/recipe.service';
-import { StorageService } from '../storage/storage.service';
-import { SyncService } from '../sync/sync.service';
-import { ToastService } from '../toast/toast.service';
-import { UserService } from '../user/user.service';
-import { TypeGuardService } from '../type-guard/type-guard.service';
+import { CalculationsService, ConnectionService, ErrorReportingService, EventService, HttpErrorService, IdService, LibraryService, RecipeService, StorageService, SyncService, ToastService, TypeGuardService, UserService, UtilityService } from '../services';
 
 
 describe('ProcessService', (): void => {
@@ -103,7 +42,7 @@ describe('ProcessService', (): void => {
       providers: [
         ProcessService,
         { provide: CalculationsService, useClass: CalculationsServiceStub },
-        { provide: ClientIdService, useClass: ClientIdServiceStub },
+        { provide: IdService, useClass: IdServiceStub },
         { provide: ConnectionService, useClass: ConnectionServiceStub },
         { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: EventService, useClass: EventServiceStub },
@@ -114,7 +53,8 @@ describe('ProcessService', (): void => {
         { provide: SyncService, useClass: SyncServiceStub },
         { provide: ToastService, useClass: ToastServiceStub },
         { provide: UserService, useClass: UserServiceStub },
-        { provide: TypeGuardService, useClass: TypeGuardServiceStub }
+        { provide: TypeGuardService, useClass: TypeGuardServiceStub },
+        { provide: UtilityService, useClass: UtilityServiceStub }
       ]
     });
   }));
@@ -503,6 +443,10 @@ describe('ProcessService', (): void => {
       processService.checkTypeSafety = jest
         .fn();
 
+      processService.idService.getId = jest
+        .fn()
+        .mockReturnValue('test-id');
+
       const requestSpy: jest.SpyInstance = jest.spyOn(processService, 'requestInBackground');
       const syncSpy: jest.SpyInstance = jest.spyOn(processService, 'addSyncFlag');
 
@@ -542,6 +486,10 @@ describe('ProcessService', (): void => {
       processService.getMissingError = jest
         .fn()
         .mockReturnValue(_mockError);
+
+      processService.idService.getId = jest
+        .fn()
+        .mockReturnValue('');
 
       processService.updateBatch(_mockBatch)
         .subscribe(
@@ -633,8 +581,10 @@ describe('ProcessService', (): void => {
       const _mockAlert: Alert = mockAlert();
       const _mockBatch: Batch = mockBatch();
       const now: string = (new Date()).toISOString();
+      const index: number = 13;
+      let count: number = 0;
       const _mockUpdate: object = {
-        id: _mockBatch.process.schedule[1].cid,
+        id: _mockBatch.process.schedule[index].cid,
         update: {
           alerts: [_mockAlert],
           startDatetime: now
@@ -651,11 +601,20 @@ describe('ProcessService', (): void => {
           return of(batch);
         });
 
+      processService.idService.hasId = jest
+        .fn()
+        .mockImplementation((): boolean => {
+          if (count === index) {
+            return true;
+          }
+          count++;
+        });
+
       processService.updateStepById(_mockBatch.cid, _mockUpdate)
         .subscribe(
           (batch: Batch): void => {
             expect(batch.process.alerts[0]).toStrictEqual(_mockAlert);
-            expect((<CalendarProcess>batch.process.schedule[1]).startDatetime).toMatch(now);
+            expect((<CalendarProcess>batch.process.schedule[index]).startDatetime).toMatch(now);
             done();
           },
           (error: any): void => {
@@ -715,7 +674,7 @@ describe('ProcessService', (): void => {
         );
     });
 
-    test('should get error trying to update step with missing batch', (done: jest.DoneCallback): void => {
+    test('should get error trying to update step with missing step id', (done: jest.DoneCallback): void => {
       const _mockError: Error = new Error('test-error');
       const _mockBatch: Batch = mockBatch();
 
@@ -751,6 +710,10 @@ describe('ProcessService', (): void => {
       processService.getMissingError = jest
         .fn()
         .mockReturnValue(_mockError);
+
+      processService.idService.hasId = jest
+        .fn()
+        .mockReturnValue(false);
 
       processService.updateStepById('error-id', { id: 'error-id', })
         .subscribe(
@@ -1082,6 +1045,14 @@ describe('ProcessService', (): void => {
         .mockReturnValueOnce(of(_mockBatchOffline))
         .mockReturnValueOnce(of(_mockBatch));
 
+      processService.idService.hasDefaultIdType = jest
+        .fn()
+        .mockReturnValue(false);
+
+      processService.idService.isMissingServerId = jest
+        .fn()
+        .mockReturnValue(false);
+
       const syncRequests: SyncRequests<Batch> = processService.generateSyncRequests();
       const requests: Observable<HttpErrorResponse | Batch | SyncData<Batch>>[] = syncRequests.syncRequests;
       const errors: SyncError[] = syncRequests.syncErrors;
@@ -1157,6 +1128,21 @@ describe('ProcessService', (): void => {
         .mockReturnValueOnce(_mockUser$)
         .mockReturnValueOnce(_mockUser$)
         .mockReturnValueOnce(_mockUser$);
+
+      processService.idService.hasDefaultIdType = jest
+        .fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(true)
+        .mockReturnValue(false);
+
+      processService.idService.isMissingServerId = jest
+        .fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValue(false);
+
+      processService.idService.hasId = jest
+        .fn()
+        .mockReturnValue(true);
 
       const syncRequests: SyncRequests<Batch> = processService.generateSyncRequests();
       const requests: Observable<HttpErrorResponse | Batch | SyncData<Batch>>[] = syncRequests.syncRequests;
@@ -1398,6 +1384,10 @@ describe('ProcessService', (): void => {
       processService.updateBatchStorage = jest
         .fn();
 
+      processService.idService.isMissingServerId = jest
+        .fn()
+        .mockReturnValue(false);
+
       const processSpy: jest.SpyInstance = jest.spyOn(processService, 'processSyncSuccess');
       const updateSpy: jest.SpyInstance = jest.spyOn(processService, 'updateBatchStorage');
       const emitSpy: jest.SpyInstance = jest.spyOn(processService.event, 'emit');
@@ -1437,6 +1427,10 @@ describe('ProcessService', (): void => {
       processService.syncService.sync = jest
         .fn()
         .mockReturnValue(of(_mockSyncResponse));
+
+      processService.idService.isMissingServerId = jest
+        .fn()
+        .mockReturnValue(false);
 
       const syncSpy: jest.SpyInstance = jest.spyOn(processService.syncService, 'sync');
       const emitSpy: jest.SpyInstance = jest.spyOn(processService.event, 'emit');
@@ -1559,6 +1553,10 @@ describe('ProcessService', (): void => {
         .mockReturnValueOnce(true)
         .mockReturnValueOnce(false);
 
+      processService.idService.hasDefaultIdType = jest
+        .fn()
+        .mockReturnValue(false);
+
       expect(processService.canSendRequest(['1a2b3c4d5e', '6f7g8h9i10j'])).toBe(true);
       expect(processService.canSendRequest()).toBe(false);
     });
@@ -1644,12 +1642,25 @@ describe('ProcessService', (): void => {
         .fn()
         .mockReturnValue(_mockRecipeMasterActive$);
 
-      processService.clientIdService.getNewId = jest
+      processService.idService.getNewId = jest
         .fn()
         .mockReturnValue('0123456789012');
 
       processService.errorReporter.handleGenericCatchError = jest
         .fn();
+
+      processService.idService.getId = jest
+        .fn()
+        .mockReturnValueOnce(_mockRecipeMasterActive._id)
+        .mockReturnValueOnce(_mockRecipeMasterActive.variants[0]._id);
+
+      processService.idService.hasId = jest
+        .fn()
+        .mockReturnValue(true);
+
+      processService.utilService.clone = jest
+        .fn()
+        .mockImplementation((obj: any): any => obj);
 
       processService.generateBatchFromRecipe(_mockUser._id, _mockRecipeMasterActive.cid, _mockRecipeMasterActive.variants[0].cid)
         .subscribe(
@@ -1771,6 +1782,13 @@ describe('ProcessService', (): void => {
         .mockReturnValueOnce(new BehaviorSubject<BehaviorSubject<Batch>[]>([]))
         .mockReturnValueOnce(new BehaviorSubject<BehaviorSubject<Batch>[]>([]));
 
+      processService.idService.hasId = jest
+        .fn()
+        .mockReturnValueOnce(false)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false)
+        .mockReturnValueOnce(true);
+
       const fromActive: BehaviorSubject<Batch> = processService.getBatchById('12345');
       expect(fromActive.value).toStrictEqual(_mockBatchTarget);
 
@@ -1814,10 +1832,17 @@ describe('ProcessService', (): void => {
       const _mockBatch: Batch = mockBatch();
 
       const batchList$: BehaviorSubject<BehaviorSubject<Batch>[]> = new BehaviorSubject<BehaviorSubject<Batch>[]>([]);
-
+      const subjectArray$: BehaviorSubject<Batch>[] = [
+        new BehaviorSubject<Batch>(_mockBatch),
+        new BehaviorSubject<Batch>(_mockBatch),
+      ];
       processService.getBatchList = jest
         .fn()
         .mockReturnValue(batchList$);
+
+      processService.utilService.toSubjectArray = jest
+        .fn()
+        .mockReturnValue(subjectArray$);
 
       processService.mapBatchArrayToSubjectArray(true, [ _mockBatch, _mockBatch ]);
 
@@ -1841,6 +1866,10 @@ describe('ProcessService', (): void => {
 
       processService.updateBatchStorage = jest
         .fn();
+
+      processService.idService.getIndexById = jest
+        .fn()
+        .mockReturnValue(1);
 
       processService.removeBatchFromList(true, '12345')
         .subscribe(
@@ -1867,6 +1896,10 @@ describe('ProcessService', (): void => {
       processService.getMissingError = jest
         .fn()
         .mockReturnValue(_mockError);
+
+      processService.idService.getIndexById = jest
+        .fn()
+        .mockReturnValue(-1);
 
       const errorSpy: jest.SpyInstance = jest.spyOn(processService, 'getMissingError');
 

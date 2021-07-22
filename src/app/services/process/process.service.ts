@@ -8,91 +8,48 @@ import { catchError, finalize, map, mergeMap, take, tap } from 'rxjs/operators';
 import { API_VERSION, BASE_URL } from '../../shared/constants';
 
 /* Interface imports */
-import {
-  Alert,
-  Batch,
-  BatchAnnotations,
-  BatchContext,
-  BatchProcess,
-  DocumentGuard,
-  PrimaryValues,
-  Process,
-  RecipeMaster,
-  RecipeVariant,
-  SyncData,
-  SyncError,
-  SyncMetadata,
-  SyncRequests,
-  SyncResponse,
-  User
-} from '../../shared/interfaces';
+import { Alert, Batch, BatchAnnotations, BatchContext, BatchProcess, PrimaryValues, Process, RecipeMaster, RecipeVariant, SyncData, SyncError, SyncMetadata, SyncRequests, SyncResponse, User } from '../../shared/interfaces';
 
 /* Type guard imports */
-import {
-  AlertGuardMetadata,
-  ManualProcessGuardMetadata,
-  ProcessGuardMetadata,
-  TimerProcessGuardMetadata,
-  CalendarProcessGuardMetadata,
-  BatchGuardMetadata,
-  BatchContextGuardMetadata,
-  BatchAnnotationsGuardMetadata,
-  BatchProcessGuardMetadata,
-  PrimaryValuesGuardMetadata
-} from '../../shared/type-guard-metadata';
+import { AlertGuardMetadata, BatchGuardMetadata, BatchContextGuardMetadata, BatchAnnotationsGuardMetadata, BatchProcessGuardMetadata, PrimaryValuesGuardMetadata } from '../../shared/type-guard-metadata';
 
 /* Type imports */
 import { CustomError } from '../../shared/types';
 
-/* Utility function imports */
-import { getArrayFromSubjects, toSubjectArray } from '../../shared/utility-functions/subject-helpers';
-import { getId, getIndexById, hasDefaultIdType, hasId, isMissingServerId } from '../../shared/utility-functions/id-helpers';
-import { clone } from '../../shared/utility-functions/clone';
-
 /* Service imports */
-import { CalculationsService } from '../calculations/calculations.service';
-import { ClientIdService } from '../client-id/client-id.service';
-import { ConnectionService } from '../connection/connection.service';
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
-import { EventService } from '../event/event.service';
-import { HttpErrorService } from '../http-error/http-error.service';
-import { LibraryService } from '../library/library.service';
-import { RecipeService } from '../recipe/recipe.service';
-import { StorageService } from '../storage/storage.service';
-import { SyncService } from '../sync/sync.service';
-import { ToastService } from '../toast/toast.service';
-import { UserService } from '../user/user.service';
-import { TypeGuardService } from '../type-guard/type-guard.service';
+import { CalculationsService, ConnectionService, ErrorReportingService, EventService, HttpErrorService, IdService, LibraryService, RecipeService, StorageService, SyncService, ToastService, TypeGuardService, UserService, UtilityService } from '../services';
 
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProcessService {
-  syncBaseRoute: string = 'process/batch';
-  syncErrors: SyncError[] = [];
   activeBatchList$: BehaviorSubject<BehaviorSubject<Batch>[]>
     = new BehaviorSubject<BehaviorSubject<Batch>[]>([]);
   archiveBatchList$: BehaviorSubject<BehaviorSubject<Batch>[]>
     = new BehaviorSubject<BehaviorSubject<Batch>[]>([]);
-  syncArchiveRoute: string = `${this.syncBaseRoute}/archive`;
+  syncArchiveRoute: string = '';
+  syncBaseRoute: string = 'process/batch';
+  syncErrors: SyncError[] = [];
 
   constructor(
-    public http: HttpClient,
     public calculationService: CalculationsService,
-    public clientIdService: ClientIdService,
     public connectionService: ConnectionService,
     public errorReporter: ErrorReportingService,
     public event: EventService,
+    public http: HttpClient,
     public httpError: HttpErrorService,
+    public idService: IdService,
     public libraryService: LibraryService,
     public recipeService: RecipeService,
     public storageService: StorageService,
     public syncService: SyncService,
     public toastService: ToastService,
+    public typeGuard: TypeGuardService,
     public userService: UserService,
-    public typeGuard: TypeGuardService
+    public utilService: UtilityService
   ) {
+    this.syncArchiveRoute = `${this.syncBaseRoute}/archive`;
     this.registerEvents();
   }
 
@@ -265,7 +222,7 @@ export class ProcessService {
    * @return: Observable of updated batch
    */
   updateBatch(updatedBatch: Batch, isActive: boolean = true): Observable<Batch> {
-    const batch$: BehaviorSubject<Batch> = this.getBatchById(getId(updatedBatch));
+    const batch$: BehaviorSubject<Batch> = this.getBatchById(this.idService.getId(updatedBatch));
     if (!batch$) {
       const message: string = 'An error occurring trying to update a batch: batch not found';
       const additionalMessage: string = `Batch with id ${updatedBatch.cid} not found`;
@@ -281,7 +238,7 @@ export class ProcessService {
     if (this.canSendRequest([updatedBatch._id])) {
       this.requestInBackground('patch', updatedBatch);
     } else {
-      this.addSyncFlag('update', getId(updatedBatch));
+      this.addSyncFlag('update', this.idService.getId(updatedBatch));
     }
 
     return of(updatedBatch);
@@ -350,7 +307,7 @@ export class ProcessService {
     }
 
     const stepIndex: number = batch.process.schedule
-      .findIndex((step: Process) => hasId(step, stepUpdate['id']));
+      .findIndex((step: Process) => this.idService.hasId(step, stepUpdate['id']));
 
     if (stepIndex === -1) {
       const message: string = 'An error occurring trying to update batch step: missing step';
@@ -534,30 +491,30 @@ export class ProcessService {
           batch.owner = user._id;
         }
 
-        if (hasDefaultIdType(batch.recipeMasterId)) {
+        if (this.idService.hasDefaultIdType(batch.recipeMasterId)) {
           // TODO: extract to own method(?)
           const recipeMaster$: BehaviorSubject<RecipeMaster>
             = this.recipeService.getRecipeMasterById(batch.recipeMasterId);
 
-          if (recipeMaster$ === undefined || hasDefaultIdType(recipeMaster$.value._id)) {
+          if (recipeMaster$ === undefined || this.idService.hasDefaultIdType(recipeMaster$.value._id)) {
             const errMsg: string = 'Sync error: Cannot get batch owner\'s id';
             errors.push(this.syncService.constructSyncError(errMsg));
             return;
           }
           batch.recipeMasterId = recipeMaster$.value._id;
           const variantId: string = recipeMaster$.value.variants
-            .find((variant: RecipeVariant): boolean => hasId(variant, batch.recipeVariantId))
+            .find((variant: RecipeVariant): boolean => this.idService.hasId(variant, batch.recipeVariantId))
             ._id;
           batch.recipeVariantId = variantId || batch.recipeVariantId;
         }
 
-        if (syncFlag.method === 'update' && isMissingServerId(batch._id)) {
+        if (syncFlag.method === 'update' && this.idService.isMissingServerId(batch._id)) {
           const errMsg: string = `Sync error: batch with id: ${batch.cid} is missing its server id`;
           errors.push(this.syncService.constructSyncError(errMsg));
         } else if (syncFlag.method === 'create') {
           batch['forSync'] = true;
           requests.push(this.configureBackgroundRequest('post', true, batch));
-        } else if (syncFlag.method === 'update' && !isMissingServerId(batch._id)) {
+        } else if (syncFlag.method === 'update' && !this.idService.isMissingServerId(batch._id)) {
           requests.push(this.configureBackgroundRequest('patch', true, batch));
         } else {
           const errMsg: string = `Sync error: Unknown sync flag method '${syncFlag.method}'`;
@@ -661,7 +618,7 @@ export class ProcessService {
       const recipe$: BehaviorSubject<RecipeMaster> = this.recipeService
         .getRecipeMasterById(batch$.value.recipeMasterId);
 
-      if (!recipe$ || isMissingServerId(recipe$.value._id)) {
+      if (!recipe$ || this.idService.isMissingServerId(recipe$.value._id)) {
         const message: string = `Recipe with id ${batch$.value.recipeMasterId} not found`;
         requests.push(throwError(new CustomError('SyncError', message, 2, message)));
         return;
@@ -762,7 +719,7 @@ export class ProcessService {
   canSendRequest(ids?: string[]): boolean {
     let idsOk: boolean = !ids;
     if (ids && ids.length) {
-      idsOk = ids.every((id: string): boolean => id && !hasDefaultIdType(id));
+      idsOk = ids.every((id: string): boolean => id && !this.idService.hasDefaultIdType(id));
     }
 
     return this.connectionService.isConnected() && this.userService.isLoggedIn() && idsOk;
@@ -832,7 +789,7 @@ export class ProcessService {
         map((recipeMaster: RecipeMaster): Batch => {
           const variant = recipeMaster.variants
             .find((_variant: RecipeVariant): boolean => {
-              return hasId(_variant, variantId);
+              return this.idService.hasId(_variant, variantId);
             });
 
           if (!variant) {
@@ -842,11 +799,11 @@ export class ProcessService {
           }
 
           const newBatch: Batch = {
-            cid: this.clientIdService.getNewId(),
+            cid: this.idService.getNewId(),
             createdAt: (new Date()).toISOString(),
             owner: userId,
-            recipeMasterId: getId(recipeMaster),
-            recipeVariantId: getId(variant),
+            recipeMasterId: this.idService.getId(recipeMaster),
+            recipeVariantId: this.idService.getId(variant),
             isArchived: false,
             annotations: {
               styleId: recipeMaster.style._id,
@@ -876,7 +833,7 @@ export class ProcessService {
               schedule: Array.from(
                 variant.processSchedule,
                 (process: Process): Process => {
-                  const copy: object = { cid: this.clientIdService.getNewId() };
+                  const copy: object = { cid: this.idService.getNewId() };
                   for (const key in process) {
                     if (key !== '_id') {
                       copy[key] = process[key];
@@ -892,10 +849,10 @@ export class ProcessService {
               recipeImage: recipeMaster.labelImage,
               batchVolume: variant.batchVolume,
               boilVolume: variant.boilVolume,
-              grains: clone(variant.grains),
-              hops: clone(variant.hops),
-              yeast: clone(variant.yeast),
-              otherIngredients: clone(variant.otherIngredients)
+              grains: this.utilService.clone(variant.grains),
+              hops: this.utilService.clone(variant.hops),
+              yeast: this.utilService.clone(variant.yeast),
+              otherIngredients: this.utilService.clone(variant.otherIngredients)
             }
           };
           console.log('new batch', newBatch);
@@ -925,13 +882,13 @@ export class ProcessService {
    */
   getBatchById(batchId: string): BehaviorSubject<Batch> {
     const active$: BehaviorSubject<Batch> = this.getBatchList(true).value
-      .find((batch$: BehaviorSubject<Batch>): boolean => hasId(batch$.value, batchId));
+      .find((batch$: BehaviorSubject<Batch>): boolean => this.idService.hasId(batch$.value, batchId));
 
     if (active$ !== undefined) return active$;
 
     return this.getBatchList(false).value
       .find((batch$: BehaviorSubject<Batch>): boolean => {
-        return hasId(batch$.value, batchId);
+        return this.idService.hasId(batch$.value, batchId);
       });
   }
 
@@ -974,7 +931,7 @@ export class ProcessService {
    * @return: none
    */
   mapBatchArrayToSubjectArray(isActive: boolean, batchList: Batch[]): void {
-    this.getBatchList(isActive).next(toSubjectArray<Batch>(batchList));
+    this.getBatchList(isActive).next(this.utilService.toSubjectArray<Batch>(batchList));
   }
 
   /**
@@ -989,7 +946,10 @@ export class ProcessService {
     const batchList$: BehaviorSubject<BehaviorSubject<Batch>[]> = this.getBatchList(isActive);
     const batchList: BehaviorSubject<Batch>[] = batchList$.value;
 
-    const indexToRemove: number = getIndexById(batchId, getArrayFromSubjects(batchList));
+    const indexToRemove: number = this.idService.getIndexById(
+      batchId,
+      this.utilService.getArrayFromSubjects(batchList)
+    );
 
     if (indexToRemove === -1) {
       const message: string = 'An error occurring trying to remove batch from list: missing batch';
