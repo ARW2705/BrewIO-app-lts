@@ -1,27 +1,13 @@
 /* Module imports */
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 
-/* Utility imports */
-import { compareWith, roundToDecimalPlace, toTitleCase } from '../../../shared/utility-functions/utilities';
-
 /* Interface imports */
-import {
-  GrainBill,
-  Grains,
-  HopsSchedule,
-  Hops,
-  OtherIngredients,
-  SelectedUnits,
-  YeastBatch,
-  Yeast
-} from '../../../shared/interfaces';
+import { GrainBill, Grains, HopsSchedule, Hops, OtherIngredients, SelectedUnits, YeastBatch, Yeast } from '../../../shared/interfaces';
 
 /* Service imports */
-import { CalculationsService } from '../../../services/calculations/calculations.service';
-import { FormValidationService } from '../../../services/form-validation/form-validation.service';
-import { PreferencesService } from '../../../services/preferences/preferences.service';
+import { CalculationsService, FormValidationService, PreferencesService, UtilityService } from '../../../services/services';
 
 
 @Component({
@@ -34,7 +20,7 @@ export class IngredientFormPage implements OnInit {
   @Input() ingredientType: string;
   @Input() ingredientLibrary: Grains[] | Hops[] | Yeast[];
   @Input() update: GrainBill | HopsSchedule | YeastBatch | OtherIngredients;
-  compareWithFn: (o1: any, o2: any) => boolean = compareWith;
+  compareWithFn: (o1: any, o2: any) => boolean;
   formType: string;
   hasSubQuantity: boolean = false;
   ingredientForm: FormGroup = null;
@@ -53,8 +39,10 @@ export class IngredientFormPage implements OnInit {
     public formBuilder: FormBuilder,
     public formValidator: FormValidationService,
     public modalCtrl: ModalController,
-    public preferenceService: PreferencesService
+    public preferenceService: PreferencesService,
+    public utilService: UtilityService
   ) {
+    this.compareWithFn = this.utilService.compareWith.bind(this);
     this.onBackClick = this.dismiss.bind(this);
   }
 
@@ -66,7 +54,7 @@ export class IngredientFormPage implements OnInit {
       return;
     }
 
-    this.title = toTitleCase(this.ingredientType);
+    this.title = this.utilService.toTitleCase(this.ingredientType);
     this.units = this.preferenceService.getSelectedUnits();
     this.requiresConversionLarge = this.calculator.requiresConversion('weightLarge', this.units);
     this.requiresConversionSmall = this.calculator.requiresConversion('weightSmall', this.units);
@@ -260,10 +248,10 @@ export class IngredientFormPage implements OnInit {
           subQuantity *= 16;
         }
         quantity = Math.floor(quantity);
-        this.ingredientForm.controls.subQuantity.setValue(roundToDecimalPlace(subQuantity, 2));
+        this.ingredientForm.controls.subQuantity.setValue(this.utilService.roundToDecimalPlace(subQuantity, 2));
       }
 
-      this.ingredientForm.controls.quantity.setValue(roundToDecimalPlace(quantity, 2));
+      this.ingredientForm.controls.quantity.setValue(this.utilService.roundToDecimalPlace(quantity, 2));
       this.ingredientForm.controls.type.setValue((<GrainBill>this.update).grainType);
       this.ingredientForm.controls.mill.setValue((<GrainBill>this.update).mill);
     }
@@ -295,7 +283,7 @@ export class IngredientFormPage implements OnInit {
         quantity = this.calculator.convertWeight(quantity, false, false);
       }
 
-      this.ingredientForm.controls.subQuantity.setValue(roundToDecimalPlace(quantity, 2));
+      this.ingredientForm.controls.subQuantity.setValue(this.utilService.roundToDecimalPlace(quantity, 2));
       this.ingredientForm.controls.type.setValue((<HopsSchedule>this.update).hopsType);
       this.ingredientForm.controls.duration.setValue((<HopsSchedule>this.update).duration);
       this.ingredientForm.controls.dryHop.setValue((<HopsSchedule>this.update).dryHop);

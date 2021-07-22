@@ -1,5 +1,5 @@
 /* Module imports */
-import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -9,29 +9,19 @@ import { configureTestBed } from '../../../../../test-config/configure-test-bed'
 
 /* Mock imports */
 import { mockGrains, mockHops, mockOtherIngredients, mockYeast, mockGrainBill, mockHopsSchedule, mockYeastBatch, mockEnglishUnits } from '../../../../../test-config/mock-models';
-import { CalculationsServiceStub, PreferencesServiceStub, FormValidationServiceStub } from '../../../../../test-config/service-stubs';
+import { CalculationsServiceStub, PreferencesServiceStub, FormValidationServiceStub, UtilityServiceStub } from '../../../../../test-config/service-stubs';
 import { HeaderComponentStub } from '../../../../../test-config/component-stubs';
 import { ModalControllerStub } from '../../../../../test-config/ionic-stubs';
 
 /* Interface imports */
-import {
-  Grains,
-  GrainBill,
-  Hops,
-  HopsSchedule,
-  OtherIngredients,
-  SelectedUnits,
-  Yeast,
-  YeastBatch
-} from '../../../shared/interfaces';
+import { Grains, GrainBill, Hops, HopsSchedule, OtherIngredients, SelectedUnits, Yeast, YeastBatch } from '../../../shared/interfaces';
 
 /* Service imports */
-import { CalculationsService } from '../../../services/calculations/calculations.service';
-import { FormValidationService } from '../../../services/form-validation/form-validation.service';
-import { PreferencesService } from '../../../services/preferences/preferences.service';
+import { CalculationsService, FormValidationService, PreferencesService, UtilityService } from '../../../services/services';
 
 /* Page imports */
 import { IngredientFormPage } from './ingredient-form.page';
+
 
 const initDefaultForm: (formBuilder: FormBuilder) => FormGroup = (formBuilder: FormBuilder): FormGroup => {
   return formBuilder.group({
@@ -40,6 +30,7 @@ const initDefaultForm: (formBuilder: FormBuilder) => FormGroup = (formBuilder: F
     type: ''
   });
 };
+
 
 describe('IngredientFormPage', (): void => {
   let fixture: ComponentFixture<IngredientFormPage>;
@@ -62,7 +53,8 @@ describe('IngredientFormPage', (): void => {
         { provide: CalculationsService, useClass: CalculationsServiceStub },
         { provide: ModalController, useClass: ModalControllerStub },
         { provide: PreferencesService, useClass: PreferencesServiceStub },
-        { provide: FormValidationService, useClass: FormValidationServiceStub }
+        { provide: FormValidationService, useClass: FormValidationServiceStub },
+        { provide: UtilityService, useClass: UtilityServiceStub }
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
@@ -79,6 +71,14 @@ describe('IngredientFormPage', (): void => {
       .fn();
     ingredientFormPage.modalCtrl.dismiss = jest
       .fn();
+    ingredientFormPage.utilService.roundToDecimalPlace = jest
+      .fn()
+      .mockImplementation((value: number, places: number): number => {
+        if (places < 0) {
+          return -1;
+        }
+        return Math.round(value * Math.pow(10, places)) / Math.pow(10, places);
+      });
   });
 
   test('should create the component', (): void => {
