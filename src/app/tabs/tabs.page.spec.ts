@@ -11,7 +11,7 @@ import { configureTestBed } from '../../../test-config/configure-test-bed';
 import { EventServiceStub } from '../../../test-config/service-stubs';
 
 /* Service imports */
-import { EventService } from '../services/event/event.service';
+import { EventService } from '../services/services';
 
 /* Component imports */
 import { TabsPage } from './tabs.page';

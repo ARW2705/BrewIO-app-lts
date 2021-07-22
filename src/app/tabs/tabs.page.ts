@@ -16,10 +16,18 @@ export class TabsPage {
   @ViewChild('tabs') tabs: IonTabs;
 
   constructor(
-    public router: Router,
-    public event: EventService
+    public event: EventService,
+    public router: Router
   ) { }
 
+  /**
+   * Handle tabbed navigation
+   *
+   * @param: tab - the destination tab
+   * @param: event - the triggering event
+   *
+   * @return: none
+   */
   async onTabClick(tab: string, event: MouseEvent): Promise<boolean> {
     const selectedTab: string = this.tabs.getSelected();
     event.stopImmediatePropagation();
@@ -30,7 +38,14 @@ export class TabsPage {
       : this.router.navigate([`tabs/${tab}`]);
   }
 
-  emitTabChange(event: object) {
+  /**
+   * Emit tab change event
+   *
+   * @param: event - event that triggered tab change
+   *
+   * @return: none
+   */
+  emitTabChange(event: object): void {
     this.event.emit('tab-change', event);
   }
 
