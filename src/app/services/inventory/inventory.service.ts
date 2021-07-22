@@ -6,63 +6,22 @@ import { BehaviorSubject, Observable, forkJoin, throwError, combineLatest, of, c
 import { catchError, defaultIfEmpty, finalize, map, mergeMap, take, tap } from 'rxjs/operators';
 
 /* Constant imports */
-import {
-  API_VERSION,
-  BASE_URL,
-  OPTIONAL_INVENTORY_DATA_KEYS,
-  SRM_HEX_CHART
-} from '../../shared/constants';
-
-/* Utility function imports */
-import { clone } from '../../shared/utility-functions/clone';
-import { getId, hasDefaultIdType, hasId, isMissingServerId } from '../../shared/utility-functions/id-helpers';
+import { API_VERSION, BASE_URL, OPTIONAL_INVENTORY_DATA_KEYS, SRM_HEX_CHART } from '../../shared/constants';
 
 /* Default imports */
 import { defaultImage } from '../../shared/defaults';
 
 /* Interface imports*/
-import {
-  Author,
-  Batch,
-  BatchContext,
-  Image,
-  ImageRequestFormData,
-  ImageRequestMetadata,
-  InventoryItem,
-  PrimaryValues,
-  RecipeMaster,
-  Style,
-  SyncData,
-  SyncError,
-  SyncMetadata,
-  SyncRequests,
-  SyncResponse
-} from '../../shared/interfaces';
+import { Author, Batch, BatchContext, Image, ImageRequestFormData, ImageRequestMetadata, InventoryItem, PrimaryValues, RecipeMaster, Style, SyncData, SyncError, SyncMetadata, SyncRequests, SyncResponse } from '../../shared/interfaces';
 
 /* Type Guards */
-import {
-  InventoryItemGuardMetadata,
-  OptionalItemDataGuardMetadata
-} from '../../shared/type-guard-metadata';
+import { InventoryItemGuardMetadata, OptionalItemDataGuardMetadata } from '../../shared/type-guard-metadata';
 
 /* Type imports */
 import { CustomError } from '../../shared/types';
 
 /* Service imports */
-import { ClientIdService } from '../client-id/client-id.service';
-import { ConnectionService } from '../connection/connection.service';
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
-import { EventService } from '../event/event.service';
-import { ImageService } from '../image/image.service';
-import { LibraryService } from '../library/library.service';
-import { HttpErrorService } from '../http-error/http-error.service';
-import { ProcessService } from '../process/process.service';
-import { RecipeService } from '../recipe/recipe.service';
-import { StorageService } from '../storage/storage.service';
-import { SyncService } from '../sync/sync.service';
-import { ToastService } from '../toast/toast.service';
-import { TypeGuardService } from '../type-guard/type-guard.service';
-import { UserService } from '../user/user.service';
+import { ConnectionService, ErrorReportingService, EventService, HttpErrorService, IdService, ImageService, LibraryService, ProcessService, RecipeService, StorageService, SyncService, ToastService, TypeGuardService, UserService, UtilityService } from '../services';
 
 
 @Injectable({
@@ -74,12 +33,12 @@ export class InventoryService {
   syncErrors: SyncError[] = [];
 
   constructor(
-    public http: HttpClient,
-    public clientIdService: ClientIdService,
     public connectionService: ConnectionService,
     public errorReporter: ErrorReportingService,
     public event: EventService,
+    public http: HttpClient,
     public httpError: HttpErrorService,
+    public idService: IdService,
     public imageService: ImageService,
     public libraryService: LibraryService,
     public processService: ProcessService,
@@ -89,7 +48,8 @@ export class InventoryService {
     public syncService: SyncService,
     public toastService: ToastService,
     public typeGuard: TypeGuardService,
-    public userService: UserService
+    public userService: UserService,
+    public utilService: UtilityService
   ) {
     this.registerEvents();
   }
@@ -215,7 +175,7 @@ export class InventoryService {
    */
   createItem(newItemValues: object): Observable<boolean> {
     const newItem: InventoryItem = {
-      cid: this.clientIdService.getNewId(),
+      cid: this.idService.getNewId(),
       createdAt: (new Date()).toISOString(),
       supplierName: newItemValues['supplierName'],
       stockType: newItemValues['stockType'],
@@ -240,7 +200,7 @@ export class InventoryService {
           if (this.canSendRequest()) {
             this.requestInBackground('post', newItem);
           } else {
-            this.addSyncFlag('create', getId(newItem));
+            this.addSyncFlag('create', this.idService.getId(newItem));
           }
         })
       );
@@ -285,8 +245,8 @@ export class InventoryService {
           itemIBU: measuredValues.IBU,
           itemSRM: measuredValues.SRM,
           itemLabelImage: contextInfo.recipeImage,
-          batchId: getId(batch),
-          originalRecipeId: getId(recipeMaster),
+          batchId: this.idService.getId(batch),
+          originalRecipeId: this.idService.getId(recipeMaster),
           sourceType:
             batch.owner === 'offline' || batch.owner === recipeMaster.owner
               ? 'self'
@@ -321,7 +281,7 @@ export class InventoryService {
    * @return: the InventoryItem or undefined if not found
    */
   getItemById(itemId: string): InventoryItem {
-    return this.getInventoryList().value.find((item: InventoryItem): boolean => hasId(item, itemId));
+    return this.getInventoryList().value.find((item: InventoryItem): boolean => this.idService.hasId(item, itemId));
   }
 
   /**
@@ -334,7 +294,10 @@ export class InventoryService {
   removeItem(itemId: string): Observable<InventoryItem> {
     const list$: BehaviorSubject<InventoryItem[]> = this.getInventoryList();
     const list: InventoryItem[] = list$.value;
-    const removeIndex: number = list.findIndex((item: InventoryItem): boolean => hasId(item, itemId));
+    const removeIndex: number = list
+      .findIndex((item: InventoryItem): boolean => {
+        return this.idService.hasId(item, itemId);
+      });
 
     if (removeIndex === -1) {
       const message: string = 'An error occurred trying to remove an item from inventory: missing item';
@@ -358,10 +321,10 @@ export class InventoryService {
         .subscribe((errMsg: string) => console.log('image deleted', errMsg));
     }
 
-    if (this.canSendRequest([getId(toDelete)])) {
+    if (this.canSendRequest([this.idService.getId(toDelete)])) {
       this.requestInBackground('delete', toDelete);
     } else {
-      this.addSyncFlag('delete', getId(toDelete));
+      this.addSyncFlag('delete', this.idService.getId(toDelete));
     }
 
     list.splice(removeIndex, 1);
@@ -385,7 +348,10 @@ export class InventoryService {
 
     const list$: BehaviorSubject<InventoryItem[]> = this.getInventoryList();
     const list: InventoryItem[] = list$.value;
-    const toUpdate: InventoryItem = list.find((item: InventoryItem): boolean => hasId(item, itemId));
+    const toUpdate: InventoryItem = list
+      .find((item: InventoryItem): boolean => {
+        return this.idService.hasId(item, itemId);
+      });
 
     if (!toUpdate) {
       const message: string = 'An error occurred trying to update an item from inventory: missing item';
@@ -418,10 +384,10 @@ export class InventoryService {
       .pipe(
         defaultIfEmpty(null),
         mergeMap((): Observable<InventoryItem> => {
-          if (this.canSendRequest([getId(toUpdate)])) {
+          if (this.canSendRequest([this.idService.getId(toUpdate)])) {
             this.requestInBackground('patch', toUpdate);
           } else {
-            this.addSyncFlag('update', getId(toUpdate));
+            this.addSyncFlag('update', this.idService.getId(toUpdate));
           }
 
           list$.next(list);
@@ -577,7 +543,7 @@ export class InventoryService {
     const itemList: InventoryItem[] = itemList$.value;
     const updateIndex: number = itemList
       .findIndex((item: InventoryItem): boolean => {
-        return hasId(item, itemResponse.cid);
+        return this.idService.hasId(item, itemResponse.cid);
       });
 
     if (isDeletion && updateIndex === -1) {
@@ -695,22 +661,22 @@ export class InventoryService {
         }
 
         // TODO extract to its own method
-        if (item.optionalItemData.batchId !== undefined && hasDefaultIdType(item.optionalItemData.batchId)) {
+        if (item.optionalItemData.batchId !== undefined && this.idService.hasDefaultIdType(item.optionalItemData.batchId)) {
           const batch$: BehaviorSubject<Batch> = this.processService
             .getBatchById(item.optionalItemData.batchId);
 
-          if (batch$ !== undefined && !hasDefaultIdType(batch$.value._id)) {
+          if (batch$ !== undefined && !this.idService.hasDefaultIdType(batch$.value._id)) {
             item.optionalItemData.batchId = batch$.value._id;
           }
         }
 
-        if (syncFlag.method === 'update' && isMissingServerId(item._id)) {
+        if (syncFlag.method === 'update' && this.idService.isMissingServerId(item._id)) {
           const errMsg: string = `Item with id: '${item.cid}' is missing its server id`;
           errors.push(this.syncService.constructSyncError(errMsg));
         } else if (syncFlag.method === 'create') {
           item['forSync'] = true;
           requests.push(this.configureBackgroundRequest('post', true, item));
-        } else if (syncFlag.method === 'update' && !isMissingServerId(item._id)) {
+        } else if (syncFlag.method === 'update' && !this.idService.isMissingServerId(item._id)) {
           requests.push(this.configureBackgroundRequest('patch', true, item));
         } else {
           const errMsg: string = `Sync error: Unknown sync flag method '${syncFlag.method}'`;
@@ -739,7 +705,7 @@ export class InventoryService {
       if (_syncData['isDeleted'] === undefined) {
         const itemIndex: number = list
           .findIndex((item: InventoryItem): boolean => {
-            return hasId(item, (<InventoryItem>_syncData).cid);
+            return this.idService.hasId(item, (<InventoryItem>_syncData).cid);
           });
 
         if (itemIndex === -1) {
@@ -817,13 +783,13 @@ export class InventoryService {
 
     const requests: (Observable<HttpErrorResponse | InventoryItem>)[] = list
       .map((item: InventoryItem): Observable<HttpErrorResponse | InventoryItem> => {
-        const payload: InventoryItem = clone(item);
+        const payload: InventoryItem = this.utilService.clone(item);
 
         const batch$: BehaviorSubject<Batch> = this.processService
           .getBatchById(item.optionalItemData.batchId);
 
         if (batch$) {
-          payload['optionalItemData']['batchId'] = getId(batch$.value);
+          payload['optionalItemData']['batchId'] = this.idService.getId(batch$.value);
         }
 
         payload['forSync'] = true;
@@ -854,7 +820,7 @@ export class InventoryService {
   canSendRequest(ids?: string[]): boolean {
     let idsOk: boolean = !ids;
     if (ids && ids.length) {
-      idsOk = ids.every((id: string): boolean => id && !hasDefaultIdType(id));
+      idsOk = ids.every((id: string): boolean => id && !this.idService.hasDefaultIdType(id));
     }
 
     return this.connectionService.isConnected() && this.userService.isLoggedIn() && idsOk;

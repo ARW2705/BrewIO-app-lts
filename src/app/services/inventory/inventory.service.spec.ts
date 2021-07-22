@@ -9,36 +9,8 @@ import { BehaviorSubject, Observable, Subject, concat, forkJoin, of, throwError 
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import {
-  mockAuthor,
-  mockBatch,
-  mockImage,
-  mockImageRequestMetadata,
-  mockInventoryItem,
-  mockOptionalItemData,
-  mockRecipeMasterActive,
-  mockErrorResponse,
-  mockStyles,
-  mockSyncMetadata,
-  mockSyncError,
-  mockSyncResponse
-} from '../../../../test-config/mock-models';
-import {
-  ClientIdServiceStub,
-  ConnectionServiceStub,
-  ErrorReportingServiceStub,
-  EventServiceStub,
-  ImageServiceStub,
-  LibraryServiceStub,
-  HttpErrorServiceStub,
-  ProcessServiceStub,
-  RecipeServiceStub,
-  StorageServiceStub,
-  SyncServiceStub,
-  ToastServiceStub,
-  TypeGuardServiceStub,
-  UserServiceStub
-} from '../../../../test-config/service-stubs';
+import { mockAuthor, mockBatch, mockImage, mockImageRequestMetadata, mockInventoryItem, mockOptionalItemData, mockRecipeMasterActive, mockErrorResponse, mockStyles, mockSyncMetadata, mockSyncError, mockSyncResponse } from '../../../../test-config/mock-models';
+import { IdServiceStub, ConnectionServiceStub, ErrorReportingServiceStub, EventServiceStub, ImageServiceStub, LibraryServiceStub, HttpErrorServiceStub, ProcessServiceStub, RecipeServiceStub, StorageServiceStub, SyncServiceStub, ToastServiceStub, TypeGuardServiceStub, UserServiceStub, UtilityServiceStub } from '../../../../test-config/service-stubs';
 import { SplashScreenStub } from '../../../../test-config/ionic-stubs';
 
 /* Constants imports */
@@ -48,42 +20,14 @@ import { API_VERSION, BASE_URL } from '../../shared/constants';
 import { defaultImage } from '../../shared/defaults';
 
 /* Interface imports*/
-import {
-  Author,
-  Batch,
-  Image,
-  ImageRequestFormData,
-  ImageRequestMetadata,
-  InventoryItem,
-  OptionalItemData,
-  RecipeMaster,
-  Style,
-  SyncData,
-  SyncRequests,
-  SyncMetadata,
-  SyncError,
-  SyncResponse
-} from '../../shared/interfaces';
+import { Author, Batch, Image, ImageRequestFormData, ImageRequestMetadata, InventoryItem, OptionalItemData, RecipeMaster, Style, SyncData, SyncRequests, SyncMetadata, SyncError, SyncResponse } from '../../shared/interfaces';
 
 /* Type imports */
 import { CustomError } from '../../shared/types';
 
 /* Service imports */
 import { InventoryService } from './inventory.service';
-import { ClientIdService } from '../client-id/client-id.service';
-import { ConnectionService } from '../connection/connection.service';
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
-import { EventService } from '../event/event.service';
-import { ImageService } from '../image/image.service';
-import { LibraryService } from '../library/library.service';
-import { HttpErrorService } from '../http-error/http-error.service';
-import { ProcessService } from '../process/process.service';
-import { RecipeService } from '../recipe/recipe.service';
-import { StorageService } from '../storage/storage.service';
-import { SyncService } from '../sync/sync.service';
-import { ToastService } from '../toast/toast.service';
-import { TypeGuardService } from '../type-guard/type-guard.service';
-import { UserService } from '../user/user.service';
+import { ConnectionService, ErrorReportingService, EventService, HttpErrorService, IdService, ImageService, LibraryService, ProcessService, RecipeService, StorageService, SyncService, ToastService, TypeGuardService, UserService, UtilityService } from '../services';
 
 
 describe('InventoryService', (): void => {
@@ -99,7 +43,7 @@ describe('InventoryService', (): void => {
       ],
       providers: [
         InventoryService,
-        { provide: ClientIdService, useClass: ClientIdServiceStub },
+        { provide: IdService, useClass: IdServiceStub },
         { provide: ConnectionService, useClass: ConnectionServiceStub },
         { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: EventService, useClass: EventServiceStub },
@@ -113,6 +57,7 @@ describe('InventoryService', (): void => {
         { provide: ToastService, useClass: ToastServiceStub },
         { provide: TypeGuardService, useClass: TypeGuardServiceStub },
         { provide: UserService, useClass: UserServiceStub },
+        { provide: UtilityService, useClass: UtilityServiceStub },
         { provide: SplashScreen, useClass: SplashScreenStub }
       ]
     });
@@ -131,6 +76,10 @@ describe('InventoryService', (): void => {
       .mockImplementation((): (error: any) => Observable<never> => {
         return (error: any): Observable<never> => throwError(error);
       });
+
+    inventoryService.utilService.clone = jest
+      .fn()
+      .mockImplementation((item: any): any => item);
   });
 
   afterEach((): void => {
@@ -443,9 +392,13 @@ describe('InventoryService', (): void => {
       sourceType: _mockInventoryItem.sourceType
     };
 
-    inventoryService.clientIdService.getNewId = jest
+    inventoryService.idService.getNewId = jest
       .fn()
       .mockReturnValue('12345');
+
+    inventoryService.idService.getId = jest
+      .fn()
+      .mockReturnValue('');
 
     inventoryService.mapOptionalData = jest
       .fn()
@@ -529,6 +482,11 @@ describe('InventoryService', (): void => {
       description: _mockInventoryItem.description,
     };
 
+    inventoryService.idService.getId = jest
+      .fn()
+      .mockReturnValueOnce(_mockBatch._id)
+      .mockReturnValueOnce(_mockRecipeMasterActive._id);
+
     inventoryService.createItemFromBatch(_mockBatch, itemValues)
       .subscribe(
         (): void => {
@@ -592,6 +550,10 @@ describe('InventoryService', (): void => {
       .fn()
       .mockReturnValue(list$);
 
+    inventoryService.idService.hasId = jest
+      .fn()
+      .mockReturnValue(true);
+
     expect(inventoryService.getItemById(_mockInventoryItem.cid)).toBeDefined();
   });
 
@@ -622,8 +584,7 @@ describe('InventoryService', (): void => {
 
     inventoryService.canSendRequest = jest
       .fn()
-      .mockReturnValueOnce(true)
-      .mockReturnValueOnce(false);
+      .mockReturnValue(true);
 
     inventoryService.requestInBackground = jest
       .fn();
@@ -634,40 +595,93 @@ describe('InventoryService', (): void => {
     inventoryService.updateInventoryStorage = jest
       .fn();
 
-    const requestSpy: jest.SpyInstance = jest.spyOn(inventoryService, 'requestInBackground');
-    const syncSpy: jest.SpyInstance = jest.spyOn(inventoryService, 'addSyncFlag');
+    inventoryService.idService.hasId = jest
+      .fn()
+      .mockReturnValue(true);
+
+    inventoryService.idService.getId = jest
+      .fn()
+      .mockReturnValue('');
+
+    const reqSpy: jest.SpyInstance = jest.spyOn(inventoryService, 'requestInBackground');
+    const addSpy: jest.SpyInstance = jest.spyOn(inventoryService, 'addSyncFlag');
 
     inventoryService.removeItem(_mockInventoryItem1._id)
       .subscribe(
         (): void => {
           expect(list$.value.length).toEqual(1);
           expect(list$.value[0]).toStrictEqual(_mockInventoryItem2);
+          expect(reqSpy).toHaveBeenCalled();
+          expect(addSpy).not.toHaveBeenCalled();
+          done();
         },
         (error: any): void => {
           console.log(`Error in 'should remove an item from list by id'`, error);
           expect(true).toBe(false);
         }
       );
+  });
 
-    list$.next([ _mockInventoryItem1, _mockInventoryItem2 ]);
+  test('should remove an item from list by id and store sync flag', (done: jest.DoneCallback): void => {
+    inventoryService.registerEvents = jest
+      .fn();
 
-    inventoryService.removeItem(_mockInventoryItem2._id)
+    const _mockInventoryItem1: InventoryItem = mockInventoryItem();
+    const _mockInventoryItem2: InventoryItem = mockInventoryItem();
+    _mockInventoryItem2._id = 'other-id';
+
+    const list$: BehaviorSubject<InventoryItem[]> = new BehaviorSubject<InventoryItem[]>([
+      _mockInventoryItem1,
+      _mockInventoryItem2
+    ]);
+
+    inventoryService.getInventoryList = jest
+      .fn()
+      .mockReturnValue(list$);
+
+    inventoryService.imageService.hasDefaultImage = jest
+      .fn()
+      .mockReturnValue(true);
+
+    inventoryService.imageService.deleteLocalImage = jest
+      .fn()
+      .mockReturnValue(of(null));
+
+    inventoryService.canSendRequest = jest
+      .fn()
+      .mockReturnValue(false);
+
+    inventoryService.addSyncFlag = jest
+      .fn();
+
+    inventoryService.updateInventoryStorage = jest
+      .fn();
+
+    inventoryService.idService.hasId = jest
+      .fn()
+      .mockReturnValue(true);
+
+    inventoryService.idService.getId = jest
+      .fn()
+      .mockReturnValue('');
+
+    const reqSpy: jest.SpyInstance = jest.spyOn(inventoryService, 'requestInBackground');
+    const addSpy: jest.SpyInstance = jest.spyOn(inventoryService, 'addSyncFlag');
+
+    inventoryService.removeItem(_mockInventoryItem1._id)
       .subscribe(
         (): void => {
           expect(list$.value.length).toEqual(1);
-          expect(list$.value[0]).toStrictEqual(_mockInventoryItem1);
+          expect(list$.value[0]).toStrictEqual(_mockInventoryItem2);
+          expect(reqSpy).not.toHaveBeenCalled();
+          expect(addSpy).toHaveBeenCalled();
+          done();
         },
         (error: any): void => {
           console.log(`Error in 'should remove an item from list by id'`, error);
           expect(true).toBe(false);
         }
       );
-
-    setTimeout((): void => {
-      expect(requestSpy).toHaveBeenCalled();
-      expect(syncSpy).toHaveBeenCalled();
-      done();
-    }, 10);
   });
 
   test('should get an error trying to delete an item that doesn\'t exist', (done: jest.DoneCallback): void => {
@@ -726,6 +740,14 @@ describe('InventoryService', (): void => {
 
     inventoryService.checkTypeSafety = jest
       .fn();
+
+    inventoryService.idService.hasId = jest
+      .fn()
+      .mockReturnValue(true);
+
+    inventoryService.idService.getId = jest
+      .fn()
+      .mockReturnValue('');
 
     const requestSpy: jest.SpyInstance = jest.spyOn(inventoryService, 'requestInBackground');
     const syncSpy: jest.SpyInstance = jest.spyOn(inventoryService, 'addSyncFlag');
@@ -1074,6 +1096,10 @@ describe('InventoryService', (): void => {
     inventoryService.checkTypeSafety = jest
       .fn();
 
+    inventoryService.idService.hasId = jest
+      .fn()
+      .mockReturnValue(true);
+
     inventoryService.handleBackgroundUpdateResponse(_mockUpdateResponse, false)
       .subscribe(
         (): void => {
@@ -1280,6 +1306,16 @@ describe('InventoryService', (): void => {
       .fn()
       .mockReturnValue(_mockBatch$);
 
+    inventoryService.idService.hasDefaultIdType = jest
+      .fn()
+      .mockReturnValueOnce(true)
+      .mockReturnValueOnce(false)
+      .mockReturnValueOnce(true);
+
+    inventoryService.idService.isMissingServerId = jest
+      .fn()
+      .mockReturnValue(false);
+
     const requests: SyncRequests<InventoryItem> = inventoryService.generateSyncRequests();
     expect(requests.syncRequests.length).toEqual(3);
     expect(requests.syncErrors.length).toEqual(0);
@@ -1346,6 +1382,15 @@ describe('InventoryService', (): void => {
       .fn()
       .mockReturnValue(_mockBatch$);
 
+    inventoryService.idService.hasDefaultIdType = jest
+      .fn()
+      .mockReturnValue(false);
+
+    inventoryService.idService.isMissingServerId = jest
+      .fn()
+      .mockReturnValueOnce(true)
+      .mockReturnValueOnce(false);
+
     const requests: SyncRequests<InventoryItem> = inventoryService.generateSyncRequests();
     expect(requests.syncErrors.length).toEqual(3);
     expect(requests.syncRequests.length).toEqual(0);
@@ -1369,6 +1414,10 @@ describe('InventoryService', (): void => {
 
     inventoryService.checkTypeSafety = jest
       .fn();
+
+    inventoryService.idService.hasId = jest
+      .fn()
+      .mockReturnValue(true);
 
     const syncData: (InventoryItem | SyncData<InventoryItem>)[] = [
       _mockInventoryItem,
@@ -1558,6 +1607,10 @@ describe('InventoryService', (): void => {
     inventoryService.updateInventoryStorage = jest
       .fn();
 
+    inventoryService.idService.getId = jest
+      .fn()
+      .mockReturnValue(_mockInventoryItem._id);
+
     const processSpy: jest.SpyInstance = jest.spyOn(inventoryService, 'processSyncSuccess');
     const updateSpy: jest.SpyInstance = jest.spyOn(inventoryService, 'updateInventoryStorage');
 
@@ -1580,6 +1633,10 @@ describe('InventoryService', (): void => {
       .fn()
       .mockReturnValueOnce(true)
       .mockReturnValueOnce(false);
+
+    inventoryService.idService.hasDefaultIdType = jest
+      .fn()
+      .mockReturnValue(false);
 
     expect(inventoryService.canSendRequest(['1a2b3c4d5e', '6f7g8h9i10j'])).toBe(true);
     expect(inventoryService.canSendRequest()).toBe(false);
