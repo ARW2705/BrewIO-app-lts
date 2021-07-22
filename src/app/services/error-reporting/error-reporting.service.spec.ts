@@ -19,13 +19,12 @@ import { DeviceServiceStub, LoggingServiceStub, ToastServiceStub } from '../../.
 import { DateStub, ModalControllerStub, ModalStub } from '../../../../test-config/ionic-stubs';
 
 /* Component imports */
-import { ErrorReportComponent } from '../../components/error-report/error-report.component';
+import { ErrorReportPage } from '../../pages/error-report/error-report.page';
 
 /* Service imports */
 import { ErrorReportingService } from './error-reporting.service';
-import { DeviceService } from '../device/device.service';
-import { LoggingService } from '../logging/logging.service';
-import { ToastService } from '../toast/toast.service';
+import { DeviceService, LoggingService, ToastService } from '../services';
+
 
 describe('ErrorReportingService', () => {
   let injector: TestBed;
@@ -489,7 +488,7 @@ describe('ErrorReportingService', () => {
 
     setTimeout((): void => {
       expect(createSpy).toHaveBeenCalledWith({
-        component: ErrorReportComponent,
+        component: ErrorReportPage,
         componentProps: {
           reports: [],
           shouldHideLoginButton: true

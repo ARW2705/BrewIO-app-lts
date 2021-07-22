@@ -13,12 +13,10 @@ import { ErrorReport } from '../../shared/interfaces';
 import { CustomError } from '../../shared/types';
 
 /* Component imports */
-import { ErrorReportComponent } from '../../components/error-report/error-report.component';
+import { ErrorReportPage } from '../../pages/error-report/error-report.page';
 
 /* Service imports */
-import { DeviceService } from '../device/device.service';
-import { LoggingService } from '../logging/logging.service';
-import { ToastService } from '../toast/toast.service';
+import { DeviceService, LoggingService, ToastService } from '../services';
 
 
 @Injectable({
@@ -240,7 +238,7 @@ export class ErrorReportingService {
    */
   async openReportModal(): Promise<void> {
     const modal: HTMLIonModalElement = await this.modalCtrl.create({
-      component: ErrorReportComponent,
+      component: ErrorReportPage,
       componentProps: {
         reports: this.reports,
         shouldHideLoginButton: true
