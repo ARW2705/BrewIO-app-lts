@@ -1,5 +1,5 @@
 /* Module imports */
-import { TestBed, async, getTestBed } from '@angular/core/testing';
+import { async, getTestBed, TestBed } from '@angular/core/testing';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
@@ -15,8 +15,7 @@ import { SPECIFIC_GRAVITY } from '../../shared/constants';
 import { SelectedUnits } from '../../shared/interfaces';
 
 /* Service imports */
-import { CalculationsService } from '../../services/calculations/calculations.service';
-import { PreferencesService } from '../../services/preferences/preferences.service';
+import { CalculationsService, PreferencesService } from '../../services/services';
 
 /* Pipe imports */
 import { UnitConversionPipe } from './unit-conversion.pipe';
@@ -311,6 +310,6 @@ describe('UnitConversionPipe', (): void => {
     expect(unitPipe.canReformatDescription(_mockEnglishUnits, true)).toBe(true);
     expect(unitPipe.canReformatDescription(_mockEnglishUnits, false)).toBe(false);
     expect(unitPipe.canReformatDescription(_mockEnglishUnits, true)).toBe(false);
-  })
+  });
 
 });

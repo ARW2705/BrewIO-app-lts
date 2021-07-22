@@ -1,5 +1,5 @@
 /* Module imports */
-import { TestBed, async, getTestBed } from '@angular/core/testing';
+import { async, getTestBed, TestBed } from '@angular/core/testing';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
@@ -12,7 +12,7 @@ import { CalculationsServiceStub } from '../../../../test-config/service-stubs';
 import { HopsSchedule, RecipeVariant } from '../../shared/interfaces';
 
 /* Service imports */
-import { CalculationsService } from '../../services/calculations/calculations.service';
+import { CalculationsService } from '../../services/services';
 
 /* Pipe imports */
 import { CalculatePipe } from './calculate.pipe';

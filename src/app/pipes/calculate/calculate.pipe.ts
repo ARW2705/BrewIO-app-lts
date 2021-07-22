@@ -5,7 +5,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { HopsSchedule, RecipeVariant } from '../../shared/interfaces';
 
 /* Provider imports */
-import { CalculationsService } from '../../services/calculations/calculations.service';
+import { CalculationsService } from '../../services/services';
 
 
 @Pipe({

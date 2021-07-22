@@ -8,8 +8,7 @@ import { SPECIFIC_GRAVITY } from '../../shared/constants';
 import { SelectedUnits } from '../../shared/interfaces';
 
 /* Service imports */
-import { CalculationsService } from '../../services/calculations/calculations.service';
-import { PreferencesService } from '../../services/preferences/preferences.service';
+import { CalculationsService, PreferencesService } from '../../services/services';
 
 
 @Pipe({
