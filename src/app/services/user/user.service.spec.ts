@@ -3,37 +3,14 @@ import { TestBed, getTestBed, async } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController, TestRequest } from '@angular/common/http/testing';
 import { HttpErrorResponse } from '@angular/common/http';
 import { RouterTestingModule } from '@angular/router/testing';
-import { BehaviorSubject, Observable, Observer, TeardownLogic, Subject, forkJoin, of, throwError } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { BehaviorSubject, Observable, Subject, of, throwError } from 'rxjs';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import {
-  mockImage,
-  mockImageRequestMetadata,
-  mockErrorResponse,
-  mockLoginResponse,
-  mockJWTSuccess,
-  mockUser,
-  mockUserUpdate,
-  mockUserLogin,
-  mockSyncMetadata,
-  mockSyncResponse
-} from '../../../../test-config/mock-models';
-import {
-  ConnectionServiceStub,
-  ErrorReportingServiceStub,
-  EventServiceStub,
-  HttpErrorServiceStub,
-  ImageServiceStub,
-  PreferencesServiceStub,
-  StorageServiceStub,
-  SyncServiceStub,
-  ToastServiceStub,
-  TypeGuardServiceStub
-} from '../../../../test-config/service-stubs';
+import { mockImage, mockImageRequestMetadata, mockErrorResponse, mockLoginResponse, mockJWTSuccess, mockUser, mockUserUpdate, mockUserLogin, mockSyncMetadata, mockSyncResponse } from '../../../../test-config/mock-models';
+import { ConnectionServiceStub, ErrorReportingServiceStub, EventServiceStub, HttpErrorServiceStub, IdServiceStub, ImageServiceStub, PreferencesServiceStub, StorageServiceStub, SyncServiceStub, ToastServiceStub, TypeGuardServiceStub } from '../../../../test-config/service-stubs';
 
 /* Constants imports */
 import { API_VERSION, BASE_URL } from '../../shared/constants';
@@ -42,32 +19,14 @@ import { API_VERSION, BASE_URL } from '../../shared/constants';
 import { defaultEnglishUnits, defaultImage } from '../../shared/defaults';
 
 /* Interface imports */
-import {
-  Image,
-  ImageRequestFormData,
-  ImageRequestMetadata,
-  LoginCredentials,
-  SelectedUnits,
-  SyncResponse,
-  User,
-  UserResponse
-} from '../../shared/interfaces';
+import { Image, ImageRequestFormData, ImageRequestMetadata, LoginCredentials, SelectedUnits, SyncResponse, User, UserResponse } from '../../shared/interfaces';
 
 /* Type imports */
 import { CustomError } from '../../shared/types';
 
 /* Service imports */
 import { UserService } from './user.service';
-import { ConnectionService } from '../connection/connection.service';
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
-import { EventService } from '../event/event.service';
-import { HttpErrorService } from '../http-error/http-error.service';
-import { ImageService } from '../image/image.service';
-import { PreferencesService } from '../preferences/preferences.service';
-import { StorageService } from '../storage/storage.service';
-import { SyncService } from '../sync/sync.service';
-import { ToastService } from '../toast/toast.service';
-import { TypeGuardService } from '../type-guard/type-guard.service';
+import { ConnectionService, ErrorReportingService, EventService, HttpErrorService, IdService, ImageService, PreferencesService, StorageService, SyncService, ToastService, TypeGuardService } from '../services';
 
 
 describe('UserService', (): void => {
@@ -90,6 +49,7 @@ describe('UserService', (): void => {
         { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: EventService, useClass: EventServiceStub },
         { provide: HttpErrorService, useClass: HttpErrorServiceStub },
+        { provide: IdService, useClass: IdServiceStub },
         { provide: ImageService, useClass: ImageServiceStub },
         { provide: PreferencesService, useClass: PreferencesServiceStub },
         { provide: StorageService, useClass: StorageServiceStub },
@@ -750,6 +710,10 @@ describe('UserService', (): void => {
     userService.requestInBackground = jest
       .fn();
 
+    userService.idService.getId = jest
+      .fn()
+      .mockReturnValue('');
+
     userService.errorReporter.handleGenericCatchError = jest.fn();
 
     const composeSpy: jest.SpyInstance = jest.spyOn(userService, 'composeImageStoreRequests');
@@ -797,6 +761,10 @@ describe('UserService', (): void => {
 
     userService.addSyncFlag = jest
       .fn();
+
+    userService.idService.getId = jest
+      .fn()
+      .mockReturnValue('');
 
     userService.errorReporter.handleGenericCatchError = jest.fn();
 
@@ -859,8 +827,7 @@ describe('UserService', (): void => {
   });
 
   test('should check if can send a request', (): void => {
-    const nonDefId: string = '1a2b3c';
-
+    const testId: string = '';
     userService.connectionService.isConnected = jest
       .fn()
       .mockReturnValueOnce(true)
@@ -872,16 +839,17 @@ describe('UserService', (): void => {
       .fn()
       .mockReturnValueOnce(true)
       .mockReturnValueOnce(true)
+      .mockReturnValueOnce(false);
+
+    userService.idService.hasDefaultIdType = jest
+      .fn()
       .mockReturnValueOnce(false)
       .mockReturnValueOnce(true);
 
-    expect(userService.canSendRequest('0123456789012')).toBe(false);
-
-    expect(userService.canSendRequest(nonDefId)).toBe(true);
-
-    expect(userService.canSendRequest(nonDefId)).toBe(false);
-
-    expect(userService.canSendRequest(nonDefId)).toBe(false);
+    expect(userService.canSendRequest(testId)).toBe(true);
+    expect(userService.canSendRequest(testId)).toBe(false);
+    expect(userService.canSendRequest(testId)).toBe(false);
+    expect(userService.canSendRequest(testId)).toBe(false);
   });
 
   test('should compose image store requests', (): void => {

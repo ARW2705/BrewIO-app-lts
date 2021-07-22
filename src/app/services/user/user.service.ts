@@ -17,33 +17,11 @@ import { UserGuardMetadata } from '../../shared/type-guard-metadata/user.guard';
 /* Type imports */
 import { CustomError } from '../../shared/types';
 
-/* utility imports */
-import { getId, hasDefaultIdType } from '../../shared/utility-functions/id-helpers';
-
 /* Interface imports */
-import {
-  Image,
-  ImageRequestFormData,
-  ImageRequestMetadata,
-  LoginCredentials,
-  SelectedUnits,
-  SyncMetadata,
-  SyncResponse,
-  User,
-  UserResponse
-} from '../../shared/interfaces';
+import { Image, ImageRequestFormData, ImageRequestMetadata, LoginCredentials, SelectedUnits, SyncMetadata, SyncResponse, User, UserResponse } from '../../shared/interfaces';
 
 /* Service imports */
-import { ConnectionService } from '../connection/connection.service';
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
-import { EventService } from '../event/event.service';
-import { ImageService } from '../image/image.service';
-import { PreferencesService } from '../preferences/preferences.service';
-import { HttpErrorService } from '../http-error/http-error.service';
-import { StorageService } from '../storage/storage.service';
-import { SyncService } from '../sync/sync.service';
-import { ToastService } from '../toast/toast.service';
-import { TypeGuardService } from '../type-guard/type-guard.service';
+import { ConnectionService, ErrorReportingService, EventService, HttpErrorService, IdService, ImageService, PreferencesService, StorageService, SyncService, ToastService, TypeGuardService } from '../services';
 
 
 @Injectable({
@@ -72,6 +50,7 @@ export class UserService {
     public errorReporter: ErrorReportingService,
     public event: EventService,
     public httpError: HttpErrorService,
+    public idService: IdService,
     public imageService: ImageService,
     public preferenceService: PreferencesService,
     public router: Router,
@@ -379,10 +358,10 @@ export class UserService {
       .pipe(
         defaultIfEmpty(null),
         mergeMap((): Observable<User> => {
-          if (this.canSendRequest(getId(user))) {
+          if (this.canSendRequest(this.idService.getId(user))) {
             this.requestInBackground(user);
           } else {
-            this.addSyncFlag('update', getId(user));
+            this.addSyncFlag('update', this.idService.getId(user));
           }
 
           this.checkTypeSafety(user);
@@ -418,7 +397,11 @@ export class UserService {
    * @return: true if connected to network, logged in, and has a server id
    */
   canSendRequest(userId: string): boolean {
-    return this.connectionService.isConnected() && this.isLoggedIn() && !hasDefaultIdType(userId);
+    return (
+      this.connectionService.isConnected()
+      && this.isLoggedIn()
+      && !this.idService.hasDefaultIdType(userId)
+    );
   }
 
   /**
