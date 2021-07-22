@@ -1,5 +1,5 @@
 /* Module imports */
-import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -12,26 +12,20 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
 import { mockRecipeMasterActive, mockRecipeVariantComplete } from '../../../../test-config/mock-models';
-import { AnimationsServiceStub, ErrorReportingServiceStub, RecipeServiceStub, ToastServiceStub } from '../../../../test-config/service-stubs';
-import { AccordionComponentStub, ConfirmationComponentStub, HeaderComponentStub, IngredientListComponentStub, NoteListComponentStub } from '../../../../test-config/component-stubs';
+import { AnimationsServiceStub, ErrorReportingServiceStub, IdServiceStub, RecipeServiceStub, ToastServiceStub, UtilityServiceStub } from '../../../../test-config/service-stubs';
+import { AccordionComponentStub, ConfirmationPageStub, HeaderComponentStub, IngredientListComponentStub, NoteListComponentStub } from '../../../../test-config/component-stubs';
 import { RoundPipeStub, TruncatePipeStub, UnitConversionPipeStub } from '../../../../test-config/pipe-stubs';
 import { ActivatedRouteStub, ModalControllerStub, ModalStub, IonContentStub } from '../../../../test-config/ionic-stubs';
-
-/* Utility imports */
-import { toTitleCase } from '../../shared/utility-functions/utilities';
 
 /* Interface imports */
 import { HopsSchedule, RecipeMaster, RecipeVariant } from '../../shared/interfaces';
 
 /* Service imports */
-import { AnimationsService } from '../../services/animations/animations.service';
-import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
-import { RecipeService } from '../../services/recipe/recipe.service';
-import { ToastService } from '../../services/toast/toast.service';
+import { AnimationsService, ErrorReportingService, IdService, RecipeService, ToastService, UtilityService } from '../../services/services';
 
 /* Page imports */
+import { ConfirmationPage } from '../confirmation/confirmation.page';
 import { RecipeDetailPage } from './recipe-detail.page';
-import { ConfirmationComponent } from '../../components/confirmation/confirmation.component';
 
 
 describe('RecipeDetailPage', (): void => {
@@ -54,7 +48,7 @@ describe('RecipeDetailPage', (): void => {
         HeaderComponentStub,
         NoteListComponentStub,
         IngredientListComponentStub,
-        ConfirmationComponentStub
+        ConfirmationPageStub
       ],
       imports: [
         IonicModule,
@@ -64,10 +58,12 @@ describe('RecipeDetailPage', (): void => {
       providers: [
         { provide: ActivatedRoute, useClass: ActivatedRouteStub },
         { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
+        { provide: IdService, useClass: IdServiceStub },
         { provide: ModalController, useClass: ModalControllerStub },
         { provide: AnimationsService, useClass: AnimationsServiceStub },
         { provide: RecipeService, useClass: RecipeServiceStub },
-        { provide: ToastService, useClass: ToastServiceStub }
+        { provide: ToastService, useClass: ToastServiceStub },
+        { provide: UtilityService, useClass: UtilityServiceStub }
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
@@ -257,6 +253,11 @@ describe('RecipeDetailPage', (): void => {
       detailPage.router.navigate = jest
         .fn();
 
+      detailPage.idService.getId = jest
+        .fn()
+        .mockReturnValueOnce(_mockRecipeVariantComplete._id)
+        .mockReturnValueOnce(_mockRecipeMasterActive._id);
+
       const navSpy: jest.SpyInstance = jest.spyOn(detailPage.router, 'navigate');
 
       fixture.detectChanges();
@@ -329,6 +330,13 @@ describe('RecipeDetailPage', (): void => {
 
       detailPage.router.navigate = jest
         .fn();
+
+      detailPage.idService.getId = jest
+        .fn()
+        .mockReturnValue('');
+      detailPage.idService.hasId = jest
+        .fn()
+        .mockReturnValue(true);
 
       const navSpy: jest.SpyInstance = jest.spyOn(detailPage.router, 'navigate');
 
@@ -419,7 +427,7 @@ describe('RecipeDetailPage', (): void => {
       detailPage.confirmDelete(0);
 
       expect(createSpy).toHaveBeenCalledWith({
-        component: ConfirmationComponent,
+        component: ConfirmationPage,
         componentProps: {
           message: `Confirm deletion of "${_mockRecipeVariantComplete.variantName}"`,
           subMessage: 'This action cannot be reversed'
@@ -460,7 +468,7 @@ describe('RecipeDetailPage', (): void => {
       detailPage.confirmDelete(0);
 
       expect(createSpy).toHaveBeenCalledWith({
-        component: ConfirmationComponent,
+        component: ConfirmationPage,
         componentProps: {
           message: `Confirm deletion of "${_mockRecipeVariantComplete.variantName}"`,
           subMessage: 'This action cannot be reversed'
@@ -494,13 +502,20 @@ describe('RecipeDetailPage', (): void => {
     });
 
     test('should handle confirm deletion modal success', (done: jest.DoneCallback): void => {
+      const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
       const _mockRecipeVariantComplete: RecipeVariant = mockRecipeVariantComplete();
 
+      detailPage.recipeMaster = _mockRecipeMasterActive;
       detailPage.displayVariantList = [ _mockRecipeVariantComplete ];
 
       detailPage.recipeService.removeRecipeVariantById = jest
         .fn()
         .mockReturnValue(of({}));
+
+      detailPage.idService.getId = jest
+        .fn()
+        .mockReturnValueOnce(_mockRecipeMasterActive._id)
+        .mockReturnValueOnce(_mockRecipeVariantComplete._id);
 
       const toastSpy: jest.SpyInstance = jest.spyOn(detailPage.toastService, 'presentToast');
 
@@ -516,14 +531,21 @@ describe('RecipeDetailPage', (): void => {
     });
 
     test('should handle confirm deletion modal success, but get service error', (done: jest.DoneCallback): void => {
+      const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
       const _mockRecipeVariantComplete: RecipeVariant = mockRecipeVariantComplete();
       const _mockError: Error = new Error('test-error');
 
+      detailPage.recipeMaster = _mockRecipeMasterActive;
       detailPage.displayVariantList = [ _mockRecipeVariantComplete ];
 
       detailPage.recipeService.removeRecipeVariantById = jest
         .fn()
         .mockReturnValue(throwError(_mockError));
+
+      detailPage.idService.getId = jest
+        .fn()
+        .mockReturnValueOnce(_mockRecipeMasterActive._id)
+        .mockReturnValueOnce(_mockRecipeVariantComplete._id);
 
       const errorSpy: jest.SpyInstance = jest.spyOn(detailPage.errorReporter, 'handleUnhandledError');
 
@@ -648,6 +670,9 @@ describe('RecipeDetailPage', (): void => {
 
       detailPage.recipeMaster = _mockRecipeMasterActive;
       detailPage.displayVariantList = [];
+      detailPage.utilService.clone = jest
+        .fn()
+        .mockImplementation((obj: any): any => obj);
 
       detailPage.recipeService.getCombinedHopsSchedule = jest
         .fn()
@@ -670,6 +695,11 @@ describe('RecipeDetailPage', (): void => {
       detailPage.recipeService.updateRecipeVariantById = jest
         .fn()
         .mockReturnValue(of(_mockRecipeVariant));
+
+      detailPage.idService.getId = jest
+        .fn()
+        .mockReturnValueOnce(_mockRecipeMasterActive._id)
+        .mockReturnValueOnce(_mockRecipeVariant._id);
 
       const updateSpy: jest.SpyInstance = jest.spyOn(detailPage.recipeService, 'updateRecipeVariantById');
       const toastSpy: jest.SpyInstance = jest.spyOn(detailPage.toastService, 'presentToast');
@@ -705,6 +735,11 @@ describe('RecipeDetailPage', (): void => {
       detailPage.recipeService.updateRecipeVariantById = jest
         .fn()
         .mockReturnValue(throwError(_mockError));
+
+      detailPage.idService.getId = jest
+        .fn()
+        .mockReturnValueOnce(_mockRecipeMasterActive._id)
+        .mockReturnValueOnce(_mockRecipeVariant._id);
 
       const updateSpy: jest.SpyInstance = jest.spyOn(detailPage.recipeService, 'updateRecipeVariantById');
       const errorSpy: jest.SpyInstance = jest.spyOn(detailPage.errorReporter, 'handleUnhandledError');
@@ -761,10 +796,10 @@ describe('RecipeDetailPage', (): void => {
       fixture.detectChanges();
 
       const masterNameElem: HTMLElement = fixture.nativeElement.querySelector('#recipe-name');
-      expect(masterNameElem.textContent).toMatch(toTitleCase(_mockRecipeMasterActive.name));
+      expect(masterNameElem.textContent).toMatch('Active');
 
       const styleNameElem: HTMLElement = fixture.nativeElement.querySelector('#style-name');
-      expect(styleNameElem.textContent).toMatch(toTitleCase(_mockRecipeMasterActive.style.name));
+      expect(styleNameElem.textContent).toMatch('American IPA');
 
       const rows: NodeList = fixture.nativeElement.querySelectorAll('ion-row');
 
@@ -785,7 +820,7 @@ describe('RecipeDetailPage', (): void => {
       const firstHeader: Element = firstVariant.querySelector('.recipe-summary-header');
 
       expect(firstHeader.children[0].children[0].getAttribute('name')).toMatch('star');
-      expect(firstHeader.children[0].children[1].textContent).toMatch(toTitleCase(_mockRecipeVariantComplete.variantName));
+      expect(firstHeader.children[0].children[1].textContent).toMatch('Complete');
 
       const firstSubHeader: Element = firstVariant.querySelector('p');
 

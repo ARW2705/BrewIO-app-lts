@@ -1,8 +1,8 @@
 /* Module imports */
-import { Component, OnInit, OnDestroy, ViewChildren, QueryList, ViewChild, ElementRef, Renderer2 } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
-import { IonList, IonItemSliding, ModalController, IonContent } from '@ionic/angular';
-import { Subject, from } from 'rxjs';
+import { Component, ElementRef, OnDestroy, OnInit, QueryList, Renderer2, ViewChild, ViewChildren } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { IonContent, IonItemSliding, IonList, ModalController } from '@ionic/angular';
+import { from, Subject } from 'rxjs';
 import { finalize, takeUntil } from 'rxjs/operators';
 
 /* Interface imports */
@@ -11,21 +11,14 @@ import { RecipeMaster, RecipeVariant } from '../../shared/interfaces';
 /* Type imports */
 import { CustomError } from '../../shared/types';
 
-/* Utility imports */
-import { clone } from '../../shared/utility-functions/clone';
-import { getId, hasId } from '../../shared/utility-functions/id-helpers';
-
 /* Component imports */
 import { AccordionComponent } from '../../components/accordion/accordion.component';
 
 /* Page imports */
-import { ConfirmationComponent } from '../../components/confirmation/confirmation.component';
+import { ConfirmationPage } from '../confirmation/confirmation.page';
 
 /* Service imports */
-import { AnimationsService } from '../../services/animations/animations.service';
-import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
-import { RecipeService } from '../../services/recipe/recipe.service';
-import { ToastService } from '../../services/toast/toast.service';
+import { AnimationsService, ErrorReportingService, IdService, RecipeService, ToastService, UtilityService } from '../../services/services';
 
 
 @Component({
@@ -50,14 +43,16 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
 
 
   constructor(
+    public animationService: AnimationsService,
+    public errorReporter: ErrorReportingService,
+    public idService: IdService,
     public modalCtrl: ModalController,
+    public recipeService: RecipeService,
     public renderer: Renderer2,
     public route: ActivatedRoute,
     public router: Router,
-    public animationService: AnimationsService,
-    public errorReporter: ErrorReportingService,
-    public recipeService: RecipeService,
-    public toastService: ToastService
+    public toastService: ToastService,
+    public utilService: UtilityService
   ) {
     this.recipeMasterId = this.route.snapshot.paramMap.get('masterId');
   }
@@ -116,9 +111,9 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
         {
           state: {
             recipeMasterId: this.recipeMasterId,
-            recipeVariantId: getId(variant),
+            recipeVariantId: this.idService.getId(variant),
             requestedUserId: this.recipeMaster.owner,
-            rootURL: `tabs/recipe/${getId(this.recipeMaster)}`
+            rootURL: `tabs/recipe/${this.idService.getId(this.recipeMaster)}`
           }
         }
       );
@@ -153,7 +148,9 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
     if (formType === 'variant') {
       if (variant) {
         options['variantData'] = this.recipeMaster.variants
-          .find((recipeVariant: RecipeVariant): boolean => hasId(recipeVariant, getId(variant)));
+          .find((recipeVariant: RecipeVariant): boolean => {
+            return this.idService.hasId(recipeVariant, this.idService.getId(variant));
+          });
       } else {
         options['docMethod'] = 'create';
       }
@@ -186,7 +183,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
    */
   async confirmDelete(index: number): Promise<void> {
     const modal: HTMLIonModalElement = await this.modalCtrl.create({
-      component: ConfirmationComponent,
+      component: ConfirmationPage,
       componentProps: {
         message: `Confirm deletion of "${this.displayVariantList[index].variantName}"`,
         subMessage: 'This action cannot be reversed'
@@ -235,8 +232,8 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
 
       if (confirmed) {
         this.recipeService.removeRecipeVariantById(
-          getId(this.recipeMaster),
-          getId(this.displayVariantList[index])
+          this.idService.getId(this.recipeMaster),
+          this.idService.getId(this.displayVariantList[index])
         )
         .subscribe(
           (): void => {
@@ -333,7 +330,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
   mapVariantList(): void {
     this.displayVariantList = this.recipeMaster.variants
       .map((variant: RecipeVariant): RecipeVariant => {
-        const selected: RecipeVariant = clone(variant);
+        const selected: RecipeVariant = this.utilService.clone(variant);
         selected.hops = this.recipeService.getCombinedHopsSchedule(selected.hops);
         return selected;
       })
@@ -351,8 +348,8 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
    */
   toggleFavorite(variant: RecipeVariant): void {
     this.recipeService.updateRecipeVariantById(
-      getId(this.recipeMaster),
-      getId(variant),
+      this.idService.getId(this.recipeMaster),
+      this.idService.getId(variant),
       { isFavorite: !variant.isFavorite }
     )
     .subscribe(
