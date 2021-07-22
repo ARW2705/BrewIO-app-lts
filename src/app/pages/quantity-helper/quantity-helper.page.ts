@@ -1,35 +1,37 @@
 /* Module imports */
-import { Component, Input, OnInit, HostListener } from '@angular/core';
+import { Component, HostListener, Input, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 
 /* Constants imports */
-import { CL_TO_FLOZ , COMMON_CONTAINERS, FLOZ_TO_PINT } from '../../shared/constants';
+import { CL_TO_FLOZ, COMMON_CONTAINERS, FLOZ_TO_PINT } from '../../shared/constants';
 
 /* Interface imports */
 import { Container } from '../../shared/interfaces';
 
-/* Utility imports */
-import { roundToDecimalPlace, toTitleCase } from '../../shared/utility-functions/utilities';
+/* Service imports */
+import { UtilityService } from '../../services/services';
 
 
 @Component({
   selector: 'quantity-helper',
-  templateUrl: './quantity-helper.component.html',
-  styleUrls: ['./quantity-helper.component.scss']
+  templateUrl: './quantity-helper.page.html',
+  styleUrls: ['./quantity-helper.page.scss']
 })
-export class QuantityHelperComponent implements OnInit {
+export class QuantityHelperPage implements OnInit {
   @Input() headerText: string = '';
   @Input() quantity: number;
   commonContainers: Container[] = COMMON_CONTAINERS;
-  quantityPints: number;
-  quantityOunces: number;
-  quantityCentiliters: number;
   onBackClick: () => void;
+  quantityCentiliters: number;
+  quantityOunces: number;
+  quantityPints: number;
   selectOptions: object = { cssClass: 'select-popover' };
   showCommonContainers: boolean = true;
 
-
-  constructor(public modalCtrl: ModalController) {
+  constructor(
+    public modalCtrl: ModalController,
+    public utilService: UtilityService
+  ) {
     this.onBackClick = this.dismiss.bind(this);
   }
 
@@ -81,22 +83,22 @@ export class QuantityHelperComponent implements OnInit {
    */
   changeQuantities(source: string, value: number): void {
     if (isNaN(value)) {
-      this[`quantity${toTitleCase(source)}`] = null;
+      this[`quantity${this.utilService.toTitleCase(source)}`] = null;
       return;
     }
 
     if (source === 'pints') {
-      this.quantityPints = roundToDecimalPlace(value, 1);
-      this.quantityOunces = roundToDecimalPlace(value / FLOZ_TO_PINT, 1);
-      this.quantityCentiliters = roundToDecimalPlace(value / FLOZ_TO_PINT / CL_TO_FLOZ, 0);
+      this.quantityPints = this.utilService.roundToDecimalPlace(value, 1);
+      this.quantityOunces = this.utilService.roundToDecimalPlace(value / FLOZ_TO_PINT, 1);
+      this.quantityCentiliters = this.utilService.roundToDecimalPlace(value / FLOZ_TO_PINT / CL_TO_FLOZ, 0);
     } else if (source === 'ounces') {
-      this.quantityPints = roundToDecimalPlace(value * FLOZ_TO_PINT, 1);
-      this.quantityOunces = roundToDecimalPlace(value, 1);
-      this.quantityCentiliters = roundToDecimalPlace(value / CL_TO_FLOZ, 0);
+      this.quantityPints = this.utilService.roundToDecimalPlace(value * FLOZ_TO_PINT, 1);
+      this.quantityOunces = this.utilService.roundToDecimalPlace(value, 1);
+      this.quantityCentiliters = this.utilService.roundToDecimalPlace(value / CL_TO_FLOZ, 0);
     } else if (source === 'centiliters') {
-      this.quantityPints = roundToDecimalPlace(value * CL_TO_FLOZ * FLOZ_TO_PINT, 1);
-      this.quantityOunces = roundToDecimalPlace(value * CL_TO_FLOZ, 1);
-      this.quantityCentiliters = roundToDecimalPlace(value, 0);
+      this.quantityPints = this.utilService.roundToDecimalPlace(value * CL_TO_FLOZ * FLOZ_TO_PINT, 1);
+      this.quantityOunces = this.utilService.roundToDecimalPlace(value * CL_TO_FLOZ, 1);
+      this.quantityCentiliters = this.utilService.roundToDecimalPlace(value, 0);
     } else {
       console.log('changeQuantities invalid source', source);
     }

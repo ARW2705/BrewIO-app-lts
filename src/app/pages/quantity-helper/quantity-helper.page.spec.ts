@@ -1,5 +1,5 @@
 /* Module imports */
-import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 
@@ -8,28 +8,30 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
 import { ModalControllerStub } from '../../../../test-config/ionic-stubs';
+import { UtilityServiceStub } from '../../../../test-config/service-stubs';
 
 /* Constant imports */
 import { COMMON_CONTAINERS } from '../../shared/constants';
 
-/* Utility imports */
-import { toTitleCase } from '../../shared/utility-functions/utilities';
+/* Service imports */
+import { UtilityService } from '../../services/services';
 
-/* Component imoprts */
-import { QuantityHelperComponent } from './quantity-helper.component';
+/* Page imoprts */
+import { QuantityHelperPage } from './quantity-helper.page';
 
 
-describe('QuantityHelperComponent', (): void => {
-  let fixture: ComponentFixture<QuantityHelperComponent>;
-  let qhCmp: QuantityHelperComponent;
+describe('QuantityHelperPage', (): void => {
+  let fixture: ComponentFixture<QuantityHelperPage>;
+  let qhPage: QuantityHelperPage;
   let originalOnInit: any;
   configureTestBed();
 
   beforeEach((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
-      declarations: [ QuantityHelperComponent ],
+      declarations: [ QuantityHelperPage ],
       providers: [
-        { provide: ModalController, useClass: ModalControllerStub }
+        { provide: ModalController, useClass: ModalControllerStub },
+        { provide: UtilityService, useClass: UtilityServiceStub }
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
@@ -39,37 +41,37 @@ describe('QuantityHelperComponent', (): void => {
   .catch(done.fail));
 
   beforeEach((): void => {
-    fixture = TestBed.createComponent(QuantityHelperComponent);
-    qhCmp = fixture.componentInstance;
-    originalOnInit = qhCmp.ngOnInit;
-    qhCmp.ngOnInit = jest
+    fixture = TestBed.createComponent(QuantityHelperPage);
+    qhPage = fixture.componentInstance;
+    originalOnInit = qhPage.ngOnInit;
+    qhPage.ngOnInit = jest
       .fn();
   });
 
   test('should create the component', (): void => {
     fixture.detectChanges();
 
-    expect(qhCmp).toBeDefined();
+    expect(qhPage).toBeDefined();
   });
 
   test('should init the component', (): void => {
-    qhCmp.ngOnInit = originalOnInit;
-    qhCmp.quantity = 10;
-    qhCmp.headerText = 'initial quantity';
-    qhCmp.changeQuantities = jest
+    qhPage.ngOnInit = originalOnInit;
+    qhPage.quantity = 10;
+    qhPage.headerText = 'initial quantity';
+    qhPage.changeQuantities = jest
       .fn();
 
-    const changeSpy: jest.SpyInstance = jest.spyOn(qhCmp, 'changeQuantities');
+    const changeSpy: jest.SpyInstance = jest.spyOn(qhPage, 'changeQuantities');
 
     fixture.detectChanges();
 
-    qhCmp.ngOnInit();
+    qhPage.ngOnInit();
 
     expect(changeSpy).toHaveBeenCalledWith('pints', 10);
   });
 
   test('should handle input keypress event', (): void => {
-    qhCmp.isValidQuantity = jest
+    qhPage.isValidQuantity = jest
       .fn()
       .mockReturnValueOnce(true)
       .mockReturnValueOnce(false);
@@ -87,70 +89,87 @@ describe('QuantityHelperComponent', (): void => {
     Object.defineProperty(mockEvent, 'which', { writable: false, value: 49 });
     Object.defineProperty(mockEvent, 'keyCode', { writable: false, value: 49 });
 
-    const validSpy: jest.SpyInstance = jest.spyOn(qhCmp, 'isValidQuantity');
+    const validSpy: jest.SpyInstance = jest.spyOn(qhPage, 'isValidQuantity');
     const eventSpy: jest.SpyInstance = jest.spyOn(mockEvent, 'preventDefault');
 
     fixture.detectChanges();
 
-    qhCmp.onInput(mockEvent);
+    qhPage.onInput(mockEvent);
 
     expect(validSpy).toHaveBeenCalledWith('input-name', '11');
     expect(eventSpy).not.toHaveBeenCalled();
 
-    qhCmp.onInput(mockEvent);
+    qhPage.onInput(mockEvent);
 
     expect(eventSpy).toHaveBeenCalled();
   });
 
   test('should compare ion-select options', (): void => {
-    expect(qhCmp.compareWithFn({ name: 'test' }, { name: 'test' })).toBe(true);
-    expect(qhCmp.compareWithFn({ name: 'test' }, { name: 'other' })).toBe(false);
-    expect(qhCmp.compareWithFn('test', 'test')).toBe(true);
-    expect(qhCmp.compareWithFn('test', 'other')).toBe(false);
+    expect(qhPage.compareWithFn({ name: 'test' }, { name: 'test' })).toBe(true);
+    expect(qhPage.compareWithFn({ name: 'test' }, { name: 'other' })).toBe(false);
+    expect(qhPage.compareWithFn('test', 'test')).toBe(true);
+    expect(qhPage.compareWithFn('test', 'other')).toBe(false);
   });
 
   test('should change quantities', (): void => {
-    qhCmp.quantityPints = 0;
-    qhCmp.quantityOunces = 0;
-    qhCmp.quantityCentiliters = 0;
+    qhPage.quantityPints = 0;
+    qhPage.quantityOunces = 0;
+    qhPage.quantityCentiliters = 0;
+
+    qhPage.utilService.toTitleCase = jest
+      .fn()
+      .mockReturnValueOnce('Pints')
+      .mockReturnValueOnce('Ounces')
+      .mockReturnValueOnce('Centiliters')
+      .mockReturnValueOnce('Pints')
+      .mockReturnValueOnce('Invalid');
+
+    qhPage.utilService.roundToDecimalPlace = jest
+      .fn()
+      .mockImplementation((value: number, places: number): number => {
+        if (places < 0) {
+          return -1;
+        }
+        return Math.round(value * Math.pow(10, places)) / Math.pow(10, places);
+      });
 
     const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
 
     fixture.detectChanges();
 
-    expect(qhCmp.quantityPints).toEqual(0);
-    expect(qhCmp.quantityOunces).toEqual(0);
-    expect(qhCmp.quantityCentiliters).toEqual(0);
+    expect(qhPage.quantityPints).toEqual(0);
+    expect(qhPage.quantityOunces).toEqual(0);
+    expect(qhPage.quantityCentiliters).toEqual(0);
 
-    qhCmp.changeQuantities('pints', 1);
+    qhPage.changeQuantities('pints', 1);
 
-    expect(qhCmp.quantityPints).toEqual(1);
-    expect(qhCmp.quantityOunces).toEqual(16);
-    expect(qhCmp.quantityCentiliters).toEqual(47);
+    expect(qhPage.quantityPints).toEqual(1);
+    expect(qhPage.quantityOunces).toEqual(16);
+    expect(qhPage.quantityCentiliters).toEqual(47);
 
-    qhCmp.changeQuantities('ounces', 64);
+    qhPage.changeQuantities('ounces', 64);
 
-    expect(qhCmp.quantityPints).toEqual(4);
-    expect(qhCmp.quantityOunces).toEqual(64);
-    expect(qhCmp.quantityCentiliters).toEqual(189);
+    expect(qhPage.quantityPints).toEqual(4);
+    expect(qhPage.quantityOunces).toEqual(64);
+    expect(qhPage.quantityCentiliters).toEqual(189);
 
-    qhCmp.changeQuantities('centiliters', 100);
+    qhPage.changeQuantities('centiliters', 100);
 
-    expect(qhCmp.quantityPints).toEqual(2.1);
-    expect(qhCmp.quantityOunces).toEqual(33.8);
-    expect(qhCmp.quantityCentiliters).toEqual(100);
+    expect(qhPage.quantityPints).toEqual(2.1);
+    expect(qhPage.quantityOunces).toEqual(33.8);
+    expect(qhPage.quantityCentiliters).toEqual(100);
 
-    qhCmp.changeQuantities('pints', Number.NaN);
+    qhPage.changeQuantities('pints', Number.NaN);
 
-    expect(qhCmp.quantityPints).toBeNull();
-    expect(qhCmp.quantityOunces).toEqual(33.8);
-    expect(qhCmp.quantityCentiliters).toEqual(100);
+    expect(qhPage.quantityPints).toBeNull();
+    expect(qhPage.quantityOunces).toEqual(33.8);
+    expect(qhPage.quantityCentiliters).toEqual(100);
 
-    qhCmp.changeQuantities('invalid', 1);
+    qhPage.changeQuantities('invalid', 1);
 
-    expect(qhCmp.quantityPints).toBeNull();
-    expect(qhCmp.quantityOunces).toEqual(33.8);
-    expect(qhCmp.quantityCentiliters).toEqual(100);
+    expect(qhPage.quantityPints).toBeNull();
+    expect(qhPage.quantityOunces).toEqual(33.8);
+    expect(qhPage.quantityCentiliters).toEqual(100);
 
     const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
     expect(consoleCalls[0]).toMatch('changeQuantities invalid source');
@@ -158,11 +177,11 @@ describe('QuantityHelperComponent', (): void => {
   });
 
   test('should check quantities on blur event', (): void => {
-    qhCmp.changeQuantities = jest
+    qhPage.changeQuantities = jest
       .fn();
-    qhCmp.quantityPints = 1;
-    qhCmp.quantityOunces = 16;
-    qhCmp.quantityCentiliters = 47;
+    qhPage.quantityPints = 1;
+    qhPage.quantityOunces = 16;
+    qhPage.quantityCentiliters = 47;
 
     const pintsEvent: CustomEvent = new CustomEvent('blur');
     const pintsTarget: object = {
@@ -200,32 +219,32 @@ describe('QuantityHelperComponent', (): void => {
     };
     Object.defineProperty(nonNaNEvent, 'target', { writable: false, value: nonNaNTarget });
 
-    const changeSpy: jest.SpyInstance = jest.spyOn(qhCmp, 'changeQuantities');
+    const changeSpy: jest.SpyInstance = jest.spyOn(qhPage, 'changeQuantities');
 
     fixture.detectChanges();
 
-    qhCmp.checkQuantities(pintsEvent);
-    expect(changeSpy).toHaveBeenCalledWith('ounces', qhCmp.quantityOunces);
+    qhPage.checkQuantities(pintsEvent);
+    expect(changeSpy).toHaveBeenCalledWith('ounces', qhPage.quantityOunces);
 
-    qhCmp.checkQuantities(ouncesEvent);
-    expect(changeSpy).toHaveBeenNthCalledWith(2, 'pints', qhCmp.quantityPints);
+    qhPage.checkQuantities(ouncesEvent);
+    expect(changeSpy).toHaveBeenNthCalledWith(2, 'pints', qhPage.quantityPints);
 
-    qhCmp.checkQuantities(clEvent);
-    expect(changeSpy).toHaveBeenNthCalledWith(3, 'pints', qhCmp.quantityPints);
+    qhPage.checkQuantities(clEvent);
+    expect(changeSpy).toHaveBeenNthCalledWith(3, 'pints', qhPage.quantityPints);
 
-    qhCmp.checkQuantities(nonNaNEvent);
+    qhPage.checkQuantities(nonNaNEvent);
     expect(changeSpy).toHaveBeenCalledTimes(3);
   });
 
   test('should call modal dismiss with no return data', (): void => {
-    qhCmp.modalCtrl.dismiss = jest
+    qhPage.modalCtrl.dismiss = jest
       .fn();
 
-    const dismissSpy: jest.SpyInstance = jest.spyOn(qhCmp.modalCtrl, 'dismiss');
+    const dismissSpy: jest.SpyInstance = jest.spyOn(qhPage.modalCtrl, 'dismiss');
 
     fixture.detectChanges();
 
-    qhCmp.dismiss();
+    qhPage.dismiss();
 
     expect(dismissSpy).toHaveBeenCalled();
   });
@@ -233,38 +252,38 @@ describe('QuantityHelperComponent', (): void => {
   test('should check if quantity is valid', (): void => {
     fixture.detectChanges();
 
-    expect(qhCmp.isValidQuantity('pints', '1')).toBe(true);
-    expect(qhCmp.isValidQuantity('pints', '10000')).toBe(false);
-    expect(qhCmp.isValidQuantity('pints', '1.00')).toBe(false);
+    expect(qhPage.isValidQuantity('pints', '1')).toBe(true);
+    expect(qhPage.isValidQuantity('pints', '10000')).toBe(false);
+    expect(qhPage.isValidQuantity('pints', '1.00')).toBe(false);
 
-    expect(qhCmp.isValidQuantity('ounces', '1')).toBe(true);
-    expect(qhCmp.isValidQuantity('ounces', '100000')).toBe(false);
-    expect(qhCmp.isValidQuantity('ounces', '1.00')).toBe(false);
+    expect(qhPage.isValidQuantity('ounces', '1')).toBe(true);
+    expect(qhPage.isValidQuantity('ounces', '100000')).toBe(false);
+    expect(qhPage.isValidQuantity('ounces', '1.00')).toBe(false);
 
-    expect(qhCmp.isValidQuantity('centiliters', '1')).toBe(true);
-    expect(qhCmp.isValidQuantity('centiliters', '100000')).toBe(false);
-    expect(qhCmp.isValidQuantity('centiliters', '1.0')).toBe(false);
+    expect(qhPage.isValidQuantity('centiliters', '1')).toBe(true);
+    expect(qhPage.isValidQuantity('centiliters', '100000')).toBe(false);
+    expect(qhPage.isValidQuantity('centiliters', '1.0')).toBe(false);
 
-    expect(qhCmp.isValidQuantity('invalid', '1')).toBe(false);
+    expect(qhPage.isValidQuantity('invalid', '1')).toBe(false);
   });
 
   test('chould handle ion-select event', (): void => {
-    qhCmp.changeQuantities = jest
+    qhPage.changeQuantities = jest
       .fn();
 
     const mockEvent: CustomEvent = new CustomEvent('select', { detail: { value: { capacity: 10 } } });
 
-    const changeSpy: jest.SpyInstance = jest.spyOn(qhCmp, 'changeQuantities');
+    const changeSpy: jest.SpyInstance = jest.spyOn(qhPage, 'changeQuantities');
 
     fixture.detectChanges();
 
-    qhCmp.onCommonSelect(mockEvent);
+    qhPage.onCommonSelect(mockEvent);
 
     expect(changeSpy).toHaveBeenCalledWith('pints', 10);
   });
 
   test('should handle quantity change event', (): void => {
-    qhCmp.changeQuantities = jest
+    qhPage.changeQuantities = jest
       .fn();
 
     const mockEvent: CustomEvent = new CustomEvent('change');
@@ -278,16 +297,16 @@ describe('QuantityHelperComponent', (): void => {
 
     const mockErrorEvent: CustomEvent = new CustomEvent('change');
 
-    const changeSpy: jest.SpyInstance = jest.spyOn(qhCmp, 'changeQuantities');
+    const changeSpy: jest.SpyInstance = jest.spyOn(qhPage, 'changeQuantities');
     const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
 
     fixture.detectChanges();
 
-    qhCmp.onQuantityChange(mockEvent);
+    qhPage.onQuantityChange(mockEvent);
 
     expect(changeSpy).toHaveBeenCalledWith('pints', 1);
 
-    qhCmp.onQuantityChange(mockErrorEvent);
+    qhPage.onQuantityChange(mockErrorEvent);
 
     const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
     expect(consoleCalls[0]).toMatch('quantity change error');
@@ -295,26 +314,26 @@ describe('QuantityHelperComponent', (): void => {
   });
 
   test('should submit the quantity in pints', (): void => {
-    qhCmp.modalCtrl.dismiss = jest
+    qhPage.modalCtrl.dismiss = jest
       .fn();
 
-    qhCmp.quantityPints = 5;
+    qhPage.quantityPints = 5;
 
-    const dismissSpy: jest.SpyInstance = jest.spyOn(qhCmp.modalCtrl, 'dismiss');
+    const dismissSpy: jest.SpyInstance = jest.spyOn(qhPage.modalCtrl, 'dismiss');
 
     fixture.detectChanges();
 
-    qhCmp.submit();
+    qhPage.submit();
 
     expect(dismissSpy).toHaveBeenCalledWith(5);
   });
 
   test('should render the modal content', (): void => {
-    qhCmp.headerText = 'test header text';
-    qhCmp.quantity = 1;
-    qhCmp.quantityPints = 1;
-    qhCmp.quantityOunces = 16;
-    qhCmp.quantityCentiliters = 47;
+    qhPage.headerText = 'test header text';
+    qhPage.quantity = 1;
+    qhPage.quantityPints = 1;
+    qhPage.quantityOunces = 16;
+    qhPage.quantityCentiliters = 47;
 
     fixture.detectChanges();
 
@@ -324,13 +343,13 @@ describe('QuantityHelperComponent', (): void => {
     const quantities: NodeList = fixture.nativeElement.querySelectorAll('ion-item');
 
     const pints: Element = <Element>quantities.item(0);
-    expect(pints.children[1]['ngModel']).toEqual(qhCmp.quantityPints);
+    expect(pints.children[1]['ngModel']).toEqual(qhPage.quantityPints);
 
     const ounces: Element = <Element>quantities.item(1);
-    expect(ounces.children[1]['ngModel']).toEqual(qhCmp.quantityOunces);
+    expect(ounces.children[1]['ngModel']).toEqual(qhPage.quantityOunces);
 
     const cl: Element = <Element>quantities.item(2);
-    expect(cl.children[1]['ngModel']).toEqual(qhCmp.quantityCentiliters);
+    expect(cl.children[1]['ngModel']).toEqual(qhPage.quantityCentiliters);
 
     const buttons: NodeList = fixture.nativeElement.querySelectorAll('ion-button');
 
@@ -339,14 +358,19 @@ describe('QuantityHelperComponent', (): void => {
   });
 
   test('should render ion-select', (): void => {
-    qhCmp.headerText = 'test header text';
+    qhPage.headerText = 'test header text';
 
     fixture.detectChanges();
 
     const select: HTMLElement = fixture.nativeElement.querySelector('ion-select');
     Array.from(select.children)
       .forEach((option: Element, index: number): void => {
-        expect(option.textContent).toMatch(`${toTitleCase(COMMON_CONTAINERS[index].name)} (${COMMON_CONTAINERS[index].capacity} pints)`);
+        expect(option.textContent).toMatch(`${
+          COMMON_CONTAINERS[index].name.replace(
+            /\b[a-z]/g,
+            (firstChar: string): string => firstChar.toUpperCase()
+          )
+        } (${COMMON_CONTAINERS[index].capacity} pints)`);
       });
   });
 
