@@ -10,7 +10,7 @@ import { ErrorReportingServiceStub } from '../../../../test-config/service-stubs
 
 /* Provider imports */
 import { HttpErrorService } from './http-error.service';
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
+import { ErrorReportingService } from '../services';
 
 
 describe('Process HTTP Error Service', (): void => {

@@ -5,16 +5,7 @@ import { Observable, from, of, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
 /* Interface imports */
-import {
-  Batch,
-  ErrorReport,
-  LibraryStorage,
-  InventoryItem,
-  RecipeMaster,
-  SelectedUnits,
-  SyncMetadata,
-  User
-} from '../../shared/interfaces';
+import { Batch, ErrorReport, LibraryStorage, InventoryItem, RecipeMaster, SelectedUnits, SyncMetadata, User } from '../../shared/interfaces';
 
 /* Type imports */
 import { CustomError } from '../../shared/types';
@@ -29,9 +20,9 @@ import { defaultEnglishUnits } from '../../shared/defaults';
 export class StorageService {
   activeBatchStorageKey: string = 'active';
   archiveBatchStorageKey: string = 'archive';
+  errorReportStorageKey: string = 'logger';
   inventoryStorageKey: string = 'inventory';
   libraryStorageKey: string = 'library';
-  errorReportStorageKey: string = 'logger';
   recipeStorageKey: string = 'recipe';
   syncStorageKey: string = 'sync';
   userStorageKey: string = 'user';

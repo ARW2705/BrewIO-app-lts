@@ -15,7 +15,7 @@ import { ErrorReportingServiceStub } from '../../../../test-config/service-stubs
 
 /* Service imports */
 import { FileService } from './file.service';
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
+import { ErrorReportingService } from '../services';
 
 
 describe('FileService', (): void => {

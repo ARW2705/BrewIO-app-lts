@@ -19,8 +19,7 @@ import { ConnectionServiceStub, StorageServiceStub } from '../../../../test-conf
 
 /* Service imports */
 import { LoggingService } from './logging.service';
-import { ConnectionService } from '../connection/connection.service';
-import { StorageService } from '../storage/storage.service';
+import { ConnectionService, StorageService } from '../services';
 
 describe('LoggingService', (): void => {
   let injector: TestBed;

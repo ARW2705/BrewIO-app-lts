@@ -5,9 +5,6 @@ import { ToastController } from '@ionic/angular';
 /* Interface imports */
 import { ToastButton } from '../../shared/interfaces';
 
-/* Type imports */
-import { CustomError } from '../../shared/types';
-
 /* Default imports */
 import { defaultDismissButton } from '../../shared/defaults';
 

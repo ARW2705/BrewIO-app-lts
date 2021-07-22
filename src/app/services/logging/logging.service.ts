@@ -11,8 +11,7 @@ import { API_VERSION, BASE_URL } from '../../shared/constants';
 import { ErrorReport } from '../../shared/interfaces';
 
 /* Service imports */
-import { ConnectionService } from '../connection/connection.service';
-import { StorageService } from '../storage/storage.service';
+import { ConnectionService, StorageService } from '../services';
 
 
 @Injectable({

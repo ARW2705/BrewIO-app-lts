@@ -6,28 +6,11 @@ import { Storage } from '@ionic/storage';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import {
-  mockBatch,
-  mockErrorReport,
-  mockInventoryItem,
-  mockLibraryStorage,
-  mockRecipeMasterActive,
-  mockSyncMetadata,
-  mockUser
-} from '../../../../test-config/mock-models';
+import { mockBatch, mockErrorReport, mockInventoryItem, mockLibraryStorage, mockRecipeMasterActive, mockSyncMetadata, mockUser } from '../../../../test-config/mock-models';
 import { StorageStub } from '../../../../test-config/ionic-stubs';
 
 /* Interface imports */
-import {
-  Batch,
-  ErrorReport,
-  LibraryStorage,
-  InventoryItem,
-  RecipeMaster,
-  SelectedUnits,
-  SyncMetadata,
-  User
-} from '../../shared/interfaces';
+import { Batch, ErrorReport, LibraryStorage, InventoryItem, RecipeMaster, SelectedUnits, SyncMetadata, User } from '../../shared/interfaces';
 
 /* Type imports */
 import { CustomError } from '../../shared/types';

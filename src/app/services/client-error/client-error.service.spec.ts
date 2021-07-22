@@ -12,7 +12,7 @@ import { CustomError } from '../../shared/types';
 
 /* Service imports */
 import { ClientErrorService } from './client-error.service';
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
+import { ErrorReportingService } from '../services';
 
 
 describe('ClientErrorService', () => {

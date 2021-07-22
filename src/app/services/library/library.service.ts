@@ -14,26 +14,19 @@ import { Grains, Hops, LibraryStorage, Style, Yeast } from '../../shared/interfa
 import { CustomError } from '../../shared/types';
 
 /* Type guard imports */
-import {
-  StyleGuardMetadata,
-  GrainsGuardMetadata,
-  HopsGuardMetadata,
-  YeastGuardMetadata
-} from '../../shared/type-guard-metadata';
+import { StyleGuardMetadata, GrainsGuardMetadata, HopsGuardMetadata, YeastGuardMetadata } from '../../shared/type-guard-metadata';
 
 /* Service imports */
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
-import { StorageService } from '../storage/storage.service';
-import { TypeGuardService } from '../type-guard/type-guard.service';
+import { ErrorReportingService, StorageService, TypeGuardService } from '../services';
 
 
 @Injectable()
 export class LibraryService {
   grainsLibrary: Grains[] = null;
   hopsLibrary: Hops[] = null;
-  yeastLibrary: Yeast[] = null;
-  styleLibrary: Style[] = null;
   libraryNames: string[] = ['grains', 'hops', 'yeast', 'style'];
+  styleLibrary: Style[] = null;
+  yeastLibrary: Yeast[] = null;
 
   constructor(
     public errorReporter: ErrorReportingService,

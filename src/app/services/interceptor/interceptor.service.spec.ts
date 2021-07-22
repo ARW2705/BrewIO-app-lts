@@ -11,21 +11,16 @@ import { API_VERSION, BASE_URL } from '../../shared/constants';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { ErrorReportingServiceStub } from '../../../../test-config/service-stubs';
+import { mockErrorReport, mockErrorResponse, mockUser, mockHttpErrorHandler } from '../../../../test-config/mock-models';
+import { HttpStub } from '../../../../test-config/ionic-stubs';
+import { ErrorReportingServiceStub, HttpErrorServiceStub, UserServiceStub } from '../../../../test-config/service-stubs';
 
 /* Interface imports */
 import { ErrorReport, User } from '../../shared/interfaces';
 
-/* Mock imports */
-import { mockErrorReport, mockErrorResponse, mockUser, mockHttpErrorHandler } from '../../../../test-config/mock-models';
-import { HttpStub } from '../../../../test-config/ionic-stubs';
-import { ToastServiceStub, UserServiceStub } from '../../../../test-config/service-stubs';
-
-/* Provider imports */
+/* Service imports */
 import { AuthorizeInterceptor, ErrorInterceptor } from './interceptor.service';
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
-import { UserService } from '../user/user.service';
-import { ToastService } from '../toast/toast.service';
+import { ErrorReportingService, HttpErrorService, UserService } from '../services';
 
 
 describe('InterceptorService', (): void => {
@@ -33,7 +28,6 @@ describe('InterceptorService', (): void => {
   let httpMock: HttpTestingController;
   let userService: UserService;
   let mockHttpService: HttpStub;
-  let toastService: ToastService;
   configureTestBed();
 
   beforeAll(async(() => {
@@ -44,8 +38,8 @@ describe('InterceptorService', (): void => {
       providers: [
         HttpStub,
         { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
+        { provide: HttpErrorService, useClass: HttpErrorServiceStub },
         { provide: UserService, useClass: UserServiceStub },
-        { provide: ToastService, useClass: ToastServiceStub },
         {
           provide: HTTP_INTERCEPTORS,
           useClass: AuthorizeInterceptor,
@@ -65,10 +59,6 @@ describe('InterceptorService', (): void => {
     httpMock = injector.get(HttpTestingController);
     userService = injector.get(UserService);
     mockHttpService = injector.get(HttpStub);
-    toastService = injector.get(ToastService);
-
-    toastService.presentToast = jest
-      .fn();
   }));
 
   afterEach((): void => {

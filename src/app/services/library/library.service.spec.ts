@@ -19,10 +19,8 @@ import { API_VERSION, BASE_URL } from '../../shared/constants';
 import { Grains, Hops, Style, Yeast } from '../../shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
 import { LibraryService } from './library.service';
-import { TypeGuardService } from '../type-guard/type-guard.service';
-import { StorageService } from '../storage/storage.service';
+import { ErrorReportingService, StorageService, TypeGuardService } from '../services';
 
 
 describe('LibraryService', (): void => {
