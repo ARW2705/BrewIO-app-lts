@@ -5,18 +5,16 @@ import { Observable, forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
 /* Interface imports */
-import {
-  SyncError,
-  SyncData,
-  SyncMetadata,
-  SyncResponse
-} from '../../shared/interfaces';
+import { SyncError, SyncData, SyncMetadata, SyncResponse } from '../../shared/interfaces';
 
 /* Type imports */
 import { CustomError } from '../../shared/types';
 
 /* Service imports */
-import { ErrorReportingService, IdService, StorageService, TypeGuardService } from '../services';
+import { ErrorReportingService } from '../error-reporting/error-reporting.service';
+import { IdService } from '../id/id.service';
+import { StorageService } from '../storage/storage.service';
+import { TypeGuardService } from '../type-guard/type-guard.service';
 
 
 @Injectable({

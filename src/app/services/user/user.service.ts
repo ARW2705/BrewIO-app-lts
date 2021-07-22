@@ -21,8 +21,17 @@ import { CustomError } from '../../shared/types';
 import { Image, ImageRequestFormData, ImageRequestMetadata, LoginCredentials, SelectedUnits, SyncMetadata, SyncResponse, User, UserResponse } from '../../shared/interfaces';
 
 /* Service imports */
-import { ConnectionService, ErrorReportingService, EventService, HttpErrorService, IdService, ImageService, PreferencesService, StorageService, SyncService, ToastService, TypeGuardService } from '../services';
-
+import { ConnectionService } from '../connection/connection.service';
+import { ErrorReportingService } from '../error-reporting/error-reporting.service';
+import { EventService } from '../event/event.service';
+import { HttpErrorService } from '../http-error/http-error.service';
+import { IdService } from '../id/id.service';
+import { ImageService } from '../image/image.service';
+import { PreferencesService } from '../preferences/preferences.service';
+import { StorageService } from '../storage/storage.service';
+import { SyncService } from '../sync/sync.service';
+import { ToastService } from '../toast/toast.service';
+import { TypeGuardService } from '../type-guard/type-guard.service';
 
 @Injectable({
   providedIn: 'root'

@@ -8,8 +8,8 @@ import { ABV_FACTORS, BIGNESS_BASE, BIGNESS_FACTOR, BOIL_TIME_EXP, BOIL_TIME_FAC
 import { GrainBill, HopsSchedule, YeastBatch, Grains, Hops, RecipeVariant, SelectedUnits } from '../../shared/interfaces';
 
 /* Provider imports */
-import { PreferencesService, UtilityService } from '../services';
-
+import { PreferencesService } from '../preferences/preferences.service';
+import { UtilityService } from '../utility/utility.service';
 
 @Injectable({
   providedIn: 'root'

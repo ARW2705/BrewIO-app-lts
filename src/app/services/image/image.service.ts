@@ -23,7 +23,10 @@ import { ImageGuardMetadata } from '../../shared/type-guard-metadata/image.guard
 import { CustomError } from '../../shared/types';
 
 /* Service imports */
-import { IdService, ErrorReportingService, FileService, TypeGuardService } from '../services';
+import { IdService } from '../id/id.service';
+import { ErrorReportingService } from '../error-reporting/error-reporting.service';
+import { FileService } from '../file/file.service';
+import { TypeGuardService } from '../type-guard/type-guard.service';
 
 
 @Injectable({

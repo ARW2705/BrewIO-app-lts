@@ -7,7 +7,7 @@ import { Observable, Observer, forkJoin, from, of } from 'rxjs';
 import { catchError, mergeMap } from 'rxjs/operators';
 
 /* Service imports */
-import { ErrorReportingService } from '../services';
+import { ErrorReportingService } from '../error-reporting/error-reporting.service';
 
 
 @Injectable({

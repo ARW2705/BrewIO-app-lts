@@ -10,7 +10,12 @@ import { Batch, BatchTimer, Process, ProgressCircleSettings, Timer, TimerProcess
 import { CustomError } from '../../shared/types';
 
 /* Service imports */
-import { BackgroundModeService, ErrorReportingService, IdService, LocalNotificationService, ProcessService, UtilityService } from '../services';
+import { BackgroundModeService } from '../background-mode/background-mode.service';
+import { ErrorReportingService } from '../error-reporting/error-reporting.service';
+import { IdService } from '../id/id.service';
+import { LocalNotificationService } from '../local-notification/local-notification.service';
+import { ProcessService } from '../process/process.service';
+import { UtilityService } from '../utility/utility.service';
 
 
 @Injectable({

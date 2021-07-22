@@ -8,7 +8,7 @@ import { BUILTIN_ERROR_TYPES } from '../../shared/constants';
 import { ErrorReport } from '../../shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService } from '../services';
+import { ErrorReportingService } from '../error-reporting/error-reporting.service';
 
 
 @Injectable({

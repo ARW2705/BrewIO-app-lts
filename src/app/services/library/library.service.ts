@@ -17,7 +17,9 @@ import { CustomError } from '../../shared/types';
 import { StyleGuardMetadata, GrainsGuardMetadata, HopsGuardMetadata, YeastGuardMetadata } from '../../shared/type-guard-metadata';
 
 /* Service imports */
-import { ErrorReportingService, StorageService, TypeGuardService } from '../services';
+import { ErrorReportingService } from '../error-reporting/error-reporting.service';
+import { StorageService } from '../storage/storage.service';
+import { TypeGuardService } from '../type-guard/type-guard.service';
 
 
 @Injectable()

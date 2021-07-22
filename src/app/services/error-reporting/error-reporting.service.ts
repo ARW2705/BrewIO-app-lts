@@ -16,7 +16,9 @@ import { CustomError } from '../../shared/types';
 import { ErrorReportPage } from '../../pages/error-report/error-report.page';
 
 /* Service imports */
-import { DeviceService, LoggingService, ToastService } from '../services';
+import { DeviceService } from '../device/device.service';
+import { LoggingService } from '../logging/logging.service';
+import { ToastService } from '../toast/toast.service';
 
 
 @Injectable({

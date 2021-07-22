@@ -17,8 +17,20 @@ import { AlertGuardMetadata, BatchGuardMetadata, BatchContextGuardMetadata, Batc
 import { CustomError } from '../../shared/types';
 
 /* Service imports */
-import { CalculationsService, ConnectionService, ErrorReportingService, EventService, HttpErrorService, IdService, LibraryService, RecipeService, StorageService, SyncService, ToastService, TypeGuardService, UserService, UtilityService } from '../services';
-
+import { CalculationsService } from '../calculations/calculations.service';
+import { ConnectionService } from '../connection/connection.service';
+import { ErrorReportingService } from '../error-reporting/error-reporting.service';
+import { EventService } from '../event/event.service';
+import { HttpErrorService } from '../http-error/http-error.service';
+import { IdService } from '../id/id.service';
+import { LibraryService } from '../library/library.service';
+import { RecipeService } from '../recipe/recipe.service';
+import { StorageService } from '../storage/storage.service';
+import { SyncService } from '../sync/sync.service';
+import { ToastService } from '../toast/toast.service';
+import { TypeGuardService } from '../type-guard/type-guard.service';
+import { UserService } from '../user/user.service';
+import { UtilityService } from '../utility/utility.service';
 
 @Injectable({
   providedIn: 'root'
