@@ -1,16 +1,16 @@
 /* Module imports */
-import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { IonicModule, LoadingController, ModalController } from '@ionic/angular';
-import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { BehaviorSubject, of, throwError } from 'rxjs';
+import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidatorFn } from '@angular/forms';
+import { of, throwError } from 'rxjs';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockUser, mockImage } from '../../../../../test-config/mock-models';
-import { ErrorReportingServiceStub, ImageServiceStub, ToastServiceStub, UserServiceStub } from '../../../../../test-config/service-stubs';
+import { mockImage, mockValidator } from '../../../../../test-config/mock-models';
+import { ErrorReportingServiceStub, FormValidationServiceStub, ImageServiceStub, ToastServiceStub, UserServiceStub } from '../../../../../test-config/service-stubs';
 import { HeaderComponentStub } from '../../../../../test-config/component-stubs';
 import { LoadingControllerStub, LoadingStub, ModalControllerStub, ModalStub } from '../../../../../test-config/ionic-stubs';
 
@@ -18,14 +18,10 @@ import { LoadingControllerStub, LoadingStub, ModalControllerStub, ModalStub } fr
 import { defaultImage } from '../../../shared/defaults';
 
 /* Interface imports */
-import { Image, User } from '../../../shared/interfaces';
+import { Image} from '../../../shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService } from '../../../services/error-reporting/error-reporting.service';
-import { FormValidationService } from '../../../services/form-validation/form-validation.service';
-import { ImageService } from '../../../services/image/image.service';
-import { ToastService } from '../../../services/toast/toast.service';
-import { UserService } from '../../../services/user/user.service';
+import { ErrorReportingService, FormValidationService, ImageService, ToastService, UserService } from '../../../services/services';
 
 /* Page imports */
 import { SignupPage } from './signup.page';
@@ -49,6 +45,7 @@ describe('SignupPage', (): void => {
       ],
       providers: [
         { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
+        { provide: FormValidationService, useClass: FormValidationServiceStub },
         { provide: ImageService, useClass: ImageServiceStub },
         { provide: LoadingController, useClass: LoadingControllerStub },
         { provide: ModalController, useClass: ModalControllerStub },
@@ -109,6 +106,14 @@ describe('SignupPage', (): void => {
   });
 
   test('should init the form', (): void => {
+    const _mockValidator: ValidatorFn = mockValidator();
+    signupPage.formValidator.passwordPattern = jest
+      .fn()
+      .mockReturnValue(_mockValidator);
+    signupPage.formValidator.passwordMatch = jest
+      .fn()
+      .mockReturnValue(_mockValidator);
+
     fixture.detectChanges();
 
     signupPage.initForm();
