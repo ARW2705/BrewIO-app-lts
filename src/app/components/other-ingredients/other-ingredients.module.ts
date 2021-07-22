@@ -6,6 +6,7 @@ import { IonicModule } from '@ionic/angular';
 /* Component imports */
 import { OtherIngredientsComponent } from './other-ingredients.component';
 
+
 @NgModule({
   imports: [
     CommonModule,

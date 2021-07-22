@@ -11,8 +11,8 @@ import { RecipeVariant, Style } from '../../shared/interfaces';
   styleUrls: ['./recipe-quick-data.component.scss'],
 })
 export class RecipeQuickDataComponent {
-  @Input() variant: RecipeVariant;
   @Input() style: Style;
+  @Input() variant: RecipeVariant;
 
   constructor() { }
 

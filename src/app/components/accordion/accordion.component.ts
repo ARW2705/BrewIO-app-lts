@@ -12,8 +12,8 @@ import { AnimationsService } from '../../services/animations/animations.service'
   styleUrls: ['./accordion.component.scss']
 })
 export class AccordionComponent implements OnChanges {
-  @Input() expanded: boolean;
   @Input() animationDuration: number = 250;
+  @Input() expanded: boolean;
   @ViewChild('accordionContainer', {read: ElementRef}) container: ElementRef;
 
   constructor(public animationService: AnimationsService) { }

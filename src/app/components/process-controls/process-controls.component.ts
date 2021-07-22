@@ -1,14 +1,15 @@
 /* Module imports */
 import { Component, Input } from '@angular/core';
 
+
 @Component({
   selector: 'process-controls',
   templateUrl: './process-controls.component.html',
   styleUrls: ['./process-controls.component.scss'],
 })
 export class ProcessControlsComponent {
-  @Input() atViewStart: boolean = false;
   @Input() atViewEnd: boolean = false;
+  @Input() atViewStart: boolean = false;
   @Input() isCalendarInProgress: boolean = false;
   @Input() isCalendarStep: boolean = false;
   @Input() onControlAction: (actionName: string, ...options: any[]) => void;

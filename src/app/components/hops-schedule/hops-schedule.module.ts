@@ -4,11 +4,11 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 
 /* Pipe imports */
-import { CalculatePipeModule } from '../../pipes/calculate/calculate.module';
-import { UnitConversionPipeModule } from '../../pipes/unit-conversion/unit-conversion.module';
+import { CalculatePipeModule, UnitConversionPipeModule } from '../../pipes/pipes';
 
 /* Component imports */
 import { HopsScheduleComponent } from './hops-schedule.component';
+
 
 @NgModule({
   imports: [

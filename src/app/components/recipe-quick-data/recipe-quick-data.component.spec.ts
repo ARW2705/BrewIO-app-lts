@@ -1,12 +1,12 @@
 /* Module imports */
-import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockEnglishUnits, mockStyles, mockRecipeVariantComplete } from '../../../../test-config/mock-models';
+import { mockEnglishUnits, mockRecipeVariantComplete, mockStyles } from '../../../../test-config/mock-models';
 import { TruncatePipeStub, UnitConversionPipeStub } from '../../../../test-config/pipe-stubs';
 
 /* Interface imports */

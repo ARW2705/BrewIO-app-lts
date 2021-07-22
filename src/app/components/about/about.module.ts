@@ -6,6 +6,7 @@ import { IonicModule } from '@ionic/angular';
 /* Component imports */
 import { AboutComponent } from './about.component';
 
+
 @NgModule({
   imports: [
     CommonModule,

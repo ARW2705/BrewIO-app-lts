@@ -4,6 +4,7 @@ import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 /* Interface imports */
 import { HopsSchedule, RecipeVariant } from '../../shared/interfaces';
 
+
 @Component({
   selector: 'hops-schedule',
   templateUrl: './hops-schedule.component.html',

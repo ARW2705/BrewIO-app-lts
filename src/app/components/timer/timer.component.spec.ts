@@ -1,5 +1,5 @@
 /* Module imports */
-import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
@@ -7,7 +7,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockTimer, mockConcurrentTimers } from '../../../../test-config/mock-models';
+import { mockConcurrentTimers, mockTimer } from '../../../../test-config/mock-models';
 import { AnimationsServiceStub } from '../../../../test-config/service-stubs';
 import { UnitConversionPipeStub } from '../../../../test-config/pipe-stubs';
 import { AnimationStub } from '../../../../test-config/ionic-stubs';

@@ -7,6 +7,7 @@ import { IonicModule } from '@ionic/angular';
 /* Component imports */
 import { PreferencesComponent } from './preferences.component';
 
+
 @NgModule({
   imports: [
     CommonModule,

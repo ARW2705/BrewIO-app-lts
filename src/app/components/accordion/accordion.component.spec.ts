@@ -1,8 +1,7 @@
 /* Module imports */
 import { TestBed, ComponentFixture } from '@angular/core/testing';
-import { DebugElement, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { By } from '@angular/platform-browser';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
@@ -12,7 +11,7 @@ import { AnimationsServiceStub } from '../../../../test-config/service-stubs';
 import { AnimationStub } from '../../../../test-config/ionic-stubs';
 
 /* Service imports */
-import { AnimationsService } from '../../services/animations/animations.service';
+import { AnimationsService } from '../../services/services';
 
 /* Component imports */
 import { AccordionComponent } from './accordion.component';

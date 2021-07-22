@@ -10,9 +10,7 @@ import { RecipeMaster, RecipeVariant } from '../../shared/interfaces';
 import { NoteFormPage } from '../../pages/forms/note-form/note-form.page';
 
 /* Service imports */
-import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
-import { RecipeService } from '../../services/recipe/recipe.service';
-import { ToastService } from '../../services/toast/toast.service';
+import { ErrorReportingService, RecipeService, ToastService } from '../../services/services';
 
 
 @Component({

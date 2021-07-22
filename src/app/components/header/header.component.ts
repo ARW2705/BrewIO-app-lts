@@ -13,8 +13,7 @@ import { LoginPage } from '../../pages/forms/login/login.page';
 import { SignupPage } from '../../pages/forms/signup/signup.page';
 
 /* Service Imports */
-import { ActionSheetService } from '../../services/action-sheet/action-sheet.service';
-import { UserService } from '../../services/user/user.service';
+import { ActionSheetService, UserService } from '../../services/services';
 
 
 @Component({

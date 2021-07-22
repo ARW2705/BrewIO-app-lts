@@ -6,6 +6,7 @@ import { IonicModule } from '@ionic/angular';
 /* Component imports */
 import { HeaderComponent } from './header.component';
 
+
 @NgModule({
   imports: [
     CommonModule,

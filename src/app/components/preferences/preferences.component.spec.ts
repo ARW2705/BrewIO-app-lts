@@ -23,10 +23,7 @@ import { SelectedUnits, User } from '../../shared/interfaces';
 import { CustomError } from '../../shared/types';
 
 /* Service imports */
-import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
-import { PreferencesService } from '../../services/preferences/preferences.service';
-import { ToastService } from '../../services/toast/toast.service';
-import { UserService } from '../../services/user/user.service';
+import { ErrorReportingService, PreferencesService, ToastService, UserService } from '../../services/services';
 
 /* Component imports */
 import { PreferencesComponent } from './preferences.component';

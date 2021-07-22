@@ -17,8 +17,8 @@ import { AnimationsService } from '../../services/animations/animations.service'
 export class TimerComponent implements OnInit {
   @Input() isConcurrent: boolean = false;
   @Input() onTimerAction: (actionName: string, timer: Timer) => void;
-  @Input() timer: Timer = null;
   @Input() showDescription: boolean = false;
+  @Input() timer: Timer = null;
   @ViewChild('timerControlsContainer', { read: ElementRef }) timerControlsContainer: ElementRef;
   chevronPath: string = '';
 

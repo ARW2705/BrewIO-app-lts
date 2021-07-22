@@ -6,6 +6,7 @@ import { ItemReorderEventDetail } from '@ionic/core';
 /* Interface imports */
 import { Process } from '../../shared/interfaces';
 
+
 @Component({
   selector: 'process-list',
   templateUrl: './process-list.component.html',

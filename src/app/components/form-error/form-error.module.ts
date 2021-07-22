@@ -6,6 +6,7 @@ import { IonicModule } from '@ionic/angular';
 /* Component imports */
 import { FormErrorComponent } from './form-error.component';
 
+
 @NgModule({
   imports: [
     CommonModule,

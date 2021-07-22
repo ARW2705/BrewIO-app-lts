@@ -17,10 +17,7 @@ import { CustomError } from '../../shared/types';
 import { defaultEnglishUnits, defaultMetricUnits } from '../../shared/defaults';
 
 /* Service imports */
-import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
-import { PreferencesService } from '../../services/preferences/preferences.service';
-import { ToastService } from '../../services/toast/toast.service';
-import { UserService } from '../../services/user/user.service';
+import { ErrorReportingService, PreferencesService, ToastService, UserService } from '../../services/services';
 
 
 @Component({
@@ -29,9 +26,9 @@ import { UserService } from '../../services/user/user.service';
   styleUrls: ['./preferences.component.scss']
 })
 export class PreferencesComponent implements OnInit, OnDestroy {
-  destroy$: Subject<boolean> = new Subject<boolean>();
   defaultEnglish: SelectedUnits = defaultEnglishUnits();
   defaultMetric: SelectedUnits = defaultMetricUnits();
+  destroy$: Subject<boolean> = new Subject<boolean>();
   displayUnits: object = {
     weightSmall: this.defaultEnglish.weightSmall.longName,
     weightLarge: this.defaultEnglish.weightLarge.longName,

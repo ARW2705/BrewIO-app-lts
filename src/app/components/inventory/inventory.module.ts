@@ -2,17 +2,18 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { AccordionComponentModule } from '../accordion/accordion.module';
-import { ImageFormPageModule } from '../../pages/forms/image-form/image-form.module';
 
 /* Pipe imports */
-import { FormatStockPipeModule } from '../../pipes/format-stock/format-stock.module';
-import { RoundPipeModule } from '../../pipes/round/round.module';
-import { TruncatePipeModule } from '../../pipes/truncate/truncate.module';
+import { FormatStockPipeModule, RoundPipeModule, TruncatePipeModule } from '../../pipes/pipes';
+
+/* Page imports */
+import { QuantityHelperPageModule } from '../../pages/quantity-helper/quantity-helper.module';
+import { ImageFormPageModule } from '../../pages/forms/image-form/image-form.module';
 
 /* Component imports */
 import { InventoryComponent } from './inventory.component';
-import { QuantityHelperComponentModule } from '../quantity-helper/quantity-helper.module';
+import { AccordionComponentModule } from '../accordion/accordion.module';
+
 
 @NgModule({
   imports: [
@@ -23,7 +24,7 @@ import { QuantityHelperComponentModule } from '../quantity-helper/quantity-helpe
     TruncatePipeModule,
     AccordionComponentModule,
     ImageFormPageModule,
-    QuantityHelperComponentModule
+    QuantityHelperPageModule
   ],
   declarations: [
     InventoryComponent

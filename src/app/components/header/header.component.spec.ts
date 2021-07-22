@@ -18,8 +18,7 @@ import { ActionSheetServiceStub, UserServiceStub } from '../../../../test-config
 import { User } from '../../shared/interfaces';
 
 /* Service Imports */
-import { ActionSheetService } from '../../services/action-sheet/action-sheet.service';
-import { UserService } from '../../services/user/user.service';
+import { ActionSheetService, UserService } from '../../services/services';
 
 /* Page imports */
 import { LoginPage } from '../../pages/forms/login/login.page';

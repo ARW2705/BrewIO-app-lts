@@ -6,6 +6,7 @@ import { IonicModule } from '@ionic/angular';
 /* Component imports */
 import { YeastBatchComponent } from './yeast-batch.component';
 
+
 @NgModule({
   imports: [
     CommonModule,

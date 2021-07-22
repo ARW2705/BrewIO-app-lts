@@ -1,5 +1,5 @@
 /* Module imports */
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ModalController } from '@ionic/angular';
 import { Subject, from } from 'rxjs';
@@ -15,10 +15,7 @@ import { Image, User } from '../../shared/interfaces';
 import { ImageFormPage } from '../../pages/forms/image-form/image-form.page';
 
 /* Service imports */
-import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
-import { ImageService } from '../../services/image/image.service';
-import { UserService } from '../../services/user/user.service';
-import { ToastService } from '../../services/toast/toast.service';
+import { ErrorReportingService, ImageService, ToastService, UserService } from '../../services/services';
 
 
 @Component({
@@ -27,14 +24,14 @@ import { ToastService } from '../../services/toast/toast.service';
   styleUrls: ['./profile.component.scss']
 })
 export class ProfileComponent implements OnInit, OnDestroy {
+  breweryLabelImage: Image;
   defaultImage: Image = defaultImage();
-  breweryLabelImage: Image = this.defaultImage;
-  userImage: Image = this.defaultImage;
   destroy$: Subject<boolean> = new Subject<boolean>();
   editing: string = '';
   isLoggedIn: boolean = false;
   user: User = null;
   userForm: FormGroup = null;
+  userImage: Image;
 
   constructor(
     public errorReporter: ErrorReportingService,
@@ -43,7 +40,10 @@ export class ProfileComponent implements OnInit, OnDestroy {
     public modalCtrl: ModalController,
     public toastService: ToastService,
     public userService: UserService
-  ) { }
+  ) {
+    this.breweryLabelImage = this.defaultImage;
+    this.userImage = this.defaultImage;
+  }
 
   /***** Lifecycle Hooks *****/
 

@@ -4,11 +4,11 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 
 /* Pipe imports */
-import { RatioPipeModule } from '../../pipes/ratio/ratio.module';
-import { UnitConversionPipeModule } from '../../pipes/unit-conversion/unit-conversion.module';
+import { RatioPipeModule, UnitConversionPipeModule } from '../../pipes/pipes';
 
 /* Component imports */
 import { GrainBillComponent } from './grain-bill.component';
+
 
 @NgModule({
   imports: [

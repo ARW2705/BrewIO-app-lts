@@ -2,6 +2,7 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import * as moment from 'moment';
 
+
 @Component({
   selector: 'date-button',
   templateUrl: './date-button.component.html',
@@ -9,9 +10,9 @@ import * as moment from 'moment';
 })
 export class DateButtonComponent implements OnChanges {
   @Input() date: moment.Moment;
-  @Input() isStart: boolean;
-  @Input() isProjected: boolean;
   @Input() isMonth: boolean;
+  @Input() isProjected: boolean;
+  @Input() isStart: boolean;
   svgClass: string = 'base';
 
   constructor() { }

@@ -1,8 +1,8 @@
 /* Module imports */
-import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
-import { FormGroup, FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 import { ModalController } from '@ionic/angular';
 
@@ -21,10 +21,7 @@ import { defaultImage } from '../../shared/defaults';
 import { Image, User } from '../../shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
-import { ImageService } from '../../services/image/image.service';
-import { UserService } from '../../services/user/user.service';
-import { ToastService } from '../../services/toast/toast.service';
+import { ErrorReportingService, ImageService, ToastService, UserService } from '../../services/services';
 
 /* Component imports */
 import { ProfileComponent } from './profile.component';

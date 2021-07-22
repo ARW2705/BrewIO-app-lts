@@ -11,8 +11,8 @@ import { OtherIngredients } from '../../shared/interfaces';
   styleUrls: ['./other-ingredients.component.scss'],
 })
 export class OtherIngredientsComponent {
-  @Input() otherIngredients: OtherIngredients[] = [];
   @Input() onRecipeAction: (actionName: string, options?: any[]) => void;
+  @Input() otherIngredients: OtherIngredients[] = [];
 
   constructor() { }
 

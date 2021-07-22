@@ -6,6 +6,7 @@ import { IonicModule } from '@ionic/angular';
 /* Component imports */
 import { ProcessManualComponent } from './process-manual.component';
 
+
 @NgModule({
   imports: [
     CommonModule,

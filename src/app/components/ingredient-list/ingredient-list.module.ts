@@ -4,10 +4,11 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 
 /* Pipe imports */
-import { UnitConversionPipeModule } from '../../pipes/unit-conversion/unit-conversion.module';
+import { UnitConversionPipeModule } from '../../pipes/pipes';
 
 /* Component imports */
 import { IngredientListComponent } from './ingredient-list.component';
+
 
 @NgModule({
   imports: [

@@ -18,13 +18,7 @@ import { ModalControllerStub, ModalStub } from '../../../../test-config/ionic-st
 import { Batch, ErrorReport, InventoryItem } from '../../shared/interfaces';
 
 /* Service imports */
-import { AnimationsService } from '../../services/animations/animations.service';
-import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
-import { EventService } from '../../services/event/event.service';
-import { ImageService } from '../../services/image/image.service';
-import { InventoryService } from '../../services/inventory/inventory.service';
-import { ProcessService } from '../../services/process/process.service';
-import { ToastService } from '../../services/toast/toast.service';
+import { AnimationsService, ErrorReportingService, EventService, ImageService, InventoryService, ProcessService, ToastService } from '../../services/services';
 
 /* Component imports */
 import { InventoryComponent } from './inventory.component';

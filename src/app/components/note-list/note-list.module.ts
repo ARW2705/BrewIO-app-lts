@@ -6,6 +6,7 @@ import { IonicModule } from '@ionic/angular';
 /* Component imports */
 import { NoteListComponent } from './note-list.component';
 
+
 @NgModule({
   imports: [
     CommonModule,

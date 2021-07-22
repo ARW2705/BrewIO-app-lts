@@ -1,24 +1,14 @@
 /* Module imports */
-import { Component, Input, OnInit, OnChanges, OnDestroy, AfterViewInit, ViewChild, ElementRef, Renderer2 } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { ModalController } from '@ionic/angular';
-import { Subject, from } from 'rxjs';
+import { from, Subject } from 'rxjs';
 import { finalize, take, takeUntil } from 'rxjs/operators';
 
 /* Constant imports */
-import {
-  API_VERSION,
-  BASE_URL,
-  MISSING_IMAGE_URL,
-  SELECT_OPTIONS
-} from '../../shared/constants';
+import { API_VERSION, BASE_URL, MISSING_IMAGE_URL, SELECT_OPTIONS } from '../../shared/constants';
 
 /* Interface imports */
-import {
-  Batch,
-  ErrorReport,
-  Image,
-  InventoryItem
-} from '../../shared/interfaces';
+import { Batch, ErrorReport, Image, InventoryItem } from '../../shared/interfaces';
 
 /* Type imports */
 import { CustomError } from '../../shared/types';
@@ -28,18 +18,10 @@ import { defaultImage } from '../../shared/defaults';
 
 /* Page imports */
 import { InventoryFormPage } from '../../pages/forms/inventory-form/inventory-form.page';
-
-/* Component imports */
-import { QuantityHelperComponent } from '../quantity-helper/quantity-helper.component';
+import { QuantityHelperPage } from '../../pages/quantity-helper/quantity-helper.page';
 
 /* Service imports */
-import { AnimationsService } from '../../services/animations/animations.service';
-import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
-import { EventService } from '../../services/event/event.service';
-import { ImageService } from '../../services/image/image.service';
-import { InventoryService } from '../../services/inventory/inventory.service';
-import { ProcessService } from '../../services/process/process.service';
-import { ToastService } from '../../services/toast/toast.service';
+import { AnimationsService, ErrorReportingService, EventService, ImageService, InventoryService, ProcessService, ToastService } from '../../services/services';
 
 
 @Component({
@@ -383,7 +365,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
    */
   async openQuantityHelper(item: InventoryItem): Promise<void> {
     const modal: HTMLIonModalElement = await this.modalCtrl.create({
-      component: QuantityHelperComponent,
+      component: QuantityHelperPage,
       componentProps: {
         headerText: 'reduce quantity by',
         quantity: 1

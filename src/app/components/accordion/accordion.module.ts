@@ -6,6 +6,7 @@ import { IonicModule } from '@ionic/angular';
 /* Component imports */
 import { AccordionComponent } from './accordion.component';
 
+
 @NgModule({
   imports: [
     CommonModule,
