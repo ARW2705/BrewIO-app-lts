@@ -25,7 +25,7 @@
       <ion-col class="ion-no-padding ion-align-self-center header-title">
 
         <ion-title color="light">
-          {{ title }}
+          {{ overrideTitlecase ? title : title | titlecase }}
         </ion-title>
 
       </ion-col>

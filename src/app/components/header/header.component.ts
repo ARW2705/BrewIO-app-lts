@@ -23,6 +23,7 @@ import { ActionSheetService, UserService } from '../../services/services';
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   @Input() overrideBackButton?: () => void;
+  @Input() overrideTitlecase?: boolean = false;
   @Input() rootURL?: string;
   @Input() shouldHideLoginButton: boolean = false;
   @Input() title: string;
