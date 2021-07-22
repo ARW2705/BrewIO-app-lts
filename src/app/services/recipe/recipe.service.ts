@@ -8,70 +8,19 @@ import { catchError, map, mergeMap, finalize, tap } from 'rxjs/operators';
 import { API_VERSION, BASE_URL } from '../../shared/constants';
 
 /* Interface imports */
-import {
-  Author,
-  DocumentGuard,
-  GrainBill,
-  Grains,
-  HopsSchedule,
-  Hops,
-  Image,
-  ImageRequestFormData,
-  ImageRequestMetadata,
-  OtherIngredients,
-  Process,
-  RecipeMaster,
-  RecipeVariant,
-  SyncData,
-  SyncError,
-  SyncMetadata,
-  SyncRequests,
-  SyncResponse,
-  User,
-  YeastBatch,
-  Yeast
-} from '../../shared/interfaces';
+import { Author, DocumentGuard, GrainBill, Grains, HopsSchedule, Hops, Image, ImageRequestFormData, ImageRequestMetadata, OtherIngredients, Process, RecipeMaster, RecipeVariant, SyncData, SyncError, SyncMetadata, SyncRequests, SyncResponse, User, YeastBatch, Yeast } from '../../shared/interfaces';
 
 /* Type guard imports */
-import {
-  ProcessGuardMetadata,
-  CalendarProcessGuardMetadata,
-  ManualProcessGuardMetadata,
-  TimerProcessGuardMetadata,
-  RecipeMasterGuardMetadata,
-  RecipeVariantGuardMetadata,
-  GrainBillGuardMetadata,
-  GrainsGuardMetadata,
-  HopsScheduleGuardMetadata,
-  HopsGuardMetadata,
-  YeastBatchGuardMetadata,
-  YeastGuardMetadata,
-  OtherIngredientsGuardMetadata
-} from '../../shared/type-guard-metadata';
+import { ProcessGuardMetadata, CalendarProcessGuardMetadata, ManualProcessGuardMetadata, TimerProcessGuardMetadata, RecipeMasterGuardMetadata, RecipeVariantGuardMetadata, GrainBillGuardMetadata, GrainsGuardMetadata, HopsScheduleGuardMetadata, HopsGuardMetadata, YeastBatchGuardMetadata, YeastGuardMetadata, OtherIngredientsGuardMetadata } from '../../shared/type-guard-metadata';
 
 /* Type imports */
 import { CustomError } from '../../shared/types';
-
-/* Utility function imports */
-import { getId, getIndexById, hasDefaultIdType, hasId, isMissingServerId } from '../../shared/utility-functions/id-helpers';
-import { getArrayFromSubjects, toSubjectArray } from '../../shared/utility-functions/subject-helpers';
 
 /* Default imports */
 import { defaultImage } from '../../shared/defaults';
 
 /* Service imports */
-import { ClientIdService } from '../client-id/client-id.service';
-import { ConnectionService } from '../connection/connection.service';
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
-import { EventService } from '../event/event.service';
-import { HttpErrorService } from '../http-error/http-error.service';
-import { ImageService } from '../image/image.service';
-import { LibraryService } from '../library/library.service';
-import { StorageService } from '../storage/storage.service';
-import { SyncService } from '../sync/sync.service';
-import { ToastService } from '../toast/toast.service';
-import { TypeGuardService } from '../type-guard/type-guard.service';
-import { UserService } from '../user/user.service';
+import { ConnectionService, ErrorReportingService, EventService, HttpErrorService, IdService, ImageService, LibraryService, StorageService, SyncService, ToastService, TypeGuardService, UserService, UtilityService } from '../services';
 
 
 @Injectable({
@@ -86,11 +35,11 @@ export class RecipeService {
   syncKey: string = 'recipe';
 
   constructor(
-    public http: HttpClient,
-    public clientIdService: ClientIdService,
     public connectionService: ConnectionService,
     public errorReporter: ErrorReportingService,
     public event: EventService,
+    public http: HttpClient,
+    public idService: IdService,
     public httpError: HttpErrorService,
     public imageService: ImageService,
     public libraryService: LibraryService,
@@ -98,7 +47,8 @@ export class RecipeService {
     public syncService: SyncService,
     public toastService: ToastService,
     public typeGuard: TypeGuardService,
-    public userService: UserService
+    public userService: UserService,
+    public utilService: UtilityService
   ) {
     this.registerEvents();
   }
@@ -215,7 +165,7 @@ export class RecipeService {
       const user$: BehaviorSubject<User> = this.userService.getUser();
       const user: User = user$.value;
 
-      if (hasId(user, master.owner)) {
+      if (this.idService.hasId(user, master.owner)) {
         return of({
           username: user.username,
           userImage: user.userImage,
@@ -223,7 +173,7 @@ export class RecipeService {
         });
       }
 
-      if (hasDefaultIdType(searchId)) {
+      if (this.idService.hasDefaultIdType(searchId)) {
         searchId = master._id;
         if (searchId === undefined) {
           return of(author);
@@ -414,7 +364,7 @@ export class RecipeService {
     const recipeMaster: RecipeMaster = recipeMaster$.value;
     const recipeVariant: RecipeVariant = recipeMaster.variants
       .find((variant: RecipeVariant): boolean => {
-        return hasId(variant, variantId);
+        return this.idService.hasId(variant, variantId);
       });
 
     if (!recipeVariant) {
@@ -753,7 +703,7 @@ export class RecipeService {
           return;
         }
 
-        if (hasDefaultIdType(recipeMaster.owner)) {
+        if (this.idService.hasDefaultIdType(recipeMaster.owner)) {
           const user$: BehaviorSubject<User> = this.userService.getUser();
 
           if (user$ === undefined || user$.value._id === undefined) {
@@ -764,13 +714,13 @@ export class RecipeService {
           recipeMaster.owner = user$.value._id;
         }
 
-        if (syncFlag.method === 'update' && isMissingServerId(recipeMaster._id)) {
+        if (syncFlag.method === 'update' && this.idService.isMissingServerId(recipeMaster._id)) {
           const errMsg: string = `Recipe with id: ${recipeMaster.cid} is missing its server id`;
           errors.push(this.syncService.constructSyncError(errMsg));
         } else if (syncFlag.method === 'create') {
           recipeMaster['forSync'] = true;
           requests.push(this.configureBackgroundRequest<RecipeMaster>('post', true, recipeMaster, null));
-        } else if (syncFlag.method === 'update' && !isMissingServerId(recipeMaster._id)) {
+        } else if (syncFlag.method === 'update' && !this.idService.isMissingServerId(recipeMaster._id)) {
           requests.push(this.configureBackgroundRequest<RecipeMaster>('patch', true, recipeMaster, null));
         } else {
           const errMsg = `Sync error: Unknown sync flag method '${syncFlag.method}'`;
@@ -940,7 +890,7 @@ export class RecipeService {
 
     const master: RecipeMaster = master$.value;
 
-    variant.owner = getId(master);
+    variant.owner = this.idService.getId(master);
     master.variants.push(variant);
 
     if (variant.isMaster) {
@@ -964,7 +914,7 @@ export class RecipeService {
   canSendRequest(ids?: string[]): boolean {
     let idsOk: boolean = !ids;
     if (ids && ids.length) {
-      idsOk = ids.every((id: string): boolean => id && !hasDefaultIdType(id));
+      idsOk = ids.every((id: string): boolean => id && !this.idService.hasDefaultIdType(id));
     }
     return this.connectionService.isConnected() && this.userService.isLoggedIn() && idsOk;
   }
@@ -994,7 +944,7 @@ export class RecipeService {
   formatNewRecipeMaster(newMasterValues: object): RecipeMaster {
     const user: User = this.userService.getUser().value;
 
-    if (getId(user) === undefined) {
+    if (this.idService.getId(user) === undefined) {
       throw new CustomError(
         'RecipeError',
         'Client Validation Error: Missing User ID',
@@ -1003,7 +953,7 @@ export class RecipeService {
       );
     }
 
-    const recipeMasterId: string = this.clientIdService.getNewId();
+    const recipeMasterId: string = this.idService.getNewId();
     const initialRecipe: RecipeVariant = newMasterValues['variant'];
 
     this.setRecipeIds(initialRecipe);
@@ -1018,7 +968,7 @@ export class RecipeService {
       style: masterData['style'],
       notes: masterData['notes'],
       master: initialRecipe.cid,
-      owner: getId(user),
+      owner: this.idService.getId(user),
       isPublic: false,
       isFriendsOnly: false,
       variants: [ initialRecipe ],
@@ -1102,7 +1052,7 @@ export class RecipeService {
   getRecipeMasterById(masterId: string): BehaviorSubject<RecipeMaster> {
     return this.getMasterList().value
       .find((recipeMaster$: BehaviorSubject<RecipeMaster>): boolean => {
-        return hasId(recipeMaster$.value, masterId);
+        return this.idService.hasId(recipeMaster$.value, masterId);
       });
   }
 
@@ -1134,7 +1084,7 @@ export class RecipeService {
     }
     const master: RecipeMaster = master$.value;
 
-    return of(master.variants.find((variant: RecipeVariant): boolean => hasId(variant, variantId)));
+    return of(master.variants.find((variant: RecipeVariant): boolean => this.idService.hasId(variant, variantId)));
   }
 
   /**
@@ -1163,7 +1113,7 @@ export class RecipeService {
    * @return: none
    */
   mapRecipeMasterArrayToSubjects(recipeMasterList: RecipeMaster[]): void {
-    this.getMasterList().next(toSubjectArray<RecipeMaster>(recipeMasterList));
+    this.getMasterList().next(this.utilService.toSubjectArray<RecipeMaster>(recipeMasterList));
   }
 
   /**
@@ -1182,7 +1132,7 @@ export class RecipeService {
       return throwError(this.getMissingError(message, additionalMessage));
     }
     const master: RecipeMaster = master$.value;
-    const recipeIndex: number = getIndexById(variantId, master.variants);
+    const recipeIndex: number = this.idService.getIndexById(variantId, master.variants);
 
     if (recipeIndex === -1) {
       const message: string = 'An error occurred trying to remove variant from recipe master: missing recipe variant';
@@ -1213,9 +1163,9 @@ export class RecipeService {
   removeRecipeMasterFromList(masterId: string): Observable<boolean> {
     const masterList: BehaviorSubject<RecipeMaster>[] = this.getMasterList().value;
 
-    const indexToRemove: number = getIndexById(
+    const indexToRemove: number = this.idService.getIndexById(
       masterId,
-      getArrayFromSubjects(masterList)
+      this.utilService.getArrayFromSubjects(masterList)
     );
 
     if (indexToRemove === -1) {
@@ -1279,7 +1229,7 @@ export class RecipeService {
    * @return: none
    */
   setRecipeIds(variant: RecipeVariant): void {
-    variant.cid = this.clientIdService.getNewId();
+    variant.cid = this.idService.getNewId();
     if (variant.grains.length) {
       this.setRecipeNestedIds<GrainBill>(variant.grains);
     }
@@ -1305,7 +1255,7 @@ export class RecipeService {
    * @return: none
    */
   setRecipeNestedIds<T>(itemArray: T[]): void {
-    itemArray.forEach((item: T): void => { item['cid'] = this.clientIdService.getNewId(); });
+    itemArray.forEach((item: T): void => { item['cid'] = this.idService.getNewId(); });
   }
 
   /**
@@ -1374,7 +1324,7 @@ export class RecipeService {
     }
     const master: RecipeMaster = master$.value;
 
-    const recipeIndex: number = getIndexById(variantId, master.variants);
+    const recipeIndex: number = this.idService.getIndexById(variantId, master.variants);
     if (recipeIndex === -1) {
       const message: string = 'An error occurred trying to update variant from recipe master: missing recipe variant';
       const additionalMessage: string = `Recipe variant with id ${variantId} from master with id ${masterId} not found`;
@@ -1421,7 +1371,7 @@ export class RecipeService {
     const isRecipeMaster: boolean = recipe && recipe.hasOwnProperty('variants');
     if (isRecipeMaster && !this.isSafeRecipeMaster(recipe)) {
       throw this.getUnsafeRecipeError(recipe, 'master');
-    } else if (!this.isSafeRecipeVariant(recipe)) {
+    } else if (!isRecipeMaster && !this.isSafeRecipeVariant(recipe)) {
       throw this.getUnsafeRecipeError(recipe, 'variant');
     }
   }

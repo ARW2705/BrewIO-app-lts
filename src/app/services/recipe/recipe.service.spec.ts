@@ -8,79 +8,17 @@ import { BehaviorSubject, Observable, Subject, forkJoin, of, throwError } from '
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import {
-  mockAuthor,
-  mockOtherIngredients,
-  mockGrainBill,
-  mockHopsSchedule,
-  mockImage,
-  mockImageRequestMetadata,
-  mockRecipeMasterActive,
-  mockRecipeMasterInactive,
-  mockRecipeVariantComplete,
-  mockRecipeVariantIncomplete,
-  mockErrorResponse,
-  mockProcessSchedule,
-  mockStyles,
-  mockUser,
-  mockSyncError,
-  mockSyncMetadata,
-  mockSyncResponse,
-  mockYeastBatch
-} from '../../../../test-config/mock-models';
-
-import {
-  ClientIdServiceStub,
-  ConnectionServiceStub,
-  ErrorReportingServiceStub,
-  EventServiceStub,
-  HttpErrorServiceStub,
-  ImageServiceStub,
-  LibraryServiceStub,
-  StorageServiceStub,
-  SyncServiceStub,
-  ToastServiceStub,
-  TypeGuardServiceStub,
-  UserServiceStub
-} from '../../../../test-config/service-stubs';
+import { mockAuthor, mockOtherIngredients, mockGrainBill, mockHopsSchedule, mockImage, mockImageRequestMetadata, mockRecipeMasterActive, mockRecipeMasterInactive, mockRecipeVariantComplete, mockRecipeVariantIncomplete, mockErrorResponse, mockProcessSchedule, mockStyles, mockUser, mockSyncError, mockSyncMetadata, mockSyncResponse, mockYeastBatch } from '../../../../test-config/mock-models';
+import { IdServiceStub, ConnectionServiceStub, ErrorReportingServiceStub, EventServiceStub, HttpErrorServiceStub, ImageServiceStub, LibraryServiceStub, StorageServiceStub, SyncServiceStub, ToastServiceStub, TypeGuardServiceStub, UserServiceStub, UtilityServiceStub } from '../../../../test-config/service-stubs';
 
 /* Constants imports */
 import { API_VERSION, BASE_URL } from '../../shared/constants';
 
 /* Interface imports */
-import {
-  Author,
-  GrainBill,
-  HopsSchedule,
-  Image,
-  ImageRequestMetadata,
-  OtherIngredients,
-  Process,
-  RecipeMaster,
-  RecipeVariant,
-  Style,
-  SyncData,
-  SyncError,
-  SyncRequests,
-  SyncResponse,
-  User,
-  YeastBatch,
-} from '../../shared/interfaces';
+import { Author, GrainBill, HopsSchedule, Image, ImageRequestMetadata, OtherIngredients, Process, RecipeMaster, RecipeVariant, Style, SyncData, SyncError, SyncRequests, SyncResponse, User, YeastBatch, } from '../../shared/interfaces';
 
 /* Type guard imports */
-import {
-  ProcessGuardMetadata,
-  CalendarProcessGuardMetadata,
-  ManualProcessGuardMetadata,
-  TimerProcessGuardMetadata,
-  GrainBillGuardMetadata,
-  GrainsGuardMetadata,
-  HopsScheduleGuardMetadata,
-  HopsGuardMetadata,
-  YeastBatchGuardMetadata,
-  YeastGuardMetadata,
-  OtherIngredientsGuardMetadata
-} from '../../shared/type-guard-metadata';
+import { ProcessGuardMetadata, CalendarProcessGuardMetadata, ManualProcessGuardMetadata, TimerProcessGuardMetadata, GrainBillGuardMetadata, GrainsGuardMetadata, HopsScheduleGuardMetadata, HopsGuardMetadata, YeastBatchGuardMetadata, YeastGuardMetadata, OtherIngredientsGuardMetadata } from '../../shared/type-guard-metadata';
 
 /* Type imports */
 import { CustomError } from '../../shared/types';
@@ -90,18 +28,7 @@ import { defaultImage } from '../../shared/defaults';
 
 /* Service imports */
 import { RecipeService } from './recipe.service';
-import { ClientIdService } from '../client-id/client-id.service';
-import { ConnectionService } from '../connection/connection.service';
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
-import { EventService } from '../event/event.service';
-import { HttpErrorService } from '../http-error/http-error.service';
-import { ImageService } from '../image/image.service';
-import { LibraryService } from '../library/library.service';
-import { StorageService } from '../storage/storage.service';
-import { SyncService } from '../sync/sync.service';
-import { ToastService } from '../toast/toast.service';
-import { TypeGuardService } from '../type-guard/type-guard.service';
-import { UserService } from '../user/user.service';
+import { ConnectionService, ErrorReportingService, EventService, HttpErrorService, IdService, ImageService, LibraryService, StorageService, SyncService, ToastService, TypeGuardService, UserService, UtilityService } from '../services';
 
 
 describe('RecipeService', (): void => {
@@ -121,7 +48,7 @@ describe('RecipeService', (): void => {
       imports: [ HttpClientTestingModule ],
       providers: [
         RecipeService,
-        { provide: ClientIdService, useClass: ClientIdServiceStub },
+        { provide: IdService, useClass: IdServiceStub },
         { provide: ConnectionService, useClass: ConnectionServiceStub },
         { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: EventService, useClass: EventServiceStub },
@@ -132,7 +59,8 @@ describe('RecipeService', (): void => {
         { provide: SyncService, useClass: SyncServiceStub },
         { provide: ToastService, useClass: ToastServiceStub },
         { provide: TypeGuardService, useClass: TypeGuardServiceStub },
-        { provide: UserService, useClass: UserServiceStub }
+        { provide: UserService, useClass: UserServiceStub },
+        { provide: UtilityService, useClass: UtilityServiceStub }
       ]
     });
     injector = getTestBed();
@@ -389,6 +317,14 @@ describe('RecipeService', (): void => {
         .fn()
         .mockReturnValue(new BehaviorSubject<User>(_mockUser));
 
+      recipeService.idService.hasId = jest
+        .fn()
+        .mockReturnValue(false);
+
+      recipeService.idService.hasDefaultIdType = jest
+        .fn()
+        .mockReturnValue(true);
+
       recipeService.getPublicAuthorByRecipeId('0123456789012')
         .subscribe(
           (author: Author): void => {
@@ -443,6 +379,10 @@ describe('RecipeService', (): void => {
         .fn()
         .mockReturnValue(new BehaviorSubject<User>(_mockUser));
 
+      recipeService.idService.hasId = jest
+        .fn()
+        .mockReturnValue(true);
+
       recipeService.getPublicAuthorByRecipeId('')
         .subscribe(
           (author: Author): void => {
@@ -475,6 +415,14 @@ describe('RecipeService', (): void => {
         .fn()
         .mockReturnValue(new BehaviorSubject<User>(_mockUser));
 
+      recipeService.idService.hasId = jest
+        .fn()
+        .mockReturnValue(false);
+
+      recipeService.idService.hasDefaultIdType = jest
+        .fn()
+        .mockReturnValue(true);
+
       recipeService.getPublicAuthorByRecipeId('0123456789012')
         .subscribe(
           (author: Author): void => {
@@ -505,6 +453,14 @@ describe('RecipeService', (): void => {
       recipeService.userService.getUser = jest
         .fn()
         .mockReturnValue(new BehaviorSubject<User>(_mockUser));
+
+      recipeService.idService.hasId = jest
+        .fn()
+        .mockReturnValue(false);
+
+      recipeService.idService.hasDefaultIdType = jest
+        .fn()
+        .mockReturnValue(true);
 
       recipeService.getPublicAuthorByRecipeId('0123456789012')
         .subscribe(
@@ -941,6 +897,12 @@ describe('RecipeService', (): void => {
       recipeService.removeRecipeFromMasterInList = jest
         .fn()
         .mockReturnValue(of(true));
+
+      recipeService.idService.hasId = jest
+        .fn()
+        .mockReturnValueOnce(false)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(true);
 
       recipeService.errorReporter.handleGenericCatchError = jest.fn();
 
@@ -1573,6 +1535,15 @@ describe('RecipeService', (): void => {
         .mockReturnValueOnce(of(_mockRecipeMasterNeedsUser))
         .mockReturnValueOnce(of(_mockRecipeMasterActive));
 
+      recipeService.idService.hasDefaultIdType = jest
+        .fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+
+      recipeService.idService.isMissingServerId = jest
+        .fn()
+        .mockReturnValue(false);
+
       const syncRequests: SyncRequests<RecipeMaster> = recipeService.generateSyncRequests();
       const requests: Observable<HttpErrorResponse | RecipeMaster | SyncData<RecipeMaster>>[] = syncRequests.syncRequests;
       const errors: SyncError[] = syncRequests.syncErrors;
@@ -1630,6 +1601,17 @@ describe('RecipeService', (): void => {
       recipeService.userService.getUser = jest
         .fn()
         .mockReturnValue(undefined);
+
+      recipeService.idService.hasDefaultIdType = jest
+        .fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false)
+        .mockReturnValueOnce(false);
+
+      recipeService.idService.isMissingServerId = jest
+        .fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
 
       const syncRequests: SyncRequests<RecipeMaster> = recipeService.generateSyncRequests();
       const requests: Observable<HttpErrorResponse | RecipeMaster | SyncData<RecipeMaster>>[] = syncRequests.syncRequests;
@@ -1949,6 +1931,10 @@ describe('RecipeService', (): void => {
       recipeService.updateRecipeStorage = jest
         .fn();
 
+      recipeService.idService.getId = jest
+        .fn()
+        .mockReturnValue('');
+
       expect(_mockRecipeMasterActive$.value.variants.length).toEqual(2);
 
       recipeService.addRecipeVariantToMasterInList(_mockRecipeMasterActive.cid, _mockRecipeVariantIncomplete)
@@ -1995,6 +1981,10 @@ describe('RecipeService', (): void => {
         .mockReturnValueOnce(true)
         .mockReturnValueOnce(false);
 
+      recipeService.idService.hasDefaultIdType = jest
+        .fn()
+        .mockReturnValue(false);
+
       expect(recipeService.canSendRequest(['1a2b3c4d5e', '6f7g8h9i10j'])).toBe(true);
       expect(recipeService.canSendRequest()).toBe(false);
     });
@@ -2016,12 +2006,16 @@ describe('RecipeService', (): void => {
         .fn()
         .mockReturnValue(_mockUser$);
 
-      recipeService.clientIdService.getNewId = jest
+      recipeService.idService.getNewId = jest
         .fn()
         .mockReturnValue('219876543210');
 
       recipeService.setRecipeIds = jest
         .fn();
+
+      recipeService.idService.getId = jest
+        .fn()
+        .mockReturnValue('test-id');
 
       const formatted: RecipeMaster = recipeService.formatNewRecipeMaster({
         master: masterValues,
@@ -2051,6 +2045,10 @@ describe('RecipeService', (): void => {
       recipeService.userService.getUser = jest
         .fn()
         .mockReturnValue(_mockUser$);
+
+      recipeService.idService.getId = jest
+        .fn()
+        .mockReturnValue(undefined);
 
       const _mockError: CustomError = new CustomError(
         'RecipeError',
@@ -2138,6 +2136,12 @@ describe('RecipeService', (): void => {
         .fn()
         .mockReturnValue(list$);
 
+      recipeService.idService.hasId = jest
+        .fn()
+        .mockReturnValueOnce(false)
+        .mockReturnValueOnce(true)
+        .mockReturnValue(false);
+
       expect(recipeService.getRecipeMasterById(_mockRecipeMasterInactive.cid).value).toStrictEqual(_mockRecipeMasterInactive);
       expect(recipeService.getRecipeMasterById('not-found')).toBeUndefined();
     });
@@ -2162,6 +2166,11 @@ describe('RecipeService', (): void => {
       recipeService.getRecipeMasterById = jest
         .fn()
         .mockReturnValue(_mockRecipeMasterActive$);
+
+      recipeService.idService.hasId = jest
+        .fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
 
       forkJoin(
         recipeService.getRecipeVariantById(_mockRecipeMasterActive.cid, _mockRecipeVariantComplete.cid),
@@ -2206,7 +2215,7 @@ describe('RecipeService', (): void => {
       expect(recipeService.isRecipeProcessPresent(_mockRecipeVariantIncomplete)).toBe(false);
     });
 
-    test('should map an array of recipe masters to an an array of master subjects', (): void => {
+    test('should map an array of recipe masters to an array of master subjects', (): void => {
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
       const _mockRecipeMasterInactive: RecipeMaster = mockRecipeMasterInactive();
       const list$: BehaviorSubject<BehaviorSubject<RecipeMaster>[]> = new BehaviorSubject<BehaviorSubject<RecipeMaster>[]>([]);
@@ -2214,6 +2223,13 @@ describe('RecipeService', (): void => {
       recipeService.getMasterList = jest
         .fn()
         .mockReturnValue(list$);
+
+      recipeService.utilService.toSubjectArray = jest
+        .fn()
+        .mockReturnValue([
+          new BehaviorSubject<RecipeMaster>(_mockRecipeMasterActive),
+          new BehaviorSubject<RecipeMaster>(_mockRecipeMasterInactive)
+        ]);
 
       recipeService.mapRecipeMasterArrayToSubjects([_mockRecipeMasterActive, _mockRecipeMasterInactive]);
 
@@ -2240,6 +2256,10 @@ describe('RecipeService', (): void => {
 
       recipeService.updateRecipeStorage = jest
         .fn();
+
+      recipeService.idService.getIndexById = jest
+        .fn()
+        .mockReturnValue(0);
 
       expect(_mockRecipeMasterActive.variants.length).toEqual(2);
       expect(_mockRecipeMasterActive.variants.find((variant: RecipeVariant): boolean => variant.cid === _mockRecipeVariantComplete.cid)).toBeDefined();
@@ -2288,13 +2308,17 @@ describe('RecipeService', (): void => {
         );
     });
 
-    test('should get an error trying to remove a recipe variant with a missing variant', (done: jest.DoneCallback): void => {
+    test('should get an error trying to remove a recipe variant from master in list with a missing variant', (done: jest.DoneCallback): void => {
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
       const _mockRecipeMasterActive$: BehaviorSubject<RecipeMaster> = new BehaviorSubject<RecipeMaster>(_mockRecipeMasterActive);
 
       recipeService.getRecipeMasterById = jest
         .fn()
         .mockReturnValue(_mockRecipeMasterActive$);
+
+      recipeService.idService.getIndexById = jest
+        .fn()
+        .mockReturnValue(-1);
 
       recipeService.removeRecipeFromMasterInList('master-id', 'variant-id')
         .subscribe(
@@ -2329,6 +2353,10 @@ describe('RecipeService', (): void => {
       recipeService.updateRecipeStorage = jest
         .fn();
 
+      recipeService.idService.getIndexById = jest
+        .fn()
+        .mockReturnValue(1);
+
       recipeService.removeRecipeMasterFromList(_mockRecipeMasterInactive.cid)
         .subscribe(
           (): void => {
@@ -2350,6 +2378,10 @@ describe('RecipeService', (): void => {
       recipeService.getMasterList = jest
         .fn()
         .mockReturnValue(list$);
+
+      recipeService.idService.getIndexById = jest
+        .fn()
+        .mockReturnValue(-1);
 
       recipeService.removeRecipeMasterFromList('master-id')
         .subscribe(
@@ -2412,7 +2444,7 @@ describe('RecipeService', (): void => {
       _mockRecipeVariantComplete.cid = '';
       _mockRecipeVariantComplete.otherIngredients = _mockOtherIngredients;
 
-      recipeService.clientIdService.getNewId = jest
+      recipeService.idService.getNewId = jest
         .fn()
         .mockReturnValue('0000000000000');
 
@@ -2437,7 +2469,7 @@ describe('RecipeService', (): void => {
       _mockProcessSchedule.forEach((process: Process): void => { process.cid = ''; });
 
       let id: number = 0;
-      recipeService.clientIdService.getNewId = jest
+      recipeService.idService.getNewId = jest
         .fn()
         .mockImplementation((): string => `${id++}`);
 
@@ -2572,6 +2604,10 @@ describe('RecipeService', (): void => {
       recipeService.updateRecipeStorage = jest
         .fn();
 
+      recipeService.idService.getIndexById = jest
+        .fn()
+        .mockReturnValue(1);
+
       const setSpy: jest.SpyInstance = jest.spyOn(recipeService, 'setRecipeAsMaster');
 
       recipeService.updateRecipeVariantOfMasterInList(_mockRecipeMasterActive.cid, _mockRecipeVariantIncomplete.cid, _mockRecipeVariantIncomplete)
@@ -2610,6 +2646,10 @@ describe('RecipeService', (): void => {
 
       recipeService.updateRecipeStorage = jest
         .fn();
+
+      recipeService.idService.getIndexById = jest
+        .fn()
+        .mockReturnValue(0);
 
       const removeSpy: jest.SpyInstance = jest.spyOn(recipeService, 'removeRecipeAsMaster');
 
@@ -2655,6 +2695,10 @@ describe('RecipeService', (): void => {
         .fn()
         .mockReturnValue(_mockRecipeMasterActive$);
 
+      recipeService.idService.getIndexById = jest
+        .fn()
+        .mockReturnValue(-1);
+
       recipeService.updateRecipeVariantOfMasterInList(_mockRecipeMasterActive.cid, 'variant-id', {})
         .subscribe(
           (results: any): void => {
@@ -2690,8 +2734,7 @@ describe('RecipeService', (): void => {
       recipeService.isSafeRecipeVariant = jest
         .fn()
         .mockReturnValueOnce(true)
-        .mockReturnValueOnce(true)
-        .mockReturnValue(false);
+        .mockReturnValueOnce(false);
 
       recipeService.getUnsafeRecipeError = jest
         .fn()
