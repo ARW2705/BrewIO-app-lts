@@ -5,11 +5,7 @@ import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
 
 /* Service imports */
-import { InventoryService } from './services/inventory/inventory.service';
-import { LibraryService } from './services/library/library.service';
-import { ProcessService } from './services/process/process.service';
-import { RecipeService } from './services/recipe/recipe.service';
-import { UserService } from './services/user/user.service';
+import { InventoryService, LibraryService, ProcessService, RecipeService, UserService } from './services/services';
 
 
 @Component({
@@ -23,13 +19,13 @@ export class AppComponent {
    * them here. They will be called in sequence starting from user service
    */
   constructor(
-    public platform: Platform,
-    public splashScreen: SplashScreen,
-    public statusBar: StatusBar,
     public inventoryService: InventoryService,
     public libraryService: LibraryService,
+    public platform: Platform,
     public processService: ProcessService,
     public recipeService: RecipeService,
+    public splashScreen: SplashScreen,
+    public statusBar: StatusBar,
     public userService: UserService
   ) {
     this.libraryService.fetchAllLibraries();

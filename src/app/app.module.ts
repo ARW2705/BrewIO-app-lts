@@ -23,35 +23,39 @@ import { ImageResizer } from '@ionic-native/image-resizer/ngx';
 /* App Modules */
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { ErrorReportComponentModule } from './components/error-report/error-report.module';
 
 /* Services */
-import { ActionSheetService } from './services/action-sheet/action-sheet.service';
-import { AnimationsService } from './services/animations/animations.service';
-import { AuthorizeInterceptor, ErrorInterceptor } from './services/interceptor/interceptor.service';
-import { BackgroundModeService } from './services/background-mode/background-mode.service';
-import { CalculationsService } from './services/calculations/calculations.service';
-import { ClientErrorService } from './services/client-error/client-error.service';
-import { ClientIdService } from './services/client-id/client-id.service';
-import { ConnectionService } from './services/connection/connection.service';
-import { DeviceService } from './services/device/device.service';
-import { EventService } from './services/event/event.service';
-import { FileService } from './services/file/file.service';
-import { FormValidationService } from './services/form-validation/form-validation.service';
-import { InventoryService } from './services/inventory/inventory.service';
-import { LibraryService } from './services/library/library.service';
-import { LocalNotificationService } from './services/local-notification/local-notification.service';
-import { LoggingService } from './services/logging/logging.service';
-import { PreferencesService } from './services/preferences/preferences.service';
-import { HttpErrorService } from './services/http-error/http-error.service';
-import { ProcessService } from './services/process/process.service';
-import { RecipeService } from './services/recipe/recipe.service';
-import { StorageService } from './services/storage/storage.service';
-import { SyncService } from './services/sync/sync.service';
-import { TimerService } from './services/timer/timer.service';
-import { ToastService } from './services/toast/toast.service';
-import { TypeGuardService } from './services/type-guard/type-guard.service';
-import { UserService } from './services/user/user.service';
+import {
+  ActionSheetService,
+  AnimationsService,
+  AuthorizeInterceptor,
+  BackgroundModeService,
+  CalculationsService,
+  ClientErrorService,
+  ConnectionService,
+  DeviceService,
+  ErrorInterceptor,
+  ErrorReportingService,
+  EventService,
+  FileService,
+  FormValidationService,
+  HttpErrorService,
+  IdService,
+  InventoryService,
+  LibraryService,
+  LocalNotificationService,
+  LoggingService,
+  PreferencesService,
+  ProcessService,
+  RecipeService,
+  StorageService,
+  SyncService,
+  TimerService,
+  ToastService,
+  TypeGuardService,
+  UserService,
+  UtilityService
+} from './services/services';
 
 
 @NgModule({
@@ -66,8 +70,7 @@ import { UserService } from './services/user/user.service';
       scrollAssist: false,
       scrollPadding: false
     }),
-    IonicStorageModule.forRoot(),
-    ErrorReportComponentModule
+    IonicStorageModule.forRoot()
   ],
   providers: [
     Camera,
@@ -87,10 +90,11 @@ import { UserService } from './services/user/user.service';
     AnimationsService,
     BackgroundModeService,
     CalculationsService,
-    ClientIdService,
+    IdService,
     ConnectionService,
     DeviceService,
     { provide: ErrorHandler, useClass: ClientErrorService },
+    ErrorReportingService,
     EventService,
     FileService,
     FormValidationService,
@@ -108,6 +112,7 @@ import { UserService } from './services/user/user.service';
     ToastService,
     TypeGuardService,
     UserService,
+    UtilityService,
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthorizeInterceptor,

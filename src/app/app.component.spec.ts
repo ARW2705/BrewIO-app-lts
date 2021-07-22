@@ -13,11 +13,7 @@ import { RecipeServiceStub, InventoryServiceStub, LibraryServiceStub, ProcessSer
 import { DomStub, PlatformDevStub, StatusBarStub, SplashScreenStub, StorageStub } from '../../test-config/ionic-stubs';
 
 /* Service imports */
-import { InventoryService } from './services/inventory/inventory.service';
-import { LibraryService } from './services/library/library.service';
-import { ProcessService } from './services/process/process.service';
-import { RecipeService } from './services/recipe/recipe.service';
-import { UserService } from './services/user/user.service';
+import { InventoryService, LibraryService, ProcessService, RecipeService, UserService } from './services/services';
 
 /* Component imports */
 import { AppComponent } from './app.component';
