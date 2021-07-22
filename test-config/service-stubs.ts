@@ -1,7 +1,7 @@
 export { ActionSheetServiceStub } from './service-stubs/action-sheet-stub.service';
 export { BackgroundModeServiceStub } from './service-stubs/background-mode-stub.service';
 export { CalculationsServiceStub } from './service-stubs/calculations-stub.service';
-export { ClientIdServiceStub } from './service-stubs/client-id-stub.service';
+export { IdServiceStub } from './service-stubs/id-stub.service';
 export { ConnectionServiceStub } from './service-stubs/connection-stub.service';
 export { CustomErrorServiceStub } from './service-stubs/custom-error-stub.service';
 export { DeviceServiceStub } from './service-stubs/device-stub.service';
@@ -25,3 +25,4 @@ export { UserServiceStub } from './service-stubs/user-stub.service';
 export { AnimationsServiceStub } from './service-stubs/animations-stub.service';
 export { FormValidationServiceStub } from './service-stubs/form-validation-stub.service';
 export { TypeGuardServiceStub } from './service-stubs/type-guard-stub.service';
+export { UtilityServiceStub } from './service-stubs/utility-stub.service';
