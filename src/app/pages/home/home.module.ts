@@ -11,6 +11,7 @@ import { HeaderComponentModule } from '../../components/header/header.module';
 import { InventoryComponentModule } from '../../components/inventory/inventory.module';
 
 /* Page imports */
+import { ErrorReportPageModule } from '../error-report/error-report.module';
 import { HomePage } from './home.page';
 import { LoginPageModule } from '../forms/login/login.module';
 import { SignupPageModule } from '../forms/signup/signup.module';
@@ -19,6 +20,7 @@ import { SignupPageModule } from '../forms/signup/signup.module';
 @NgModule({
   imports: [
     CommonModule,
+    ErrorReportPageModule,
     LoginPageModule,
     SignupPageModule,
     IonicModule,
