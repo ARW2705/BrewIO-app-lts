@@ -15,13 +15,9 @@ import {
 /* Type imports */
 import { CustomError } from '../../shared/types';
 
-/* Utility imports */
-import { hasDefaultIdType } from '../../shared/utility-functions/id-helpers';
-
 /* Service imports */
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
-import { StorageService } from '../storage/storage.service';
-import { TypeGuardService } from '../type-guard/type-guard.service';
+import { ErrorReportingService, IdService, StorageService, TypeGuardService } from '../services';
+
 
 @Injectable({
   providedIn: 'root'
@@ -33,6 +29,7 @@ export class SyncService {
 
   constructor(
     public errorReporter: ErrorReportingService,
+    public idService: IdService,
     public storageService: StorageService,
     public typeGuard: TypeGuardService
   ) {
@@ -69,7 +66,7 @@ export class SyncService {
           return syncFlag.docId === metadata.docId;
         });
 
-      if (currentFlagIndex === -1 && !hasDefaultIdType(metadata.docId)) {
+      if (currentFlagIndex === -1 && !this.idService.hasDefaultIdType(metadata.docId)) {
         this.syncFlags.push(metadata);
       }
     } else if (metadata.method === 'delete') {

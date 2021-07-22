@@ -7,30 +7,15 @@ import { Observable, forkJoin, of, throwError } from 'rxjs';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import {
-  mockErrorResponse,
-  mockInventoryItem,
-  mockSyncMetadata
-} from '../../../../test-config/mock-models';
-import {
-  ErrorReportingServiceStub,
-  StorageServiceStub,
-  TypeGuardServiceStub
-} from '../../../../test-config/service-stubs';
+import { mockErrorResponse, mockInventoryItem, mockSyncMetadata } from '../../../../test-config/mock-models';
+import { ErrorReportingServiceStub, IdServiceStub, StorageServiceStub, TypeGuardServiceStub } from '../../../../test-config/service-stubs';
 
 /* Interface imports */
-import {
-  InventoryItem,
-  SyncError,
-  SyncMetadata,
-  SyncResponse
-} from '../../shared/interfaces';
+import { InventoryItem, SyncError, SyncMetadata, SyncResponse } from '../../shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
-import { StorageService } from '../storage/storage.service';
 import { SyncService } from './sync.service';
-import { TypeGuardService } from '../type-guard/type-guard.service';
+import { ErrorReportingService, IdService, StorageService, TypeGuardService } from '../services';
 
 
 describe('SyncService', (): void => {
@@ -43,6 +28,7 @@ describe('SyncService', (): void => {
       providers: [
         SyncService,
         { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
+        { provide: IdService, useClass: IdServiceStub },
         { provide: StorageService, useClass: StorageServiceStub },
         { provide: TypeGuardService, useClass: TypeGuardServiceStub }
       ]
@@ -85,6 +71,10 @@ describe('SyncService', (): void => {
 
     syncService.updateStorage = jest
       .fn();
+
+    syncService.idService.hasDefaultIdType = jest
+      .fn()
+      .mockReturnValue(false);
 
     expect(syncService.syncFlags.length).toEqual(0);
 
