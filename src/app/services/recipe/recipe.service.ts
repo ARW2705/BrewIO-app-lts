@@ -8,10 +8,10 @@ import { catchError, map, mergeMap, finalize, tap } from 'rxjs/operators';
 import { API_VERSION, BASE_URL } from '../../shared/constants';
 
 /* Interface imports */
-import { Author, DocumentGuard, GrainBill, Grains, HopsSchedule, Hops, Image, ImageRequestFormData, ImageRequestMetadata, OtherIngredients, Process, RecipeMaster, RecipeVariant, SyncData, SyncError, SyncMetadata, SyncRequests, SyncResponse, User, YeastBatch, Yeast } from '../../shared/interfaces';
+import { Author, DocumentGuard, GrainBill, HopsSchedule, Image, ImageRequestFormData, ImageRequestMetadata, OtherIngredients, Process, RecipeMaster, RecipeVariant, SyncData, SyncError, SyncMetadata, SyncRequests, SyncResponse, User, YeastBatch } from '../../shared/interfaces';
 
 /* Type guard imports */
-import { ProcessGuardMetadata, CalendarProcessGuardMetadata, ManualProcessGuardMetadata, TimerProcessGuardMetadata, RecipeMasterGuardMetadata, RecipeVariantGuardMetadata, GrainBillGuardMetadata, GrainsGuardMetadata, HopsScheduleGuardMetadata, HopsGuardMetadata, YeastBatchGuardMetadata, YeastGuardMetadata, OtherIngredientsGuardMetadata } from '../../shared/type-guard-metadata';
+import { ProcessGuardMetadata, CalendarProcessGuardMetadata, ManualProcessGuardMetadata, TimerProcessGuardMetadata, RecipeMasterGuardMetadata, RecipeVariantGuardMetadata, GrainBillGuardMetadata, HopsScheduleGuardMetadata, YeastBatchGuardMetadata, OtherIngredientsGuardMetadata } from '../../shared/type-guard-metadata';
 
 /* Type imports */
 import { CustomError } from '../../shared/types';
@@ -20,7 +20,19 @@ import { CustomError } from '../../shared/types';
 import { defaultImage } from '../../shared/defaults';
 
 /* Service imports */
-import { ConnectionService, ErrorReportingService, EventService, HttpErrorService, IdService, ImageService, LibraryService, StorageService, SyncService, ToastService, TypeGuardService, UserService, UtilityService } from '../services';
+import { ConnectionService } from '../connection/connection.service';
+import { ErrorReportingService } from '../error-reporting/error-reporting.service';
+import { EventService } from '../event/event.service';
+import { HttpErrorService } from '../http-error/http-error.service';
+import { IdService } from '../id/id.service';
+import { ImageService } from '../image/image.service';
+import { LibraryService } from '../library/library.service';
+import { StorageService } from '../storage/storage.service';
+import { SyncService } from '../sync/sync.service';
+import { ToastService } from '../toast/toast.service';
+import { TypeGuardService } from '../type-guard/type-guard.service';
+import { UserService } from '../user/user.service';
+import { UtilityService } from '../utility/utility.service';
 
 
 @Injectable({
@@ -1443,7 +1455,7 @@ export class RecipeService {
   isSafeGrainBill(grainBill: GrainBill): boolean {
     return (
       this.typeGuard.hasValidProperties(grainBill, GrainBillGuardMetadata)
-      && this.typeGuard.hasValidProperties(grainBill.grainType, GrainsGuardMetadata)
+      && this.libraryService.isSafeGrains(grainBill.grainType)
     );
   }
 
@@ -1470,7 +1482,7 @@ export class RecipeService {
   isSafeHopsSchedule(hopsSchedule: HopsSchedule): boolean {
     return (
       this.typeGuard.hasValidProperties(hopsSchedule, HopsScheduleGuardMetadata)
-      && this.typeGuard.hasValidProperties(hopsSchedule.hopsType, HopsGuardMetadata)
+      && this.libraryService.isSafeHops(hopsSchedule.hopsType)
     );
   }
 
@@ -1548,13 +1560,16 @@ export class RecipeService {
     if (!this.typeGuard.hasValidProperties(recipe, RecipeVariantGuardMetadata)) {
       return false;
     }
-    if (!recipe.grains.every((grains: Grains): boolean => this.libraryService.isSafeGrains(grains))) {
+    if (!this.isSafeGrainBillCollection(recipe.grains)) {
       return false;
     }
-    if (!recipe.hops.every((hops: Hops): boolean => this.libraryService.isSafeHops(hops))) {
+    if (!this.isSafeHopsScheduleCollection(recipe.hops)) {
       return false;
     }
-    if (!recipe.yeast.every((yeast: Yeast): boolean => this.libraryService.isSafeYeast(yeast))) {
+    if (!this.isSafeYeastBatchCollection(recipe.yeast)) {
+      return false;
+    }
+    if (!this.isSafeOtherIngredientsCollection(recipe.otherIngredients)) {
       return false;
     }
     if (!this.isSafeProcessSchedule(recipe.processSchedule)) {
@@ -1586,7 +1601,7 @@ export class RecipeService {
   isSafeYeastBatch(yeastBatch: YeastBatch): boolean {
     return (
       this.typeGuard.hasValidProperties(yeastBatch, YeastBatchGuardMetadata)
-      && this.typeGuard.hasValidProperties(yeastBatch.yeastType, YeastGuardMetadata)
+      && this.libraryService.isSafeYeast(yeastBatch.yeastType)
     );
   }
 
