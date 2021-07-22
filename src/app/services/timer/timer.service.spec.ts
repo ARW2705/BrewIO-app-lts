@@ -7,41 +7,20 @@ import { BehaviorSubject, concat, of } from 'rxjs';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import {
-  mockBatch,
-  mockProcessSchedule,
-  mockTimer,
-  mockConcurrentTimers,
-  mockBatchTimer
-} from '../../../../test-config/mock-models';
+import { mockBatch, mockProcessSchedule, mockTimer, mockConcurrentTimers, mockBatchTimer } from '../../../../test-config/mock-models';
 import { PlatformStub } from '../../../../test-config/ionic-stubs';
-import {
-  BackgroundModeServiceStub,
-  ClientIdServiceStub,
-  ErrorReportingServiceStub,
-  LocalNotificationServiceStub,
-  ProcessServiceStub
-} from '../../../../test-config/service-stubs';
+import { BackgroundModeServiceStub, IdServiceStub, ErrorReportingServiceStub, LocalNotificationServiceStub, ProcessServiceStub, UtilityServiceStub } from '../../../../test-config/service-stubs';
 
 /* Interface imports */
-import {
-  Batch,
-  BatchTimer,
-  Process,
-  Timer,
-  TimerProcess
-} from '../../shared/interfaces';
+import { Batch, BatchTimer, Process, Timer, TimerProcess } from '../../shared/interfaces';
 
 /* Type imports */
 import { CustomError } from '../../shared/types';
 
 /* Service imports */
 import { TimerService } from './timer.service';
-import { BackgroundModeService } from '../background-mode/background-mode.service';
-import { ClientIdService } from '../client-id/client-id.service';
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
-import { LocalNotificationService } from '../local-notification/local-notification.service';
-import { ProcessService } from '../process/process.service';
+import { BackgroundModeService, ErrorReportingService, IdService, LocalNotificationService, ProcessService, UtilityService } from '../services';
+
 
 describe('TimerService', (): void => {
   let injector: TestBed;
@@ -55,10 +34,11 @@ describe('TimerService', (): void => {
         TimerService,
         { provide: Platform, useClass: PlatformStub },
         { provide: BackgroundModeService, useClass: BackgroundModeServiceStub },
-        { provide: ClientIdService, useClass: ClientIdServiceStub },
+        { provide: IdService, useClass: IdServiceStub },
         { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: LocalNotificationService, useClass: LocalNotificationServiceStub },
         { provide: ProcessService, useClass: ProcessServiceStub },
+        { provide: UtilityService, useClass: UtilityServiceStub }
       ]
     });
     global.setInterval = jest
@@ -168,13 +148,17 @@ describe('TimerService', (): void => {
     const schedule: Process[] = _mockBatch.process.schedule;
     const testIndex: number = 10;
 
-    timerService.clientIdService.getNewId = jest
+    timerService.idService.getNewId = jest
       .fn()
       .mockReturnValue('1234567890123');
 
     timerService.getSettings = jest
       .fn()
       .mockReturnValue(null);
+
+    timerService.utilService.clone = jest
+      .fn()
+      .mockImplementation((obj: any): any => obj);
 
     const newTimer$: BehaviorSubject<Timer> = timerService.generateNewTimerSubject(_mockBatch, testIndex, 0);
     const newTimer: Timer = newTimer$.value;
@@ -189,13 +173,17 @@ describe('TimerService', (): void => {
     const schedule: Process[] = _mockBatch.process.schedule;
     const testIndex: number = 2;
 
-    timerService.clientIdService.getNewId = jest
+    timerService.idService.getNewId = jest
       .fn()
       .mockReturnValue('1234567890123');
 
     timerService.getSettings = jest
       .fn()
       .mockReturnValue(null);
+
+    timerService.utilService.clone = jest
+      .fn()
+      .mockImplementation((obj: any): any => obj);
 
     const newTimer$: BehaviorSubject<Timer> = timerService.generateNewTimerSubject(_mockBatch, testIndex, 1);
     const newTimer: Timer = newTimer$.value;
@@ -319,6 +307,10 @@ describe('TimerService', (): void => {
       .fn()
       .mockReturnValueOnce(_mockBatchTimer)
       .mockReturnValueOnce(_mockBatchTimerConcurrent);
+
+    timerService.idService.hasId = jest
+      .fn()
+      .mockReturnValue(true);
 
     const timer$: BehaviorSubject<Timer> = timerService.getTimerSubjectById(_mockBatch.cid, _mockTimer.cid);
 

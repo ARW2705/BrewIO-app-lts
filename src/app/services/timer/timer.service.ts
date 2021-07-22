@@ -4,27 +4,13 @@ import { Injectable } from '@angular/core';
 import { Platform } from '@ionic/angular';
 
 /* Interface imports */
-import {
-  Batch,
-  BatchTimer,
-  Process,
-  ProgressCircleSettings,
-  Timer,
-  TimerProcess
-} from '../../shared/interfaces';
+import { Batch, BatchTimer, Process, ProgressCircleSettings, Timer, TimerProcess } from '../../shared/interfaces';
 
+/* Type imports */
 import { CustomError } from '../../shared/types';
 
-/* Utility imports */
-import { clone } from '../../shared/utility-functions/clone';
-import { hasId } from '../../shared/utility-functions/id-helpers';
-
 /* Service imports */
-import { BackgroundModeService } from '../background-mode/background-mode.service';
-import { ClientIdService } from '../client-id/client-id.service';
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
-import { LocalNotificationService } from '../local-notification/local-notification.service';
-import { ProcessService } from '../process/process.service';
+import { BackgroundModeService, ErrorReportingService, IdService, LocalNotificationService, ProcessService, UtilityService } from '../services';
 
 
 @Injectable({
@@ -51,12 +37,13 @@ export class TimerService {
   timerFontFamily: string = 'Arial';
 
   constructor(
-    public platform: Platform,
     public backgroundModeService: BackgroundModeService,
-    public clientIdService: ClientIdService,
     public errorReporter: ErrorReportingService,
+    public idService: IdService,
     public notificationService: LocalNotificationService,
+    public platform: Platform,
     public processService: ProcessService,
+    public utilService: UtilityService
   ) {
     this.timing = setInterval((): void => {
       this.tick();
@@ -180,9 +167,9 @@ export class TimerService {
     concurrentOffset: number
   ): BehaviorSubject<Timer> {
     const newTimer: Timer = {
-      cid: this.clientIdService.getNewId(),
+      cid: this.idService.getNewId(),
       first: batch.process.schedule[processIndex - concurrentOffset].cid,
-      timer: clone(<TimerProcess>batch.process.schedule[processIndex]),
+      timer: this.utilService.clone(<TimerProcess>batch.process.schedule[processIndex]),
       timeRemaining: (<TimerProcess>batch.process.schedule[processIndex]).duration * 60,
       show: false,
       expansion : {
@@ -326,7 +313,9 @@ export class TimerService {
 
     return batchTimer
       .timers
-      .find((timer$: BehaviorSubject<Timer>): boolean => hasId(timer$.value, timerId));
+      .find((timer$: BehaviorSubject<Timer>): boolean => {
+        return this.idService.hasId(timer$.value, timerId);
+      });
   }
 
   /**
