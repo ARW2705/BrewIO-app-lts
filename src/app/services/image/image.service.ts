@@ -8,12 +8,7 @@ import { Observable, forkJoin, from, of, throwError } from 'rxjs';
 import { catchError, defaultIfEmpty, map, mergeMap, tap } from 'rxjs/operators';
 
 /* Constant imports */
-import {
-  API_VERSION,
-  BASE_URL,
-  IMAGE_FILE_EXTENSION,
-  IMAGE_SIZE_LIMIT
-} from '../../shared/constants';
+import { API_VERSION, BASE_URL, IMAGE_FILE_EXTENSION, IMAGE_SIZE_LIMIT } from '../../shared/constants';
 
 /* Default imports */
 import { defaultImage } from '../../shared/defaults';
@@ -28,10 +23,7 @@ import { ImageGuardMetadata } from '../../shared/type-guard-metadata/image.guard
 import { CustomError } from '../../shared/types';
 
 /* Service imports */
-import { ClientIdService } from '../client-id/client-id.service';
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
-import { FileService } from '../file/file.service';
-import { TypeGuardService } from '../type-guard/type-guard.service';
+import { IdService, ErrorReportingService, FileService, TypeGuardService } from '../services';
 
 
 @Injectable({
@@ -42,10 +34,10 @@ export class ImageService {
 
   constructor(
     public camera: Camera,
-    public clientIdService: ClientIdService,
     public crop: Crop,
     public errorReporter: ErrorReportingService,
     public fileService: FileService,
+    public idService: IdService,
     public imageResizer: ImageResizer,
     public typeGuard: TypeGuardService
   ) { }
@@ -61,7 +53,7 @@ export class ImageService {
    * @return: observable of temporary Image
    */
   copyImageToLocalTmpDir(path: string, fileName: string): Observable<Image> {
-    const cid: string = this.clientIdService.getNewId();
+    const cid: string = this.idService.getNewId();
 
     return this.fileService.copyFileToLocalTmpDir(cid, path, fileName, IMAGE_FILE_EXTENSION)
       .pipe(

@@ -12,7 +12,7 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 /* Mock imports */
 import { mockImage, mockImageRequestFormData, mockEntry, mockFileMetadata  } from '../../../../test-config/mock-models';
 import { CameraStub, CropStub, ImageResizerStub } from '../../../../test-config/ionic-stubs';
-import { ClientIdServiceStub, ErrorReportingServiceStub, FileServiceStub, TypeGuardServiceStub } from '../../../../test-config/service-stubs';
+import { IdServiceStub, ErrorReportingServiceStub, FileServiceStub, TypeGuardServiceStub } from '../../../../test-config/service-stubs';
 
 /* Default imports */
 import { defaultImage } from '../../shared/defaults';
@@ -25,10 +25,7 @@ import { CustomError } from '../../shared/types';
 
 /* Service imports */
 import { ImageService } from './image.service';
-import { ClientIdService } from '../client-id/client-id.service';
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
-import { FileService } from '../file/file.service';
-import { TypeGuardService } from '../type-guard/type-guard.service';
+import { IdService, ErrorReportingService, FileService, TypeGuardService } from '../services';
 
 
 describe('ImageService', (): void => {
@@ -40,7 +37,7 @@ describe('ImageService', (): void => {
     TestBed.configureTestingModule({
       providers: [
         ImageService,
-        { provide: ClientIdService, useClass: ClientIdServiceStub },
+        { provide: IdService, useClass: IdServiceStub },
         { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: FileService, useClass: FileServiceStub },
         { provide: Camera, useClass: CameraStub },
@@ -72,7 +69,7 @@ describe('ImageService', (): void => {
     });
     const _mockFileMetadata = mockFileMetadata();
 
-    imageService.clientIdService.getNewId = jest
+    imageService.idService.getNewId = jest
       .fn()
       .mockReturnValue('0');
 
