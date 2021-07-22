@@ -1,16 +1,8 @@
 /* Interface imports */
-import {
-  Batch,
-  RecipeMaster,
-  RecipeVariant
-} from '../../src/app/shared/interfaces';
+import { Batch, RecipeMaster, RecipeVariant } from '../../src/app/shared/interfaces';
 
 /* Mock imports */
-import { mockBatchAnnotations } from './mock-batch-annotations';
-import { mockBatchContext } from './mock-batch-context';
-import { mockProcessSchedule } from './mock-process-schedule';
-import { mockRecipeMasterActive } from './mock-recipe-master-active';
-import { mockRecipeVariantComplete } from './mock-recipe-variant-complete';
+import { mockBatchAnnotations, mockBatchContext, mockProcessSchedule, mockRecipeMasterActive, mockRecipeVariantComplete } from '../mock-models';
 
 export const mockBatch: () => Batch = (): Batch => {
   const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
