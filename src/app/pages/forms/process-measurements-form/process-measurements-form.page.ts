@@ -1,25 +1,15 @@
 /* Module imports */
-import { Component, OnInit, OnDestroy, Input } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { LoadingController, ModalController } from '@ionic/angular';
 import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 /* Interface imports */
-import {
-  Batch,
-  BatchAnnotations,
-  PrimaryValues,
-  SelectedUnits
-} from '../../../shared/interfaces';
-
-/* Utility imports */
-import { roundToDecimalPlace } from '../../../shared/utility-functions/utilities';
+import { Batch, BatchAnnotations, PrimaryValues, SelectedUnits } from '../../../shared/interfaces';
 
 /* Service imports */
-import { CalculationsService } from '../../../services/calculations/calculations.service';
-import { FormValidationService } from '../../../services/form-validation/form-validation.service';
-import { PreferencesService } from '../../../services/preferences/preferences.service';
+import { CalculationsService, FormValidationService, PreferencesService, UtilityService } from '../../../services/services';
 
 
 @Component({
@@ -44,7 +34,8 @@ export class ProcessMeasurementsFormPage implements OnInit, OnDestroy {
     public formValidator: FormValidationService,
     public loadingCtrl: LoadingController,
     public modalCtrl: ModalController,
-    public preferenceService: PreferencesService
+    public preferenceService: PreferencesService,
+    public utilService: UtilityService
   ) { }
 
   /***** Lifecycle Hooks *****/
@@ -134,7 +125,7 @@ export class ProcessMeasurementsFormPage implements OnInit, OnDestroy {
       batchVolume = this.calculator.convertVolume(batchVolume, true, false);
     }
 
-    batchVolume = roundToDecimalPlace(batchVolume, 2);
+    batchVolume = this.utilService.roundToDecimalPlace(batchVolume, 2);
 
     return batchVolume;
   }

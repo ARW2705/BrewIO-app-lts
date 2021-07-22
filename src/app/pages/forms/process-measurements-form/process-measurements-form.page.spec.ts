@@ -1,8 +1,8 @@
 /* Module imports */
-import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { IonicModule, ModalController, LoadingController } from '@ionic/angular';
-import { FormsModule, AbstractControl, FormBuilder, Validators, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { IonicModule, LoadingController, ModalController } from '@ionic/angular';
+import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../../test-config/configure-test-bed';
@@ -11,14 +11,13 @@ import { configureTestBed } from '../../../../../test-config/configure-test-bed'
 import { mockMetricUnits, mockBatch, mockEnglishUnits } from '../../../../../test-config/mock-models';
 import { HeaderComponentStub } from '../../../../../test-config/component-stubs';
 import { ModalControllerStub, LoadingControllerStub, LoadingStub } from '../../../../../test-config/ionic-stubs';
-import { CalculationsServiceStub, PreferencesServiceStub } from '../../../../../test-config/service-stubs';
+import { CalculationsServiceStub, PreferencesServiceStub, FormValidationServiceStub, UtilityServiceStub } from '../../../../../test-config/service-stubs';
 
 /* Interface imports */
 import { Batch, SelectedUnits } from '../../../shared/interfaces';
 
 /* Service imports */
-import { CalculationsService } from '../../../services/calculations/calculations.service';
-import { PreferencesService } from '../../../services/preferences/preferences.service';
+import { CalculationsService, FormValidationService, PreferencesService, UtilityService } from '../../../services/services';
 
 /* Page imports */
 import { ProcessMeasurementsFormPage } from './process-measurements-form.page';
@@ -52,9 +51,11 @@ describe('ProcessMeasurementsFormPage', (): void => {
       ],
       providers: [
         { provide: CalculationsService, useClass: CalculationsServiceStub },
+        { provide: FormValidationService, useClass: FormValidationServiceStub },
         { provide: LoadingController, useClass: LoadingControllerStub },
         { provide: ModalController, useClass: ModalControllerStub },
-        { provide: PreferencesService, useClass: PreferencesServiceStub }
+        { provide: PreferencesService, useClass: PreferencesServiceStub },
+        { provide: UtilityService, useClass: UtilityServiceStub }
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
@@ -196,6 +197,14 @@ describe('ProcessMeasurementsFormPage', (): void => {
         .mockImplementation((value: number, ...options: any[]): number => value * 2);
 
       pmFormPage.requiresVolumeConversion = false;
+      pmFormPage.utilService.roundToDecimalPlace = jest
+        .fn()
+        .mockImplementation((value: number, places: number): number => {
+          if (places < 0) {
+            return -1;
+          }
+          return Math.round(value * Math.pow(10, places)) / Math.pow(10, places);
+        });
 
       fixture.detectChanges();
 
