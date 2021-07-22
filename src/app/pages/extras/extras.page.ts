@@ -1,18 +1,14 @@
 /* Module imports */
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
-import { Router, ActivatedRoute, Navigation } from '@angular/router';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute, Navigation, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-
-/* Utility function imports */
-import { toTitleCase } from '../../shared/utility-functions/utilities';
 
 /* Interface imports */
 import { Batch, InventoryItem } from '../../shared/interfaces';
 
 /* Animation imports */
-import { AnimationsService } from '../../services/animations/animations.service';
-import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
+import { AnimationsService, ErrorReportingService, UtilityService } from '../../services/services';
 
 // For testing purposes only
 // import { ConnectionProvider } from '../../providers/connection/connection';
@@ -29,9 +25,9 @@ export class ExtrasPage implements OnInit, OnDestroy {
   @ViewChild('listContainer') listContainer: ElementRef;
   @ViewChild('preferencesContainer') preferencesContainer: ElementRef;
   @ViewChild('userContainer') userContainer: ElementRef;
+  animationDuration: number = 250;
   currentIndex: number = -1;
   destroy$: Subject<boolean> = new Subject<boolean>();
-  animationDuration: number = 250;
   extras: { title: string, icon: string }[] = [
     {
       title: 'active batches',
@@ -60,10 +56,11 @@ export class ExtrasPage implements OnInit, OnDestroy {
 
 
   constructor(
+    public animationService: AnimationsService,
+    public errorReporter: ErrorReportingService,
     public route: ActivatedRoute,
     public router: Router,
-    public animationService: AnimationsService,
-    public errorReporter: ErrorReportingService
+    public utilService: UtilityService
   ) { }
 
   /***** Lifecycle Hooks *****/
@@ -146,7 +143,7 @@ export class ExtrasPage implements OnInit, OnDestroy {
    * @return: none
    */
   async displayComponent(index: number, passThrough: boolean = false): Promise<void> {
-    this.title = toTitleCase(this.extras[index].title);
+    this.title = this.utilService.toTitleCase(this.extras[index].title);
     this.onBackClick = this.viewPageRoot.bind(this, index);
     try {
       if (!passThrough) {

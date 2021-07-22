@@ -12,7 +12,7 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
 import { mockBatch, mockErrorReport, mockInventoryItem } from '../../../../test-config/mock-models';
-import { AnimationsServiceStub, ErrorReportingServiceStub } from '../../../../test-config/service-stubs';
+import { AnimationsServiceStub, ErrorReportingServiceStub, UtilityServiceStub } from '../../../../test-config/service-stubs';
 import { AboutComponentStub, ActiveBatchesComponentStub, HeaderComponentStub, InventoryComponentStub, PreferencesComponentStub, UserComponentStub } from '../../../../test-config/component-stubs';
 import { ActivatedRouteStub, AnimationStub } from '../../../../test-config/ionic-stubs';
 
@@ -20,8 +20,7 @@ import { ActivatedRouteStub, AnimationStub } from '../../../../test-config/ionic
 import { Batch, ErrorReport, InventoryItem } from '../../shared/interfaces';
 
 /* Provider imports */
-import { AnimationsService } from '../../services/animations/animations.service';
-import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
+import { AnimationsService, ErrorReportingService, UtilityService } from '../../services/services';
 
 /* Page imports */
 import { ExtrasPage } from './extras.page';
@@ -54,7 +53,8 @@ describe('ExtrasPage', (): void => {
       providers: [
         { provide: ActivatedRoute, useClass: ActivatedRouteStub },
         { provide: AnimationsService, useClass: AnimationsServiceStub },
-        { provide: ErrorReportingService, useClass: ErrorReportingServiceStub }
+        { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
+        { provide: UtilityService, useClass: UtilityServiceStub }
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
@@ -314,6 +314,10 @@ describe('ExtrasPage', (): void => {
         .fn()
         .mockReturnValue(_mockElement);
 
+      extrasPage.utilService.toTitleCase = jest
+        .fn()
+        .mockReturnValue('Inventory');
+
       const playSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'play');
 
       fixture.detectChanges();
@@ -345,6 +349,10 @@ describe('ExtrasPage', (): void => {
       extrasPage.getContainer = jest
         .fn()
         .mockReturnValue(_mockElement);
+
+      extrasPage.utilService.toTitleCase = jest
+        .fn()
+        .mockReturnValue('Active Batches');
 
       const playSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'play');
 
