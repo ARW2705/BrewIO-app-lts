@@ -5,34 +5,18 @@ import { TestBed, getTestBed, async } from '@angular/core/testing';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import {
-  mockEnglishUnits,
-  mockMetricUnits,
-  mockGrainBill,
-  mockHopsSchedule,
-  mockYeastBatch,
-  mockRecipeVariantComplete
-} from '../../../../test-config/mock-models';
-import { PreferencesServiceStub } from '../../../../test-config/service-stubs';
+import { mockEnglishUnits, mockMetricUnits, mockGrainBill, mockHopsSchedule, mockYeastBatch, mockRecipeVariantComplete } from '../../../../test-config/mock-models';
+import { PreferencesServiceStub, UtilityServiceStub } from '../../../../test-config/service-stubs';
 
 /* Constant imports */
 import { BRIX, PLATO, SPECIFIC_GRAVITY } from '../../shared/constants';
 
-/* Utility imports */
-import { roundToDecimalPlace } from '../../shared/utility-functions/utilities';
-
 /* Interace Imports */
-import {
-  GrainBill,
-  HopsSchedule,
-  YeastBatch,
-  RecipeVariant,
-  SelectedUnits
-} from '../../shared/interfaces';
+import { GrainBill, HopsSchedule, YeastBatch, RecipeVariant, SelectedUnits} from '../../shared/interfaces';
 
 /* Provider imports */
 import { CalculationsService } from './calculations.service';
-import { PreferencesService } from '../preferences/preferences.service';
+import { PreferencesService, UtilityService } from '../services';
 
 
 describe('CalculationsService', () => {
@@ -45,7 +29,8 @@ describe('CalculationsService', () => {
     TestBed.configureTestingModule({
       providers: [
         CalculationsService,
-        { provide: PreferencesService, useClass: PreferencesServiceStub }
+        { provide: PreferencesService, useClass: PreferencesServiceStub },
+        { provide: UtilityService, useClass: UtilityServiceStub }
       ]
     });
     injector = getTestBed();
@@ -54,6 +39,14 @@ describe('CalculationsService', () => {
     preferenceService.getSelectedUnits = jest
       .fn()
       .mockReturnValue(mockEnglishUnits());
+    calculator.utilService.roundToDecimalPlace = jest
+      .fn()
+      .mockImplementation((value: number, places: number): number => {
+        if (places < 0) {
+          return -1;
+        }
+        return Math.round(value * Math.pow(10, places)) / Math.pow(10, places);
+      });
   }));
 
   test('should create the service', () => {
@@ -64,7 +57,7 @@ describe('CalculationsService', () => {
 
     test('should convert density: Brix -> SG', () => {
       expect(
-        roundToDecimalPlace(
+        calculator.utilService.roundToDecimalPlace(
           calculator.convertDensity(12, BRIX.longName, SPECIFIC_GRAVITY.longName),
           3
         )
@@ -73,7 +66,7 @@ describe('CalculationsService', () => {
 
     test('should convert density: SG -> Plato', () => {
       expect(
-        roundToDecimalPlace(
+        calculator.utilService.roundToDecimalPlace(
           calculator.convertDensity(1.06, SPECIFIC_GRAVITY.longName, PLATO.longName),
           1
         )
@@ -83,7 +76,7 @@ describe('CalculationsService', () => {
 
     test('should convert density: Plato -> Brix', () => {
       expect(
-        roundToDecimalPlace(
+        calculator.utilService.roundToDecimalPlace(
           calculator.convertDensity(13.5, PLATO.longName, BRIX.longName),
           1
         )
@@ -103,34 +96,34 @@ describe('CalculationsService', () => {
 
     test('should convert volume to metric', () => {
       // Gallon -> Liter
-      expect(roundToDecimalPlace(calculator.convertVolume(3, true, false), 2)).toEqual(11.36);
+      expect(calculator.utilService.roundToDecimalPlace(calculator.convertVolume(3, true, false), 2)).toEqual(11.36);
 
       // Fluid ounce -> Milliliter
-      expect(roundToDecimalPlace(calculator.convertVolume(24, false, false), 0)).toEqual(710);
+      expect(calculator.utilService.roundToDecimalPlace(calculator.convertVolume(24, false, false), 0)).toEqual(710);
     }); // end 'should convert volume to metric' test
 
     test('should convert volume to english standard', () => {
       // Liter -> Gallon
-      expect(roundToDecimalPlace(calculator.convertVolume(12, true, true), 2)).toEqual(3.17);
+      expect(calculator.utilService.roundToDecimalPlace(calculator.convertVolume(12, true, true), 2)).toEqual(3.17);
 
       // Milliliter -> Fluid ounce
-      expect(roundToDecimalPlace(calculator.convertVolume(500, false, true), 2)).toEqual(16.91);
+      expect(calculator.utilService.roundToDecimalPlace(calculator.convertVolume(500, false, true), 2)).toEqual(16.91);
     }); // end 'should convert volume to english standard' test
 
     test('should convert weight to metric', () => {
       // Pound -> Kilogram
-      expect(roundToDecimalPlace(calculator.convertWeight(3, true, false), 2)).toEqual(1.36);
+      expect(calculator.utilService.roundToDecimalPlace(calculator.convertWeight(3, true, false), 2)).toEqual(1.36);
 
       // Ounce -> Gram
-      expect(roundToDecimalPlace(calculator.convertWeight(8, false, false), 0)).toEqual(227);
+      expect(calculator.utilService.roundToDecimalPlace(calculator.convertWeight(8, false, false), 0)).toEqual(227);
     }); // end 'should convert weight to metric' test
 
     test('should convert weight to english standard', () => {
       // Kilogram -> Pound
-      expect(roundToDecimalPlace(calculator.convertWeight(3, true, true), 1)).toEqual(6.6);
+      expect(calculator.utilService.roundToDecimalPlace(calculator.convertWeight(3, true, true), 1)).toEqual(6.6);
 
       // Gram -> Ounce
-      expect(roundToDecimalPlace(calculator.convertWeight(100, false, true), 1)).toEqual(3.5);
+      expect(calculator.utilService.roundToDecimalPlace(calculator.convertWeight(100, false, true), 1)).toEqual(3.5);
     }); // end 'should convert weight to english standard' test
 
     test('should check if a density unit long name is valid', () => {

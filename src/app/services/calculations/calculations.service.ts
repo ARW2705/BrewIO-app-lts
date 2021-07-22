@@ -2,51 +2,13 @@
 import { Injectable } from '@angular/core';
 
 /* Constants imports */
-import {
-  ABV_FACTORS,
-  BIGNESS_BASE,
-  BIGNESS_FACTOR,
-  BOIL_TIME_EXP,
-  BOIL_TIME_FACTOR,
-  BRIX,
-  ENGLISH_TEMPERATURE,
-  FL_TO_ML,
-  GAL_TO_L,
-  G_TO_OZ,
-  IBU_FACTOR,
-  KG_TO_LB,
-  LARGE_ENGLISH_VOLUME,
-  LARGE_ENGLISH_WEIGHT,
-  LB_TO_KG,
-  L_TO_GAL,
-  ML_TO_FL,
-  OZ_TO_G,
-  PLATO_TO_SG,
-  PLATO,
-  SG_TO_PLATO,
-  SMALL_ENGLISH_VOLUME,
-  SMALL_ENGLISH_WEIGHT,
-  SPECIFIC_GRAVITY,
-  SRM_EXP,
-  SRM_FACTOR
-} from '../../shared/constants';
+import { ABV_FACTORS, BIGNESS_BASE, BIGNESS_FACTOR, BOIL_TIME_EXP, BOIL_TIME_FACTOR, BRIX, ENGLISH_TEMPERATURE, FL_TO_ML, GAL_TO_L, G_TO_OZ, IBU_FACTOR, KG_TO_LB, LARGE_ENGLISH_VOLUME, LARGE_ENGLISH_WEIGHT, LB_TO_KG, L_TO_GAL, ML_TO_FL, OZ_TO_G, PLATO_TO_SG, PLATO, SG_TO_PLATO, SMALL_ENGLISH_VOLUME, SMALL_ENGLISH_WEIGHT, SPECIFIC_GRAVITY, SRM_EXP, SRM_FACTOR } from '../../shared/constants';
 
 /* Interface imports */
-import {
-  GrainBill,
-  HopsSchedule,
-  YeastBatch,
-  Grains,
-  Hops,
-  RecipeVariant,
-  SelectedUnits
-} from '../../shared/interfaces';
-
-/* Utility function imports */
-import { roundToDecimalPlace } from '../../shared/utility-functions/utilities';
+import { GrainBill, HopsSchedule, YeastBatch, Grains, Hops, RecipeVariant, SelectedUnits } from '../../shared/interfaces';
 
 /* Provider imports */
-import { PreferencesService } from '../preferences/preferences.service';
+import { PreferencesService, UtilityService } from '../services';
 
 
 @Injectable({
@@ -54,7 +16,10 @@ import { PreferencesService } from '../preferences/preferences.service';
 })
 export class CalculationsService {
 
-  constructor(public preferenceService: PreferencesService) { }
+  constructor(
+    public preferenceService: PreferencesService,
+    public utilService: UtilityService
+  ) { }
 
   /***** Unit Conversions *****/
 
@@ -293,7 +258,7 @@ export class CalculationsService {
       return 0;
     }
 
-    return roundToDecimalPlace(
+    return this.utilService.roundToDecimalPlace(
       (grainBill
         .map((grainsItem: GrainBill): number => {
           return this.getOriginalGravity(
@@ -329,7 +294,7 @@ export class CalculationsService {
       return 0;
     }
 
-    return roundToDecimalPlace(
+    return this.utilService.roundToDecimalPlace(
       hopsSchedule
         .map((hops: HopsSchedule): number => {
           if (hops.dryHop) return 0;
@@ -353,7 +318,7 @@ export class CalculationsService {
       return 0;
     }
 
-    return roundToDecimalPlace(
+    return this.utilService.roundToDecimalPlace(
       this.getSRM(
         grainBill
           .map((grains: GrainBill): number => {
@@ -381,7 +346,7 @@ export class CalculationsService {
         count++;
       });
     });
-    return roundToDecimalPlace(total / count, 1);
+    return this.utilService.roundToDecimalPlace(total / count, 1);
   }
 
   /**
@@ -395,7 +360,7 @@ export class CalculationsService {
    * @example: (1.050, 1.010) => 5.339
    */
   getABV(og: number, fg: number): number {
-    return roundToDecimalPlace(
+    return this.utilService.roundToDecimalPlace(
       (
         (
           ABV_FACTORS[0]
@@ -430,7 +395,7 @@ export class CalculationsService {
       return 1;
     }
 
-    return roundToDecimalPlace(
+    return this.utilService.roundToDecimalPlace(
       1 + ((pps - 1) * quantity * efficiency / batchVolume),
       3
     );
@@ -447,7 +412,7 @@ export class CalculationsService {
    * @example: (1.050, 70) => 1.015
    */
   getFinalGravity(og: number, attenuation: number): number {
-    return roundToDecimalPlace(
+    return this.utilService.roundToDecimalPlace(
       1 + ((og - 1) * (1 - (attenuation / 100))),
       3
     );
@@ -466,7 +431,7 @@ export class CalculationsService {
    * @example: (1.050, 5, 6) => 0.041666667
    */
   getBoilGravity(og: number, batchVolume: number, boilVolume: number): number {
-    return roundToDecimalPlace(
+    return this.utilService.roundToDecimalPlace(
       (batchVolume / boilVolume) * (og - 1),
       9
     );
@@ -483,7 +448,7 @@ export class CalculationsService {
    * @example: (0.041666667) => 1.134632433
    */
   getBignessFactor(boilGravity: number) {
-    return roundToDecimalPlace(
+    return this.utilService.roundToDecimalPlace(
       BIGNESS_FACTOR * Math.pow(BIGNESS_BASE, boilGravity),
       9
     );
@@ -500,7 +465,7 @@ export class CalculationsService {
    * @example: (60) => 0.219104108
    */
   getBoilTimeFactor(boilTime: number): number {
-    return roundToDecimalPlace(
+    return this.utilService.roundToDecimalPlace(
       ((1 - Math.pow(Math.E, (BOIL_TIME_EXP * boilTime))) / BOIL_TIME_FACTOR),
       9
     );
@@ -518,7 +483,7 @@ export class CalculationsService {
    * @example: (1.134632433, 0.219104108) => 0.248602627
    */
   getUtilization(bignessFactor: number, boilTimeFactor: number): number {
-    return roundToDecimalPlace(bignessFactor * boilTimeFactor, 9);
+    return this.utilService.roundToDecimalPlace(bignessFactor * boilTimeFactor, 9);
   }
 
   /**
@@ -545,7 +510,7 @@ export class CalculationsService {
     );
     const boilTimeFactor: number = this.getBoilTimeFactor(hopsInstance.duration);
 
-    return roundToDecimalPlace(
+    return this.utilService.roundToDecimalPlace(
       (
         hops.alphaAcid
         * hopsInstance.quantity
@@ -571,7 +536,7 @@ export class CalculationsService {
     grainsInstance: GrainBill,
     batchVolume: number
   ): number {
-    return roundToDecimalPlace(
+    return this.utilService.roundToDecimalPlace(
       grains.lovibond * grainsInstance.quantity / batchVolume, 2
     );
   }
@@ -584,7 +549,7 @@ export class CalculationsService {
    * @return: SRM value rounded to whole number
    */
   getSRM(mcu: number): number {
-    return roundToDecimalPlace(SRM_FACTOR * (Math.pow(mcu, SRM_EXP)), 1);
+    return this.utilService.roundToDecimalPlace(SRM_FACTOR * (Math.pow(mcu, SRM_EXP)), 1);
   }
 
   /***** End Recipe Calculations *****/
