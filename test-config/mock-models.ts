@@ -63,6 +63,7 @@ export { mockToastElement } from './mock-models/mock-toast-element';
 export { mockUserLogin } from './mock-models/mock-user-login';
 export { mockUserUpdate } from './mock-models/mock-user-update';
 export { mockUser } from './mock-models/mock-user';
+export { mockValidator } from './mock-models/mock-validator';
 export { mockWeightSmallUnit } from './mock-models/mock-weight-small-unit';
 export { mockYeastBatch } from './mock-models/mock-yeast-batch';
 export { mockYeast } from './mock-models/mock-yeast';
