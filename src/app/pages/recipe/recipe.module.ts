@@ -5,18 +5,16 @@ import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 
 /* Pipe imports */
-import { RoundPipeModule } from '../../pipes/round/round.module';
-import { TruncatePipeModule } from '../../pipes/truncate/truncate.module';
-import { UnitConversionPipeModule } from '../../pipes/unit-conversion/unit-conversion.module';
+import { RoundPipeModule, TruncatePipeModule, UnitConversionPipeModule } from '../../pipes/pipes';
 
 /* Component imports */
 import { AccordionComponentModule } from '../../components/accordion/accordion.module';
-import { ConfirmationComponentModule } from '../../components/confirmation/confirmation.module';
 import { HeaderComponentModule } from '../../components/header/header.module';
 import { IngredientListComponentModule } from '../../components/ingredient-list/ingredient-list.module';
 
 /* Page imports */
 import { RecipePage } from './recipe.page';
+import { ConfirmationPageModule } from '../confirmation/confirmation.module';
 import { LoginPageModule } from '../forms/login/login.module';
 import { SignupPageModule } from '../forms/signup/signup.module';
 
@@ -31,7 +29,7 @@ import { SignupPageModule } from '../forms/signup/signup.module';
     TruncatePipeModule,
     UnitConversionPipeModule,
     AccordionComponentModule,
-    ConfirmationComponentModule,
+    ConfirmationPageModule,
     HeaderComponentModule,
     IngredientListComponentModule,
     RouterModule.forChild([{path: '', component: RecipePage}])

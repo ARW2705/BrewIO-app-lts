@@ -1,8 +1,8 @@
 /* Module imports */
-import { Component, OnInit, OnDestroy, Renderer2, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { ModalController, IonList, IonContent } from '@ionic/angular';
-import { BehaviorSubject, Subject, from } from 'rxjs';
+import { IonContent, IonList, ModalController } from '@ionic/angular';
+import { BehaviorSubject, from, Subject } from 'rxjs';
 import { finalize, map, takeUntil } from 'rxjs/operators';
 
 /* Interface imports */
@@ -11,19 +11,11 @@ import { RecipeMaster, RecipeVariant } from '../../shared/interfaces';
 /* Type imports */
 import { CustomError } from '../../shared/types';
 
-/* Utility function imports */
-import { clone } from '../../shared/utility-functions/clone';
-import { getId, hasId } from '../../shared/utility-functions/id-helpers';
-
 /* Page imports */
-import { ConfirmationComponent } from '../../components/confirmation/confirmation.component';
+import { ConfirmationPage } from '../confirmation/confirmation.page';
 
 /* Service imports */
-import { AnimationsService } from '../../services/animations/animations.service';
-import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
-import { RecipeService } from '../../services/recipe/recipe.service';
-import { ToastService } from '../../services/toast/toast.service';
-import { UserService } from '../../services/user/user.service';
+import { AnimationsService, ErrorReportingService, IdService, RecipeService, ToastService, UserService, UtilityService } from '../../services/services';
 
 
 @Component({
@@ -44,15 +36,17 @@ export class RecipePage implements OnInit, OnDestroy {
   variantList: RecipeVariant[] = null;
 
   constructor(
+    public animationService: AnimationsService,
+    public errorReporter: ErrorReportingService,
     public modalCtrl: ModalController,
+    public idService: IdService,
+    public recipeService: RecipeService,
     public renderer: Renderer2,
     public route: ActivatedRoute,
     public router: Router,
-    public animationService: AnimationsService,
-    public errorReporter: ErrorReportingService,
-    public recipeService: RecipeService,
     public toastService: ToastService,
-    public userService: UserService
+    public userService: UserService,
+    public utilService: UtilityService
   ) { }
 
   /***** Lifecycle Hooks *****/
@@ -155,14 +149,14 @@ export class RecipePage implements OnInit, OnDestroy {
    */
   navToBrewProcess(recipeMaster: RecipeMaster): void {
     const variant: RecipeVariant = recipeMaster.variants
-      .find((_variant: RecipeVariant) => hasId(_variant, recipeMaster.master));
+      .find((_variant: RecipeVariant) => this.idService.hasId(_variant, recipeMaster.master));
 
     if (this.recipeService.isRecipeProcessPresent(variant)) {
       this.router.navigate(
         ['tabs/process'],
         {
           state: {
-            recipeMasterId: getId(recipeMaster),
+            recipeMasterId: this.idService.getId(recipeMaster),
             recipeVariantId: recipeMaster.master,
             requestedUserId: recipeMaster.owner,
             rootURL: 'tabs/recipe'
@@ -191,17 +185,17 @@ export class RecipePage implements OnInit, OnDestroy {
    */
   navToDetails(index: number): void {
     try {
-      this.router.navigate([`tabs/recipe/${getId(this.masterList[index])}`]);
+      this.router.navigate([`tabs/recipe/${this.idService.getId(this.masterList[index])}`]);
     } catch (error) {
       console.log('Details nav error', error);
       const message: string = 'Recipe details not found';
-      const recipeIds: object[] = this.masterList.map((recipe: RecipeMaster) => {
-        return { _id: recipe._id, cid: recipe.cid };
+      const recipeIds: string[] = this.masterList.map((recipe: RecipeMaster) => {
+        return `${recipe._id ? recipe._id : recipe.cid},`;
       });
       this.errorReporter.setErrorReport(
         this.errorReporter.createErrorReport(
           'MissingError',
-          `${message}: list index ${index}, present list ${recipeIds}`,
+          `${message}: list index ${index}, present list [${recipeIds}]`,
           3,
           message,
         )
@@ -273,7 +267,7 @@ export class RecipePage implements OnInit, OnDestroy {
    */
   async confirmDelete(index: number): Promise<void> {
     const modal: HTMLIonModalElement = await this.modalCtrl.create({
-      component: ConfirmationComponent,
+      component: ConfirmationPage,
       componentProps: {
         message: `Confirm deletion of "${this.masterList[index].name}" and its variants`,
         subMessage: 'This action cannot be reversed'
@@ -302,7 +296,7 @@ export class RecipePage implements OnInit, OnDestroy {
    * @return: none
    */
   deleteMaster(index: number): void {
-    this.recipeService.removeRecipeMasterById(getId(this.masterList[index]))
+    this.recipeService.removeRecipeMasterById(this.idService.getId(this.masterList[index]))
       .subscribe(
         (): void => {
           this.toastService.presentToast(
@@ -347,9 +341,9 @@ export class RecipePage implements OnInit, OnDestroy {
     try {
       this.variantList = this.masterList
         .map((master: RecipeMaster): RecipeVariant => {
-          const selected: RecipeVariant = clone(
+          const selected: RecipeVariant = this.utilService.clone(
               master.variants.find((variant: RecipeVariant): boolean => {
-                return hasId(variant, master.master);
+                return this.idService.hasId(variant, master.master);
               })
             );
 
