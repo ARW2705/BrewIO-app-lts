@@ -10,6 +10,7 @@ import { HeaderComponentModule } from '../../../components/header/header.module'
 /* Page imports */
 import { NoteFormPage } from './note-form.page';
 
+
 @NgModule({
   imports: [
     CommonModule,

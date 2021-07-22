@@ -1,10 +1,10 @@
 /* Module imports */
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { FormControl, Validators } from '@angular/forms';
 
-/* Utility function imports */
-import { toTitleCase } from '../../../shared/utility-functions/utilities';
+/* Service imports */
+import { UtilityService } from '../../../services/services';
 
 
 @Component({
@@ -20,14 +20,17 @@ export class NoteFormPage implements OnInit {
   onBackClick: () => void;
   title: string = '';
 
-  constructor(public modalCtrl: ModalController) {
+  constructor(
+    public modalCtrl: ModalController,
+    public utilService: UtilityService
+  ) {
     this.onBackClick = this.dismiss.bind(this);
   }
 
   /***** Lifecycle Hooks *****/
 
   ngOnInit() {
-    this.title = `${toTitleCase(this.noteType)} Note`;
+    this.title = `${this.utilService.toTitleCase(this.noteType)} Note`;
     this.note = new FormControl(this.toUpdate, [Validators.maxLength(500)]);
   }
 

@@ -1,5 +1,5 @@
 /* Module imports */
-import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { FormsModule, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -10,6 +10,10 @@ import { configureTestBed } from '../../../../../test-config/configure-test-bed'
 /* Mock imports */
 import { HeaderComponentStub } from '../../../../../test-config/component-stubs';
 import { ModalControllerStub } from '../../../../../test-config/ionic-stubs';
+import { UtilityServiceStub } from '../../../../../test-config/service-stubs';
+
+/* Service imports */
+import { UtilityService } from '../../../services/services';
 
 /* Page imports */
 import { NoteFormPage } from './note-form.page';
@@ -34,6 +38,7 @@ describe('NoteFormPage', (): void => {
       ],
       providers: [
         { provide: ModalController, useClass: ModalControllerStub },
+        { provide: UtilityService, useClass: UtilityServiceStub }
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
@@ -63,6 +68,10 @@ describe('NoteFormPage', (): void => {
 
     noteFormPage.noteType = 'master';
     noteFormPage.toUpdate = 'test note';
+
+    noteFormPage.utilService.toTitleCase = jest
+      .fn()
+      .mockReturnValue('Master Note');
 
     fixture.detectChanges();
 
