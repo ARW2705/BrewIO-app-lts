@@ -1,22 +1,21 @@
 /* Module imports */
-import { TestBed, ComponentFixture, async } from '@angular/core/testing';
-import { CUSTOM_ELEMENTS_SCHEMA, SimpleChanges, SimpleChange } from '@angular/core';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { CUSTOM_ELEMENTS_SCHEMA, SimpleChange, SimpleChanges } from '@angular/core';
 import * as moment from 'moment';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockCalendarStep, mockCalendarDate } from '../../../../test-config/mock-models';
+import { mockCalendarDate, mockCalendarStep } from '../../../../test-config/mock-models';
 import { MomentPipeStub } from '../../../../test-config/pipe-stubs';
+import { IdServiceStub } from '../../../../test-config/service-stubs';
 
 /* Interface imports*/
-import {
-  Alert,
-  CalendarDate,
-  CalendarProcess,
-  Process
-} from '../../shared/interfaces';
+import { Alert, CalendarDate, CalendarProcess, Process } from '../../shared/interfaces';
+
+/* Service imports */
+import { IdService } from '../../services/services';
 
 /* Component imports */
 import { CalendarComponent } from './calendar.component';
@@ -35,6 +34,9 @@ describe('CalendarComponent', (): void => {
       declarations: [
         CalendarComponent,
         MomentPipeStub
+      ],
+      providers: [
+        { provide: IdService, useClass: IdServiceStub }
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
@@ -101,6 +103,11 @@ describe('CalendarComponent', (): void => {
       const stepDataChange: SimpleChanges = {
         stepData: new SimpleChange(oldStepData, newStepData, false)
       };
+
+      calCmp.idService.getId = jest
+        .fn()
+        .mockReturnValueOnce(newStepData._id)
+        .mockReturnValueOnce(oldStepData._id);
 
       calCmp.ngOnChanges(stepDataChange);
 
@@ -197,6 +204,10 @@ describe('CalendarComponent', (): void => {
       const _mockStartDate: CalendarDate = mockCalendarDate();
       const _mockProjectedDate: CalendarDate = mockCalendarDate();
       _mockProjectedDate.mDate = moment('2020-02-01T12:00:00.000Z');
+
+      calCmp.idService.getId = jest
+        .fn()
+        .mockReturnValue(_mockCalendarStep['_id']);
 
       fixture.detectChanges();
 

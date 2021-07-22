@@ -2,11 +2,11 @@
 import { Component, Input, OnChanges, OnInit, SimpleChange, SimpleChanges } from '@angular/core';
 import * as moment from 'moment';
 
-/* Utility imports */
-import { getId } from '../../shared/utility-functions/id-helpers';
-
 /* Interface imports */
 import { Alert, CalendarDate } from '../../shared/interfaces';
+
+/* Service imports */
+import { IdService } from '../../services/services';
 
 
 @Component({
@@ -27,7 +27,7 @@ export class CalendarComponent implements OnInit, OnChanges {
   startDate: CalendarDate = null;
   weekdays: string[] = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
-  constructor() {
+  constructor(public idService: IdService) {
     this.currentDate = moment();
     this.displayDate = this.currentDate;
   }
@@ -45,7 +45,7 @@ export class CalendarComponent implements OnInit, OnChanges {
 
     if (
       change.previousValue !== undefined
-      && (getId(change.currentValue) !== getId(change.previousValue))
+      && (this.idService.getId(change.currentValue) !== this.idService.getId(change.previousValue))
     ) {
       this.stepData = change.currentValue;
       this.initCalendar();
@@ -131,7 +131,7 @@ export class CalendarComponent implements OnInit, OnChanges {
    */
   getFinal(): { _id: string, startDatetime: string, alerts: Alert[] } {
     return {
-      _id: getId(this.stepData),
+      _id: this.idService.getId(this.stepData),
       startDatetime: this.startDate.mDate.toISOString(),
       alerts: this.projectedDates
         .map((date: CalendarDate): Alert => {
