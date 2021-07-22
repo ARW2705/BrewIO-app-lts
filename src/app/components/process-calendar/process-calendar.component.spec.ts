@@ -1,21 +1,21 @@
 /* Module imports */
-import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { ComponentFixture, getTestBed, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockAlertPast, mockAlertFuture, mockAlertPresent, mockProcessSchedule } from '../../../../test-config/mock-models';
+import { mockAlertFuture, mockAlertPast, mockAlertPresent, mockProcessSchedule } from '../../../../test-config/mock-models';
 import { CalendarComponentStub } from '../../../../test-config/component-stubs';
-import { EventServiceStub } from '../../../../test-config/service-stubs';
+import { EventServiceStub, IdServiceStub } from '../../../../test-config/service-stubs';
 import { SortPipeStub } from '../../../../test-config/pipe-stubs';
 
 /* Interface imports */
 import { Alert, CalendarProcess, Process } from '../../shared/interfaces';
 
 /* Service imports */
-import { EventService } from '../../services/event/event.service';
+import { EventService, IdService } from '../../services/services';
 
 /* Component imports */
 import { ProcessCalendarComponent } from './process-calendar.component';
@@ -25,6 +25,7 @@ import { CalendarComponent } from '../calendar/calendar.component';
 describe('ProcessCalendarComponent', (): void => {
   let fixture: ComponentFixture<ProcessCalendarComponent>;
   let processCmp: ProcessCalendarComponent;
+  let injector: TestBed;
   configureTestBed();
 
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
@@ -34,7 +35,8 @@ describe('ProcessCalendarComponent', (): void => {
         SortPipeStub
       ],
       providers: [
-        { provide: EventService, useClass: EventServiceStub }
+        { provide: EventService, useClass: EventServiceStub },
+        { provide: IdService, useClass: IdServiceStub }
       ],
       schemas: [ NO_ERRORS_SCHEMA ]
     });
@@ -46,6 +48,7 @@ describe('ProcessCalendarComponent', (): void => {
   beforeEach((): void => {
     fixture = TestBed.createComponent(ProcessCalendarComponent);
     processCmp = fixture.componentInstance;
+    injector = getTestBed();
   });
 
   test('should create the component', (): void => {
@@ -64,11 +67,14 @@ describe('ProcessCalendarComponent', (): void => {
 
     processCmp.currentStepCalendarData = {
       _id: _mockNonCalendarProcess._id,
-      // duration: _mockNonCalendarProcess.duration,
       title: _mockNonCalendarProcess.name,
       description: _mockNonCalendarProcess.description
     };
     processCmp.stepData = _mockCalendarProcess;
+
+    processCmp.idService.getId = jest
+      .fn()
+      .mockReturnValue(processCmp.stepData._id);
 
     fixture.detectChanges();
 
@@ -123,7 +129,8 @@ describe('ProcessCalendarComponent', (): void => {
 
     fixture.detectChanges();
 
-    processCmp.calendarRef = <CalendarComponent>(new CalendarComponentStub());
+    const _stubIdSevice: IdService = injector.get(IdService);
+    processCmp.calendarRef = <CalendarComponent>(new CalendarComponentStub(_stubIdSevice));
     processCmp.calendarRef.getFinal = jest
       .fn()
       .mockReturnValue({
@@ -161,7 +168,8 @@ describe('ProcessCalendarComponent', (): void => {
     processCmp.alerts = [];
     processCmp.isPreview = false;
     processCmp.stepData = _mockCalendarProcess;
-    processCmp.calendarRef = <CalendarComponent>(new CalendarComponentStub());
+    const _stubIdSevice: IdService = injector.get(IdService);
+    processCmp.calendarRef = <CalendarComponent>(new CalendarComponentStub(_stubIdSevice));
 
     fixture.detectChanges();
 
@@ -178,7 +186,8 @@ describe('ProcessCalendarComponent', (): void => {
     processCmp.alerts = [];
     processCmp.isPreview = true;
     processCmp.stepData = _mockCalendarProcess;
-    processCmp.calendarRef = <CalendarComponent>(new CalendarComponentStub());
+    const _stubIdSevice: IdService = injector.get(IdService);
+    processCmp.calendarRef = <CalendarComponent>(new CalendarComponentStub(_stubIdSevice));
     processCmp.showDescription = true;
 
     fixture.detectChanges();
@@ -203,7 +212,8 @@ describe('ProcessCalendarComponent', (): void => {
     processCmp.alerts = [ _mockAlertFuture, _mockAlertPresent ];
     processCmp.isPreview = false;
     processCmp.stepData = _mockCalendarProcess;
-    processCmp.calendarRef = <CalendarComponent>(new CalendarComponentStub());
+    const _stubIdSevice: IdService = injector.get(IdService);
+    processCmp.calendarRef = <CalendarComponent>(new CalendarComponentStub(_stubIdSevice));
     processCmp.closestAlert = _mockAlertPresent;
 
     SortPipeStub._returnValue = (): any[] => {

@@ -2,13 +2,14 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { CalendarComponentModule } from '../calendar/calendar.module';
 
 /* Pipe imports */
-import { SortPipeModule } from '../../pipes/sort/sort.module';
+import { SortPipeModule } from '../../pipes/pipes';
 
 /* Component imports */
 import { ProcessCalendarComponent } from './process-calendar.component';
+import { CalendarComponentModule } from '../calendar/calendar.module';
+
 
 @NgModule({
   imports: [

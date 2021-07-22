@@ -4,14 +4,11 @@ import { Component, Input, OnChanges, ViewChild } from '@angular/core';
 /* Interface imports */
 import { Alert, CalendarProcess } from '../../shared/interfaces';
 
-/* Utility imports */
-import { getId } from '../../shared/utility-functions/id-helpers';
-
 /* Component imports */
 import { CalendarComponent } from '../calendar/calendar.component';
 
 /* Service imports */
-import { EventService } from '../../services/event/event.service';
+import { EventService, IdService } from '../../services/services';
 
 
 @Component({
@@ -28,12 +25,15 @@ export class ProcessCalendarComponent implements OnChanges {
   currentStepCalendarData: object = {};
   showDescription: boolean = false;
 
-  constructor(public event: EventService) { }
+  constructor(
+    public event: EventService,
+    public idService: IdService
+  ) { }
 
   ngOnChanges() {
     console.log('process calendar changes');
     this.currentStepCalendarData = {
-      _id: getId(this.stepData),
+      _id: this.idService.getId(this.stepData),
       duration: this.stepData.duration,
       title: this.stepData.name,
       description: this.stepData.description
