@@ -7,10 +7,11 @@ import { IonicModule } from '@ionic/angular';
 /* Component imports */
 import { FormErrorComponentModule } from '../../../components/form-error/form-error.module';
 import { HeaderComponentModule } from '../../../components/header/header.module';
-import { QuantityHelperComponentModule } from '../../../components/quantity-helper/quantity-helper.module';
 
 /* Page imports */
 import { InventoryFormPage } from './inventory-form.page';
+import { QuantityHelperPageModule } from '../../quantity-helper/quantity-helper.module';
+
 
 @NgModule({
   imports: [
@@ -20,7 +21,7 @@ import { InventoryFormPage } from './inventory-form.page';
     IonicModule,
     FormErrorComponentModule,
     HeaderComponentModule,
-    QuantityHelperComponentModule
+    QuantityHelperPageModule
   ],
   declarations: [
     InventoryFormPage

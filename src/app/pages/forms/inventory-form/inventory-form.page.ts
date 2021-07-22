@@ -6,42 +6,20 @@ import { Observable, forkJoin, from, of } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
 /* Contants imports */
-import {
-  OPTIONAL_INVENTORY_DATA_KEYS,
-  PINT,
-  STOCK_TYPES
-} from '../../../shared/constants';
+import { OPTIONAL_INVENTORY_DATA_KEYS, PINT, STOCK_TYPES } from '../../../shared/constants';
 
 /* Default imports */
 import { defaultImage } from '../../../shared/defaults';
 
-/* Utility functions imports */
-import { hasId } from '../../../shared/utility-functions/id-helpers';
-import { compareWith } from '../../../shared/utility-functions/utilities';
-
 /* Interface imports */
-import {
-  Author,
-  Batch,
-  Image,
-  InventoryItem,
-  StockType,
-  Style
-} from '../../../shared/interfaces';
+import { Author, Batch, Image, InventoryItem, StockType, Style } from '../../../shared/interfaces';
 
 /* Page imports */
 import { ImageFormPage } from '../image-form/image-form.page';
-import { QuantityHelperComponent } from '../../../components/quantity-helper/quantity-helper.component';
+import { QuantityHelperPage } from '../../quantity-helper/quantity-helper.page';
 
 /* Service imports */
-import { CalculationsService } from '../../../services/calculations/calculations.service';
-import { ErrorReportingService } from '../../../services/error-reporting/error-reporting.service';
-import { ImageService } from '../../../services/image/image.service';
-import { LibraryService } from '../../../services/library/library.service';
-import { PreferencesService } from '../../../services/preferences/preferences.service';
-import { RecipeService } from '../../../services/recipe/recipe.service';
-import { ToastService } from '../../../services/toast/toast.service';
-import { UserService } from '../../../services/user/user.service';
+import { CalculationsService, ErrorReportingService, IdService, ImageService, LibraryService, PreferencesService, RecipeService, ToastService, UserService, UtilityService } from '../../../services/services';
 
 
 @Component({
@@ -56,7 +34,7 @@ export class InventoryFormPage implements OnInit {
   allowHelper: boolean = false;
   author: Author = null;
   batch: Batch = null;
-  compareWithFn: (o1: any, o2: any) => boolean = compareWith;
+  compareWithFn: (o1: any, o2: any) => boolean;
   inventoryForm: FormGroup = null;
   item: InventoryItem = null;
   itemLabelImage: Image = this._defaultImage;
@@ -83,6 +61,7 @@ export class InventoryFormPage implements OnInit {
     public calculator: CalculationsService,
     public errorReporter: ErrorReportingService,
     public formBuilder: FormBuilder,
+    public idService: IdService,
     public imageService: ImageService,
     public libraryService: LibraryService,
     public loadingCtrl: LoadingController,
@@ -90,8 +69,11 @@ export class InventoryFormPage implements OnInit {
     public preferencesService: PreferencesService,
     public recipeService: RecipeService,
     public toastService: ToastService,
-    public userService: UserService
-  ) { }
+    public userService: UserService,
+    public utilService: UtilityService
+  ) {
+    this.compareWithFn = this.utilService.compareWith.bind(this);
+  }
 
   /***** Lifecycle Hooks *****/
 
@@ -339,7 +321,7 @@ export class InventoryFormPage implements OnInit {
    */
   initSelectionControl(): void {
     this.styleSelection = this.styles.find((style: Style): boolean => {
-      return hasId(style, this.item.itemStyleId);
+      return this.idService.hasId(style, this.item.itemStyleId);
     });
 
     this.inventoryForm.controls.itemStyleId.setValue(this.styleSelection);
@@ -355,7 +337,7 @@ export class InventoryFormPage implements OnInit {
     const formValues: object = this.convertFormValuesToNumbers();
     const style: Style = formValues['itemStyleId'] !== undefined
       ? formValues['itemStyleId']
-      : this.styles.find((_style: Style): boolean => hasId(_style, this.batch.annotations.styleId));
+      : this.styles.find((_style: Style): boolean => this.idService.hasId(_style, this.batch.annotations.styleId));
     formValues['itemStyleId'] = style._id;
     formValues['itemStyleName'] = style.name;
     formValues['itemLabelImage'] = this.itemLabelImage;
@@ -451,7 +433,7 @@ export class InventoryFormPage implements OnInit {
     }
 
     const modal: HTMLIonModalElement = await this.modalCtrl.create({
-      component: QuantityHelperComponent,
+      component: QuantityHelperPage,
       componentProps: this.getQuanityHelperModalOptions(quantityType, quantityControl.value)
     });
 

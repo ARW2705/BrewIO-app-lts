@@ -1,5 +1,5 @@
 /* Module imports */
-import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { IonicModule, LoadingController, ModalController } from '@ionic/angular';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -10,22 +10,15 @@ import { configureTestBed } from '../../../../../test-config/configure-test-bed'
 
 /* Mock imports */
 import { mockAuthor, mockBatch, mockInventoryItem, mockImage, mockStyles } from '../../../../../test-config/mock-models';
-import { CalculationsServiceStub, ErrorReportingServiceStub, ImageServiceStub, LibraryServiceStub, PreferencesServiceStub, RecipeServiceStub, ToastServiceStub, UserServiceStub } from '../../../../../test-config/service-stubs';
-import { HeaderComponentStub, QuantityHelperComponentStub } from '../../../../../test-config/component-stubs';
+import { CalculationsServiceStub, ErrorReportingServiceStub, IdServiceStub, ImageServiceStub, LibraryServiceStub, PreferencesServiceStub, RecipeServiceStub, ToastServiceStub, UserServiceStub, UtilityServiceStub } from '../../../../../test-config/service-stubs';
+import { HeaderComponentStub, QuantityHelperPageStub } from '../../../../../test-config/component-stubs';
 import { LoadingControllerStub, ModalControllerStub, ModalStub } from '../../../../../test-config/ionic-stubs';
 
 /* Interface imports */
 import { Author, Batch, Image, InventoryItem, Style } from '../../../shared/interfaces';
 
 /* Service imports */
-import { CalculationsService } from '../../../services/calculations/calculations.service';
-import { ErrorReportingService } from '../../../services/error-reporting/error-reporting.service';
-import { ImageService } from '../../../services/image/image.service';
-import { LibraryService } from '../../../services/library/library.service';
-import { PreferencesService } from '../../../services/preferences/preferences.service';
-import { RecipeService } from '../../../services/recipe/recipe.service';
-import { ToastService } from '../../../services/toast/toast.service';
-import { UserService } from '../../../services/user/user.service';
+import { CalculationsService, ErrorReportingService, IdService, ImageService, LibraryService, PreferencesService, RecipeService, ToastService, UserService, UtilityService } from '../../../services/services';
 
 /* Page imports */
 import { InventoryFormPage } from './inventory-form.page';
@@ -60,7 +53,7 @@ describe('InventoryFormPage', (): void => {
       declarations: [
         InventoryFormPage,
         HeaderComponentStub,
-        QuantityHelperComponentStub
+        QuantityHelperPageStub
       ],
       imports: [
         IonicModule,
@@ -69,6 +62,7 @@ describe('InventoryFormPage', (): void => {
       providers: [
         { provide: CalculationsService, useClass: CalculationsServiceStub },
         { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
+        { provide: IdService, useClass: IdServiceStub },
         { provide: ImageService, useClass: ImageServiceStub },
         { provide: LibraryService, useClass: LibraryServiceStub },
         { provide: LoadingController, useClass: LoadingControllerStub },
@@ -76,7 +70,8 @@ describe('InventoryFormPage', (): void => {
         { provide: PreferencesService, useClass: PreferencesServiceStub },
         { provide: RecipeService, useClass: RecipeServiceStub },
         { provide: ToastService, useClass: ToastServiceStub },
-        { provide: UserService, useClass: UserServiceStub }
+        { provide: UserService, useClass: UserServiceStub },
+        { provide: UtilityService, useClass: UtilityServiceStub }
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
@@ -511,6 +506,9 @@ describe('InventoryFormPage', (): void => {
         sourceType: '',
         supplierName: ''
       });
+      invFormPage.idService.hasId = jest
+        .fn()
+        .mockReturnValue(true);
 
       fixture.detectChanges();
 
@@ -541,6 +539,9 @@ describe('InventoryFormPage', (): void => {
         .mockReturnValueOnce({
           itemStyleId: _mockStyle
         });
+      invFormPage.idService.hasId = jest
+        .fn()
+        .mockReturnValue(true);
 
       const dismissSpy: jest.SpyInstance = jest.spyOn(invFormPage.modalCtrl, 'dismiss');
       const expectedValues: object = {
