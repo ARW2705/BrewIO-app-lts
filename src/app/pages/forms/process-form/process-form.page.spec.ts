@@ -1,8 +1,8 @@
 /* Module imports */
-import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { IonicModule, ModalController } from '@ionic/angular';
-import { FormsModule, AbstractControl, FormBuilder, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../../test-config/configure-test-bed';
@@ -11,9 +11,13 @@ import { configureTestBed } from '../../../../../test-config/configure-test-bed'
 import { mockProcessSchedule } from '../../../../../test-config/mock-models';
 import { HeaderComponentStub } from '../../../../../test-config/component-stubs';
 import { ModalControllerStub } from '../../../../../test-config/ionic-stubs';
+import { UtilityServiceStub } from '../../../../../test-config/service-stubs';
 
 /* Interface imports */
 import { CalendarProcess, ManualProcess, Process, TimerProcess } from '../../../shared/interfaces';
+
+/* Service imports */
+import { UtilityService } from '../../../services/services';
 
 /* Page imports */
 import { ProcessFormPage } from './process-form.page';
@@ -46,6 +50,7 @@ describe('ProcessFormPage', (): void => {
       ],
       providers: [
         { provide: ModalController, useClass: ModalControllerStub },
+        { provide: UtilityService, useClass: UtilityServiceStub }
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
@@ -79,6 +84,9 @@ describe('ProcessFormPage', (): void => {
 
       processFormPage.initForm = jest
         .fn();
+      processFormPage.utilService.toTitleCase = jest
+        .fn()
+        .mockReturnValue('Manual');
 
       fixture.detectChanges();
 

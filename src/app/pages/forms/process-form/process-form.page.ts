@@ -1,18 +1,13 @@
 /* Module imports */
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 
-/* Utility function imports */
-import { toTitleCase } from '../../../shared/utility-functions/utilities';
+/* Service imports */
+import { UtilityService } from '../../../services/services';
 
 /* Interface imports */
-import {
-  CalendarProcess,
-  ManualProcess,
-  Process,
-  TimerProcess
-} from '../../../shared/interfaces';
+import { CalendarProcess, ManualProcess, Process, TimerProcess } from '../../../shared/interfaces';
 
 
 @Component({
@@ -30,7 +25,8 @@ export class ProcessFormPage implements OnInit {
 
   constructor(
     public formBuilder: FormBuilder,
-    public modalCtrl: ModalController
+    public modalCtrl: ModalController,
+    public utilService: UtilityService
   ) {
     this.onBackClick = this.dismiss.bind(this);
   }
@@ -38,7 +34,7 @@ export class ProcessFormPage implements OnInit {
   /***** Lifecycle Hooks *****/
 
   ngOnInit() {
-    this.title = toTitleCase(this.processType);
+    this.title = this.utilService.toTitleCase(this.processType);
     this.initForm();
   }
 
