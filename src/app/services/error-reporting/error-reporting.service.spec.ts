@@ -102,6 +102,14 @@ describe('ErrorReportingService', () => {
     _mockError.name = 'TestError';
     _mockError.message = 'test-error';
 
+    errorReporter.getReportSeverity = jest
+      .fn()
+      .mockReturnValue(2);
+
+    errorReporter.getReportUserMessage = jest
+      .fn()
+      .mockReturnValue(_mockError.message);
+
     const createReport: ErrorReport = errorReporter.getCustomReportFromError(_mockError);
 
     expect(createReport.name).toMatch(_mockError.name);
@@ -109,7 +117,7 @@ describe('ErrorReportingService', () => {
     expect(createReport.severity).toEqual(2);
     expect(createReport.stackTrace).toMatch(_mockError.stack);
     expect(createReport.timestamp).toMatch('timestamp');
-    expect(createReport.userMessage.length).toEqual(0);
+    expect(createReport.userMessage).toMatch(_mockError.message);
     expect(createReport.dismissFn).toBeNull();
   });
 
@@ -146,6 +154,14 @@ describe('ErrorReportingService', () => {
       .fn()
       .mockReturnValue('header,header');
 
+    errorReporter.getReportSeverity = jest
+      .fn()
+      .mockReturnValue(2);
+
+    errorReporter.getReportUserMessage = jest
+      .fn()
+      .mockReturnValue(_mockHttpError.statusText);
+
     const createReport: ErrorReport = errorReporter.getCustomReportFromHttpError(_mockHttpError);
 
     expect(createReport.name).toMatch(_mockHttpError.name);
@@ -153,7 +169,7 @@ describe('ErrorReportingService', () => {
     expect(createReport.severity).toEqual(2);
     expect(createReport.statusCode).toEqual(_mockHttpError.status);
     expect(createReport.timestamp).toMatch('timestamp');
-    expect(createReport.userMessage.length).toEqual(0);
+    expect(createReport.userMessage).toEqual(_mockHttpError.statusText);
     expect(createReport.dismissFn).toBeNull();
     expect(createReport.headers).toMatch('header,header');
     expect(createReport.url).toMatch('test/url');
@@ -506,6 +522,26 @@ describe('ErrorReportingService', () => {
 
     expect(errorReporter.getHeaders(_mockHttpError))
       .toMatch('content-type: application/json, Access-Control-Allow-Origin: *,');
+  });
+
+  test('should get error report severity', (): void => {
+    const _mockError: Error = new Error();
+    const _mockCustomError: CustomError = new CustomError('TestError', '', 3, '');
+    const _mockErrorResponse: HttpErrorResponse = mockErrorResponse(404, 'not found');
+
+    expect(errorReporter.getReportSeverity(_mockError)).toEqual(2);
+    expect(errorReporter.getReportSeverity(_mockCustomError)).toEqual(3);
+    expect(errorReporter.getReportSeverity(_mockErrorResponse)).toEqual(2);
+  });
+
+  test('should get error report severity', (): void => {
+    const _mockError: Error = new Error('error');
+    const _mockCustomError: CustomError = new CustomError('TestError', 'custom-error', 3, 'custom-error');
+    const _mockErrorResponse: HttpErrorResponse = mockErrorResponse(404, 'not found');
+
+    expect(errorReporter.getReportUserMessage(_mockError)).toMatch('An internal error occurred');
+    expect(errorReporter.getReportUserMessage(_mockCustomError)).toMatch('custom-error');
+    expect(errorReporter.getReportUserMessage(_mockErrorResponse)).toMatch('not found');
   });
 
   test('should get a timestamp', (): void => {

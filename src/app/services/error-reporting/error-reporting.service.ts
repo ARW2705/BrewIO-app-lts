@@ -84,15 +84,19 @@ export class ErrorReportingService {
    *
    * @return: a new error report
    */
-  getCustomReportFromError(error: Error, overrides: object = {}): ErrorReport {
+  getCustomReportFromError(error: Error | CustomError, overrides: object = {}): ErrorReport {
     return {
+      dismissFn: overrides.hasOwnProperty('dismissFn') ? overrides['dismissFn'] : null,
       name: overrides.hasOwnProperty('name') ? overrides['name'] : error.name,
       message: overrides.hasOwnProperty('message') ? overrides['message'] : error.message,
-      severity: overrides.hasOwnProperty('severity') ? overrides['severity'] : 2,
+      severity: overrides.hasOwnProperty('severity')
+                ? overrides['severity']
+                : this.getReportSeverity(error),
       stackTrace: error.stack,
       timestamp: this.getTimestamp(),
-      userMessage: overrides.hasOwnProperty('userMessage') ? overrides['userMessage'] : '',
-      dismissFn: overrides.hasOwnProperty('dismissFn') ? overrides['dismissFn'] : null
+      userMessage:  overrides.hasOwnProperty('userMessage')
+                    ? overrides['userMessage']
+                    : this.getReportUserMessage(error)
     };
   }
 
@@ -106,15 +110,19 @@ export class ErrorReportingService {
    */
   getCustomReportFromHttpError(error: HttpErrorResponse, overrides: object = {}): ErrorReport {
     return {
-      name: overrides.hasOwnProperty('name') ? overrides['name'] : error.name,
-      message: overrides.hasOwnProperty('message') ? overrides['message'] : error.message,
-      severity: overrides.hasOwnProperty('severity') ? overrides['severity'] : 2,
-      statusCode: error.status,
-      timestamp: this.getTimestamp(),
-      userMessage: overrides.hasOwnProperty('userMessage') ? overrides['userMessage'] : '',
       dismissFn: overrides.hasOwnProperty('dismissFn') ? overrides['dismissFn'] : null,
       headers: this.getHeaders(error),
-      url: error.url
+      name: overrides.hasOwnProperty('name') ? overrides['name'] : error.name,
+      message: overrides.hasOwnProperty('message') ? overrides['message'] : error.message,
+      severity: overrides.hasOwnProperty('severity')
+                ? overrides['severity']
+                : this.getReportSeverity(error),
+      statusCode: error.status,
+      timestamp: this.getTimestamp(),
+      url: error.url,
+      userMessage:  overrides.hasOwnProperty('userMessage')
+                    ? overrides['userMessage']
+                    : this.getReportUserMessage(error)
     };
   }
 
@@ -285,6 +293,34 @@ export class ErrorReportingService {
         },
         ''
       );
+  }
+
+  /**
+   * Get error severity for report
+   *
+   * @param: error - the given error
+   *
+   * @return: error severity 1 (highest) - 4 (lowest)
+   */
+  getReportSeverity(error: Error | CustomError | HttpErrorResponse): number {
+    return error instanceof CustomError ? error.severity : 2;
+  }
+
+  /**
+   * Get error user accessible message for report
+   *
+   * @param: error - the given error
+   *
+   * @return: message to display to user
+   */
+  getReportUserMessage(error: Error | CustomError | HttpErrorResponse): string {
+    if (error instanceof CustomError) {
+      return error.userMessage;
+    } else if (error instanceof HttpErrorResponse) {
+      return error.statusText;
+    } else {
+      return 'An internal error occurred';
+    }
   }
 
   /**
