@@ -129,8 +129,13 @@ export class ActiveBatchesComponent implements OnInit, OnChanges, OnDestroy, Aft
   runSlidingHints(): void {
     const topLevelContent: HTMLElement = this.getTopLevelContainer();
     if (!topLevelContent) {
-      const message: string = 'Animation error: cannot find content container';
-      throw new CustomError('AnimationError', message, 4, message);
+      const message: string = 'Cannot find content container';
+      this.errorReporter.setErrorReport(
+        this.errorReporter.getCustomReportFromError(
+          new CustomError('AnimationError', message, 4, message)
+        )
+      );
+      return;
     }
 
     this.toggleSlidingItemClass(true);

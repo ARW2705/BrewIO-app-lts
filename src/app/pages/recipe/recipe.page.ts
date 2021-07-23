@@ -372,8 +372,13 @@ export class RecipePage implements OnInit, OnDestroy {
   runSlidingHints(): void {
     const topLevelContent: HTMLElement = this.ionContent['el'];
     if (!topLevelContent) {
-      const message: string = 'Animation error: cannot find content container';
-      throw new CustomError('AnimationError', message, 4, message);
+      const message: string = 'Cannot find content container';
+      this.errorReporter.setErrorReport(
+        this.errorReporter.getCustomReportFromError(
+          new CustomError('AnimationError', message, 4, message)
+        )
+      );
+      return;
     }
 
     this.toggleSlidingItemClass(true);
