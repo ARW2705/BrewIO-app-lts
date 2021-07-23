@@ -4,8 +4,6 @@ import { OtherIngredients } from '../../src/app/shared/interfaces';
 export const mockOtherIngredients: () => OtherIngredients[] = (): OtherIngredients[] => {
   const mock: OtherIngredients[] = [
     {
-      _id: '1',
-      cid: '1234567890123',
       name: 'other1',
       type: 'flavor',
       description: 'other1 description',
@@ -13,8 +11,6 @@ export const mockOtherIngredients: () => OtherIngredients[] = (): OtherIngredien
       units: 'unit1'
     },
     {
-      _id: '2',
-      cid: '1234567890124',
       name: 'other2',
       type: 'water treatment',
       description: 'makes water better',

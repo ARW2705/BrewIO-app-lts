@@ -4,8 +4,6 @@ import { GrainBill } from '../../src/app/shared/interfaces';
 export const mockGrainBill: () => GrainBill[] = (): GrainBill[] => {
   const mock: GrainBill[] = [
     {
-      _id: '1',
-      cid: '1234567890123',
       grainType: {
         _id: '5ca285e8f7e5f91a1f31d776',
         name: 'Pale Malt 2-row',
@@ -16,12 +14,9 @@ export const mockGrainBill: () => GrainBill[] = (): GrainBill[] => {
         updatedAt: '2019-04-01T21:43:04.357Z'
       },
       quantity: 10,
-      mill: 1,
-      notes: []
+      mill: 1
     },
     {
-      _id: '2',
-      cid: '1234567890124',
       grainType: {
         _id: '5ca285e8f7e5f91a1f31d775',
         name: 'Munich Malt',
@@ -32,12 +27,9 @@ export const mockGrainBill: () => GrainBill[] = (): GrainBill[] => {
         updatedAt: '2019-04-01T21:43:04.357Z'
       },
       quantity: 2,
-      mill: 1,
-      notes: []
+      mill: 1
     },
     {
-      _id: '3',
-      cid: '1234567890125',
       grainType: {
         _id: '5ca285e8f7e5f91a1f31d76b',
         name: 'US Chocolate Malt',
@@ -48,8 +40,7 @@ export const mockGrainBill: () => GrainBill[] = (): GrainBill[] => {
         updatedAt: '2019-04-01T21:43:04.356Z'
       },
       quantity: 0.5,
-      mill: 1,
-      notes: []
+      mill: 1
     }
   ];
   return mock;

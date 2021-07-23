@@ -4,8 +4,6 @@ import { HopsSchedule } from '../../src/app/shared/interfaces';
 export const mockHopsSchedule: () => HopsSchedule[] = (): HopsSchedule[] => {
   const mock: HopsSchedule[] = [
     {
-      _id: '1',
-      cid: '1234567890123',
       hopsType: {
         usedFor: [],
         alternatives: [],
@@ -19,12 +17,9 @@ export const mockHopsSchedule: () => HopsSchedule[] = (): HopsSchedule[] => {
       },
       quantity: 1,
       duration: 60,
-      dryHop: false,
-      notes: []
+      dryHop: false
     },
     {
-      _id: '2',
-      cid: '1234567890124',
       hopsType: {
         usedFor: [],
         alternatives: [],
@@ -38,12 +33,9 @@ export const mockHopsSchedule: () => HopsSchedule[] = (): HopsSchedule[] => {
       },
       quantity: 0.5,
       duration: 30,
-      dryHop: false,
-      notes: []
+      dryHop: false
     },
     {
-      _id: '3',
-      cid: '1234567890125',
       hopsType: {
         usedFor: [],
         alternatives: [],
@@ -57,12 +49,9 @@ export const mockHopsSchedule: () => HopsSchedule[] = (): HopsSchedule[] => {
       },
       quantity: 0.5,
       duration: 5,
-      dryHop: false,
-      notes: []
+      dryHop: false
     },
     {
-      _id: '4',
-      cid: '1234567890126',
       hopsType: {
         usedFor: [],
         alternatives: [],
@@ -76,8 +65,7 @@ export const mockHopsSchedule: () => HopsSchedule[] = (): HopsSchedule[] => {
       },
       quantity: 1,
       duration: 0,
-      dryHop: true,
-      notes: []
+      dryHop: true
     }
   ];
   return mock;

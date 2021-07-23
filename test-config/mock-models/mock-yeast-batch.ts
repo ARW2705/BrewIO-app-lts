@@ -4,8 +4,6 @@ import { YeastBatch } from '../../src/app/shared/interfaces';
 export const mockYeastBatch: () => YeastBatch[] = (): YeastBatch[] => {
   const mock: YeastBatch[] = [
     {
-      _id: '1',
-      cid: '1234567890123',
       yeastType: {
         attenuation: [
             73,
@@ -29,12 +27,9 @@ export const mockYeastBatch: () => YeastBatch[] = (): YeastBatch[] => {
         updatedAt: '2019-04-01T21:46:31.967Z',
       },
       quantity: 1,
-      requiresStarter: false,
-      notes: []
+      requiresStarter: false
     },
     {
-      _id: '2',
-      cid: '1234567890124',
       yeastType: {
         attenuation: [
             71,
@@ -58,8 +53,7 @@ export const mockYeastBatch: () => YeastBatch[] = (): YeastBatch[] => {
         updatedAt: '2019-04-01T21:46:31.967Z',
       },
       quantity: 1,
-      requiresStarter: false,
-      notes: []
+      requiresStarter: false
     }
   ];
   return mock;
