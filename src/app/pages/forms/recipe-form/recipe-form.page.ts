@@ -465,8 +465,10 @@ export class RecipeFormPage implements OnInit, OnDestroy {
         if (_data['delete']) {
           this.variant.processSchedule.splice(index, 1);
         } else if (_data['update']) {
-          this.variant.processSchedule[index] = _data['update'];
+          _data['update']['cid'] = this.variant.processSchedule[index].cid;
+          this.variant.processSchedule[index] = <Process>_data['update'];
         } else {
+          _data['cid'] = this.idService.getNewId();
           this.variant.processSchedule.push(<Process>_data);
         }
       }
