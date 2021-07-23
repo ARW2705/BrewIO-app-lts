@@ -1588,14 +1588,10 @@ describe('RecipeFormPage', (): void => {
 
       const _mockHopsSchedule: HopsSchedule[] = mockHopsSchedule();
       const _mockHopsSchedule0: HopsSchedule = _mockHopsSchedule[0];
-      _mockHopsSchedule0._id += '1';
       _mockHopsSchedule0.dryHop = true;
       const _mockHopsSchedule1: HopsSchedule = _mockHopsSchedule[1];
-      _mockHopsSchedule1._id += '1';
       const _mockHopsSchedule2: HopsSchedule = _mockHopsSchedule[2];
-      _mockHopsSchedule2._id += '1';
       const _mockHopsSchedule3: HopsSchedule = _mockHopsSchedule[3];
-      _mockHopsSchedule3._id += '1';
       _mockHopsSchedule2.dryHop = true;
       const testHopsSchedule: HopsSchedule[] = _mockBaseHopsSchedule.concat([
         _mockHopsSchedule0,
@@ -1710,7 +1706,6 @@ describe('RecipeFormPage', (): void => {
 
       const testHopsIndex: number = 1;
       const _mockHopsSchedule: HopsSchedule = mockHopsSchedule()[testHopsIndex];
-      _mockHopsSchedule._id = 'test-id';
 
       const testYeastIndex: number = 0;
       const _mockYeastBatch: YeastBatch = mockYeastBatch()[testYeastIndex];
@@ -1731,8 +1726,6 @@ describe('RecipeFormPage', (): void => {
       expect(recipeFormPage.variant.grains.length).toEqual(grainLength + 1);
 
       recipeFormPage.updateIngredientList(_mockHopsSchedule, 'hops', _mockHopsSchedule);
-
-      expect(recipeFormPage.variant.hops[testHopsIndex]._id).toMatch('test-id');
 
       expect(recipeFormPage.variant.yeast.length).toEqual(2);
       recipeFormPage.updateIngredientList(_mockYeastBatch, 'yeast', _mockYeastBatch, true);
