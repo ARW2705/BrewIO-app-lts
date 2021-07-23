@@ -8,11 +8,11 @@ import { BehaviorSubject, of, throwError } from 'rxjs';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockBatch } from '../../../../test-config/mock-models';
+import { mockBatch, mockErrorReport } from '../../../../test-config/mock-models';
 import { AnimationsServiceStub, ErrorReportingServiceStub, IdServiceStub, ProcessServiceStub, ToastServiceStub, UtilityServiceStub } from '../../../../test-config/service-stubs';
 
 /* Interface imports */
-import { Batch } from '../../shared/interfaces';
+import { Batch, ErrorReport } from '../../shared/interfaces';
 
 /* Service imports */
 import { AnimationsService, ErrorReportingService, IdService, ProcessService, ToastService, UtilityService } from '../../services/services';
@@ -344,11 +344,22 @@ describe('ActiveBatchesComponent', (): void => {
         .fn()
         .mockReturnValue(null);
 
+      const _mockErrorReport: ErrorReport = mockErrorReport();
+
+      batchCmp.errorReporter.setErrorReport = jest.fn();
+      batchCmp.errorReporter.getCustomReportFromError = jest
+        .fn()
+        .mockReturnValue(_mockErrorReport);
+
+      const setSpy: jest.SpyInstance = jest.spyOn(batchCmp.errorReporter, 'setErrorReport');
+      const getSpy: jest.SpyInstance = jest.spyOn(batchCmp.errorReporter, 'getCustomReportFromError');
+
       fixture.detectChanges();
 
-      expect((): void => {
-        batchCmp.runSlidingHints();
-      }).toThrowError('Animation error: cannot find content container');
+      batchCmp.runSlidingHints();
+
+      expect(setSpy).toHaveBeenCalledWith(_mockErrorReport);
+      expect(getSpy.mock.calls[0][0]['name']).toMatch('AnimationError');
     });
 
     test('should get an error running sliding hints with animation error', (done: jest.DoneCallback): void => {

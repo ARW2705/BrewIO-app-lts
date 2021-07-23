@@ -1056,11 +1056,22 @@ describe('InventoryComponent', (): void => {
         .fn()
         .mockReturnValue(null);
 
+      const _mockErrorReport: ErrorReport = mockErrorReport();
+
+      inventoryCmp.errorReporter.setErrorReport = jest.fn();
+      inventoryCmp.errorReporter.getCustomReportFromError = jest
+        .fn()
+        .mockReturnValue(_mockErrorReport);
+
+      const setSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.errorReporter, 'setErrorReport');
+      const getSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.errorReporter, 'getCustomReportFromError');
+
       fixture.detectChanges();
 
-      expect((): void => {
-        inventoryCmp.runSlidingHints();
-      }).toThrowError('Animation error: cannot find content container');
+      inventoryCmp.runSlidingHints();
+
+      expect(setSpy).toHaveBeenCalledWith(_mockErrorReport);
+      expect(getSpy.mock.calls[0][0]['name']).toMatch('AnimationError');
     });
 
     test('should get an error running sliding hints with animation error', (done: jest.DoneCallback): void => {

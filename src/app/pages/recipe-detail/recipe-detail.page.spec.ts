@@ -11,14 +11,14 @@ import { BehaviorSubject, of, throwError } from 'rxjs';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockRecipeMasterActive, mockRecipeVariantComplete } from '../../../../test-config/mock-models';
+import { mockErrorReport, mockRecipeMasterActive, mockRecipeVariantComplete } from '../../../../test-config/mock-models';
 import { AnimationsServiceStub, ErrorReportingServiceStub, IdServiceStub, RecipeServiceStub, ToastServiceStub, UtilityServiceStub } from '../../../../test-config/service-stubs';
 import { AccordionComponentStub, ConfirmationPageStub, HeaderComponentStub, IngredientListComponentStub, NoteListComponentStub } from '../../../../test-config/component-stubs';
 import { RoundPipeStub, TruncatePipeStub, UnitConversionPipeStub } from '../../../../test-config/pipe-stubs';
 import { ActivatedRouteStub, ModalControllerStub, ModalStub, IonContentStub } from '../../../../test-config/ionic-stubs';
 
 /* Interface imports */
-import { HopsSchedule, RecipeMaster, RecipeVariant } from '../../shared/interfaces';
+import { ErrorReport, HopsSchedule, RecipeMaster, RecipeVariant } from '../../shared/interfaces';
 
 /* Service imports */
 import { AnimationsService, ErrorReportingService, IdService, RecipeService, ToastService, UtilityService } from '../../services/services';
@@ -886,14 +886,24 @@ describe('RecipeDetailPage', (): void => {
 
     test('should get an error running sliding hints with missing content element', (): void => {
       const _stubIonContent: IonContentStub = new IonContentStub();
+      const _mockErrorReport: ErrorReport = mockErrorReport();
+
+      detailPage.errorReporter.setErrorReport = jest.fn();
+      detailPage.errorReporter.getCustomReportFromError = jest
+        .fn()
+        .mockReturnValue(_mockErrorReport);
+
+      const setSpy: jest.SpyInstance = jest.spyOn(detailPage.errorReporter, 'setErrorReport');
+      const getSpy: jest.SpyInstance = jest.spyOn(detailPage.errorReporter, 'getCustomReportFromError');
 
       fixture.detectChanges();
 
       detailPage.ionContent = <any>_stubIonContent;
 
-      expect((): void => {
-        detailPage.runSlidingHints();
-      }).toThrowError('Animation error: cannot find content container');
+      detailPage.runSlidingHints();
+
+      expect(setSpy).toHaveBeenCalledWith(_mockErrorReport);
+      expect(getSpy.mock.calls[0][0]['name']).toMatch('AnimationError');
     });
 
     test('should get an error running sliding hints with animation error', (done: jest.DoneCallback): void => {
