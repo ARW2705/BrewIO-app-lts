@@ -171,26 +171,26 @@ export class AnimationsService {
    * Gesture hint animation for horizontally sliding items
    *
    * @param: element - the HTMLElement to animate
-   * @param: [options] - optional overrides
+   * @param: [overrides] - optional overrides
    *
    * @return: configured animation
    */
-  slidingHint(element: HTMLElement, options?: object): Animation {
+  slidingHint(element: HTMLElement, overrides?: object): Animation {
     let duration: number = 1000;
     let delay: number = 0;
     let distance: number = 50;
     let firstBounce: number = 13;
     let secondBounce: number = 3;
 
-    if (options) {
-      if (options.hasOwnProperty('duration')) {
-        duration = options['duration'];
+    if (overrides) {
+      if (overrides.hasOwnProperty('duration')) {
+        duration = overrides['duration'];
       }
-      if (options.hasOwnProperty('delay')) {
-        delay = options['delay'];
+      if (overrides.hasOwnProperty('delay')) {
+        delay = overrides['delay'];
       }
-      if (options.hasOwnProperty('distance') && options['distance'] > 0) {
-        distance = options['distance'];
+      if (overrides.hasOwnProperty('distance') && overrides['distance'] > 0) {
+        distance = overrides['distance'];
         firstBounce = distance / 4;
         secondBounce = distance / 20;
       }
