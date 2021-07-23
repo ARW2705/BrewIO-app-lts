@@ -2797,21 +2797,24 @@ describe('RecipeService', (): void => {
 
     test('should check if single grain bill is type safe', (): void => {
       const _mockGrainBill: GrainBill = mockGrainBill()[0];
-      let failFlag: boolean = false;
 
       recipeService.typeGuard.hasValidProperties = jest
         .fn()
-        .mockImplementation((): boolean => !failFlag);
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+
+      recipeService.libraryService.isSafeGrains = jest
+        .fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
 
       const guardSpy: jest.SpyInstance = jest.spyOn(recipeService.typeGuard, 'hasValidProperties');
 
       expect(recipeService.isSafeGrainBill(_mockGrainBill)).toBe(true);
       expect(guardSpy).toHaveBeenNthCalledWith(1, _mockGrainBill, GrainBillGuardMetadata);
-      expect(guardSpy).toHaveBeenNthCalledWith(2, _mockGrainBill.grainType, GrainsGuardMetadata);
-      failFlag = true;
       expect(recipeService.isSafeGrainBill(_mockGrainBill)).toBe(false);
-      expect(guardSpy).toHaveBeenNthCalledWith(3, _mockGrainBill, GrainBillGuardMetadata);
-      expect(guardSpy).toHaveBeenCalledTimes(3);
+      expect(guardSpy).toHaveBeenNthCalledWith(2, _mockGrainBill, GrainBillGuardMetadata);
     });
 
     test('should check if array of hops schedules are type safe', (): void => {
@@ -2829,21 +2832,24 @@ describe('RecipeService', (): void => {
 
     test('should check if single hops schedule is type safe', (): void => {
       const _mockHopsSchedule: HopsSchedule = mockHopsSchedule()[0];
-      let failFlag: boolean = false;
 
       recipeService.typeGuard.hasValidProperties = jest
         .fn()
-        .mockImplementation((): boolean => !failFlag);
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+
+      recipeService.libraryService.isSafeHops = jest
+        .fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
 
       const guardSpy: jest.SpyInstance = jest.spyOn(recipeService.typeGuard, 'hasValidProperties');
 
       expect(recipeService.isSafeHopsSchedule(_mockHopsSchedule)).toBe(true);
       expect(guardSpy).toHaveBeenNthCalledWith(1, _mockHopsSchedule, HopsScheduleGuardMetadata);
-      expect(guardSpy).toHaveBeenNthCalledWith(2, _mockHopsSchedule.hopsType, HopsGuardMetadata);
-      failFlag = true;
       expect(recipeService.isSafeHopsSchedule(_mockHopsSchedule)).toBe(false);
-      expect(guardSpy).toHaveBeenNthCalledWith(3, _mockHopsSchedule, HopsScheduleGuardMetadata);
-      expect(guardSpy).toHaveBeenCalledTimes(3);
+      expect(guardSpy).toHaveBeenNthCalledWith(2, _mockHopsSchedule, HopsScheduleGuardMetadata);
     });
 
     test('should check if array of other ingredients are type safe', (): void => {
@@ -2952,9 +2958,19 @@ describe('RecipeService', (): void => {
         .mockReturnValueOnce(true)
         .mockReturnValueOnce(true)
         .mockReturnValueOnce(true)
+        .mockReturnValueOnce(true)
         .mockReturnValueOnce(false);
 
-      recipeService.libraryService.isSafeGrains = jest
+      recipeService.isSafeGrainBillCollection = jest
+        .fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+
+      recipeService.isSafeHopsScheduleCollection = jest
         .fn()
         .mockReturnValueOnce(true)
         .mockReturnValueOnce(true)
@@ -2962,14 +2978,14 @@ describe('RecipeService', (): void => {
         .mockReturnValueOnce(true)
         .mockReturnValueOnce(false);
 
-      recipeService.libraryService.isSafeHops = jest
+      recipeService.isSafeYeastBatchCollection = jest
         .fn()
         .mockReturnValueOnce(true)
         .mockReturnValueOnce(true)
         .mockReturnValueOnce(true)
         .mockReturnValueOnce(false);
 
-      recipeService.libraryService.isSafeYeast = jest
+      recipeService.isSafeOtherIngredientsCollection = jest
         .fn()
         .mockReturnValueOnce(true)
         .mockReturnValueOnce(true)
@@ -2981,6 +2997,7 @@ describe('RecipeService', (): void => {
         .mockReturnValueOnce(false);
 
       expect(recipeService.isSafeRecipeVariant(_mockRecipeVariantIncomplete)).toBe(true);
+      expect(recipeService.isSafeRecipeVariant(_mockRecipeVariantIncomplete)).toBe(false);
       expect(recipeService.isSafeRecipeVariant(_mockRecipeVariantIncomplete)).toBe(false);
       expect(recipeService.isSafeRecipeVariant(_mockRecipeVariantIncomplete)).toBe(false);
       expect(recipeService.isSafeRecipeVariant(_mockRecipeVariantIncomplete)).toBe(false);
@@ -3003,21 +3020,24 @@ describe('RecipeService', (): void => {
 
     test('should check if single yeast batch is type safe', (): void => {
       const _mockYeastBatch: YeastBatch = mockYeastBatch()[0];
-      let failFlag: boolean = false;
 
       recipeService.typeGuard.hasValidProperties = jest
         .fn()
-        .mockImplementation((): boolean => !failFlag);
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+
+      recipeService.libraryService.isSafeYeast = jest
+        .fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
 
       const guardSpy: jest.SpyInstance = jest.spyOn(recipeService.typeGuard, 'hasValidProperties');
 
       expect(recipeService.isSafeYeastBatch(_mockYeastBatch)).toBe(true);
       expect(guardSpy).toHaveBeenNthCalledWith(1, _mockYeastBatch, YeastBatchGuardMetadata);
-      expect(guardSpy).toHaveBeenNthCalledWith(2, _mockYeastBatch.yeastType, YeastGuardMetadata);
-      failFlag = true;
       expect(recipeService.isSafeYeastBatch(_mockYeastBatch)).toBe(false);
-      expect(guardSpy).toHaveBeenNthCalledWith(3, _mockYeastBatch, YeastBatchGuardMetadata);
-      expect(guardSpy).toHaveBeenCalledTimes(3);
+      expect(guardSpy).toHaveBeenNthCalledWith(2, _mockYeastBatch, YeastBatchGuardMetadata);
     });
 
   });

@@ -258,7 +258,7 @@ export class TimerService {
       height: this.timerHeight,
       width: this.timerWidth,
       circle: {
-        strokeDasharray: `${this.circumference} ${this.circumference}`,
+        strokeDasharray: this.circumference.toString(),
         strokeDashoffset: '0',
         stroke: this.timerStroke,
         strokeWidth: this.timerStrokeWidth,

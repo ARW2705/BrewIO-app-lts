@@ -253,7 +253,7 @@ describe('TimerService', (): void => {
         height: 360,
         width: 360,
         circle: {
-          strokeDasharray: '100 100',
+          strokeDasharray: '100',
           strokeDashoffset: '0',
           stroke: '2',
           strokeWidth: 4,
