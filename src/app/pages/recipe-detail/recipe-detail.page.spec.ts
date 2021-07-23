@@ -501,7 +501,7 @@ describe('RecipeDetailPage', (): void => {
       );
     });
 
-    test('should handle confirm deletion modal success', (done: jest.DoneCallback): void => {
+    test('should handle confirm deletion modal success with confirmation', (done: jest.DoneCallback): void => {
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
       const _mockRecipeVariantComplete: RecipeVariant = mockRecipeVariantComplete();
 
@@ -526,6 +526,20 @@ describe('RecipeDetailPage', (): void => {
 
       setTimeout((): void => {
         expect(toastSpy).toHaveBeenCalledWith('Variant deleted!', 1500, 'middle');
+        done();
+      }, 10);
+    });
+
+    test('should handle confirm deletion modal success without confirmation', (done: jest.DoneCallback): void => {
+      const removeSpy: jest.SpyInstance = jest.spyOn(detailPage.recipeService, 'removeRecipeVariantById');
+
+      fixture.detectChanges();
+
+      const successHandler: (data: object) => void = detailPage.onConfirmDeleteModalSuccessDismiss(0);
+      successHandler({ data: false });
+
+      setTimeout((): void => {
+        expect(removeSpy).not.toHaveBeenCalled();
         done();
       }, 10);
     });
