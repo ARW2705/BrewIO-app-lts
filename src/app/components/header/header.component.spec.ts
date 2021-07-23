@@ -216,7 +216,7 @@ describe('HeaderComponent', (): void => {
     expect(backButton.children[0].getAttribute('name')).toMatch('chevron-back-outline');
 
     const title: HTMLElement = fixture.nativeElement.querySelector('ion-title');
-    expect(title.textContent).toMatch('test-title');
+    expect(title.textContent).toMatch('Test-title');
 
     const userName: HTMLElement = fixture.nativeElement.querySelector('.login-header-text');
     expect(userName.children[1].textContent).toMatch(_mockUser.username);
