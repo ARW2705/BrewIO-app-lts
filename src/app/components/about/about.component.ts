@@ -6,7 +6,7 @@ import { API_VERSION, APP_VERSION } from '../../shared/constants';
 
 
 @Component({
-  selector: 'about',
+  selector: 'app-about',
   templateUrl: './about.component.html',
   styleUrls: ['./about.component.scss']
 })

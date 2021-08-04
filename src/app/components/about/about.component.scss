@@ -11,17 +11,14 @@
 }
 
 a {
-  /* Text */
   text-decoration: none;
 }
 
 ion-card {
-  /* Color */
   background-color: var(--ion-color-medium-shade);
 }
 
 ion-card-content {
-  /* Text */
   font-size: 2rem;
 }
 
@@ -35,15 +32,14 @@ ion-card-header {
   color: var(--ion-color-light);
 
   /* Children */
+  h2 {
+    font-size: 3rem;
+  }
+
   ion-icon {
     /* Display */
     padding-right: 5%;
 
-    /* Text */
-    font-size: 3rem;
-  }
-
-  h2 {
     /* Text */
     font-size: 3rem;
   }

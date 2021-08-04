@@ -1,6 +1,6 @@
 /* Module imports */
-import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
@@ -13,9 +13,9 @@ import { AboutComponent } from './about.component';
 
 
 describe('AboutComponent', (): void => {
+  configureTestBed();
   let fixture: ComponentFixture<AboutComponent>;
   let aboutCmp: AboutComponent;
-  configureTestBed();
 
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
@@ -42,7 +42,9 @@ describe('AboutComponent', (): void => {
     fixture.detectChanges();
 
     const descriptionElement: HTMLElement = fixture.nativeElement.querySelector('p');
-    expect(descriptionElement.textContent).toMatch('BrewIO is a multi-purpose tool to design homebrews, organize production, and track inventory.');
+    expect(descriptionElement.textContent).toMatch(
+      'BrewIO is a multi-purpose tool to design homebrews, organize production, and track inventory.'
+    );
     expect(descriptionElement.id).toMatch('app-description');
   });
 
