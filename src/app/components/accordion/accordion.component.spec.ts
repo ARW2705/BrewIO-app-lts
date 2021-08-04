@@ -1,14 +1,14 @@
 /* Module imports */
-import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { AnimationsServiceStub } from '../../../../test-config/service-stubs';
 import { AnimationStub } from '../../../../test-config/ionic-stubs';
+import { AnimationsServiceStub } from '../../../../test-config/service-stubs';
 
 /* Service imports */
 import { AnimationsService } from '../../services/services';
@@ -18,9 +18,9 @@ import { AccordionComponent } from './accordion.component';
 
 
 describe('AccordionComponent', (): void => {
+  configureTestBed();
   let fixture: ComponentFixture<AccordionComponent>;
   let accordionCmp: AccordionComponent;
-  configureTestBed();
 
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
@@ -56,7 +56,6 @@ describe('AccordionComponent', (): void => {
     fixture.detectChanges();
 
     accordionCmp.ngOnChanges();
-
     expect(playSpy).toHaveBeenCalled();
   });
 
@@ -65,7 +64,6 @@ describe('AccordionComponent', (): void => {
     _stubExpandAnimation.play = jest
       .fn()
       .mockReturnValue(Promise.resolve());
-
     const _stubCollapseAnimation: AnimationStub = new AnimationStub();
     _stubCollapseAnimation.play = jest
       .fn()
@@ -74,7 +72,6 @@ describe('AccordionComponent', (): void => {
     accordionCmp.animationService.expand = jest
       .fn()
       .mockReturnValue(_stubExpandAnimation);
-
     accordionCmp.animationService.collapse = jest
       .fn()
       .mockReturnValue(_stubCollapseAnimation);
@@ -89,16 +86,12 @@ describe('AccordionComponent', (): void => {
     fixture.detectChanges();
 
     const divElement: HTMLElement = fixture.nativeElement.querySelector('div');
-
     accordionCmp.playAnimation();
-
     expect(expandSpy).toHaveBeenCalledWith(divElement, { duration: accordionCmp.animationDuration });
     expect(expandPlaySpy).toHaveBeenCalled();
 
     accordionCmp.expanded = false;
-
     accordionCmp.playAnimation();
-
     expect(collapseSpy).toHaveBeenCalledWith(divElement, { duration: accordionCmp.animationDuration });
     expect(collapsePlaySpy).toHaveBeenCalled();
   });
@@ -121,9 +114,7 @@ describe('AccordionComponent', (): void => {
     fixture.detectChanges();
 
     accordionCmp.container = null;
-
     accordionCmp.playAnimation();
-
     expect(expandSpy).not.toHaveBeenCalled();
     expect(expandPlaySpy).not.toHaveBeenCalled();
   });

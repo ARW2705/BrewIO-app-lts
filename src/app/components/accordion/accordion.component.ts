@@ -7,7 +7,7 @@ import { AnimationsService } from '../../services/animations/animations.service'
 
 
 @Component({
-  selector: 'accordion',
+  selector: 'app-accordion',
   templateUrl: './accordion.component.html',
   styleUrls: ['./accordion.component.scss']
 })
@@ -18,13 +18,9 @@ export class AccordionComponent implements OnChanges {
 
   constructor(public animationService: AnimationsService) { }
 
-  /***** Lifecycle Hooks *****/
-
   ngOnChanges(): void {
     this.playAnimation();
   }
-
-  /***** End Lifecycle Hooks *****/
 
   /**
    * Play vertical expand or collapse animation
