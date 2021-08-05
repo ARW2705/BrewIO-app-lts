@@ -1,0 +1,54 @@
+.ingredient-row {
+  /* Display */
+  margin-top: 5px;
+
+  /* Text */
+  font-size: 1.2rem;
+  text-align: left;
+
+  &:not(:last-child) {
+    /* Display */
+    border-bottom: 2px solid var(--ion-color-light-shade);
+  }
+
+  /* Children */
+  ion-col:not(:first-child) {
+    /* Text */
+    text-align: right;
+  }
+
+  ion-row {
+    /* Display */
+    width: 100%;
+    border-top: 1px solid var(--ion-color-light);
+  }
+}
+
+
+ion-col {
+  /* Color */
+  color: var(--ion-color-light);
+}
+
+ion-item-divider {
+  /* Display */
+  --padding-start: 0;
+  border-bottom: 2px solid var(--ion-color-secondary-tint);
+
+  /* Color */
+  --color: var(--ion-color-secondary-tint);
+  --background: transparent;
+
+  > span {
+    /* Display */
+    margin: 0 auto;
+
+    /* Text */
+    font-size: 1.5rem;
+  }
+}
+
+ion-item-group {
+  /* Display */
+  margin: 5px 0;
+}
