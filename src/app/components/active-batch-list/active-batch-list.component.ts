@@ -1,5 +1,5 @@
 /* Module imports */
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, Renderer2, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { finalize, takeUntil } from 'rxjs/operators';
@@ -11,31 +11,30 @@ import { Batch } from '../../shared/interfaces';
 import { CustomError } from '../../shared/types';
 
 /* Service imports */
-import { AnimationsService, ErrorReportingService, IdService, ProcessService, ToastService, UtilityService } from '../../services/services';
+import { AnimationsService, ErrorReportingService, IdService, ProcessService, UtilityService } from '../../services/services';
 
 
 @Component({
-  selector: 'active-batches',
-  templateUrl: './active-batches.component.html',
-  styleUrls: ['./active-batches.component.scss']
+  selector: 'app-active-batch-list',
+  templateUrl: './active-batch-list.component.html',
+  styleUrls: ['./active-batch-list.component.scss']
 })
-export class ActiveBatchesComponent implements OnInit, OnChanges, OnDestroy, AfterViewInit {
+export class ActiveBatchListComponent implements OnInit, OnChanges, OnDestroy, AfterViewInit {
   @Input() enterDuration: number = 0;
   @Input() rootURL: string = 'tabs/home';
   @Input() shown: boolean = false;
   @ViewChild('batchSlidingItemsList', { read: ElementRef }) batchSlidingItemsList: ElementRef;
   activeBatchesList: Batch[] = [];
   destroy$: Subject<boolean> = new Subject<boolean>();
+  topLevelContentContainer: HTMLElement = null;
 
   constructor(
     public animationService: AnimationsService,
-    public cdRef: ChangeDetectorRef,
     public errorReporter: ErrorReportingService,
     public idService: IdService,
     public processService: ProcessService,
     public renderer: Renderer2,
     public router: Router,
-    public toastService: ToastService,
     public utilService: UtilityService
   ) { }
 
@@ -106,7 +105,7 @@ export class ActiveBatchesComponent implements OnInit, OnChanges, OnDestroy, Aft
    *
    * @param: none
    *
-   * @return: IonContent element
+   * @return: IonContent element or null if list hasn't been initialized
    */
   getTopLevelContainer(): HTMLElement {
     if (!this.batchSlidingItemsList) {
@@ -117,7 +116,24 @@ export class ActiveBatchesComponent implements OnInit, OnChanges, OnDestroy, Aft
     while (currentElem && currentElem.tagName !== 'ION-CONTENT') {
       currentElem = currentElem.parentElement;
     }
+
     return currentElem;
+  }
+
+  /**
+   * Report an animation error when containing element is not found
+   *
+   * @param: none
+   * @return: none
+   */
+  reportSlidingHintError(): void {
+    const message: string = 'Cannot find content container';
+    const severity: number = 4;
+    this.errorReporter.setErrorReport(
+      this.errorReporter.getCustomReportFromError(
+        new CustomError('AnimationError', message, severity, message)
+      )
+    );
   }
 
   /**
@@ -129,32 +145,23 @@ export class ActiveBatchesComponent implements OnInit, OnChanges, OnDestroy, Aft
   runSlidingHints(): void {
     const topLevelContent: HTMLElement = this.getTopLevelContainer();
     if (!topLevelContent) {
-      const message: string = 'Cannot find content container';
-      this.errorReporter.setErrorReport(
-        this.errorReporter.getCustomReportFromError(
-          new CustomError('AnimationError', message, 4, message)
-        )
-      );
+      this.reportSlidingHintError();
       return;
     }
 
     this.toggleSlidingItemClass(true);
-    this.cdRef.detectChanges();
 
+    const listElem: HTMLElement = this.batchSlidingItemsList.nativeElement;
     this.animationService.playCombinedSlidingHintAnimations(
       topLevelContent,
-      this.batchSlidingItemsList.nativeElement,
-      this.animationService.getEstimatedItemOptionWidth(this.batchSlidingItemsList.nativeElement, 0, 1),
+      listElem,
+      this.animationService.getEstimatedItemOptionWidth(listElem, 0, 1),
       this.enterDuration
     )
     .pipe(finalize((): void => this.toggleSlidingItemClass(false)))
     .subscribe(
       (): void => this.animationService.setHintShownFlag('sliding', 'batch'),
-      (error: Error): void => {
-        this.errorReporter.setErrorReport(
-          this.errorReporter.getCustomReportFromError(error, { severity: 4 })
-        );
-      }
+      (error: Error): void => this.errorReporter.handleUnhandledError(error)
     );
   }
 
@@ -168,11 +175,8 @@ export class ActiveBatchesComponent implements OnInit, OnChanges, OnDestroy, Aft
    * @return: none
    */
   toggleSlidingItemClass(show: boolean): void {
-    this.animationService.toggleSlidingItemClass(
-      this.batchSlidingItemsList.nativeElement,
-      show,
-      this.renderer
-    );
+    const listElem: HTMLElement = this.batchSlidingItemsList.nativeElement;
+    this.animationService.toggleSlidingItemClass(listElem, show, this.renderer);
   }
 
   /***** End Animation *****/

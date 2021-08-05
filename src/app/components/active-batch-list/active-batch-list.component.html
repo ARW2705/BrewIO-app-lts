@@ -1,0 +1,18 @@
+<ion-grid>
+  <!-- Notification when there are no active batches present -->
+  <ion-row  *ngIf="!activeBatchesList.length"
+            class="ion-justify-content-center no-item">
+    No Active Batches
+  </ion-row>
+  <!-- Active Batch List -->
+  <ion-row *ngIf="activeBatchesList.length">
+    <ion-list #batchSlidingItemsList
+              id="batch-list">
+      <ng-container *ngFor="let batch of activeBatchesList">
+        <app-active-batch (continueButtonEvent)="navToBrewProcess(batch)"
+                          [batch]="batch">
+        </app-active-batch>
+      </ng-container>
+    </ion-list>
+  </ion-row>
+</ion-grid>
