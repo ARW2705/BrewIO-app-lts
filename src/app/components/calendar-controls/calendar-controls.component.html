@@ -1,0 +1,42 @@
+<ion-grid>
+  <!-- Month display and controls -->
+  <ion-row class="ion-align-items-center">
+    <!-- Go back month button -->
+    <ion-col size="2">
+      <app-calendar-controls-change-button  (changeButtonEvent)="onChangeClick('prev')"
+                                            iconName="caret-back-circle-outline">
+      </app-calendar-controls-change-button>
+    </ion-col>
+
+    <!-- Displayed month -->
+    <ion-col class="month-header">{{ displayDate | moment:'format':'MMMM' }}</ion-col>
+
+    <!-- Go forward month button -->
+    <ion-col size="2">
+      <app-calendar-controls-change-button  (changeButtonEvent)="onChangeClick('next')"
+                                            iconName="caret-forward-circle-outline">
+      </app-calendar-controls-change-button>
+    </ion-col>
+
+  </ion-row>
+
+  <!-- Start and Alert toggle buttons -->
+  <ion-row>
+
+    <ion-col>
+      <app-calendar-controls-toggle-button  (toggleButtonEvent)="onSelectClick('start')"
+                                            [buttonColor]="editType === 'start' ? 'secondary': 'primary'"
+                                            buttonText="Select Start">
+      </app-calendar-controls-toggle-button>
+    </ion-col>
+
+    <ion-col>
+      <app-calendar-controls-toggle-button  (toggleButtonEvent)="onSelectClick('alerts')"
+                                            [buttonColor]="editType === 'alerts' ? 'secondary': 'primary'"
+                                            buttonText="Select Alerts">
+      </app-calendar-controls-toggle-button>
+    </ion-col>
+
+  </ion-row>
+
+</ion-grid>
