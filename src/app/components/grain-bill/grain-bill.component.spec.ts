@@ -7,7 +7,6 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
 import { mockGrainBill } from '../../../../test-config/mock-models';
-import { RatioPipeStub, UnitConversionPipeStub } from '../../../../test-config/pipe-stubs';
 
 /* Interface imports */
 import { GrainBill } from '../../shared/interfaces';
@@ -17,17 +16,14 @@ import { GrainBillComponent } from './grain-bill.component';
 
 
 describe('GrainBillComponent', (): void => {
-  let fixture: ComponentFixture<GrainBillComponent>;
-  let gbCmp: GrainBillComponent;
   configureTestBed();
+  let fixture: ComponentFixture<GrainBillComponent>;
+  let component: GrainBillComponent;
+  let originalOnChanges: any;
 
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
-      declarations: [
-        GrainBillComponent,
-        RatioPipeStub,
-        UnitConversionPipeStub
-      ],
+      declarations: [ GrainBillComponent ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
     await TestBed.compileComponents();
@@ -37,46 +33,98 @@ describe('GrainBillComponent', (): void => {
 
   beforeEach((): void => {
     fixture = TestBed.createComponent(GrainBillComponent);
-    gbCmp = fixture.componentInstance;
+    component = fixture.componentInstance;
+    originalOnChanges = component.ngOnChanges;
+    component.ngOnChanges = jest.fn();
   });
 
   test('should create the component', (): void => {
     fixture.detectChanges();
 
-    expect(gbCmp).toBeDefined();
+    expect(component).toBeDefined();
   });
 
-  test('should open ingredient form modal via recipe action', (): void => {
-    const _mockGrainBill: GrainBill = mockGrainBill()[0];
-
-    gbCmp.onRecipeAction = jest
-      .fn();
-
-    const actionSpy: jest.SpyInstance = jest.spyOn(gbCmp, 'onRecipeAction');
+  test('should call setRatios on component changes', (): void => {
+    component.setRatios = jest.fn();
+    const setSpy: jest.SpyInstance = jest.spyOn(component, 'setRatios');
+    component.ngOnChanges = originalOnChanges;
 
     fixture.detectChanges();
 
-    gbCmp.openIngredientFormModal(_mockGrainBill);
-
-    expect(actionSpy).toHaveBeenCalledWith('openIngredientFormModal', ['grains', _mockGrainBill]);
+    component.ngOnChanges();
+    expect(setSpy).toHaveBeenCalled();
   });
 
-  test('should display grain bill data', (): void => {
+  test('should check if a grain instance contributes to fermentation', (): void => {
     const _mockGrainBill: GrainBill[] = mockGrainBill();
-
-    gbCmp.grainBill = _mockGrainBill;
+    const _mockFermentable: GrainBill = _mockGrainBill[0];
+    const _mockNonFermentable: GrainBill = _mockGrainBill[1];
+    _mockNonFermentable.grainType.gravity = 0;
 
     fixture.detectChanges();
 
-    const grainBillElements: NodeList = fixture.nativeElement.querySelectorAll('.ingredient-text-container');
+    expect(component.contributesFermentable(_mockFermentable)).toBe(true);
+    expect(component.contributesFermentable(_mockNonFermentable)).toBe(false);
+  });
 
-    expect(grainBillElements.length).toEqual(3);
+  test('should get total grains quantity', (): void => {
+    const _mockGrainBill: GrainBill[] = mockGrainBill(); // total quantity 12.5
+    component.grainBill = _mockGrainBill;
+    component.contributesFermentable = jest.fn()
+      .mockReturnValueOnce(true)
+      .mockReturnValueOnce(false) // mock second instance as not contributing 2
+      .mockReturnValueOnce(true);
 
-    const grainBillElem: Node = grainBillElements.item(0);
-    const grainBillElemTopRow = grainBillElem.childNodes.item(0);
-    expect(grainBillElemTopRow.childNodes.item(0).textContent).toMatch(_mockGrainBill[0].grainType.name);
-    const grainBillElemBottomRow = grainBillElem.childNodes.item(1);
-    expect(grainBillElemBottomRow.childNodes.item(1).textContent).toMatch(`${_mockGrainBill[0].grainType.lovibond}°L`);
+    fixture.detectChanges();
+
+    expect(component.getTotalGristQuantity()).toEqual(10.5);
+  });
+
+  test('should handle open form modal click', (): void => {
+    const _mockGrainBill: GrainBill = mockGrainBill()[0];
+    component.openIngredientFormEvent.emit = jest.fn();
+    const emitSpy: jest.SpyInstance = jest.spyOn(component.openIngredientFormEvent, 'emit');
+
+    fixture.detectChanges();
+
+    component.openIngredientFormModal(_mockGrainBill);
+    expect(emitSpy).toHaveBeenCalledWith(_mockGrainBill);
+  });
+
+  test('should set ratios of grains instances to total', (): void => {
+    const _mockGrainBill: GrainBill[] = mockGrainBill(); // total quantity 10.5; 10, 2 (ignore), 0.5
+    component.grainBill = _mockGrainBill;
+    component.getTotalGristQuantity = jest.fn().mockReturnValue(10.5);
+    component.contributesFermentable = jest.fn()
+      .mockReturnValueOnce(true)
+      .mockReturnValueOnce(false)
+      .mockReturnValueOnce(true);
+
+    fixture.detectChanges();
+
+    component.setRatios();
+    expect(component.ratios[0]).toMatch('95.2%');
+    expect(component.ratios[1]).toMatch('0%');
+    expect(component.ratios[2]).toMatch('4.8%');
+  });
+
+  test('should render the component', (): void => {
+    const _mockGrainBill: GrainBill[] = mockGrainBill();
+    component.grainBill = _mockGrainBill;
+    component.ratios = [ '80%', '16%', '4%' ];
+
+    fixture.detectChanges();
+
+    const items: NodeList = global.document.querySelectorAll('app-grain-bill-item');
+    const first: HTMLElement = <HTMLElement>items.item(0);
+    expect(first['grains']).toStrictEqual(_mockGrainBill[0]);
+    expect(first['ratio']).toMatch('80%');
+    const second: HTMLElement = <HTMLElement>items.item(1);
+    expect(second['grains']).toStrictEqual(_mockGrainBill[1]);
+    expect(second['ratio']).toMatch('16%');
+    const last: HTMLElement = <HTMLElement>items.item(2);
+    expect(last['grains']).toStrictEqual(_mockGrainBill[2]);
+    expect(last['ratio']).toMatch('4%');
   });
 
 });

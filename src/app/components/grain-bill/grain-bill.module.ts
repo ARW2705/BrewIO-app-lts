@@ -1,21 +1,18 @@
 /* Module imports */
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
-/* Pipe imports */
-import { RatioPipeModule, UnitConversionPipeModule } from '../../pipes/pipes';
-
 /* Component imports */
+import { GrainBillItemComponentModule } from '../grain-bill-item/grain-bill-item.module';
 import { GrainBillComponent } from './grain-bill.component';
 
 
 @NgModule({
   imports: [
     CommonModule,
-    IonicModule,
-    RatioPipeModule,
-    UnitConversionPipeModule
+    GrainBillItemComponentModule,
+    IonicModule
   ],
   declarations: [
     GrainBillComponent
