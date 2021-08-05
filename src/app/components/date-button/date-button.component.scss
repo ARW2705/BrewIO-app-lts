@@ -34,36 +34,30 @@
 
 .month {
   circle {
-    /* Color */
     fill:  var(--ion-color-light);
   }
 
   text {
-    /* Color */
     fill: var(--ion-color-dark);
   }
 }
 
 .projected {
   circle {
-    /* Color */
     fill: var(--ion-color-tertiary);
   }
 
   text {
-    /* Color */
     fill: var(--ion-color-dark);
   }
 }
 
 .start {
   circle {
-    /* Color */
     fill: var(--ion-color-secondary);
   }
 
   text {
-    /* Color */
     fill: var(--ion-color-dark);
   }
 }

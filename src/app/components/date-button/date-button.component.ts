@@ -4,7 +4,7 @@ import * as moment from 'moment';
 
 
 @Component({
-  selector: 'date-button',
+  selector: 'app-date-button',
   templateUrl: './date-button.component.html',
   styleUrls: ['./date-button.component.scss'],
 })
