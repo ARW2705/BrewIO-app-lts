@@ -1,0 +1,49 @@
+.active-batch-summary {
+  /* Display */
+  border-bottom: 2px solid var(--ion-color-primary);
+  --inner-padding-end: 0;
+  --padding-start: 0;
+
+  /* Children */
+  .summary-text-container {
+    /* Display */
+    margin: 5px 0;
+    padding-left: 5px;
+
+    /* Children */
+    p {
+      margin: 0;
+    }
+  }
+}
+
+.batch-item {
+  &:not(:last-child) {
+    margin-bottom: 15px;
+  }
+}
+
+.sliding-button-container {
+  /* Display */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  /* Children */
+  ion-icon {
+    font-size: 1.5rem;
+  }
+
+  span {
+    font-size: 1rem;
+  }
+}
+
+
+ion-item {
+  font-size: 1.5rem;
+}
+
+ion-item-option {
+  margin-top: 2px;
+}
