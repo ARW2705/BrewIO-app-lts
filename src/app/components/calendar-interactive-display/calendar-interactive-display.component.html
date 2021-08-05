@@ -1,0 +1,25 @@
+<ion-grid *ngIf="month">
+
+  <!-- Display week day markers -->
+  <ion-row class="day-header">
+    <ion-col *ngFor="let day of weekdays">{{ day }}</ion-col>
+  </ion-row>
+
+  <!-- Calendar Week Row -->
+  <ion-row *ngFor="let week of month">
+
+      <!-- Calendar Day -->
+      <ion-col *ngFor="let day of week">
+
+        <app-date-button  [date]="day.mDate"
+                          [isMonth]="day.isMonth"
+                          [isProjected]="day.isProjected"
+                          [isStart]="day.isStart"
+                          (click)="onDateButtonClick(day)">
+        </app-date-button>
+
+      </ion-col>
+
+  </ion-row>
+
+</ion-grid>
