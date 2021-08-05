@@ -1,13 +1,12 @@
 /* Module imports */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
 import { mockRecipeVariantComplete, mockRecipeVariantIncomplete } from '../../../../test-config/mock-models';
-import { UnitConversionPipeStub } from '../../../../test-config/pipe-stubs';
 
 /* Interface imports */
 import { RecipeVariant } from '../../shared/interfaces';
@@ -17,16 +16,13 @@ import { IngredientListComponent } from './ingredient-list.component';
 
 
 describe('IngredientListComponent', (): void => {
-  let fixture: ComponentFixture<IngredientListComponent>;
-  let ilCmp: IngredientListComponent;
   configureTestBed();
+  let fixture: ComponentFixture<IngredientListComponent>;
+  let component: IngredientListComponent;
 
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
-      declarations: [
-        IngredientListComponent,
-        UnitConversionPipeStub
-      ],
+      declarations: [ IngredientListComponent ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
     await TestBed.compileComponents();
@@ -36,19 +32,53 @@ describe('IngredientListComponent', (): void => {
 
   beforeEach((): void => {
     fixture = TestBed.createComponent(IngredientListComponent);
-    ilCmp = fixture.componentInstance;
+    component = fixture.componentInstance;
   });
 
   test('should create the component', (): void => {
     fixture.detectChanges();
 
-    expect(ilCmp).toBeDefined();
+    expect(component).toBeDefined();
+  });
+
+  test('should set has ingredients flag based on variant ingredients list', (): void => {
+    const _mockRecipeVariantComplete: RecipeVariant = mockRecipeVariantComplete();
+    const _mockRecipeVariantIncomplete: RecipeVariant = mockRecipeVariantIncomplete();
+
+    component.recipeVariant = _mockRecipeVariantIncomplete;
+
+    fixture.detectChanges();
+    component.ngOnChanges();
+    expect(component.hasIngredients).toBe(false);
+
+    _mockRecipeVariantIncomplete.grains = _mockRecipeVariantComplete.grains;
+    fixture.detectChanges();
+    component.ngOnChanges();
+    expect(component.hasIngredients).toBe(true);
+
+    _mockRecipeVariantIncomplete.grains = [];
+    _mockRecipeVariantIncomplete.hops = _mockRecipeVariantComplete.hops;
+    fixture.detectChanges();
+    component.ngOnChanges();
+    expect(component.hasIngredients).toBe(true);
+
+    _mockRecipeVariantIncomplete.hops = [];
+    _mockRecipeVariantIncomplete.yeast = _mockRecipeVariantComplete.yeast;
+    fixture.detectChanges();
+    component.ngOnChanges();
+    expect(component.hasIngredients).toBe(true);
+
+    _mockRecipeVariantIncomplete.yeast = [];
+    _mockRecipeVariantIncomplete.otherIngredients = _mockRecipeVariantComplete.otherIngredients;
+    fixture.detectChanges();
+    component.ngOnChanges();
+    expect(component.hasIngredients).toBe(true);
   });
 
   test('should display empty message if no ingredients', (): void => {
     const _mockRecipeVariant: RecipeVariant = mockRecipeVariantComplete();
-    ilCmp.hasIngredients = false;
-    ilCmp.recipeVariant = _mockRecipeVariant;
+    component.hasIngredients = false;
+    component.recipeVariant = _mockRecipeVariant;
 
     fixture.detectChanges();
 
@@ -56,76 +86,18 @@ describe('IngredientListComponent', (): void => {
     expect(message.textContent).toMatch('No Ingredients Provided Yet!');
   });
 
-  test('should display lists of ingredients of a recipe', (): void => {
-    ilCmp.hasIngredients = true;
+  test('should display list items', (): void => {
     const _mockRecipeVariant: RecipeVariant = mockRecipeVariantComplete();
-    const grainsCount: number = _mockRecipeVariant.grains.length;
-    const hopsCount: number = _mockRecipeVariant.hops.length;
-    const yeastCount: number = _mockRecipeVariant.yeast.length;
-
-    ilCmp.recipeVariant = _mockRecipeVariant;
+    component.recipeVariant = _mockRecipeVariant;
+    component.hasIngredients = true;
 
     fixture.detectChanges();
 
-    const ingredientLists: NodeList = fixture.nativeElement.querySelectorAll('.ingredient-row');
-
-    // grain nodes
-    for (let i = 0; i < grainsCount; i++) {
-      const grainNodes: NodeList = ingredientLists.item(i).childNodes;
-      expect(grainNodes.item(0).textContent).toMatch(_mockRecipeVariant.grains[i].grainType.name);
-    }
-
-    // hops nodes
-    for (let i = 0; i < hopsCount; i++) {
-      const hopsNodes: NodeList = ingredientLists.item(grainsCount + i).childNodes;
-      expect(hopsNodes.item(0).textContent).toMatch(_mockRecipeVariant.hops[i].hopsType.name);
-    }
-
-    // yeast nodes
-    for (let i = 0; i < yeastCount; i++) {
-      const yeastNodes: NodeList = ingredientLists.item(grainsCount + hopsCount + i).childNodes;
-      expect(yeastNodes.item(0).textContent).toMatch(_mockRecipeVariant.yeast[i].yeastType.name);
-    }
-
-    // other ingredient nodes
-    for (let i = 0; i < yeastCount; i++) {
-      const otherNodes: NodeList = ingredientLists.item(grainsCount + hopsCount + yeastCount + i).childNodes;
-      expect(otherNodes.item(0).textContent).toMatch(_mockRecipeVariant.otherIngredients[i].name);
-    }
-  });
-
-  test('should set has ingredients flag based on variant ingredients list', (): void => {
-    const _mockRecipeVariantComplete: RecipeVariant = mockRecipeVariantComplete();
-    const _mockRecipeVariantIncomplete: RecipeVariant = mockRecipeVariantIncomplete();
-
-    ilCmp.recipeVariant = _mockRecipeVariantIncomplete;
-
-    fixture.detectChanges();
-    ilCmp.ngOnChanges();
-    expect(ilCmp.hasIngredients).toBe(false);
-
-    _mockRecipeVariantIncomplete.grains = _mockRecipeVariantComplete.grains;
-    fixture.detectChanges();
-    ilCmp.ngOnChanges();
-    expect(ilCmp.hasIngredients).toBe(true);
-
-    _mockRecipeVariantIncomplete.grains = [];
-    _mockRecipeVariantIncomplete.hops = _mockRecipeVariantComplete.hops;
-    fixture.detectChanges();
-    ilCmp.ngOnChanges();
-    expect(ilCmp.hasIngredients).toBe(true);
-
-    _mockRecipeVariantIncomplete.hops = [];
-    _mockRecipeVariantIncomplete.yeast = _mockRecipeVariantComplete.yeast;
-    fixture.detectChanges();
-    ilCmp.ngOnChanges();
-    expect(ilCmp.hasIngredients).toBe(true);
-
-    _mockRecipeVariantIncomplete.yeast = [];
-    _mockRecipeVariantIncomplete.otherIngredients = _mockRecipeVariantComplete.otherIngredients;
-    fixture.detectChanges();
-    ilCmp.ngOnChanges();
-    expect(ilCmp.hasIngredients).toBe(true);
+    const items: NodeList = global.document.querySelectorAll('app-ingredient-list-item');
+    expect(items.item(0)['ingredients']).toStrictEqual(_mockRecipeVariant.grains);
+    expect(items.item(1)['ingredients']).toStrictEqual(_mockRecipeVariant.hops);
+    expect(items.item(2)['ingredients']).toStrictEqual(_mockRecipeVariant.yeast);
+    expect(items.item(3)['ingredients']).toStrictEqual(_mockRecipeVariant.otherIngredients);
   });
 
 });

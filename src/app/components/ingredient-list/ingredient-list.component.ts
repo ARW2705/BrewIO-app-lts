@@ -15,8 +15,6 @@ export class IngredientListComponent implements OnChanges {
   @Input() refreshPipes: boolean = false;
   hasIngredients: boolean = false;
 
-  constructor() { }
-
   ngOnChanges(): void {
     console.log('ingredient list changes');
     this.hasIngredients = this.recipeVariant

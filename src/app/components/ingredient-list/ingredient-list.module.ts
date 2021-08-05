@@ -1,20 +1,18 @@
 /* Module imports */
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
-/* Pipe imports */
-import { UnitConversionPipeModule } from '../../pipes/pipes';
-
 /* Component imports */
+import { IngredientListItemComponentModule } from '../ingredient-list-item/ingredient-list-item.module';
 import { IngredientListComponent } from './ingredient-list.component';
 
 
 @NgModule({
   imports: [
     CommonModule,
-    IonicModule,
-    UnitConversionPipeModule
+    IngredientListItemComponentModule,
+    IonicModule
   ],
   declarations: [
     IngredientListComponent
