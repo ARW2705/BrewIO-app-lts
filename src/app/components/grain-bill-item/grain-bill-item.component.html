@@ -1,0 +1,57 @@
+<ion-item class="item-buttons">
+
+  <ion-grid class="ion-no-padding">
+
+    <button (click)="openIngredientFormModal()"
+            [ngClass]="{
+              'item-button': true,
+              'border-bottom-medium': !isLast
+            }">
+
+      <ion-row>
+
+        <ion-col  size="2"
+                  class="ion-align-self-center">
+          <ion-icon color="primary"
+                    name="create-outline">
+          </ion-icon>
+        </ion-col>
+
+        <ion-col  size="10"
+                  class="ingredient-text-container">
+
+          <ion-row>
+            <ion-col  size="8"
+                      class="col-left">
+              {{ grains.grainType.name }}
+            </ion-col>
+            <ion-col  size="4"
+                      class="col-right">
+              {{ grains.quantity | unitConversion:'weightLarge':true }}
+            </ion-col>
+          </ion-row>
+
+          <ion-row>
+            <ion-col class="col-left">
+              {{ grains.grainType.gravity | unitConversion:'density':true }}
+            </ion-col>
+            <ion-col>
+              {{ grains.grainType.lovibond }}°L
+            </ion-col>
+            <ion-col *ngIf="grains.mill">
+              {{ grains.mill }}"
+            </ion-col>
+            <ion-col class="col-right">
+              {{ ratio }}
+            </ion-col>
+          </ion-row>
+
+        </ion-col>
+
+      </ion-row>
+
+    </button>
+
+  </ion-grid>
+
+</ion-item>
