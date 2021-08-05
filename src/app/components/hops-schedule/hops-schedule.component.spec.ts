@@ -1,32 +1,36 @@
 /* Module imports */
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
-import { CUSTOM_ELEMENTS_SCHEMA, SimpleChange, SimpleChanges } from '@angular/core';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
 import { mockHopsSchedule, mockRecipeVariantComplete } from '../../../../test-config/mock-models';
-import { CalculatePipeStub, UnitConversionPipeStub } from '../../../../test-config/pipe-stubs';
+import { CalculationsServiceStub } from '../../../../test-config/service-stubs';
 
 /* Interface imports */
-import { HopsSchedule } from '../../shared/interfaces';
+import { HopsSchedule, RecipeVariant } from '../../shared/interfaces';
+
+/* Service imports */
+import { CalculationsService } from '../../services/services';
 
 /* Component imports */
 import { HopsScheduleComponent } from './hops-schedule.component';
 
 
 describe('HopsSchedule', (): void => {
-  let fixture: ComponentFixture<HopsScheduleComponent>;
-  let hsCmp: HopsScheduleComponent;
   configureTestBed();
+  let fixture: ComponentFixture<HopsScheduleComponent>;
+  let component: HopsScheduleComponent;
+  let originalOnInit: any;
+  let originalOnChanges: any;
 
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
-      declarations: [
-        HopsScheduleComponent,
-        CalculatePipeStub,
-        UnitConversionPipeStub
+      declarations: [ HopsScheduleComponent ],
+      providers: [
+        { provide: CalculationsService, useClass: CalculationsServiceStub }
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
@@ -37,110 +41,104 @@ describe('HopsSchedule', (): void => {
 
   beforeEach((): void => {
     fixture = TestBed.createComponent(HopsScheduleComponent);
-    hsCmp = fixture.componentInstance;
+    component = fixture.componentInstance;
+    originalOnInit = component.ngOnInit;
+    originalOnChanges = component.ngOnChanges;
+    component.ngOnInit = jest.fn();
+    component.ngOnChanges = jest.fn();
+    component.variant = mockRecipeVariantComplete();
   });
 
   test('should create the component', (): void => {
     fixture.detectChanges();
 
-    expect(hsCmp).toBeDefined();
+    expect(component).toBeDefined();
   });
 
-  test('should handle input change', (): void => {
-    const _mockHopsSchedule: HopsSchedule[] = mockHopsSchedule();
-    const hopsChange: SimpleChanges = {
-      variant: new SimpleChange(null, mockRecipeVariantComplete(), false),
-      hops: new SimpleChange(null, _mockHopsSchedule, false)
-    };
-
-    expect(hsCmp.hopsSchedule.length).toEqual(0);
+  test('should init the component', (): void => {
+    const _mockRecipeVariantComplete: RecipeVariant = mockRecipeVariantComplete();
+    component.ngOnInit = originalOnInit;
+    component.setIBUs = jest.fn();
+    const setSpy: jest.SpyInstance = jest.spyOn(component, 'setIBUs');
 
     fixture.detectChanges();
 
-    hsCmp.ngOnChanges(hopsChange);
-
-    expect(hsCmp.hopsSchedule).toStrictEqual(_mockHopsSchedule);
+    component.ngOnInit();
+    expect(setSpy).toHaveBeenCalled();
+    expect(component.hopsSchedule).toStrictEqual(_mockRecipeVariantComplete.hops);
   });
 
-  test('should open ingredient form modal via recipe action', (): void => {
+  test('should init the component', (): void => {
+    component.ngOnChanges = originalOnChanges;
+    component.setIBUs = jest.fn();
+    const setSpy: jest.SpyInstance = jest.spyOn(component, 'setIBUs');
+
+    fixture.detectChanges();
+
+    component.ngOnChanges();
+    expect(setSpy).toHaveBeenCalled();
+  });
+
+  test('should set IBU values', (): void => {
+    const _mockHopsSchedule: HopsSchedule[] = mockHopsSchedule();
+    component.hopsSchedule = _mockHopsSchedule;
+    let mockIBU: number = 0;
+    component.calculateIBU = jest.fn().mockImplementation((): number => {
+      mockIBU += 10;
+      return mockIBU;
+    });
+
+    fixture.detectChanges();
+
+    component.setIBUs();
+    component.ibus.forEach((ibu: string, index: number): void => {
+      expect(ibu).toMatch(`${index * 10 + 10}.0`)
+    });
+  });
+
+  test('should calculate IBU for a hops schedule instance', (): void => {
+    component.calculator.getIBU = jest.fn().mockReturnValue(0);
+    const _mockRecipeVariantComplete: RecipeVariant = mockRecipeVariantComplete();
+    component.variant = _mockRecipeVariantComplete;
     const _mockHopsSchedule: HopsSchedule = mockHopsSchedule()[0];
-
-    hsCmp.onRecipeAction = jest
-      .fn();
-
-    const actionSpy: jest.SpyInstance = jest.spyOn(hsCmp, 'onRecipeAction');
+    const getSpy: jest.SpyInstance = jest.spyOn(component.calculator, 'getIBU');
 
     fixture.detectChanges();
 
-    hsCmp.openIngredientFormModal(_mockHopsSchedule);
-
-    expect(actionSpy).toHaveBeenCalledWith('openIngredientFormModal', ['hops', _mockHopsSchedule]);
+    component.calculateIBU(_mockHopsSchedule);
+    expect(getSpy).toHaveBeenCalledWith(
+      _mockHopsSchedule.hopsType,
+      _mockHopsSchedule,
+      _mockRecipeVariantComplete.originalGravity,
+      _mockRecipeVariantComplete.batchVolume,
+      _mockRecipeVariantComplete.boilVolume
+    );
   });
 
-  test('should render template with hops schedule', (): void => {
-    const _mockHopsSchedule: HopsSchedule[] = mockHopsSchedule();
-
-    CalculatePipeStub._returnValue = (): string => {
-      return '10';
-    };
-
-    UnitConversionPipeStub._returnValue = (value: number): string => {
-      return value.toString();
-    };
-
-    hsCmp.hopsSchedule = _mockHopsSchedule;
+  test('should open ingredient form modal', (): void => {
+    const _mockHopsSchedule: HopsSchedule = mockHopsSchedule()[0];
+    component.openIngredientFormEvent.emit = jest.fn();
+    const emitSpy: jest.SpyInstance = jest.spyOn(component.openIngredientFormEvent, 'emit');
 
     fixture.detectChanges();
 
-    const items: NodeList = fixture.nativeElement.querySelectorAll('ion-item');
+    component.openIngredientFormModal(_mockHopsSchedule);
+    expect(emitSpy).toHaveBeenCalledWith(_mockHopsSchedule);
+  });
+
+  test('should render the template', (): void => {
+    const _mockHopsSchedule: HopsSchedule[] = mockRecipeVariantComplete().hops;
+    component.ngOnInit = originalOnInit;
+    component.ngOnChanges = originalOnChanges;
+    component.calculator.getIBU = jest.fn().mockReturnValue(0);
+
+    fixture.detectChanges();
+
+    const items: NodeList = global.document.querySelectorAll('app-hops-schedule-item');
     expect(items.length).toEqual(_mockHopsSchedule.length);
-
-    const hopsContainer: HTMLElement = <HTMLElement>items.item(0);
-
-    const hopsRow: Element = hopsContainer.children[0].children[0].children[0];
-
-    const icon: Element = hopsRow.children[0];
-    expect(icon.children[0].getAttribute('name')).toMatch('create-outline');
-
-    const name: Element = hopsRow.children[1].children[0].children[0];
-    expect(name.textContent).toMatch(_mockHopsSchedule[0].hopsType.name);
-
-    const quantity: Element = hopsRow.children[1].children[0].children[1];
-    expect(quantity.textContent).toMatch(_mockHopsSchedule[0].quantity.toString());
-
-    const alphaAcid: Element = hopsRow.children[1].children[1].children[0];
-    expect(alphaAcid.textContent).toMatch(`${_mockHopsSchedule[0].hopsType.alphaAcid}% AA`);
-
-    const ibu: Element = hopsRow.children[1].children[1].children[1];
-    expect(ibu.textContent).toMatch('10');
-
-    const duration: Element = hopsRow.children[1].children[1].children[2];
-    expect(duration.textContent).toMatch(`${_mockHopsSchedule[0].duration}min`);
-  });
-
-  test('should render template with dry hops', (): void => {
-    const _mockHopsSchedule: HopsSchedule[] = mockHopsSchedule();
-    _mockHopsSchedule[0].dryHop = true;
-
-    UnitConversionPipeStub._returnValue = (value: number): string => {
-      return value.toString();
-    };
-
-    hsCmp.hopsSchedule = _mockHopsSchedule;
-
-    fixture.detectChanges();
-
-    const items: NodeList = fixture.nativeElement.querySelectorAll('ion-item');
-
-    const hopsContainer: HTMLElement = <HTMLElement>items.item(0);
-
-    const hopsRow: Element = hopsContainer.children[0].children[0].children[0];
-
-    const dryHopRow: Element = hopsRow.children[1].children[1];
-
-    expect(dryHopRow.children[0].textContent).toMatch('0% AA');
-    expect(dryHopRow.children[1].textContent).toMatch('0 IBU');
-    expect(dryHopRow.children[2].textContent).toMatch('Dry Hop');
+    _mockHopsSchedule.forEach((_mockHops: HopsSchedule, index: number): void => {
+      expect(items.item(index)['hops']).toStrictEqual(_mockHops);
+    });
   });
 
 });
