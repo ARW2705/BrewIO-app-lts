@@ -1,7 +1,7 @@
 /* Module Imports */
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
 import { Router } from '@angular/router';
+import { ModalController } from '@ionic/angular';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -64,20 +64,18 @@ export class HeaderComponent implements OnInit, OnDestroy {
   /**
    * Open login modal
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   async openLogin(): Promise<void> {
-    const modal: HTMLIonModalElement = await this.modalCtrl.create({
-      component: LoginPage
-    });
+    const modal: HTMLIonModalElement = await this.modalCtrl.create({ component: LoginPage });
     return await modal.present();
   }
 
   /**
    * Open signup modal
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   async openSignup(): Promise<void> {
@@ -93,10 +91,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   /***** Button Hanlders *****/
 
   /**
-   * Handle header back button. Navigate to given root URL
-   * or use override function if present
+   * Handle header back button; Navigate to given root URL or use override function if present
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   goBack(): void {
@@ -110,7 +107,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   /**
    * Action sheet to choose login or signup modal
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   openLoginSignup(): void {
