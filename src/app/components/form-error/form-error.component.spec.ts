@@ -40,14 +40,12 @@ describe('FormErrorComponent', (): void => {
 
   test('should assemble errors on input changes', (): void => {
     expect(formErrorCmp.errors.length).toEqual(0);
-
     formErrorCmp.controlErrors = {
       required: true,
       min: true
     };
     formErrorCmp.controlName = 'quantity';
     formErrorCmp.formName = 'ingredient';
-
     formErrorCmp.ngOnChanges();
 
     fixture.detectChanges();
@@ -55,18 +53,15 @@ describe('FormErrorComponent', (): void => {
     const ingredientErrors: NodeList = fixture.nativeElement.querySelectorAll('.form-error');
     const requiredText: string = FORM_ERROR_MESSAGES['ingredient']['quantity']['required'];
     const minText: string = FORM_ERROR_MESSAGES['ingredient']['quantity']['min'];
-
     expect(ingredientErrors.item(0).textContent).toMatch(requiredText);
     expect(ingredientErrors.item(1).textContent).toMatch(minText);
     expect(formErrorCmp.errors).toStrictEqual([ requiredText, minText ]);
-
     formErrorCmp.controlErrors = {
       required: true,
       passwordInvalid: true
     };
     formErrorCmp.controlName = 'password';
     formErrorCmp.formName = 'signup';
-
     formErrorCmp.ngOnChanges();
 
     fixture.detectChanges();
@@ -74,7 +69,6 @@ describe('FormErrorComponent', (): void => {
     const signupErrors: NodeList = fixture.nativeElement.querySelectorAll('.form-error');
     const requiredPasswordText: string = FORM_ERROR_MESSAGES['signup']['password']['required'];
     const passwordInvalidText: string = FORM_ERROR_MESSAGES['signup']['password']['passwordInvalid'];
-
     expect(signupErrors.item(0).textContent).toMatch(requiredPasswordText);
     expect(signupErrors.item(1).textContent).toMatch(passwordInvalidText);
     expect(formErrorCmp.errors).toStrictEqual([ requiredPasswordText, passwordInvalidText ]);
