@@ -204,8 +204,7 @@ export class CalendarComponent implements OnInit, OnChanges {
    * @return: none
    */
   initCalendar(): void {
-    this.setInitialStartDate();
-    this.setInitialProjectedDate();
+    this.setInitialDates();
     this.buildCalendar();
   }
 
@@ -332,7 +331,7 @@ export class CalendarComponent implements OnInit, OnChanges {
    * @param: none
    * @return: none
    */
-  setInitialStartDate(): void {
+  setInitialDates(): void {
     const today: CalendarDate = {
       mDate: this.currentDate,
       isStart: true,

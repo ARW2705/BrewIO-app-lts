@@ -8,7 +8,6 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
 import { mockAlert, mockCalendarDate, mockCalendarProcess } from '../../../../test-config/mock-models';
-import { MomentPipeStub } from '../../../../test-config/pipe-stubs';
 import { IdServiceStub } from '../../../../test-config/service-stubs';
 
 /* Interface imports*/
@@ -31,10 +30,7 @@ describe('CalendarComponent', (): void => {
 
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
-      declarations: [
-        CalendarComponent,
-        MomentPipeStub
-      ],
+      declarations: [ CalendarComponent ],
       providers: [
         { provide: IdService, useClass: IdServiceStub }
       ],
@@ -282,18 +278,16 @@ describe('CalendarComponent', (): void => {
     test('should initialize calendar', (): void => {
       const _mockCalendarProcess: CalendarProcess = mockCalendarProcess();
       component.calendarProcess = _mockCalendarProcess;
-      component.setInitialStartDate = jest.fn();
+      component.setInitialDates = jest.fn();
       component.setInitialProjectedDate = jest.fn();
       component.buildCalendar = jest.fn();
-      const startSpy: jest.SpyInstance = jest.spyOn(component, 'setInitialStartDate');
-      const projectSpy: jest.SpyInstance = jest.spyOn(component, 'setInitialProjectedDate');
+      const startSpy: jest.SpyInstance = jest.spyOn(component, 'setInitialDates');
       const buildSpy: jest.SpyInstance = jest.spyOn(component, 'buildCalendar');
 
       fixture.detectChanges();
 
       component.initCalendar();
       expect(startSpy).toHaveBeenCalled();
-      expect(projectSpy).toHaveBeenCalled();
       expect(buildSpy).toHaveBeenCalled();
     });
 
@@ -425,7 +419,7 @@ describe('CalendarComponent', (): void => {
 
       fixture.detectChanges();
 
-      component.setInitialStartDate();
+      component.setInitialDates();
       expect(component.startDate.mDate).toStrictEqual(now);
       expect(selectSpy.mock.calls[0][0].mDate).toStrictEqual(now);
     });
