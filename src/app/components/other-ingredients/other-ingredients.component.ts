@@ -1,20 +1,18 @@
 /* Module imports */
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 /* Interface imports */
 import { OtherIngredients } from '../../shared/interfaces';
 
 
 @Component({
-  selector: 'other-ingredients',
+  selector: 'app-other-ingredients',
   templateUrl: './other-ingredients.component.html',
   styleUrls: ['./other-ingredients.component.scss'],
 })
 export class OtherIngredientsComponent {
-  @Input() onRecipeAction: (actionName: string, options?: any[]) => void;
   @Input() otherIngredients: OtherIngredients[] = [];
-
-  constructor() { }
+  @Output() openIngredientFormEvent: EventEmitter<OtherIngredients> = new EventEmitter<OtherIngredients>();
 
   /**
    * Open ingredient form modal to update a otherIngredients instance
@@ -24,13 +22,7 @@ export class OtherIngredientsComponent {
    * @return: none
    */
   openIngredientFormModal(otherIngredients: OtherIngredients): void {
-    this.onRecipeAction(
-      'openIngredientFormModal',
-      [
-        'otherIngredients',
-        otherIngredients
-      ]
-    );
+    this.openIngredientFormEvent.emit(otherIngredients);
   }
 
 }

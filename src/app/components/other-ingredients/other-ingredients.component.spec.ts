@@ -16,9 +16,9 @@ import { OtherIngredientsComponent } from './other-ingredients.component';
 
 
 describe('OtherIngredientsComponent', (): void => {
-  let fixture: ComponentFixture<OtherIngredientsComponent>;
-  let oiCmp: OtherIngredientsComponent;
   configureTestBed();
+  let fixture: ComponentFixture<OtherIngredientsComponent>;
+  let component: OtherIngredientsComponent;
 
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
@@ -32,58 +32,37 @@ describe('OtherIngredientsComponent', (): void => {
 
   beforeEach((): void => {
     fixture = TestBed.createComponent(OtherIngredientsComponent);
-    oiCmp = fixture.componentInstance;
+    component = fixture.componentInstance;
   });
 
   test('should create the component', (): void => {
     fixture.detectChanges();
 
-    expect(oiCmp).toBeDefined();
+    expect(component).toBeDefined();
   });
 
-  test('should open ingredient modal form via recipe action', (): void => {
-    const _mockOtherIngredients: OtherIngredients = mockOtherIngredients()[0];
-
-    oiCmp.onRecipeAction = jest
-      .fn();
-
-    const actionSpy: jest.SpyInstance = jest.spyOn(oiCmp, 'onRecipeAction');
+  test('should open ingredient form modal', (): void => {
+    const _mockOtherIngredient: OtherIngredients = mockOtherIngredients()[0];
+    component.openIngredientFormEvent.emit = jest.fn();
+    const emitSpy: jest.SpyInstance = jest.spyOn(component.openIngredientFormEvent, 'emit');
 
     fixture.detectChanges();
 
-    oiCmp.openIngredientFormModal(_mockOtherIngredients);
-
-    expect(actionSpy).toHaveBeenCalledWith('openIngredientFormModal', ['otherIngredients', _mockOtherIngredients]);
+    component.openIngredientFormModal(_mockOtherIngredient);
+    expect(emitSpy).toHaveBeenLastCalledWith(_mockOtherIngredient);
   });
 
-  test('should display an \'other\' ingredient', (): void => {
+  test('should render the template', (): void => {
     const _mockOtherIngredients: OtherIngredients[] = mockOtherIngredients();
-    _mockOtherIngredients[0].type = 'Flavor';
-    _mockOtherIngredients[1].type = 'Water treatment';
-
-    oiCmp.otherIngredients = _mockOtherIngredients;
+    component.otherIngredients = _mockOtherIngredients;
 
     fixture.detectChanges();
 
-    const itemList: NodeList = fixture.nativeElement.querySelectorAll('.item-buttons');
-
-    const firstItem: HTMLElement = <HTMLElement>itemList.item(0).parentNode;
-    const firstItemTextContainer: Element = firstItem.querySelector('.ingredient-text-container');
-    const firstItemName: string = firstItemTextContainer.children[0].children[0].textContent;
-    expect(firstItemName).toMatch(_mockOtherIngredients[0].name);
-    const firstItemQuantityAndUnit: string = firstItemTextContainer.children[0].children[1].textContent;
-    expect(firstItemQuantityAndUnit).toMatch(`${_mockOtherIngredients[0].quantity} ${_mockOtherIngredients[0].units}`);
-    const firstItemDescription: string = firstItemTextContainer.children[1].children[0].textContent;
-    expect(firstItemDescription).toMatch(`${_mockOtherIngredients[0].type}: ${_mockOtherIngredients[0].description}`);
-
-    const secondItem: HTMLElement = <HTMLElement>itemList.item(1).parentNode;
-    const secondItemTextContainer: Element = secondItem.querySelector('.ingredient-text-container');
-    const secondItemName: string = secondItemTextContainer.children[0].children[0].textContent;
-    expect(secondItemName).toMatch(_mockOtherIngredients[0].name);
-    const secondItemQuantityAndUnit: string = secondItemTextContainer.children[0].children[1].textContent;
-    expect(secondItemQuantityAndUnit).toMatch(`${_mockOtherIngredients[0].quantity} ${_mockOtherIngredients[0].units}`);
-    const secondItemDescription: string = secondItemTextContainer.children[1].children[0].textContent;
-    expect(secondItemDescription).toMatch(`${_mockOtherIngredients[0].type}: ${_mockOtherIngredients[0].description}`);
+    const items: NodeList = global.document.querySelectorAll('app-other-ingredients-item');
+    expect(items.length).toEqual(_mockOtherIngredients.length);
+    _mockOtherIngredients.forEach((other: OtherIngredients, index: number): void => {
+      expect(items.item(index)['other']).toStrictEqual(other);
+    })
   });
 
 });
