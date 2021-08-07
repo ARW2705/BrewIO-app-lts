@@ -1,14 +1,14 @@
 /* Module imports */
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup } from '@angular/forms';
-import { Observable, Subject, of, throwError } from 'rxjs';
+import { Observable, of, Subject, throwError } from 'rxjs';
 import { catchError, mergeMap, take } from 'rxjs/operators';
 
 /* Constant imports */
-import { BRIX, PLATO, SELECT_OPTIONS, SPECIFIC_GRAVITY } from '../../shared/constants';
+import { BRIX, PLATO, SPECIFIC_GRAVITY } from '../../shared/constants';
 
 /* Interface imports */
-import { SelectedUnits, User } from '../../shared/interfaces';
+import { FormFieldContext, FormSelectContext, SelectedUnits, Unit, User } from '../../shared/interfaces';
 
 /* Type imports */
 import { CustomError } from '../../shared/types';
@@ -29,18 +29,42 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   defaultEnglish: SelectedUnits = defaultEnglishUnits();
   defaultMetric: SelectedUnits = defaultMetricUnits();
   destroy$: Subject<boolean> = new Subject<boolean>();
-  displayUnits: object = {
-    weightSmall: this.defaultEnglish.weightSmall.longName,
-    weightLarge: this.defaultEnglish.weightLarge.longName,
-    volumeSmall: this.defaultEnglish.volumeSmall.longName,
-    volumeLarge: this.defaultEnglish.volumeLarge.longName,
-    temperature: this.defaultEnglish.temperature.longName
-  };
+  displayUnits: object = {};
+  mappableUnits: string[] = ['weightSmall', 'weightLarge', 'volumeSmall', 'volumeLarge', 'temperature'];
   preferencesForm: FormGroup = null;
   preferredUnits: string = '';
-  selectOptions: object = SELECT_OPTIONS;
+  selects: FormSelectContext[] = [
+    {
+      controlName: 'preferredUnitSystem',
+      label: 'Preferred Unit System',
+      ionChangeEvent: this.onSystemChange.bind(this),
+      options: [
+        { label: 'English Standard', value: 'englishStandard' },
+        { label: 'Metric', value: 'metric' },
+        { label: 'Other/Mixed ', value: 'other' }
+      ]
+    },
+    {
+      controlName: 'density',
+      label: 'Density',
+      ionChangeEvent: (): void => {},
+      options: [
+        { label: 'Specific Gravity', value: 'specificGravity' },
+        { label: 'Brix', value: 'brix' },
+        { label: 'Plato ', value: 'plato' }
+      ]
+    }
+  ];
   setUnits: SelectedUnits = null;
+  toggles: FormFieldContext[] = [
+    { controlName: 'weightSmall', label: 'Weight (small)' },
+    { controlName: 'weightLarge', label: 'Weight (large)' },
+    { controlName: 'volumeSmall', label: 'Volume (small)' },
+    { controlName: 'volumeLarge', label: 'Volume (large)' },
+    { controlName: 'temperature', label: 'Temperature'    }
+  ];
   user: User = null;
+
 
   constructor(
     public errorReporter: ErrorReportingService,
@@ -63,12 +87,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
           this.setUnits = this.preferenceService.getSelectedUnits();
           this.mapDisplayUnits();
           if (this.preferredUnits.length === 0 || this.setUnits === null) {
-            return throwError(new CustomError(
-              'PreferencesError',
-              `Given preferredUnits of ${this.preferredUnits} and units of ${this.setUnits}`,
-              2,
-              'An internal error occurred: invalid units'
-            ));
+            return throwError(this.getInvalidUnitError());
           }
           return of(true);
         }),
@@ -92,43 +111,33 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   /***** Form Methods *****/
 
   /**
-   * Configure updated units form values to SelectedUnits
+   * Get the appropriate english standard or metric unit for a given unit name
+   *
+   * @param: unitName - the name of the Unit
+   * @param: isEnglish - true if unit should be english standard; false for metric
+   *
+   * @return: the corresponding Unit
+   */
+  getSelectedUnit(unitName: string, isEnglish: boolean): Unit {
+    return isEnglish ? this.defaultEnglish[unitName] : this.defaultMetric[unitName];
+  }
+
+  /**
+   * Configure updated units from form values to SelectedUnits
    *
    * @params: formValues - raw form values object
-   * @params: density - density unit string
    *
    * @return: the configured SelectedUnits for update
    */
-  getUpdatedUnits(formValues: object, density: string): SelectedUnits {
-    const updatedUnits: SelectedUnits = {
+  getUpdatedUnits(formValues: object): SelectedUnits {
+    const update: object = {
       system: formValues['preferredUnitSystem'],
-
-      weightSmall: formValues['weightSmall']
-        ? this.defaultEnglish.weightSmall
-        : this.defaultMetric.weightSmall,
-
-      weightLarge: formValues['weightLarge']
-        ? this.defaultEnglish.weightLarge
-        : this.defaultMetric.weightLarge,
-
-      volumeSmall: formValues['volumeSmall']
-        ? this.defaultEnglish.volumeSmall
-        : this.defaultMetric.volumeSmall,
-
-      volumeLarge: formValues['volumeLarge']
-        ? this.defaultEnglish.volumeLarge
-        : this.defaultMetric.volumeLarge,
-
-      temperature: formValues['temperature']
-        ? this.defaultEnglish.temperature
-        : this.defaultMetric.temperature,
-
       density: null
     };
-
-    this.setDensity(updatedUnits, density);
-
-    return updatedUnits;
+    this.mappableUnits.forEach((unitName: string): void => {
+      update[unitName] = this.getSelectedUnit(unitName, formValues[unitName]);
+    });
+    return <SelectedUnits>update;
   }
 
   /**
@@ -138,28 +147,16 @@ export class PreferencesComponent implements OnInit, OnDestroy {
    * @return: none
    */
   initForm(): void {
-    const _defaultEnglish: SelectedUnits = defaultEnglishUnits();
     this.preferencesForm = this.formBuilder.group({
       preferredUnitSystem: [],
-      weightSmall: [
-        this.setUnits.weightSmall.system === _defaultEnglish.weightSmall.system
-      ],
-      weightLarge: [
-        this.setUnits.weightLarge.system === _defaultEnglish.weightLarge.system
-      ],
-      volumeSmall: [
-        this.setUnits.volumeSmall.system === _defaultEnglish.volumeSmall.system
-      ],
-      volumeLarge: [
-        this.setUnits.volumeLarge.system === _defaultEnglish.volumeLarge.system
-      ],
-      temperature: [
-        this.setUnits.temperature.system === _defaultEnglish.temperature.system
-      ],
+      weightSmall: [this.setUnits.weightSmall.system === this.defaultEnglish.weightSmall.system],
+      weightLarge: [this.setUnits.weightLarge.system === this.defaultEnglish.weightLarge.system],
+      volumeSmall: [this.setUnits.volumeSmall.system === this.defaultEnglish.volumeSmall.system],
+      volumeLarge: [this.setUnits.volumeLarge.system === this.defaultEnglish.volumeLarge.system],
+      temperature: [this.setUnits.temperature.system === this.defaultEnglish.temperature.system],
       density: []
     });
     const controls: { [key: string]: AbstractControl } = this.preferencesForm.controls;
-
     controls.preferredUnitSystem.setValue(this.setUnits.system);
     controls.density.setValue(this.setUnits.density.longName);
   }
@@ -174,19 +171,14 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     const formValues: object = this.preferencesForm.value;
     const system: string = formValues['preferredUnitSystem'];
     const density: string = formValues['density'];
-
-    const updatedUnits: SelectedUnits = this.getUpdatedUnits(
-      formValues,
-      density
-    );
-
+    const updatedUnits: SelectedUnits = this.getUpdatedUnits(formValues);
+    this.setDensity(updatedUnits, density);
     this.preferenceService.setUnits(system, updatedUnits);
     this.updateUserProfile(system, updatedUnits);
   }
 
   /**
-   * Set the appropriate density value for a
-   * selected unit by given density unit name
+   * Set the appropriate density value for a selected unit by given density unit name
    *
    * @params: units - the SelectedUnits to update
    * @params: density - the density unit name
@@ -209,19 +201,70 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   /***** Other *****/
 
   /**
+   * Get the system that corresponds with the current selected units
+   *
+   * @param: none
+   *
+   * @return: the system name
+   */
+  determineSystem(): string {
+    const [hasStandard, hasMetric] = this.hasSystem();
+    if (hasStandard && hasMetric) {
+      return 'other';
+    } else if (hasStandard && !hasMetric) {
+      return 'englishStandard';
+    } else if (!hasStandard && hasMetric) {
+      return 'metric';
+    }
+    throw this.getInvalidUnitError();
+  }
+
+  /**
+   * Get an error for invalid units
+   *
+   * @param: none
+   *
+   * @return: custom unit error
+   */
+  getInvalidUnitError(): CustomError {
+    const errorMsg: string = `Given preferredUnits of ${this.preferredUnits} and units of ${this.setUnits}`;
+    const userMsg: string = 'An internal error occurred: invalid units';
+    const severity: number = 2;
+    return new CustomError('PreferencesError', errorMsg, severity, userMsg);
+  }
+
+  /**
+   * Check if the form units are all english standard, metric, or mixed
+   *
+   * @param: none
+   *
+   * @return: array of booleans: [ hasStandard, hasMetric ];
+   *  each true if at least one field has that particular unit
+   */
+  hasSystem(): boolean[] {
+    let hasStandard: boolean = false;
+    let hasMetric: boolean = false;
+    for (const key in this.displayUnits) {
+      if (this.preferencesForm.controls[key].value) {
+        hasStandard = true;
+      } else {
+        hasMetric = true;
+      }
+    }
+
+    return [hasStandard, hasMetric];
+  }
+
+  /**
    * Map ion-toggle unit names
    *
    * @params: none
    * @return: none
    */
   mapDisplayUnits(): void {
-    this.displayUnits = {
-      weightSmall: this.setUnits.weightSmall.longName,
-      weightLarge: this.setUnits.weightLarge.longName,
-      volumeSmall: this.setUnits.volumeSmall.longName,
-      volumeLarge: this.setUnits.volumeLarge.longName,
-      temperature: this.setUnits.temperature.longName
-    };
+    this.mappableUnits.forEach((unitName: string): void => {
+      this.displayUnits[unitName] = this.setUnits[unitName].longName;
+    });
   }
 
   /**
@@ -233,12 +276,10 @@ export class PreferencesComponent implements OnInit, OnDestroy {
    * @return: none
    */
   onSystemChange(event: CustomEvent): void {
-    if (event.detail.value !== 'none') {
-      this.preferencesForm.controls.weightSmall.setValue(event.detail.value === 'englishStandard');
-      this.preferencesForm.controls.weightLarge.setValue(event.detail.value === 'englishStandard');
-      this.preferencesForm.controls.volumeSmall.setValue(event.detail.value === 'englishStandard');
-      this.preferencesForm.controls.volumeLarge.setValue(event.detail.value === 'englishStandard');
-      this.preferencesForm.controls.temperature.setValue(event.detail.value === 'englishStandard');
+    if (event.detail.value !== 'other') {
+      this.mappableUnits.forEach((unitName: string): void => {
+        this.preferencesForm.get(unitName).setValue(event.detail.value === 'englishStandard');
+      });
     }
   }
 
@@ -251,39 +292,43 @@ export class PreferencesComponent implements OnInit, OnDestroy {
    * @return: none
    */
   onToggle(field: string, event: CustomEvent): void {
-    this.displayUnits[field] = event.detail.checked
-      ? this.defaultEnglish[field].longName
-      : this.defaultMetric[field].longName;
-    this.setSystem();
+    this.setDisplayUnit(field, event.detail.checked);
+    this.setControlOnToggle(field, event.detail.checked);
+    this.updateSetSystem();
   }
 
   /**
-   * Set the preferred unit system based on unit toggles; Set to mixed if there
-   * is at least one english standard and one metric toggle, otherwise set to
-   * relevant system
+   * Set the unit type to display for a given unit
+   *
+   * @param: unit - the unit name to change
+   * @param: isEnglish - true if english standard; false for metric
+   *
+   * @return: none
+   */
+  setDisplayUnit(unit: string, isEnglish: boolean): void {
+    this.displayUnits[unit] = (isEnglish ? this.defaultEnglish : this.defaultMetric)[unit].longName;
+  }
+
+  /**
+   * Set the form control for a corresponding toggle event
+   *
+   * @param: field - form field to update
+   * @param: isEnglish - true if english standard; false for metric
+   *
+   * @return: none
+   */
+  setControlOnToggle(field: string, isEnglish: boolean): void {
+    this.preferencesForm.get(field).setValue(isEnglish);
+  }
+
+  /**
+   * Set the preferred unit system based on unit toggles
    *
    * @params: none
    * @return: none
    */
-  setSystem(): void {
-    let hasStandard: boolean = false;
-    let hasMetric: boolean = false;
-
-    for (const key in this.displayUnits) {
-      if (this.preferencesForm.controls[key].value) {
-        hasStandard = true;
-      } else {
-        hasMetric = true;
-      }
-    }
-
-    if (hasStandard && hasMetric) {
-      this.preferencesForm.controls.preferredUnitSystem.setValue('none');
-    } else if (hasStandard && !hasMetric) {
-      this.preferencesForm.controls.preferredUnitSystem.setValue('englishStandard');
-    } else if (!hasStandard && hasMetric) {
-      this.preferencesForm.controls.preferredUnitSystem.setValue('metric');
-    }
+  updateSetSystem(): void {
+    this.preferencesForm.controls.preferredUnitSystem.setValue(this.determineSystem());
   }
 
   /**
@@ -294,23 +339,15 @@ export class PreferencesComponent implements OnInit, OnDestroy {
    *
    * @return: none
    */
-  updateUserProfile(system: string, updatedUnits: SelectedUnits): void {
-    this.userService.updateUserProfile({
-      preferredUnitSystem: system,
-      units: updatedUnits
-    })
-    .subscribe(
-      (): void => {
-        this.toastService.presentToast(
-          'Preferences Updated!',
-          1000,
-          'middle',
-          'toast-bright',
-          []
-        );
-      },
-      (error: any): void => this.errorReporter.handleUnhandledError(error)
-    );
+  updateUserProfile(preferredUnitSystem: string, units: SelectedUnits): void {
+    this.userService.updateUserProfile({ preferredUnitSystem, units })
+      .subscribe(
+        (): void => {
+          const oneSecond: number = 1000;
+          this.toastService.presentToast('Preferences Updated!', oneSecond, 'middle', 'toast-bright');
+        },
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
+      );
   }
 
 }
