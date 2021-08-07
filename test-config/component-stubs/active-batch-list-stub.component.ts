@@ -6,16 +6,16 @@ import { Subject } from 'rxjs';
 import { Batch } from '../../src/app/shared/interfaces';
 
 /* Component imports */
-import { ActiveBatchesComponent } from '../../src/app/components/active-batches/active-batches.component';
+import { ActiveBatchListComponent } from '../../src/app/components/active-batch-list/active-batch-list.component';
 
 @Component({
   selector: 'active-batches',
   template: '',
   providers: [
-    { provide: ActiveBatchesComponent, useClass: ActiveBatchesComponentStub }
+    { provide: ActiveBatchListComponent, useClass: ActiveBatchListComponentStub }
   ]
 })
-export class ActiveBatchesComponentStub {
+export class ActiveBatchListComponentStub {
   @Input() enterDuration: number;
   @Input() rootURL: string;
   activeBatchesList: Batch[] = [];
