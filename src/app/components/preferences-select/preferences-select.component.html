@@ -1,0 +1,16 @@
+<ion-item>
+  <ion-label position="floating">
+    {{ preferenceName }}
+  </ion-label>
+  <ion-select [formControl]="control"
+              okText="Okay"
+              cancelText="Dismiss"
+              (ionChange)="ionChangeEvent($event)"
+              [compareWith]="compareWithFn"
+              [interfaceOptions]="selectOptions">
+    <ion-select-option  *ngFor="let option of options"
+                        [value]="option.value">
+      {{ option.label }}
+    </ion-select-option>
+  </ion-select>
+</ion-item>
