@@ -1,37 +1,23 @@
-<div  *ngIf="stepData"
+<div  *ngIf="calendarProcess"
       class="container">
 
   <ion-row>
 
-    <!-- Toggle step description visibility -->
     <ion-col size="12">
-
       <button (click)="toggleShowDescription()"
               class="button expand-button">
-
         <h2>
-
           <ion-icon name="document-text-outline"
                     color="primary">
           </ion-icon>
-
-          <span>{{ stepData.name }}</span>
-
+          <span>{{ calendarProcess.name }}</span>
         </h2>
-
       </button>
-
     </ion-col>
-
-    <!-- Step description -->
     <ion-col  *ngIf="showDescription || isPreview"
               size="12"
               id="description-container">
-
-      <p>
-        Description: {{ stepData.description || 'No description available' }}
-      </p>
-
+      <p>Description: {{ calendarProcess.description || 'No description available' }}</p>
     </ion-col>
 
   </ion-row>
@@ -41,24 +27,16 @@
             class="calendar-view">
 
     <!-- If the calendar step has been started, show information about next part(s) of step -->
-    <ion-col  *ngIf="stepData['startDatetime'] !== undefined"
+    <ion-col  *ngIf="calendarProcess['startDatetime'] !== undefined"
               size="12">
-
-      <!-- Description of task to do at end date -->
       <p class="calendar-description">
-        {{ stepData.description }}
+        {{ calendarProcess.description }}
       </p>
-
-      <!-- List of next dates in calendar for a particular step -->
       <ion-list lines="none"
                 class="ion-no-padding alert-list">
-
         <h3>Next Checks</h3>
-
         <ng-container *ngFor="let alert of alerts | sort:'datetime'">
-
           <ion-item>
-
             <!-- Alert date -->
             <p [ngClass]="{
               'alert-datetime': true,
@@ -66,13 +44,8 @@
             }">
               {{ alert.datetime | date:'mediumDate' }}
             </p>
-
-            <!-- TODO implement alert descriptions -->
-
           </ion-item>
-
         </ng-container>
-
       </ion-list>
 
       <!-- Edit the calendar step dates -->
@@ -84,10 +57,10 @@
     </ion-col>
 
     <!-- Show calendar if step has not been started -->
-    <calendar #calendar
-              *ngIf="!isPreview && stepData['startDatetime'] === undefined"
-              [stepData]="currentStepCalendarData">
-    </calendar>
+    <app-calendar #calendar
+                  *ngIf="!isPreview && calendarProcess['startDatetime'] === undefined"
+                  [calendarProcess]="calendarProcess">
+    </app-calendar>
 
   </ion-row>
 

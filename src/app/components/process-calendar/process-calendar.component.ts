@@ -1,54 +1,45 @@
 /* Module imports */
-import { Component, Input, OnChanges, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, ViewChild } from '@angular/core';
 
 /* Interface imports */
-import { Alert, CalendarProcess } from '../../shared/interfaces';
+import { Alert, CalendarMetadata, CalendarProcess } from '../../shared/interfaces';
 
 /* Component imports */
 import { CalendarComponent } from '../calendar/calendar.component';
 
 /* Service imports */
-import { EventService, IdService } from '../../services/services';
+import { IdService } from '../../services/services';
 
 
 @Component({
-  selector: 'process-calendar',
+  selector: 'app-process-calendar',
   templateUrl: './process-calendar.component.html',
   styleUrls: ['./process-calendar.component.scss']
 })
 export class ProcessCalendarComponent implements OnChanges {
   @Input() alerts: Alert[];
   @Input() isPreview: boolean;
-  @Input() stepData: CalendarProcess;
+  @Input() calendarProcess: CalendarProcess;
+  @Output() changeDateEvent: EventEmitter<null> = new EventEmitter<null>();
   @ViewChild('calendar') calendarRef: CalendarComponent;
   closestAlert: Alert = null;
-  currentStepCalendarData: object = {};
   showDescription: boolean = false;
 
-  constructor(
-    public event: EventService,
-    public idService: IdService
-  ) { }
+  constructor(public idService: IdService) { }
 
   ngOnChanges() {
     console.log('process calendar changes');
-    this.currentStepCalendarData = {
-      _id: this.idService.getId(this.stepData),
-      duration: this.stepData.duration,
-      title: this.stepData.name,
-      description: this.stepData.description
-    };
     this.closestAlert = this.getClosestAlertByGroup();
   }
 
   /**
-   * Publish event to revert calendar to date selection view
+   * Emit event to revert calendar to date selection view
    *
    * @params: none
    * @return: none
    */
   changeDate(): void {
-    this.event.emit('change-date');
+    this.changeDateEvent.emit();
   }
 
   /**
@@ -60,15 +51,12 @@ export class ProcessCalendarComponent implements OnChanges {
    */
   getClosestAlertByGroup(): Alert {
     if (this.alerts.length) {
+      const now: number = new Date().getTime();
       return this.alerts.reduce(
         (acc: Alert, curr: Alert): Alert => {
-          const now: number = new Date().getTime();
           const accDiff: number = new Date(acc.datetime).getTime() - now;
           const currDiff: number = new Date(curr.datetime).getTime() - now;
-
-          const isCurrCloser: boolean
-            = Math.abs(currDiff) < Math.abs(accDiff) && currDiff > 0;
-
+          const isCurrCloser: boolean = Math.abs(currDiff) < Math.abs(accDiff) && currDiff > 0;
           return isCurrCloser ? curr : acc;
         }
       );
@@ -82,21 +70,10 @@ export class ProcessCalendarComponent implements OnChanges {
    *
    * @params: none
    *
-   * @return: object containing update and step id
+   * @return: calendar metadata
    */
-  startCalendar(): object {
-    const calendarValues: { _id: string, startDatetime: string, alerts: Alert[] }
-      = this.calendarRef.getFinal();
-
-    const update: object = {
-      startDatetime: calendarValues.startDatetime,
-      alerts: calendarValues.alerts
-    };
-
-    return {
-      id: calendarValues._id,
-      update: update
-    };
+  startCalendar(): CalendarMetadata {
+    return this.calendarRef.getFinal();
   }
 
   /**

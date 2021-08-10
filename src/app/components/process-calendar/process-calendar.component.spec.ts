@@ -1,6 +1,6 @@
 /* Module imports */
 import { ComponentFixture, getTestBed, TestBed } from '@angular/core/testing';
-import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
@@ -8,14 +8,14 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 /* Mock imports */
 import { mockAlertFuture, mockAlertPast, mockAlertPresent, mockProcessSchedule } from '../../../../test-config/mock-models';
 import { CalendarComponentStub } from '../../../../test-config/component-stubs';
-import { EventServiceStub, IdServiceStub } from '../../../../test-config/service-stubs';
+import { IdServiceStub } from '../../../../test-config/service-stubs';
 import { SortPipeStub } from '../../../../test-config/pipe-stubs';
 
 /* Interface imports */
 import { Alert, CalendarProcess, Process } from '../../shared/interfaces';
 
 /* Service imports */
-import { EventService, IdService } from '../../services/services';
+import { IdService } from '../../services/services';
 
 /* Component imports */
 import { ProcessCalendarComponent } from './process-calendar.component';
@@ -24,8 +24,9 @@ import { CalendarComponent } from '../calendar/calendar.component';
 
 describe('ProcessCalendarComponent', (): void => {
   let fixture: ComponentFixture<ProcessCalendarComponent>;
-  let processCmp: ProcessCalendarComponent;
+  let component: ProcessCalendarComponent;
   let injector: TestBed;
+  let originalOnChanges: any;
   configureTestBed();
 
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
@@ -35,10 +36,9 @@ describe('ProcessCalendarComponent', (): void => {
         SortPipeStub
       ],
       providers: [
-        { provide: EventService, useClass: EventServiceStub },
         { provide: IdService, useClass: IdServiceStub }
       ],
-      schemas: [ NO_ERRORS_SCHEMA ]
+      schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
     await TestBed.compileComponents();
   })()
@@ -47,55 +47,37 @@ describe('ProcessCalendarComponent', (): void => {
 
   beforeEach((): void => {
     fixture = TestBed.createComponent(ProcessCalendarComponent);
-    processCmp = fixture.componentInstance;
+    component = fixture.componentInstance;
     injector = getTestBed();
+    originalOnChanges = component.ngOnChanges;
+    component.ngOnChanges = jest.fn();
   });
 
   test('should create the component', (): void => {
     fixture.detectChanges();
 
-    expect(processCmp).toBeDefined();
+    expect(component).toBeTruthy();
   });
 
-  test('should handle changes to input', (): void => {
-    const _mockProcessSchedule: Process[] = mockProcessSchedule();
-    const _mockNonCalendarProcess: Process = _mockProcessSchedule[12];
-    const _mockCalendarProcess: CalendarProcess = <CalendarProcess>_mockProcessSchedule[13];
-
-    processCmp.getClosestAlertByGroup = jest
-      .fn();
-
-    processCmp.currentStepCalendarData = {
-      _id: _mockNonCalendarProcess._id,
-      title: _mockNonCalendarProcess.name,
-      description: _mockNonCalendarProcess.description
-    };
-    processCmp.stepData = _mockCalendarProcess;
-
-    processCmp.idService.getId = jest
-      .fn()
-      .mockReturnValue(processCmp.stepData._id);
+  test('should reform alerts after changes to input', (): void => {
+    component.ngOnChanges = originalOnChanges;
+    component.getClosestAlertByGroup = jest.fn();
+    const alertSpy: jest.SpyInstance = jest.spyOn(component, 'getClosestAlertByGroup');
 
     fixture.detectChanges();
 
-    processCmp.ngOnChanges();
-
-    expect(processCmp.currentStepCalendarData).toStrictEqual({
-      _id: _mockCalendarProcess._id,
-      duration: _mockCalendarProcess.duration,
-      title: _mockCalendarProcess.name,
-      description: _mockCalendarProcess.description
-    });
+    component.ngOnChanges();
+    expect(alertSpy).toHaveBeenCalled();
   });
 
   test('should emit a change date event', (): void => {
-    const emitSpy: jest.SpyInstance = jest.spyOn(processCmp.event, 'emit');
+    component.changeDateEvent.emit = jest.fn();
+    const emitSpy: jest.SpyInstance = jest.spyOn(component.changeDateEvent, 'emit');
 
     fixture.detectChanges();
 
-    processCmp.changeDate();
-
-    expect(emitSpy).toHaveBeenCalledWith('change-date');
+    component.changeDate();
+    expect(emitSpy).toHaveBeenCalled();
   });
 
   test('should get the closest alert of the current step', (): void => {
@@ -106,20 +88,20 @@ describe('ProcessCalendarComponent', (): void => {
     _mockAlertPresent.datetime = _mockNearFuture.toISOString();
     const _mockAlertFuture: Alert = mockAlertFuture();
 
-    processCmp.alerts = [ _mockAlertPast, _mockAlertPresent, _mockAlertFuture ];
+    component.alerts = [ _mockAlertPast, _mockAlertPresent, _mockAlertFuture ];
 
     fixture.detectChanges();
 
-    const result: Alert = processCmp.getClosestAlertByGroup();
+    const result: Alert = component.getClosestAlertByGroup();
     expect(result).toStrictEqual(_mockAlertPresent);
   });
 
   test('should get null getting closest alert if no alerts', (): void => {
-    processCmp.alerts = [];
+    component.alerts = [];
 
     fixture.detectChanges();
 
-    expect(processCmp.getClosestAlertByGroup()).toBeNull();
+    expect(component.getClosestAlertByGroup()).toBeNull();
   });
 
   test('should start a calendar process', (): void => {
@@ -130,72 +112,62 @@ describe('ProcessCalendarComponent', (): void => {
     fixture.detectChanges();
 
     const _stubIdSevice: IdService = injector.get(IdService);
-    processCmp.calendarRef = <CalendarComponent>(new CalendarComponentStub(_stubIdSevice));
-    processCmp.calendarRef.getFinal = jest
+    component.calendarRef = <CalendarComponent>(new CalendarComponentStub(_stubIdSevice));
+    component.calendarRef.getFinal = jest
       .fn()
       .mockReturnValue({
-        _id: _mockCalendarProcess._id,
+        id: _mockCalendarProcess._id,
         startDatetime: now,
         alerts: []
       });
 
-    expect(processCmp.startCalendar()).toStrictEqual({
+    expect(component.startCalendar()).toStrictEqual({
       id: _mockCalendarProcess._id,
-      update: {
-        startDatetime: now,
-        alerts: []
-      }
+      startDatetime: now,
+      alerts: []
     });
   });
 
   test('should toggle show description flag', (): void => {
     fixture.detectChanges();
 
-    expect(processCmp.showDescription).toBe(false);
-
-    processCmp.toggleShowDescription();
-
-    expect(processCmp.showDescription).toBe(true);
-
-    processCmp.toggleShowDescription();
-
-    expect(processCmp.showDescription).toBe(false);
+    expect(component.showDescription).toBe(false);
+    component.toggleShowDescription();
+    expect(component.showDescription).toBe(true);
+    component.toggleShowDescription();
+    expect(component.showDescription).toBe(false);
   });
 
   test('should render template with a calendar', (): void => {
     const _mockCalendarProcess: CalendarProcess = <CalendarProcess>mockProcessSchedule()[13];
-
-    processCmp.alerts = [];
-    processCmp.isPreview = false;
-    processCmp.stepData = _mockCalendarProcess;
+    component.alerts = [];
+    component.isPreview = false;
+    component.calendarProcess = _mockCalendarProcess;
     const _stubIdSevice: IdService = injector.get(IdService);
-    processCmp.calendarRef = <CalendarComponent>(new CalendarComponentStub(_stubIdSevice));
+    component.calendarRef = <CalendarComponent>(new CalendarComponentStub(_stubIdSevice));
 
     fixture.detectChanges();
 
     const descriptionContainer: HTMLElement = fixture.nativeElement.querySelector('#description-container');
     expect(descriptionContainer).toBeNull();
-
-    const calendar: HTMLElement = fixture.nativeElement.querySelector('calendar');
+    const calendar: HTMLElement = fixture.nativeElement.querySelector('app-calendar');
     expect(calendar).toBeDefined();
   });
 
   test('should render template with a preview', (): void => {
     const _mockCalendarProcess: CalendarProcess = <CalendarProcess>mockProcessSchedule()[13];
-
-    processCmp.alerts = [];
-    processCmp.isPreview = true;
-    processCmp.stepData = _mockCalendarProcess;
+    component.alerts = [];
+    component.isPreview = true;
+    component.calendarProcess = _mockCalendarProcess;
     const _stubIdSevice: IdService = injector.get(IdService);
-    processCmp.calendarRef = <CalendarComponent>(new CalendarComponentStub(_stubIdSevice));
-    processCmp.showDescription = true;
+    component.calendarRef = <CalendarComponent>(new CalendarComponentStub(_stubIdSevice));
+    component.showDescription = true;
 
     fixture.detectChanges();
 
     const descriptionContainer: HTMLElement = fixture.nativeElement.querySelector('#description-container');
     expect(descriptionContainer.children[0].textContent).toMatch(`Description: ${_mockCalendarProcess.description}`);
-
-    const calendar: HTMLElement = fixture.nativeElement.querySelector('calendar');
+    const calendar: HTMLElement = fixture.nativeElement.querySelector('app-calendar');
     expect(calendar).toBeNull();
   });
 
@@ -208,26 +180,21 @@ describe('ProcessCalendarComponent', (): void => {
     _mockAlertPresent.datetime = now;
     const _mockAlertFuture: Alert = mockAlertFuture();
     _mockAlertFuture.datetime = future;
-
-    processCmp.alerts = [ _mockAlertFuture, _mockAlertPresent ];
-    processCmp.isPreview = false;
-    processCmp.stepData = _mockCalendarProcess;
+    component.alerts = [ _mockAlertFuture, _mockAlertPresent ];
+    component.isPreview = false;
+    component.calendarProcess = _mockCalendarProcess;
     const _stubIdSevice: IdService = injector.get(IdService);
-    processCmp.calendarRef = <CalendarComponent>(new CalendarComponentStub(_stubIdSevice));
-    processCmp.closestAlert = _mockAlertPresent;
-
+    component.calendarRef = <CalendarComponent>(new CalendarComponentStub(_stubIdSevice));
+    component.closestAlert = _mockAlertPresent;
     SortPipeStub._returnValue = (): any[] => {
       return [ _mockAlertPresent, _mockAlertFuture ];
     };
-
     fixture.detectChanges();
 
     const alerts: NodeList = fixture.nativeElement.querySelectorAll('ion-item');
-
     const presentAlert: HTMLElement = <HTMLElement>alerts.item(0);
     expect(Array.from(presentAlert.children[0].classList).includes('next-datetime')).toBe(true);
     expect(presentAlert.children[0].textContent).toMatch('Jan 1, 2020');
-
     const futureAlert: HTMLElement = <HTMLElement>alerts.item(1);
     expect(Array.from(futureAlert.children[0].classList).includes('next-datetime')).toBe(false);
     expect(futureAlert.children[0].textContent).toMatch('Jan 1, 2021');
