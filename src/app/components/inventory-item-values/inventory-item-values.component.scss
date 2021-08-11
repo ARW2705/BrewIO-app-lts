@@ -1,0 +1,68 @@
+.abv-low {
+  color: var(--ion-color-light);
+}
+
+.abv-mid {
+  color: var(--ion-color-primary);
+}
+
+.abv-high {
+  color: var(--ion-color-gold);
+}
+
+.abv-ultra {
+  color: var(--ion-color-danger-tint);
+}
+
+.ibu-low {
+  color: var(--ion-color-light);
+}
+
+.ibu-mid {
+  color: #adffc0;
+}
+
+.ibu-high {
+  color: #4fff78;
+}
+
+.ibu-ultra {
+  color: #00ff3c;
+}
+
+.item-details {
+  /* Color */
+  color: var(--ion-color-light);
+
+  /* Text */
+  font-size: 1.1rem;
+}
+
+.pint-icon {
+  padding-top: 3%;
+}
+
+.quantity-low {
+  color: var(--ion-color-light);
+}
+
+.quantity-mid {
+  color: var(--ion-color-secondary);
+}
+
+.quantity-high {
+  color: var(--ion-color-danger-tint);
+}
+
+.srm-text {
+  padding-right: 5%;
+}
+
+
+ion-row {
+  /* Color */
+  color: var(--ion-color-light);
+
+  /* Text */
+  font-size: 1.35rem;
+}
