@@ -5,7 +5,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { PreferencesSelectComponent } from './preferences-select.component';
+import { FormSelectComponent } from './form-select.component';
 
 
 @NgModule({
@@ -16,10 +16,10 @@ import { PreferencesSelectComponent } from './preferences-select.component';
     ReactiveFormsModule
   ],
   declarations: [
-    PreferencesSelectComponent
+    FormSelectComponent
   ],
   exports: [
-    PreferencesSelectComponent
+    FormSelectComponent
   ]
 })
-export class PreferencesSelectComponentModule {}
+export class FormSelectComponentModule {}

@@ -1,16 +1,17 @@
 <ion-item>
   <ion-label position="floating">
-    {{ preferenceName }}
+    {{ label | titlecase }}
   </ion-label>
   <ion-select [formControl]="control"
               okText="Okay"
               cancelText="Dismiss"
               (ionChange)="ionChangeEvent($event)"
+              (ionCancel)="ionCancelEvent($event)"
               [compareWith]="compareWithFn"
               [interfaceOptions]="selectOptions">
     <ion-select-option  *ngFor="let option of options"
                         [value]="option.value">
-      {{ option.label }}
+      {{ option.label | titlecase }}
     </ion-select-option>
   </ion-select>
 </ion-item>

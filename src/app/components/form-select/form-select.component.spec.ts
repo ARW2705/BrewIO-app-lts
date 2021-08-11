@@ -12,17 +12,17 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 import { mockPreferencesSelectOptions } from '../../../../test-config/mock-models';
 
 /* Component imports */
-import { PreferencesSelectComponent } from './preferences-select.component';
+import { FormSelectComponent } from './form-select.component';
 
 
-describe('PreferencesSelectComponent', (): void => {
+describe('FormSelectComponent', (): void => {
   configureTestBed();
-  let fixture: ComponentFixture<PreferencesSelectComponent>;
-  let component: PreferencesSelectComponent;
+  let fixture: ComponentFixture<FormSelectComponent>;
+  let component: FormSelectComponent;
 
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
-      declarations: [ PreferencesSelectComponent ],
+      declarations: [ FormSelectComponent ],
       imports: [
         IonicModule,
         FormsModule,
@@ -36,12 +36,12 @@ describe('PreferencesSelectComponent', (): void => {
   .catch(done.fail));
 
   beforeEach((): void => {
-    fixture = TestBed.createComponent(PreferencesSelectComponent);
+    fixture = TestBed.createComponent(FormSelectComponent);
     component = fixture.componentInstance;
     component.ionChangeEvent = (): void => {};
     component.options = mockPreferencesSelectOptions();
     component.control = new FormControl();
-    component.preferenceName = 'test-name';
+    component.label = 'test-name';
   });
 
   test('should create the component', (): void => {
