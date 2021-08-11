@@ -1,29 +1,31 @@
 /* Module imports */
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
-/* Pipe imports */
-import { FormatStockPipeModule, RoundPipeModule, TruncatePipeModule } from '../../pipes/pipes';
-
 /* Page imports */
-import { QuantityHelperPageModule } from '../../pages/quantity-helper/quantity-helper.module';
 import { ImageFormPageModule } from '../../pages/forms/image-form/image-form.module';
+import { QuantityHelperPageModule } from '../../pages/quantity-helper/quantity-helper.module';
 
 /* Component imports */
-import { InventoryComponent } from './inventory.component';
 import { AccordionComponentModule } from '../accordion/accordion.module';
+import { FormSelectComponentModule } from '../form-select/form-select.module';
+import { InventoryItemComponentModule } from '../inventory-item/inventory-item.module';
+import { InventorySliderComponentModule } from '../inventory-slider/inventory-slider.module';
+import { LoadingSpinnerComponentModule } from '../loading-spinner/loading-spinner.module';
+import { InventoryComponent } from './inventory.component';
 
 
 @NgModule({
   imports: [
-    CommonModule,
-    IonicModule,
-    FormatStockPipeModule,
-    RoundPipeModule,
-    TruncatePipeModule,
     AccordionComponentModule,
+    CommonModule,
+    FormSelectComponentModule,
     ImageFormPageModule,
+    InventoryItemComponentModule,
+    InventorySliderComponentModule,
+    IonicModule,
+    LoadingSpinnerComponentModule,
     QuantityHelperPageModule
   ],
   declarations: [

@@ -26,7 +26,7 @@ import { InventoryComponent } from './inventory.component';
 
 describe('InventoryComponent', (): void => {
   let fixture: ComponentFixture<InventoryComponent>;
-  let inventoryCmp: InventoryComponent;
+  let component: InventoryComponent;
   let originalOnInit: any;
   let originalAfterInit: any;
   let originalOnDestroy: any;
@@ -60,100 +60,75 @@ describe('InventoryComponent', (): void => {
 
   beforeEach((): void => {
     fixture = TestBed.createComponent(InventoryComponent);
-    inventoryCmp = fixture.componentInstance;
-    originalOnInit = inventoryCmp.ngOnInit;
-    originalAfterInit = inventoryCmp.ngAfterViewInit;
-    originalOnDestroy = inventoryCmp.ngOnDestroy;
-    inventoryCmp.ngOnInit = jest
-      .fn();
-    inventoryCmp.ngAfterViewInit = jest
-      .fn();
-    inventoryCmp.ngOnDestroy = jest
-      .fn();
-    inventoryCmp.toastService.presentToast = jest
-      .fn();
-    inventoryCmp.toastService.presentErrorToast = jest
-      .fn();
-    inventoryCmp.errorReporter.setErrorReport = jest
-      .fn();
-    inventoryCmp.errorReporter.handleUnhandledError = jest
-      .fn();
+    component = fixture.componentInstance;
+    originalOnInit = component.ngOnInit;
+    originalAfterInit = component.ngAfterViewInit;
+    originalOnDestroy = component.ngOnDestroy;
+    component.ngOnInit = jest.fn();
+    component.ngAfterViewInit = jest.fn();
+    component.ngOnDestroy = jest.fn();
+    component.toastService.presentToast = jest.fn();
+    component.toastService.presentErrorToast = jest.fn();
+    component.errorReporter.setErrorReport = jest.fn();
+    component.errorReporter.handleUnhandledError = jest.fn();
   });
 
   test('should create the component', (): void => {
     fixture.detectChanges();
 
-    expect(inventoryCmp).toBeDefined();
+    expect(component).toBeDefined();
   });
 
   describe('Lifecycle', (): void => {
 
     test('should init the component', (): void => {
-      inventoryCmp.ngOnInit = originalOnInit;
-
-      inventoryCmp.loadInventoryList = jest
-        .fn();
-
-      const loadSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'loadInventoryList');
+      component.ngOnInit = originalOnInit;
+      component.loadInventoryList = jest.fn();
+      const loadSpy: jest.SpyInstance = jest.spyOn(component, 'loadInventoryList');
 
       fixture.detectChanges();
 
-      inventoryCmp.ngOnInit();
-
+      component.ngOnInit();
       expect(loadSpy).toHaveBeenCalled();
     });
 
     test('should handle input changes', (): void => {
       const _mockBatch: Batch = mockBatch();
-
-      inventoryCmp.optionalData = _mockBatch;
-
-      inventoryCmp.openInventoryFormModal = jest
-        .fn();
-
-      const openSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'openInventoryFormModal');
+      component.optionalData = _mockBatch;
+      component.openInventoryFormModal = jest.fn();
+      const openSpy: jest.SpyInstance = jest.spyOn(component, 'openInventoryFormModal');
 
       fixture.detectChanges();
 
-      inventoryCmp.ngOnChanges();
-
+      component.ngOnChanges();
       expect(openSpy).toHaveBeenCalledWith({ batch: _mockBatch });
     });
 
     test('should handle after view init', (): void => {
-      inventoryCmp.ngAfterViewInit = originalAfterInit;
-
-      inventoryCmp.animationService.shouldShowHint = jest
-        .fn()
+      component.ngAfterViewInit = originalAfterInit;
+      component.animationService.shouldShowHint = jest.fn()
         .mockReturnValueOnce(false)
         .mockReturnValueOnce(true);
-
-      inventoryCmp.runSlidingHints = jest
-        .fn();
-
-      const hintSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.animationService, 'shouldShowHint');
-      const runSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'runSlidingHints');
+      component.runSlidingHints = jest.fn();
+      const hintSpy: jest.SpyInstance = jest.spyOn(component.animationService, 'shouldShowHint');
+      const runSpy: jest.SpyInstance = jest.spyOn(component, 'runSlidingHints');
 
       fixture.detectChanges();
 
-      inventoryCmp.ngAfterViewInit();
-
+      component.ngAfterViewInit();
       expect(runSpy).toHaveBeenCalled();
-
       expect(runSpy).toHaveBeenCalledTimes(1);
       expect(hintSpy).toHaveBeenCalledTimes(2);
     });
 
     test('should handle component destroy', (): void => {
-      const nextSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.destroy$, 'next');
-      const completeSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.destroy$, 'complete');
-
-      inventoryCmp.ngOnDestroy = originalOnDestroy;
+      const nextSpy: jest.SpyInstance = jest.spyOn(component.destroy$, 'next');
+      const completeSpy: jest.SpyInstance = jest.spyOn(component.destroy$, 'complete');
+      component.ngOnDestroy = originalOnDestroy;
 
       fixture.detectChanges();
 
-      inventoryCmp.ngOnDestroy();
-
+      component.ngOnDestroy();
       expect(nextSpy).toHaveBeenCalledWith(true);
       expect(completeSpy).toHaveBeenCalled();
     });
@@ -166,82 +141,63 @@ describe('InventoryComponent', (): void => {
     test('should expand an item', (): void => {
       const mockElement: HTMLElement = global.document.createElement('div');
       Object.defineProperty(mockElement, 'offsetTop', { writable: false, value: 100 });
-
-      global.document.querySelector = jest
-        .fn()
+      global.document.querySelector = jest.fn()
         .mockReturnValue(mockElement);
-
-      inventoryCmp.event.emit = jest
-        .fn();
-
-      const emitSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.event, 'emit');
+      component.event.emit = jest.fn();
+      const emitSpy: jest.SpyInstance = jest.spyOn(component.event, 'emit');
 
       fixture.detectChanges();
 
-      inventoryCmp.expandItem(1);
+      component.expandItem(1);
       expect(emitSpy).toHaveBeenCalled();
-      expect(inventoryCmp.itemIndex).toEqual(1);
-
-      inventoryCmp.expandItem(1);
+      expect(component.itemIndex).toEqual(1);
+      component.expandItem(1);
       expect(emitSpy).toHaveBeenCalledTimes(1);
-      expect(inventoryCmp.itemIndex).toEqual(-1);
+      expect(component.itemIndex).toEqual(-1);
     });
 
     test('should handle image error event', (): void => {
       const _mockInventoryItem: InventoryItem = mockInventoryItem();
-
-      inventoryCmp.imageService.handleImageError = jest
-        .fn();
-
-      const imageSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.imageService, 'handleImageError');
+      const _mockImageErrorEvent: { imageType: string, event: CustomEvent } = {
+        imageType: 'itemLabelImage',
+        event: new CustomEvent('ionError')
+      };
+      component.imageService.handleImageError = jest.fn();
+      const imageSpy: jest.SpyInstance = jest.spyOn(component.imageService, 'handleImageError');
 
       fixture.detectChanges();
 
-      inventoryCmp.onImageError('itemLabelImage', _mockInventoryItem);
-
+      component.onImageError(_mockInventoryItem, _mockImageErrorEvent);
       expect(imageSpy).toHaveBeenCalledWith(_mockInventoryItem.optionalItemData.itemLabelImage);
     });
 
     test('should reset the displayed list', (): void => {
-      inventoryCmp.sortBySource = jest
-        .fn();
-
-      inventoryCmp.sortByRemaining = jest
-        .fn();
-
-      inventoryCmp.sortByAlphabetical = jest
-        .fn();
-
-      const sbsSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'sortBySource');
-      const sbrSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'sortByRemaining');
-      const sbaSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'sortByAlphabetical');
+      component.sortBySource = jest.fn();
+      component.sortByRemaining = jest.fn();
+      component.sortByAlphabetical = jest.fn();
+      const sbsSpy: jest.SpyInstance = jest.spyOn(component, 'sortBySource');
+      const sbrSpy: jest.SpyInstance = jest.spyOn(component, 'sortByRemaining');
+      const sbaSpy: jest.SpyInstance = jest.spyOn(component, 'sortByAlphabetical');
 
       fixture.detectChanges();
 
-      inventoryCmp.resetDisplayList();
-
+      component.resetDisplayList();
       expect(sbsSpy).not.toHaveBeenCalled();
       expect(sbrSpy).not.toHaveBeenCalled();
       expect(sbaSpy).toHaveBeenCalled();
-      expect(inventoryCmp.refreshPipes).toBe(true);
-
-      inventoryCmp.sortBy = 'source';
-
-      inventoryCmp.resetDisplayList();
-
+      expect(component.refreshPipes).toBe(true);
+      component.sortBy = 'source';
+      component.resetDisplayList();
       expect(sbsSpy).toHaveBeenCalled();
       expect(sbrSpy).not.toHaveBeenCalled();
       expect(sbaSpy).toHaveBeenCalledTimes(1);
-      expect(inventoryCmp.refreshPipes).toBe(false);
-
-      inventoryCmp.sortBy = 'remaining';
-
-      inventoryCmp.resetDisplayList();
-
+      expect(component.refreshPipes).toBe(false);
+      component.sortBy = 'remaining';
+      component.resetDisplayList();
       expect(sbsSpy).toHaveBeenCalledTimes(1);
       expect(sbrSpy).toHaveBeenCalled();
       expect(sbaSpy).toHaveBeenCalledTimes(1);
-      expect(inventoryCmp.refreshPipes).toBe(true);
+      expect(component.refreshPipes).toBe(true);
     });
 
   });
@@ -250,17 +206,14 @@ describe('InventoryComponent', (): void => {
   describe('Inventory Actions', (): void => {
 
     test('should handle creating an item', (done: jest.DoneCallback): void => {
-      inventoryCmp.inventoryService.createItem = jest
-        .fn()
+      component.inventoryService.createItem = jest.fn()
         .mockReturnValue(of({}));
-
-      const createSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.inventoryService, 'createItem');
-      const toastSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.toastService, 'presentToast');
+      const createSpy: jest.SpyInstance = jest.spyOn(component.inventoryService, 'createItem');
+      const toastSpy: jest.SpyInstance = jest.spyOn(component.toastService, 'presentToast');
 
       fixture.detectChanges();
 
-      inventoryCmp.createItem({ test: true });
-
+      component.createItem({ test: true });
       setTimeout((): void => {
         expect(createSpy).toHaveBeenCalledWith({ test: true });
         expect(toastSpy).toHaveBeenCalledWith(
@@ -273,22 +226,16 @@ describe('InventoryComponent', (): void => {
 
     test('should get an error handling creating an item', (done: jest.DoneCallback): void => {
       const _mockErrorReport: ErrorReport = mockErrorReport();
-
-      inventoryCmp.inventoryService.createItem = jest
-        .fn()
+      component.inventoryService.createItem = jest.fn()
         .mockReturnValue(throwError('test-error'));
-
-      inventoryCmp.errorReporter.getCustomReportFromError = jest
-        .fn()
+      component.errorReporter.getCustomReportFromError = jest.fn()
         .mockReturnValue(_mockErrorReport);
-
-      const createSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.inventoryService, 'createItem');
-      const reportSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.errorReporter, 'setErrorReport');
+      const createSpy: jest.SpyInstance = jest.spyOn(component.inventoryService, 'createItem');
+      const reportSpy: jest.SpyInstance = jest.spyOn(component.errorReporter, 'setErrorReport');
 
       fixture.detectChanges();
 
-      inventoryCmp.createItem({ test: true });
-
+      component.createItem({ test: true });
       setTimeout((): void => {
         expect(createSpy).toHaveBeenCalledWith({ test: true });
         expect(reportSpy).toHaveBeenCalledWith(_mockErrorReport);
@@ -298,53 +245,38 @@ describe('InventoryComponent', (): void => {
 
     test('should handle item decrement count routing', (): void => {
       const _mockInventoryItem: InventoryItem = mockInventoryItem();
-
-      inventoryCmp.inventoryService.isCapacityBased = jest
-        .fn()
+      component.inventoryService.isCapacityBased = jest.fn()
         .mockReturnValueOnce(true)
         .mockReturnValueOnce(false);
-
-      inventoryCmp.openQuantityHelper = jest
-        .fn();
-
-      inventoryCmp.handleItemCountDecrement = jest
-        .fn();
-
-      const openSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'openQuantityHelper');
-      const handleSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'handleItemCountDecrement');
+      component.openQuantityHelper = jest.fn();
+      component.handleItemCountDecrement = jest.fn();
+      const openSpy: jest.SpyInstance = jest.spyOn(component, 'openQuantityHelper');
+      const handleSpy: jest.SpyInstance = jest.spyOn(component, 'handleItemCountDecrement');
 
       fixture.detectChanges();
 
-      inventoryCmp.decrementCount(_mockInventoryItem);
-
+      component.decrementCount(_mockInventoryItem);
       expect(openSpy).toHaveBeenCalledWith(_mockInventoryItem);
-
-      inventoryCmp.decrementCount(_mockInventoryItem);
-
+      component.decrementCount(_mockInventoryItem);
       expect(handleSpy).toHaveBeenCalledWith(_mockInventoryItem, 1);
     });
 
     test('should create an item based on given batch', (done: jest.DoneCallback): void => {
       const _mockBatch: Batch = mockBatch();
-
-      inventoryCmp.inventoryService.createItemFromBatch = jest
-        .fn()
+      component.inventoryService.createItemFromBatch = jest.fn()
         .mockReturnValue(of({}));
-
-      inventoryCmp.optionalData = _mockBatch;
-
-      const toastSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.toastService, 'presentToast');
+      component.optionalData = _mockBatch;
+      const toastSpy: jest.SpyInstance = jest.spyOn(component.toastService, 'presentToast');
 
       fixture.detectChanges();
 
-      inventoryCmp.createItemFromBatch(_mockBatch, {});
-
+      component.createItemFromBatch(_mockBatch, {});
       setTimeout((): void => {
         expect(toastSpy).toHaveBeenCalledWith(
           'Added new item to inventory!',
           1500
         );
-        expect(inventoryCmp.optionalData).toBeNull();
+        expect(component.optionalData).toBeNull();
         done();
       }, 10);
     });
@@ -352,19 +284,14 @@ describe('InventoryComponent', (): void => {
     test('should get an error creating an item based on given batch', (done: jest.DoneCallback): void => {
       const _mockBatch: Batch = mockBatch();
       const _mockError: Error = new Error('test-error');
-
-      inventoryCmp.inventoryService.createItemFromBatch = jest
-        .fn()
+      component.inventoryService.createItemFromBatch = jest.fn()
         .mockReturnValue(throwError(_mockError));
-
-      inventoryCmp.optionalData = _mockBatch;
-
-      const errorSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.errorReporter, 'handleUnhandledError');
+      component.optionalData = _mockBatch;
+      const errorSpy: jest.SpyInstance = jest.spyOn(component.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
-      inventoryCmp.createItemFromBatch(_mockBatch, {});
-
+      component.createItemFromBatch(_mockBatch, {});
       setTimeout((): void => {
         expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
@@ -374,45 +301,41 @@ describe('InventoryComponent', (): void => {
     test('should format a count decrement toast message', (): void => {
       const _mockInventoryItem: InventoryItem = mockInventoryItem();
       _mockInventoryItem.currentQuantity = 2;
-
-      inventoryCmp.inventoryService.isCapacityBased = jest
-        .fn()
+      component.inventoryService.isCapacityBased = jest.fn()
         .mockReturnValueOnce(true)
         .mockReturnValueOnce(false);
 
       fixture.detectChanges();
 
-      expect(inventoryCmp.formatDecrementMessage(_mockInventoryItem)).toMatch('2 Pints remaining');
+      expect(component.formatDecrementMessage(_mockInventoryItem)).toMatch('2 Pints remaining');
       _mockInventoryItem.currentQuantity--;
-      expect(inventoryCmp.formatDecrementMessage(_mockInventoryItem)).toMatch(`1 ${_mockInventoryItem.stockType} remaining`);
-      expect(inventoryCmp.formatDecrementMessage(null)).toMatch('Out of Stock!');
+      expect(component.formatDecrementMessage(_mockInventoryItem)).toMatch(`1 ${_mockInventoryItem.stockType} remaining`);
+      expect(component.formatDecrementMessage(null)).toMatch('Out of Stock!');
     });
 
     test('should handle decrement the inventory item count', (done: jest.DoneCallback): void => {
       const _mockInventoryItem: InventoryItem = mockInventoryItem();
       _mockInventoryItem.currentQuantity = 2;
-
-      inventoryCmp.inventoryService.updateItem = jest
-        .fn()
+      component.inventoryService.updateItem = jest.fn()
         .mockReturnValueOnce(of(_mockInventoryItem))
+        .mockReturnValueOnce(of(null))
         .mockReturnValueOnce(of(null));
-
-      inventoryCmp.formatDecrementMessage = jest
-        .fn()
+      component.formatDecrementMessage = jest.fn()
         .mockReturnValue('test-message');
-
-      const toastSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.toastService, 'presentToast');
+      const toastSpy: jest.SpyInstance = jest.spyOn(component.toastService, 'presentToast');
+      const updateSpy: jest.SpyInstance = jest.spyOn(component.inventoryService, 'updateItem');
 
       fixture.detectChanges();
 
-      inventoryCmp.handleItemCountDecrement(_mockInventoryItem, 1);
-      inventoryCmp.handleItemCountDecrement(_mockInventoryItem, 1);
-
+      component.handleItemCountDecrement(_mockInventoryItem, 1);
+      component.handleItemCountDecrement(_mockInventoryItem, 1);
+      component.handleItemCountDecrement(_mockInventoryItem, 10);
       setTimeout((): void => {
         expect(toastSpy.mock.calls[0][0]).toMatch('test-message');
         expect(toastSpy.mock.calls[0][3].length).toEqual(0);
         expect(toastSpy.mock.calls[1][0]).toMatch('test-message');
         expect(toastSpy.mock.calls[1][3]).toMatch('toast-warn');
+        expect(updateSpy).toHaveBeenNthCalledWith(3, _mockInventoryItem.cid, { currentQuantity: 0 });
         done();
       }, 10);
     });
@@ -420,17 +343,13 @@ describe('InventoryComponent', (): void => {
     test('should get an error decrementing item count', (done: jest.DoneCallback): void => {
       const _mockInventoryItem: InventoryItem = mockInventoryItem();
       const _mockError: Error = new Error('test-error');
-
-      inventoryCmp.inventoryService.updateItem = jest
-        .fn()
+      component.inventoryService.updateItem = jest.fn()
         .mockReturnValue(throwError(_mockError));
-
-      const errorSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.errorReporter, 'handleUnhandledError');
+      const errorSpy: jest.SpyInstance = jest.spyOn(component.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
-      inventoryCmp.handleItemCountDecrement(_mockInventoryItem, 1);
-
+      component.handleItemCountDecrement(_mockInventoryItem, 1);
       setTimeout((): void => {
         expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
@@ -439,28 +358,19 @@ describe('InventoryComponent', (): void => {
 
     test('should load the inventory list', (done: jest.DoneCallback): void => {
       const _mockInventoryItem: InventoryItem = mockInventoryItem();
-
-      inventoryCmp.inventoryService.getInventoryList = jest
-        .fn()
+      component.inventoryService.getInventoryList = jest.fn()
         .mockReturnValue(new BehaviorSubject<InventoryItem[]>([_mockInventoryItem]));
-
-      inventoryCmp.imageService.setInitialURL = jest
-        .fn();
-
-      inventoryCmp.resetDisplayList = jest
-        .fn();
-
-      const imageSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.imageService, 'setInitialURL');
-      const resetSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'resetDisplayList');
+      component.imageService.setInitialURL = jest.fn();
+      component.resetDisplayList = jest.fn();
+      const imageSpy: jest.SpyInstance = jest.spyOn(component.imageService, 'setInitialURL');
+      const resetSpy: jest.SpyInstance = jest.spyOn(component, 'resetDisplayList');
 
       fixture.detectChanges();
 
-      expect(inventoryCmp.displayList).toBeNull();
-
-      inventoryCmp.loadInventoryList();
-
+      expect(component.displayList).toBeNull();
+      component.loadInventoryList();
       setTimeout((): void => {
-        expect(inventoryCmp.displayList).toStrictEqual([_mockInventoryItem]);
+        expect(component.displayList).toStrictEqual([_mockInventoryItem]);
         expect(imageSpy).toHaveBeenCalledTimes(2);
         expect(resetSpy).toHaveBeenCalled();
         done();
@@ -469,19 +379,15 @@ describe('InventoryComponent', (): void => {
 
     test('should get an error loading inventory list', (done: jest.DoneCallback): void => {
       const _mockError: Error = new Error('test-error');
-
-      inventoryCmp.inventoryService.getInventoryList = jest
-        .fn()
+      component.inventoryService.getInventoryList = jest.fn()
         .mockReturnValue(throwError(_mockError));
-
-      const errorSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.errorReporter, 'handleUnhandledError');
+      const errorSpy: jest.SpyInstance = jest.spyOn(component.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
-      inventoryCmp.loadInventoryList();
-
+      component.loadInventoryList();
       setTimeout((): void => {
-        expect(inventoryCmp.displayList).toBeNull();
+        expect(component.displayList).toBeNull();
         expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
@@ -489,19 +395,15 @@ describe('InventoryComponent', (): void => {
 
     test('should handle updating an item', (done: jest.DoneCallback): void => {
       const _mockInventoryItem: InventoryItem = mockInventoryItem();
-
-      inventoryCmp.inventoryService.updateItem = jest
-        .fn()
+      component.inventoryService.updateItem = jest.fn()
         .mockReturnValue(of({}));
-
-      const toastSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.toastService, 'presentToast');
+      const toastSpy: jest.SpyInstance = jest.spyOn(component.toastService, 'presentToast');
 
       fixture.detectChanges();
 
-      inventoryCmp.updateItem(_mockInventoryItem, {});
-
+      component.updateItem(_mockInventoryItem, {});
       setTimeout((): void => {
-        expect(toastSpy).toHaveBeenCalledWith('Updated item', 2000);
+        expect(toastSpy).toHaveBeenCalledWith('Updated item', 1500);
         done();
       }, 10);
     });
@@ -509,17 +411,13 @@ describe('InventoryComponent', (): void => {
     test('should get an error handling an item update', (done: jest.DoneCallback): void => {
       const _mockInventoryItem: InventoryItem = mockInventoryItem();
       const _mockError: Error = new Error('test-error');
-
-      inventoryCmp.inventoryService.updateItem = jest
-        .fn()
+      component.inventoryService.updateItem = jest.fn()
         .mockReturnValue(throwError(_mockError));
-
-      const errorSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.errorReporter, 'handleUnhandledError');
+      const errorSpy: jest.SpyInstance = jest.spyOn(component.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
-      inventoryCmp.updateItem(_mockInventoryItem, {});
-
+      component.updateItem(_mockInventoryItem, {});
       setTimeout((): void => {
         expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
@@ -528,17 +426,13 @@ describe('InventoryComponent', (): void => {
 
     test('should handle removing an item', (done: jest.DoneCallback): void => {
       const _mockInventoryItem: InventoryItem = mockInventoryItem();
-
-      inventoryCmp.inventoryService.removeItem = jest
-        .fn()
+      component.inventoryService.removeItem = jest.fn()
         .mockReturnValue(of({}));
-
-      const toastSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.toastService, 'presentErrorToast');
+      const toastSpy: jest.SpyInstance = jest.spyOn(component.toastService, 'presentErrorToast');
 
       fixture.detectChanges();
 
-      inventoryCmp.removeItem(_mockInventoryItem.cid);
-
+      component.removeItem(_mockInventoryItem.cid);
       setTimeout((): void => {
         expect(toastSpy).not.toHaveBeenCalled();
         done();
@@ -548,17 +442,13 @@ describe('InventoryComponent', (): void => {
     test('should get an error handling an item removal', (done: jest.DoneCallback): void => {
       const _mockInventoryItem: InventoryItem = mockInventoryItem();
       const _mockError: Error = new Error('test-error');
-
-      inventoryCmp.inventoryService.removeItem = jest
-        .fn()
+      component.inventoryService.removeItem = jest.fn()
         .mockReturnValue(throwError(_mockError));
-
-      const errorSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.errorReporter, 'handleUnhandledError');
+      const errorSpy: jest.SpyInstance = jest.spyOn(component.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
-      inventoryCmp.removeItem(_mockInventoryItem.cid);
-
+      component.removeItem(_mockInventoryItem.cid);
       setTimeout((): void => {
         expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
@@ -571,57 +461,42 @@ describe('InventoryComponent', (): void => {
   describe('Modals', (): void => {
 
     test('should handle quantity helper modal error', (): void => {
-      const toastSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.toastService, 'presentErrorToast');
+      const toastSpy: jest.SpyInstance = jest.spyOn(component.toastService, 'presentErrorToast');
 
       fixture.detectChanges();
 
-      const errorHandler: (error: string) => void = inventoryCmp.onQuantityHelperModalError();
-
+      const errorHandler: (error: string) => void = component.onQuantityHelperModalError();
       errorHandler('test-error');
-
       expect(toastSpy).toHaveBeenCalledWith('Error selecting quantity');
     });
 
     test('should handle quantity helper modal success', (): void => {
       const _mockInventoryItem: InventoryItem = mockInventoryItem();
-
-      inventoryCmp.handleItemCountDecrement = jest
-        .fn();
-
-      const handleSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'handleItemCountDecrement');
+      component.handleItemCountDecrement = jest.fn();
+      const handleSpy: jest.SpyInstance = jest.spyOn(component, 'handleItemCountDecrement');
 
       fixture.detectChanges();
 
-      const successHandler: (data: object) => void = inventoryCmp.onQuantityHelperModalSuccess(_mockInventoryItem);
+      const successHandler: (data: object) => void = component.onQuantityHelperModalSuccess(_mockInventoryItem);
       successHandler({ data: 1 });
-
       expect(handleSpy).toHaveBeenCalledWith(_mockInventoryItem, 1);
     });
 
     test('should open quantity helper modal with success', (done: jest.DoneCallback): void => {
       const _stubModal: ModalStub = new ModalStub();
       const _mockInventoryItem: InventoryItem = mockInventoryItem();
-
-      inventoryCmp.modalCtrl.create = jest
-        .fn()
+      component.modalCtrl.create = jest.fn()
         .mockReturnValue(Promise.resolve(_stubModal));
-
-      _stubModal.onDidDismiss = jest
-        .fn()
+      _stubModal.onDidDismiss = jest.fn()
         .mockReturnValue(Promise.resolve({ data: {} }));
-
-      inventoryCmp.onQuantityHelperModalSuccess = jest
-        .fn()
+      component.onQuantityHelperModalSuccess = jest.fn()
         .mockReturnValue(() => {});
-
-      const successSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'onQuantityHelperModalSuccess');
+      const successSpy: jest.SpyInstance = jest.spyOn(component, 'onQuantityHelperModalSuccess');
 
       fixture.detectChanges();
 
-      inventoryCmp.openQuantityHelper(_mockInventoryItem);
-
+      component.openQuantityHelper(_mockInventoryItem);
       _stubModal.onDidDismiss();
-
       setTimeout((): void => {
         expect(successSpy).toHaveBeenCalledWith(_mockInventoryItem);
         done();
@@ -631,27 +506,18 @@ describe('InventoryComponent', (): void => {
     test('should handle error response from modal', (done: jest.DoneCallback): void => {
       const _mockInventoryItem: InventoryItem = mockInventoryItem();
       const _stubModal: ModalStub = new ModalStub();
-
-      inventoryCmp.modalCtrl.create = jest
-        .fn()
+      component.modalCtrl.create = jest.fn()
         .mockReturnValue(Promise.resolve(_stubModal));
-
-      inventoryCmp.onQuantityHelperModalError = jest
-        .fn()
+      component.onQuantityHelperModalError = jest.fn()
         .mockReturnValue(() => {});
-
-      _stubModal.onDidDismiss = jest
-        .fn()
+      _stubModal.onDidDismiss = jest.fn()
         .mockReturnValue(Promise.reject('test-error'));
-
-      const errorSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'onQuantityHelperModalError');
+      const errorSpy: jest.SpyInstance = jest.spyOn(component, 'onQuantityHelperModalError');
 
       fixture.detectChanges();
 
-      inventoryCmp.openQuantityHelper(_mockInventoryItem);
-
+      component.openQuantityHelper(_mockInventoryItem);
       _stubModal.onDidDismiss();
-
       setTimeout((): void => {
         expect(errorSpy).toHaveBeenCalled();
         done();
@@ -659,115 +525,80 @@ describe('InventoryComponent', (): void => {
     });
 
     test('should handle inventory form modal error', (): void => {
-      const toastSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.toastService, 'presentErrorToast');
+      const toastSpy: jest.SpyInstance = jest.spyOn(component.toastService, 'presentErrorToast');
 
       fixture.detectChanges();
 
-      const errorHandler: (error: string) => void = inventoryCmp.onInventoryFormModalError();
-
+      const errorHandler: (error: string) => void = component.onInventoryFormModalError();
       errorHandler('test-error');
-
       expect(toastSpy).toHaveBeenCalledWith('An error occurred on inventory form exit');
     });
 
     test('should handle inventory form modal success with batch', (): void => {
       const _stubModal: ModalStub = new ModalStub();
       const _mockBatch: Batch = mockBatch();
-
-      inventoryCmp.modalCtrl.create = jest
-        .fn()
+      component.modalCtrl.create = jest.fn()
         .mockReturnValue(Promise.resolve(_stubModal));
-
-      _stubModal.onDidDismiss = jest
-        .fn()
+      _stubModal.onDidDismiss = jest.fn()
         .mockReturnValue(Promise.resolve({ data: {} }));
-
-      inventoryCmp.createItemFromBatch = jest
-        .fn();
-
-      const createSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'createItemFromBatch');
+      component.createItemFromBatch = jest.fn();
+      const createSpy: jest.SpyInstance = jest.spyOn(component, 'createItemFromBatch');
 
       fixture.detectChanges();
 
-      const successHandler: (data: object) => void = inventoryCmp.onInventoryFormModalSuccess({ batch: _mockBatch });
+      const successHandler: (data: object) => void = component.onInventoryFormModalSuccess({ batch: _mockBatch });
       successHandler({ data: { test: true } });
-
       expect(createSpy).toHaveBeenCalledWith(_mockBatch, { test: true });
     });
 
     test('should handle inventory form modal success with item', (): void => {
       const _stubModal: ModalStub = new ModalStub();
       const _mockInventoryItem: InventoryItem = mockInventoryItem();
-
-      inventoryCmp.modalCtrl.create = jest
-        .fn()
+      component.modalCtrl.create = jest.fn()
         .mockReturnValue(Promise.resolve(_stubModal));
-
-      _stubModal.onDidDismiss = jest
-        .fn()
+      _stubModal.onDidDismiss = jest.fn()
         .mockReturnValue(Promise.resolve({ data: {} }));
-
-      inventoryCmp.updateItem = jest
-        .fn();
-
-      const updateSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'updateItem');
+      component.updateItem = jest.fn();
+      const updateSpy: jest.SpyInstance = jest.spyOn(component, 'updateItem');
 
       fixture.detectChanges();
 
-      const successHandler: (data: object) => void = inventoryCmp.onInventoryFormModalSuccess({ item: _mockInventoryItem });
+      const successHandler: (data: object) => void = component.onInventoryFormModalSuccess({ item: _mockInventoryItem });
       successHandler({ data: { test: true } });
-
       expect(updateSpy).toHaveBeenCalledWith(_mockInventoryItem, { test: true });
     });
 
     test('should open the inventory form modal with no options', (): void => {
       const _stubModal: ModalStub = new ModalStub();
-
-      inventoryCmp.modalCtrl.create = jest
-        .fn()
+      component.modalCtrl.create = jest.fn()
         .mockReturnValue(Promise.resolve(_stubModal));
-
-      _stubModal.onDidDismiss = jest
-        .fn()
+      _stubModal.onDidDismiss = jest.fn()
         .mockReturnValue(Promise.resolve({ data: { test: true } }));
-
-      inventoryCmp.createItem = jest
-        .fn();
-
-      const createSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'createItem');
+      component.createItem = jest.fn();
+      const createSpy: jest.SpyInstance = jest.spyOn(component, 'createItem');
 
       fixture.detectChanges();
 
-      const successHandler: (data: object) => void = inventoryCmp.onInventoryFormModalSuccess({});
+      const successHandler: (data: object) => void = component.onInventoryFormModalSuccess({});
       successHandler({ data: { test: true } });
-
       expect(createSpy).toHaveBeenCalledWith({ test: true });
     });
 
     test('should open the inventory form modal with success', (done: jest.DoneCallback): void => {
       const _stubModal: ModalStub = new ModalStub();
       const _mockBatch: Batch = mockBatch();
-
-      inventoryCmp.modalCtrl.create = jest
-        .fn()
+      component.modalCtrl.create = jest.fn()
         .mockReturnValue(Promise.resolve(_stubModal));
-
-      _stubModal.onDidDismiss = jest
-        .fn()
+      _stubModal.onDidDismiss = jest.fn()
         .mockReturnValue(Promise.resolve({ data: {} }));
-
-      inventoryCmp.onInventoryFormModalSuccess = jest
-        .fn()
+      component.onInventoryFormModalSuccess = jest.fn()
         .mockReturnValue(() => {});
-
-      const successSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'onInventoryFormModalSuccess');
+      const successSpy: jest.SpyInstance = jest.spyOn(component, 'onInventoryFormModalSuccess');
 
       fixture.detectChanges();
 
-      inventoryCmp.openInventoryFormModal({ batch: _mockBatch });
-
+      component.openInventoryFormModal({ batch: _mockBatch });
       _stubModal.onDidDismiss();
-
       setTimeout((): void => {
         expect(successSpy).toHaveBeenCalledWith({ batch: _mockBatch });
         done();
@@ -776,27 +607,18 @@ describe('InventoryComponent', (): void => {
 
     test('should handle error response from modal', (done: jest.DoneCallback): void => {
       const _stubModal: ModalStub = new ModalStub();
-
-      inventoryCmp.modalCtrl.create = jest
-        .fn()
+      component.modalCtrl.create = jest.fn()
         .mockReturnValue(Promise.resolve(_stubModal));
-
-      inventoryCmp.onInventoryFormModalError = jest
-        .fn()
+      component.onInventoryFormModalError = jest.fn()
         .mockReturnValue(() => {});
-
-      _stubModal.onDidDismiss = jest
-        .fn()
+      _stubModal.onDidDismiss = jest.fn()
         .mockReturnValue(Promise.reject('test-error'));
-
-      const errorSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'onInventoryFormModalError');
+      const errorSpy: jest.SpyInstance = jest.spyOn(component, 'onInventoryFormModalError');
 
       fixture.detectChanges();
 
-      inventoryCmp.openInventoryFormModal({});
-
+      component.openInventoryFormModal({});
       _stubModal.onDidDismiss();
-
       setTimeout((): void => {
         expect(errorSpy).toHaveBeenCalled();
         done();
@@ -808,34 +630,43 @@ describe('InventoryComponent', (): void => {
 
   describe('Sorting', (): void => {
 
-    test('should handle sort direction change', (): void => {
-      const _mockEvent: CustomEvent = new CustomEvent('test-event', { detail: { value: false } });
-
-      inventoryCmp.resetDisplayList = jest
-        .fn();
+    test('should collect inventory items into groups based on source', (): void => {
+      const _mockInventoryItemSelf: InventoryItem = mockInventoryItem();
+      _mockInventoryItemSelf.sourceType = 'self';
+      const _mockInventoryItemOther: InventoryItem = mockInventoryItem();
+      _mockInventoryItemOther.sourceType = 'other';
+      const _mockInventoryItemThird: InventoryItem = mockInventoryItem();
+      _mockInventoryItemThird.sourceType = 'third';
+      component.displayList = [ _mockInventoryItemOther, _mockInventoryItemThird, _mockInventoryItemSelf ];
 
       fixture.detectChanges();
 
-      expect(inventoryCmp.isAscending).toBe(true);
+      const [self, other, third] = component.collateInventoryBySource();
+      expect(self).toStrictEqual([_mockInventoryItemSelf]);
+      expect(other).toStrictEqual([_mockInventoryItemOther]);
+      expect(third).toStrictEqual([_mockInventoryItemThird]);
+    });
 
-      inventoryCmp.onDirectionChange(_mockEvent);
+    test('should handle sort direction change', (): void => {
+      const _mockEvent: CustomEvent = new CustomEvent('test-event', { detail: { value: false } });
+      component.resetDisplayList = jest.fn();
 
-      expect(inventoryCmp.isAscending).toBe(false);
+      fixture.detectChanges();
+
+      expect(component.isAscending).toBe(true);
+      component.onDirectionChange(_mockEvent);
+      expect(component.isAscending).toBe(false);
     });
 
     test('should handle sort on change', (): void => {
       const _mockEvent: CustomEvent = new CustomEvent('test-event', { detail: { value: 'source' } });
-
-      inventoryCmp.resetDisplayList = jest
-        .fn();
+      component.resetDisplayList = jest.fn();
 
       fixture.detectChanges();
 
-      expect(inventoryCmp.sortBy).toMatch('alphabetical');
-
-      inventoryCmp.onSortChange(_mockEvent);
-
-      expect(inventoryCmp.sortBy).toMatch('source');
+      expect(component.sortBy).toMatch('alphabetical');
+      component.onSortChange(_mockEvent);
+      expect(component.sortBy).toMatch('source');
     });
 
     test('should sort items alphabetically by name', (): void => {
@@ -848,18 +679,13 @@ describe('InventoryComponent', (): void => {
 
       fixture.detectChanges();
 
-      inventoryCmp.displayList = [ _mockInventoryItem1, _mockInventoryItem3, _mockInventoryItem2 ];
-      inventoryCmp.isAscending = false;
-
-      inventoryCmp.sortByAlphabetical();
-
-      expect(inventoryCmp.displayList).toStrictEqual([ _mockInventoryItem3, _mockInventoryItem2, _mockInventoryItem1]);
-
-      inventoryCmp.isAscending = true;
-
-      inventoryCmp.sortByAlphabetical();
-
-      expect(inventoryCmp.displayList).toStrictEqual([ _mockInventoryItem1, _mockInventoryItem2, _mockInventoryItem3]);
+      component.displayList = [ _mockInventoryItem1, _mockInventoryItem3, _mockInventoryItem2 ];
+      component.isAscending = false;
+      component.sortByAlphabetical();
+      expect(component.displayList).toStrictEqual([ _mockInventoryItem3, _mockInventoryItem2, _mockInventoryItem1]);
+      component.isAscending = true;
+      component.sortByAlphabetical();
+      expect(component.displayList).toStrictEqual([ _mockInventoryItem1, _mockInventoryItem2, _mockInventoryItem3]);
     });
 
     test('should sort items by current quantity', (): void => {
@@ -872,18 +698,13 @@ describe('InventoryComponent', (): void => {
 
       fixture.detectChanges();
 
-      inventoryCmp.displayList = [ _mockInventoryItem1, _mockInventoryItem3, _mockInventoryItem2 ];
-      inventoryCmp.isAscending = false;
-
-      inventoryCmp.sortByRemaining();
-
-      expect(inventoryCmp.displayList).toStrictEqual([ _mockInventoryItem3, _mockInventoryItem2, _mockInventoryItem1]);
-
-      inventoryCmp.isAscending = true;
-
-      inventoryCmp.sortByRemaining();
-
-      expect(inventoryCmp.displayList).toStrictEqual([ _mockInventoryItem1, _mockInventoryItem2, _mockInventoryItem3]);
+      component.displayList = [ _mockInventoryItem1, _mockInventoryItem3, _mockInventoryItem2 ];
+      component.isAscending = false;
+      component.sortByRemaining();
+      expect(component.displayList).toStrictEqual([ _mockInventoryItem3, _mockInventoryItem2, _mockInventoryItem1]);
+      component.isAscending = true;
+      component.sortByRemaining();
+      expect(component.displayList).toStrictEqual([ _mockInventoryItem1, _mockInventoryItem2, _mockInventoryItem3]);
     });
 
     test('should sort items by source (ascending: self -> other -> third)', (): void => {
@@ -893,91 +714,69 @@ describe('InventoryComponent', (): void => {
       _mockInventoryItem2.sourceType = 'other';
       const _mockInventoryItem3: InventoryItem = mockInventoryItem();
       _mockInventoryItem3.sourceType = 'third';
+      component.collateInventoryBySource = jest.fn()
+        .mockReturnValue([[_mockInventoryItem1], [_mockInventoryItem2], [_mockInventoryItem3]]);
 
       fixture.detectChanges();
 
-      inventoryCmp.displayList = [ _mockInventoryItem1, _mockInventoryItem3, _mockInventoryItem2 ];
-      inventoryCmp.isAscending = false;
-
-      inventoryCmp.sortBySource();
-
-      expect(inventoryCmp.displayList).toStrictEqual([ _mockInventoryItem3, _mockInventoryItem2, _mockInventoryItem1]);
-
-      inventoryCmp.isAscending = true;
-
-      inventoryCmp.sortBySource();
-
-      expect(inventoryCmp.displayList).toStrictEqual([ _mockInventoryItem1, _mockInventoryItem2, _mockInventoryItem3]);
+      component.displayList = [ _mockInventoryItem1, _mockInventoryItem3, _mockInventoryItem2 ];
+      component.isAscending = false;
+      component.sortBySource();
+      expect(component.displayList).toStrictEqual([ _mockInventoryItem3, _mockInventoryItem2, _mockInventoryItem1]);
+      component.isAscending = true;
+      component.sortBySource();
+      expect(component.displayList).toStrictEqual([ _mockInventoryItem1, _mockInventoryItem2, _mockInventoryItem3]);
     });
 
   });
 
 
-  describe('Template Display', (): void => {
+  describe('Render Template', (): void => {
 
     test('should show a spinner if displayList is null', (): void => {
-      inventoryCmp.displayList = null;
+      component.displayList = null;
 
       fixture.detectChanges();
 
-      const spinner: HTMLElement = fixture.nativeElement.querySelector('.no-items');
-      expect(spinner.childNodes.item(0).textContent).toMatch('Loading Inventory');
-
-      const formButton: HTMLElement = fixture.nativeElement.querySelector('.form-button');
-      expect(formButton).toBeNull();
-
-      const listOptions: HTMLElement = fixture.nativeElement.querySelector('#search-options-list');
-      expect(listOptions).toBeNull();
-
+      const spinner: HTMLElement = fixture.nativeElement.querySelector('app-loading-spinner');
+      expect(spinner).toBeTruthy();
       const list: HTMLElement = fixture.nativeElement.querySelector('#inventory-list');
       expect(list).toBeNull();
     });
 
     test('should show add button and no-item message with an empty inventory list', (): void => {
-      inventoryCmp.displayList = [];
+      component.displayList = [];
 
       fixture.detectChanges();
 
       const noItemsMessage: HTMLElement = fixture.nativeElement.querySelector('.no-items');
       expect(noItemsMessage.textContent).toMatch('No Items in Inventory');
-
       const formButton: HTMLElement = fixture.nativeElement.querySelector('.form-button');
       expect(formButton.textContent).toMatch('ADD CUSTOM ITEM');
-
       const listOptions: HTMLElement = fixture.nativeElement.querySelector('#search-option-list');
       expect(listOptions).toBeNull();
-
       const list: HTMLElement = fixture.nativeElement.querySelector('#inventory-list');
       expect(list).toBeNull();
     });
 
-    test('should show add button and no-item message with an empty inventory list', (): void => {
+    test('should show add button and inventory list', (): void => {
       const _mockInventoryItem1: InventoryItem = mockInventoryItem();
       const _mockInventoryItem2: InventoryItem = mockInventoryItem();
       _mockInventoryItem2.itemName = 'Other Name';
-
-      inventoryCmp.displayList = [ _mockInventoryItem1, _mockInventoryItem2 ];
-
-      inventoryCmp.itemIndex = 1;
+      component.displayList = [ _mockInventoryItem1, _mockInventoryItem2 ];
+      component.itemIndex = 1;
 
       fixture.detectChanges();
 
       const formButton: HTMLElement = fixture.nativeElement.querySelector('.form-button');
       expect(formButton.textContent).toMatch('ADD CUSTOM ITEM');
-
       const listOptions: HTMLElement = fixture.nativeElement.querySelector('#search-option-list');
       expect(listOptions).not.toBeNull();
-
       const list: HTMLElement = fixture.nativeElement.querySelector('#inventory-list');
       expect(list).not.toBeNull();
-      expect(list.childNodes.length).toEqual(inventoryCmp.displayList.length * 4 - 1);
-
-      const firstSlidingItem: HTMLElement = fixture.nativeElement.querySelectorAll('.inventory-item').item(0);
-      const firstNameLabel: HTMLElement = firstSlidingItem.querySelector('.expand-button');
-      expect(firstNameLabel.childNodes.item(0).textContent).toMatch(`${_mockInventoryItem1.itemName} | ${_mockInventoryItem1.optionalItemData.itemSubname}`);
-      const secondSlidingItem: HTMLElement = fixture.nativeElement.querySelectorAll('.inventory-item').item(1);
-      const secondNameLabel: HTMLElement = secondSlidingItem.querySelector('.expand-button');
-      expect(secondNameLabel.childNodes.item(0).textContent).toMatch(`${_mockInventoryItem2.itemName} | ${_mockInventoryItem2.optionalItemData.itemSubname}`);
+      expect(list.childNodes.length).toEqual(component.displayList.length * 4 - 1);
+      const sliders: NodeList = fixture.nativeElement.querySelectorAll('app-inventory-slider');
+      expect(sliders.length).toEqual(2);
     });
 
   });
@@ -987,14 +786,12 @@ describe('InventoryComponent', (): void => {
 
     test('should get the ion-content element', (): void => {
       const _mockInventoryItem: InventoryItem = mockInventoryItem();
-      inventoryCmp.displayList = [_mockInventoryItem];
-
+      component.displayList = [_mockInventoryItem];
       const container: HTMLElement = global.document.createElement('body');
       const ionContent: HTMLElement = global.document.createElement('ion-content');
       const child1: HTMLElement = global.document.createElement('div');
       const child2: HTMLElement = global.document.createElement('p');
       const ref: HTMLElement = global.document.createElement('div');
-
       Object.defineProperty(ref, 'nativeElement', { writable: false, value: child2 });
       Object.defineProperty(child2, 'parentElement', { writable: false, value: child1 });
       Object.defineProperty(child1, 'parentElement', { writable: false, value: ionContent });
@@ -1003,47 +800,33 @@ describe('InventoryComponent', (): void => {
 
       fixture.detectChanges();
 
-      inventoryCmp.slidingItemsListRef = <any>ref;
-
-      const elem: HTMLElement = inventoryCmp.getTopLevelContainer();
-
+      component.slidingItemsListRef = <any>ref;
+      const elem: HTMLElement = component.getTopLevelContainer();
       expect(elem).toStrictEqual(ionContent);
     });
 
     test('should get null top level container if slidingItemsListRef is undefined', (): void => {
       fixture.detectChanges();
 
-      inventoryCmp.slidingItemsListRef = undefined;
-
-      expect(inventoryCmp.getTopLevelContainer()).toBeNull();
+      component.slidingItemsListRef = undefined;
+      expect(component.getTopLevelContainer()).toBeNull();
     });
 
     test('should run sliding hints', (done: jest.DoneCallback): void => {
       const _mockElem: HTMLElement = global.document.createElement('div');
-
-      inventoryCmp.getTopLevelContainer = jest
-        .fn()
+      component.getTopLevelContainer = jest.fn()
         .mockReturnValue(_mockElem);
-
-      inventoryCmp.toggleSlidingItemClass = jest
-        .fn();
-
-      inventoryCmp.animationService.playCombinedSlidingHintAnimations = jest
-        .fn()
+      component.toggleSlidingItemClass = jest.fn();
+      component.animationService.playCombinedSlidingHintAnimations = jest.fn()
         .mockReturnValue(of([]));
-
-      inventoryCmp.animationService.setHintShownFlag = jest
-        .fn();
-
-      const toggleSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'toggleSlidingItemClass');
-      const setSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.animationService, 'setHintShownFlag');
+      component.animationService.setHintShownFlag = jest.fn();
+      const toggleSpy: jest.SpyInstance = jest.spyOn(component, 'toggleSlidingItemClass');
+      const setSpy: jest.SpyInstance = jest.spyOn(component.animationService, 'setHintShownFlag');
 
       fixture.detectChanges();
 
-      inventoryCmp.slidingItemsListRef = <any>_mockElem;
-
-      inventoryCmp.runSlidingHints();
-
+      component.slidingItemsListRef = <any>_mockElem;
+      component.runSlidingHints();
       setTimeout((): void => {
         expect(toggleSpy).toHaveBeenCalledTimes(2);
         expect(setSpy).toHaveBeenCalledWith('sliding', 'inventory');
@@ -1052,90 +835,76 @@ describe('InventoryComponent', (): void => {
     });
 
     test('should get an error running sliding hints with missing content element', (): void => {
-      inventoryCmp.getTopLevelContainer = jest
-        .fn()
+      component.getTopLevelContainer = jest.fn()
         .mockReturnValue(null);
-
-      const _mockErrorReport: ErrorReport = mockErrorReport();
-
-      inventoryCmp.errorReporter.setErrorReport = jest.fn();
-      inventoryCmp.errorReporter.getCustomReportFromError = jest
-        .fn()
-        .mockReturnValue(_mockErrorReport);
-
-      const setSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.errorReporter, 'setErrorReport');
-      const getSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.errorReporter, 'getCustomReportFromError');
+      component.reportSlidingHintError = jest.fn();
+      const reportSpy: jest.SpyInstance = jest.spyOn(component, 'reportSlidingHintError');
+      const toggleSpy: jest.SpyInstance = jest.spyOn(component, 'toggleSlidingItemClass');
 
       fixture.detectChanges();
 
-      inventoryCmp.runSlidingHints();
-
-      expect(setSpy).toHaveBeenCalledWith(_mockErrorReport);
-      expect(getSpy.mock.calls[0][0]['name']).toMatch('AnimationError');
+      component.runSlidingHints();
+      expect(reportSpy).toHaveBeenCalled();
+      expect(toggleSpy).not.toHaveBeenCalled();
     });
 
-    test('should get an error running sliding hints with animation error', (done: jest.DoneCallback): void => {
+    test('should handle error playing hint animations', (done: jest.DoneCallback): void => {
+      const _mockContainer: Element = global.document.createElement('div');
+      Object.defineProperty(_mockContainer, 'nativeElement', { writable: false, value: {} });
       const _mockElem: HTMLElement = global.document.createElement('div');
       const _mockError: Error = new Error('test-error');
-
-      inventoryCmp.getTopLevelContainer = jest
-        .fn()
+      component.getTopLevelContainer = jest.fn()
         .mockReturnValue(_mockElem);
-
-      inventoryCmp.toggleSlidingItemClass = jest
-        .fn();
-
-      inventoryCmp.animationService.playCombinedSlidingHintAnimations = jest
-        .fn()
+      component.toggleSlidingItemClass = jest.fn();
+      component.animationService.playCombinedSlidingHintAnimations = jest.fn()
         .mockReturnValue(throwError(_mockError));
-
-      inventoryCmp.animationService.setHintShownFlag = jest
-        .fn();
-
-      const errorSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.errorReporter, 'handleUnhandledError');
-      const toggleSpy: jest.SpyInstance = jest.spyOn(inventoryCmp, 'toggleSlidingItemClass');
-      const setSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.animationService, 'setHintShownFlag');
+      component.errorReporter.handleUnhandledError = jest.fn();
+      const reportSpy: jest.SpyInstance = jest.spyOn(component.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
-      inventoryCmp.slidingItemsListRef = <any>_mockElem;
-
-      inventoryCmp.runSlidingHints();
-
+      component.slidingItemsListRef = <any>_mockContainer;
+      component.runSlidingHints();
       setTimeout((): void => {
-        expect(errorSpy).toHaveBeenCalledWith(_mockError);
-        expect(toggleSpy).toHaveBeenCalledTimes(2);
-        expect(setSpy).not.toHaveBeenCalled();
+        expect(reportSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
     });
 
-    test('should toggle sliding item class', (): void => {
-      const _mockElem: HTMLElement = global.document.createElement('div');
-
-      inventoryCmp.animationService.toggleSlidingItemClass = jest
-        .fn();
-
-      const toggleSpy: jest.SpyInstance = jest.spyOn(inventoryCmp.animationService, 'toggleSlidingItemClass');
+    test('should report an animation error', (): void => {
+      const _mockErrorReport: ErrorReport = mockErrorReport();
+      component.errorReporter.setErrorReport = jest.fn();
+      component.errorReporter.getCustomReportFromError = jest.fn()
+        .mockReturnValue(_mockErrorReport);
+      const setSpy: jest.SpyInstance = jest.spyOn(component.errorReporter, 'setErrorReport');
+      const getSpy: jest.SpyInstance = jest.spyOn(component.errorReporter, 'getCustomReportFromError');
 
       fixture.detectChanges();
 
-      inventoryCmp.slidingItemsListRef = <any>_mockElem;
+      component.reportSlidingHintError();
+      expect(setSpy).toHaveBeenCalledWith(_mockErrorReport);
+      expect(getSpy.mock.calls[0][0].name).toMatch('AnimationError');
+    });
 
-      inventoryCmp.toggleSlidingItemClass(true);
+    test('should toggle sliding item class', (): void => {
+      const _mockElem: HTMLElement = global.document.createElement('div');
+      component.animationService.toggleSlidingItemClass = jest.fn();
+      const toggleSpy: jest.SpyInstance = jest.spyOn(component.animationService, 'toggleSlidingItemClass');
 
+      fixture.detectChanges();
+
+      component.slidingItemsListRef = <any>_mockElem;
+      component.toggleSlidingItemClass(true);
       expect(toggleSpy).toHaveBeenCalledWith(
-        inventoryCmp.slidingItemsListRef.nativeElement,
+        component.slidingItemsListRef.nativeElement,
         true,
-        inventoryCmp.renderer
+        component.renderer
       );
-
-      inventoryCmp.toggleSlidingItemClass(false);
-
+      component.toggleSlidingItemClass(false);
       expect(toggleSpy).toHaveBeenCalledWith(
-        inventoryCmp.slidingItemsListRef.nativeElement,
+        component.slidingItemsListRef.nativeElement,
         false,
-        inventoryCmp.renderer
+        component.renderer
       );
     });
 

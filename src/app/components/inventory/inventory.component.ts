@@ -4,11 +4,8 @@ import { ModalController } from '@ionic/angular';
 import { from, Subject } from 'rxjs';
 import { finalize, take, takeUntil } from 'rxjs/operators';
 
-/* Constant imports */
-import { API_VERSION, BASE_URL, MISSING_IMAGE_URL, SELECT_OPTIONS } from '../../shared/constants';
-
 /* Interface imports */
-import { Batch, ErrorReport, Image, InventoryItem } from '../../shared/interfaces';
+import { Batch, ErrorReport, FormSelectOption, Image, InventoryItem } from '../../shared/interfaces';
 
 /* Type imports */
 import { CustomError } from '../../shared/types';
@@ -17,15 +14,14 @@ import { CustomError } from '../../shared/types';
 import { defaultImage } from '../../shared/defaults';
 
 /* Page imports */
-import { InventoryFormPage } from '../../pages/forms/inventory-form/inventory-form.page';
-import { QuantityHelperPage } from '../../pages/quantity-helper/quantity-helper.page';
+import { InventoryFormPage, QuantityHelperPage } from '../../pages/pages';
 
 /* Service imports */
 import { AnimationsService, ErrorReportingService, EventService, ImageService, InventoryService, ProcessService, ToastService } from '../../services/services';
 
 
 @Component({
-  selector: 'inventory',
+  selector: 'app-inventory',
   templateUrl: './inventory.component.html',
   styleUrls: ['./inventory.component.scss']
 })
@@ -34,17 +30,26 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
   @Input() optionalData: Batch;
   @ViewChild('slidingItemsList', { read: ElementRef }) slidingItemsListRef: ElementRef;
   _defaultImage: Image = defaultImage();
-  baseImageURL: string = `${BASE_URL}/${API_VERSION}/assets/`; // TODO implement image asset handling
   destroy$: Subject<boolean> = new Subject<boolean>();
   displayList: InventoryItem[] = null;
   filterBy: string[] = [];
   inventoryList: InventoryItem[] = null;
   isAscending: boolean = true;
   itemIndex: number = -1;
-  missingImageURL: string = MISSING_IMAGE_URL;
   refreshPipes: boolean = false;
-  selectOptions: object = SELECT_OPTIONS;
   sortBy: string = 'alphabetical';
+  onDirectionChangeEvent: (event: any) => void = this.onDirectionChange.bind(this);
+  oneAndAHalfSeconds: number = 1500;
+  onSortChangeEvent: (event: any) => void = this.onSortChange.bind(this);
+  sortOptions: FormSelectOption[] = [
+    { label: 'alphabetical', value: 'alphabetical' },
+    { label: 'remaining', value: 'remaining' },
+    { label: 'source', value: 'source' }
+  ];
+  orderOptions: FormSelectOption[] = [
+    { label: 'ascending', value: true },
+    { label: 'descending', value: false }
+  ];
 
   constructor(
     public renderer: Renderer2,
@@ -102,33 +107,29 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
       this.itemIndex = -1;
     } else {
       this.itemIndex = index;
-
-      const accordionElement: HTMLElement = document.querySelector(
-        `accordion[data-scroll-landmark="${index}"]`
-      );
-
-      this.event.emit(
-        'scroll-in-sub-component',
-        {
-          subComponent: 'inventory',
-          offset: accordionElement.offsetTop
-        }
-      );
+      const elementSelector: string = `app-accordion[data-scroll-landmark="${index}"]`;
+      const accordionElement: HTMLElement = document.querySelector(elementSelector);
+      const eventName: string = 'scroll-in-sub-component';
+      const eventPayload: object = {
+        subComponent: 'inventory',
+        offset: accordionElement.offsetTop
+      };
+      this.event.emit(eventName, eventPayload);
     }
   }
 
   /**
-   * On image error, change url to either backup image, or not found
-   * image if the backup has also errored
+   * On image error, change url to either backup image,
+   * or not found image if the backup has also errored
    *
-   * @param: imageType - property name for image type
    * @param: item - item that owns the image
+   * @param: event - contains data from event origin: imageType (such as 'itemLabelImage'),
+   *   event is the originally triggered event
    *
    * @return: none
    */
-  onImageError(imageType: string, item: InventoryItem, event?: any): void {
-    console.log('image error', imageType, item, event);
-    this.imageService.handleImageError(item.optionalItemData[imageType]);
+  onImageError(item: InventoryItem, event: { imageType: string, event: CustomEvent }): void {
+    this.imageService.handleImageError(item.optionalItemData[event.imageType]);
   }
 
   /**
@@ -165,31 +166,27 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
       .pipe(take(1))
       .subscribe(
         (): void => {
-          this.toastService.presentToast('Added new item to inventory!', 1500);
+          this.toastService.presentToast('Added new item to inventory!', this.oneAndAHalfSeconds);
         },
         (error: any): void => {
-          const report: ErrorReport = this.errorReporter.getCustomReportFromError(
-            error,
-            {
-              name: 'InventoryItemError',
-              userMessage: `Inventory Item Error: ${error.message}`
-            }
-          );
+          const overrides: object = {
+            name: 'InventoryItemError',
+            userMessage: `Inventory Item Error: ${error.message}`
+          };
+          const report: ErrorReport = this.errorReporter.getCustomReportFromError(error, overrides);
           this.errorReporter.setErrorReport(report);
         }
       );
   }
 
   /**
-   * Decrement the item count by 1; display confirmation message
-   * with new remaining total
+   * Decrement the item count by 1; display confirmation message with new remaining total
    *
    * @param: item - the item instance to lower its count
    *
    * @return: none
    */
   decrementCount(item: InventoryItem): void {
-    // TODO open dec type form if not a bottle/can type
     if (this.inventoryService.isCapacityBased(item)) {
       this.openQuantityHelper(item);
     } else {
@@ -210,7 +207,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
       .pipe(take(1))
       .subscribe(
         (): void => {
-          this.toastService.presentToast('Added new item to inventory!', 1500);
+          this.toastService.presentToast('Added new item to inventory!', this.oneAndAHalfSeconds);
           this.optionalData = null;
         },
         (error: any): void => this.errorReporter.handleUnhandledError(error)
@@ -235,31 +232,26 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
   }
 
   /**
-   * Decrement the item count by 1; display confirmation message
-   * with new remaining total
+   * Decrement the item count by 1; display confirmation message with new remaining total
    *
    * @param: item - the item instance to lower its count
-   * @param: decrementCount - number to decrease count by
+   * @param: decrementBy - number to decrease count by
    *
    * @return: none
    */
-  handleItemCountDecrement(item: InventoryItem, decrementCount: number): void {
-    let newCount: number = item.currentQuantity - decrementCount;
+  handleItemCountDecrement(item: InventoryItem, decrementBy: number): void {
+    let newCount: number = item.currentQuantity - decrementBy;
     newCount = newCount < 0 ? 0 : newCount;
-
-    this.inventoryService.updateItem(
-      item.cid,
-      { currentQuantity: newCount }
-    )
-    .pipe(take(1))
-    .subscribe(
-      (updatedItem: InventoryItem): void => {
-        const message: string = this.formatDecrementMessage(updatedItem);
-        const cssClass: string = updatedItem === null ? 'toast-warn' : '';
-        this.toastService.presentToast(message, 1500, 'bottom', cssClass);
-      },
-      (error: any): void => this.errorReporter.handleUnhandledError(error)
-    );
+    this.inventoryService.updateItem(item.cid, { currentQuantity: newCount })
+      .pipe(take(1))
+      .subscribe(
+        (updatedItem: InventoryItem): void => {
+          const message: string = this.formatDecrementMessage(updatedItem);
+          const cssClass: string = updatedItem === null ? 'toast-warn' : '';
+          this.toastService.presentToast(message, this.oneAndAHalfSeconds, 'bottom', cssClass);
+        },
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
+      );
   }
 
   /**
@@ -275,11 +267,10 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
         (inventoryList: InventoryItem[]): void => {
           console.log('inventory list', inventoryList);
           this.displayList = inventoryList;
-          this.displayList
-            .forEach((item: InventoryItem): void => {
-              this.imageService.setInitialURL(item.optionalItemData.itemLabelImage);
-              this.imageService.setInitialURL(item.optionalItemData.supplierLabelImage);
-            });
+          this.displayList.forEach((item: InventoryItem): void => {
+            this.imageService.setInitialURL(item.optionalItemData.itemLabelImage);
+            this.imageService.setInitialURL(item.optionalItemData.supplierLabelImage);
+          });
           this.resetDisplayList();
         },
         (error: any): void => this.errorReporter.handleUnhandledError(error)
@@ -299,7 +290,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
       .pipe(take(1))
       .subscribe(
         (): void => {
-          this.toastService.presentToast('Updated item', 2000);
+          this.toastService.presentToast('Updated item', this.oneAndAHalfSeconds);
         },
         (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
@@ -316,7 +307,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
     this.inventoryService.removeItem(itemId)
       .pipe(take(1))
       .subscribe(
-        (): void => {},
+        (): void => {}, // no further action required
         (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
@@ -433,7 +424,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
     const modal: HTMLIonModalElement = await this.modalCtrl.create({
       component: InventoryFormPage,
       componentProps: {
-        options: options,
+        options,
         isRequired: options.batch !== undefined
       }
     });
@@ -451,6 +442,32 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
 
 
   /***** Sorting *****/
+
+  /**
+   * Collect items into an array of array of items by its source
+   *
+   * @param: none
+   *
+   * @return: array of sub arrays of inventory items in the following order:
+   *   item source is 'self', 'other', then 'third'
+   */
+  collateInventoryBySource(): InventoryItem[][] {
+    const self: InventoryItem[] = [];
+    const other: InventoryItem[] = [];
+    const third: InventoryItem[] = [];
+
+    this.displayList.forEach((item: InventoryItem): void => {
+      if (item.sourceType === 'self') {
+        self.push(item);
+      } else if (item.sourceType === 'other') {
+        other.push(item);
+      } else {
+        third.push(item);
+      }
+    });
+
+    return [self, other, third];
+  }
 
   /**
    * Handle sorting direction change
@@ -483,13 +500,12 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
    * @return: none
    */
   sortByAlphabetical(): void {
-    this.displayList
-      .sort((item1: InventoryItem, item2: InventoryItem): number => {
-        if (item1.itemName.toLowerCase() < item2.itemName.toLowerCase()) {
-          return this.isAscending ? -1 : 1;
-        }
-        return this.isAscending ? 1 : -1;
-      });
+    this.displayList.sort((item1: InventoryItem, item2: InventoryItem): number => {
+      if (item1.itemName.toLowerCase() < item2.itemName.toLowerCase()) {
+        return this.isAscending ? -1 : 1;
+      }
+      return this.isAscending ? 1 : -1;
+    });
   }
 
   /**
@@ -499,13 +515,12 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
    * @return: none
    */
   sortByRemaining(): void {
-    this.displayList
-      .sort((item1: InventoryItem, item2: InventoryItem): number => {
-        if (item1.currentQuantity < item2.currentQuantity) {
-          return this.isAscending ? -1 : 1;
-        }
-        return this.isAscending ? 1 : -1;
-      });
+    this.displayList.sort((item1: InventoryItem, item2: InventoryItem): number => {
+      if (item1.currentQuantity < item2.currentQuantity) {
+        return this.isAscending ? -1 : 1;
+      }
+      return this.isAscending ? 1 : -1;
+    });
   }
 
   /**
@@ -515,21 +530,8 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
    * @return: none
    */
   sortBySource(): void {
-    const self: InventoryItem[] = [];
-    const other: InventoryItem[] = [];
-    const third: InventoryItem[] = [];
-
-    this.displayList
-      .forEach((item: InventoryItem): void => {
-        if (item.sourceType === 'self') {
-          self.push(item);
-        } else if (item.sourceType === 'other') {
-          other.push(item);
-        } else {
-          third.push(item);
-        }
-      });
-
+    console.log('sorting by source');
+    const [self, other, third] = this.collateInventoryBySource();
     if (this.isAscending) {
       this.displayList = self.concat(other).concat(third);
     } else {
@@ -562,6 +564,22 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
   }
 
   /**
+   * Report an animation error when containing element is not found
+   *
+   * @param: none
+   * @return: none
+   */
+  reportSlidingHintError(): void {
+    const message: string = 'Cannot find content container';
+    const severity: number = 4;
+    this.errorReporter.setErrorReport(
+      this.errorReporter.getCustomReportFromError(
+        new CustomError('AnimationError', message, severity, message)
+      )
+    );
+  }
+
+  /**
    * Trigger horizontally sliding gesture hint animations
    *
    * @param: none
@@ -570,17 +588,11 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
   runSlidingHints(): void {
     const topLevelContent: HTMLElement = this.getTopLevelContainer();
     if (!topLevelContent) {
-      const message: string = 'Cannot find content container';
-      this.errorReporter.setErrorReport(
-        this.errorReporter.getCustomReportFromError(
-          new CustomError('AnimationError', message, 4, message)
-        )
-      );
+      this.reportSlidingHintError();
       return;
     }
 
     this.toggleSlidingItemClass(true);
-
     this.animationService.playCombinedSlidingHintAnimations(
       topLevelContent,
       this.slidingItemsListRef.nativeElement,
@@ -603,11 +615,8 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
    * @return: none
    */
   toggleSlidingItemClass(show: boolean): void {
-    this.animationService.toggleSlidingItemClass(
-      this.slidingItemsListRef.nativeElement,
-      show,
-      this.renderer
-    );
+    const listRef: HTMLElement = this.slidingItemsListRef.nativeElement;
+    this.animationService.toggleSlidingItemClass(listRef, show, this.renderer);
   }
 
   /***** End Animation *****/
