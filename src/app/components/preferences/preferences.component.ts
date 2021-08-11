@@ -21,7 +21,7 @@ import { ErrorReportingService, PreferencesService, ToastService, UserService } 
 
 
 @Component({
-  selector: 'preferences',
+  selector: 'app-preferences',
   templateUrl: './preferences.component.html',
   styleUrls: ['./preferences.component.scss']
 })

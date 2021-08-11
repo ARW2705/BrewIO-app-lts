@@ -12,11 +12,11 @@
 
       <ng-container *ngFor="let select of selects">
 
-        <app-preferences-select [control]="preferencesForm.controls[select.controlName]"
-                                [preferenceName]="select.label"
-                                [ionChangeEvent]="select.ionChangeEvent"
-                                [options]="select.options">
-        </app-preferences-select>
+        <app-form-select  [control]="preferencesForm.controls[select.controlName]"
+                          [label]="select.label"
+                          [ionChangeEvent]="select.ionChangeEvent"
+                          [options]="select.options">
+        </app-form-select>
 
       </ng-container>
 
