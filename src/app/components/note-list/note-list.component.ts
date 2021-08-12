@@ -1,7 +1,7 @@
 /* Module imports */
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
-import { Observable, from } from 'rxjs';
+import { from, Observable } from 'rxjs';
 
 /* Interface imports */
 import { RecipeMaster, RecipeVariant } from '../../shared/interfaces';
@@ -44,6 +44,33 @@ export class NoteListComponent implements OnInit, OnDestroy {
   /***** End Lifecycle Hooks *****/
 
   /**
+   * Get callback function for modal on dismiss; if a dismiss function was supplied to component
+   * use that function, else use default onNoteModalDismiss function
+   *
+   * @param: [index] - optional array index that was modified
+   *
+   * @return: modal dismiss callback function
+   */
+  getModalDismissFn(index?: number): (date: object) => void {
+    return this.dismissFn ? this.dismissFn(index) : this.onNoteModalDismiss(index);
+  }
+
+  /**
+   * Get note form modal options
+   *
+   * @param: [index] - optional index to update
+   *
+   * @return: modal options object
+   */
+  getModalOptions(index?: number): object {
+    return {
+      noteType: this.recipeVariantId ? 'variant' : 'master',
+      formMethod: index === undefined ? 'create' : 'update',
+      toUpdate: index === undefined ? '' : this.notes[index]
+    };
+  }
+
+  /**
    * Handle note modal returned data
    *
    * @params: [index] - the index to update/delete or to add if undefined
@@ -77,19 +104,9 @@ export class NoteListComponent implements OnInit, OnDestroy {
   async openNoteModal(index?: number): Promise<void> {
     const modal: HTMLIonModalElement = await this.modalCtrl.create({
       component: NoteFormPage,
-      componentProps: {
-        noteType: this.recipeVariantId ? 'variant' : 'master',
-        formMethod: index === undefined ? 'create' : 'update',
-        toUpdate: index === undefined ? '' : this.notes[index]
-      }
+      componentProps: this.getModalOptions(index)
     });
-
-    const dismissFn: (data: object) => void = this.dismissFn
-      ? this.dismissFn(index)
-      : this.onNoteModalDismiss(index);
-
-    from(modal.onDidDismiss()).subscribe(dismissFn);
-
+    from(modal.onDidDismiss()).subscribe(this.getModalDismissFn(index));
     return await modal.present();
   }
 
@@ -127,15 +144,11 @@ export class NoteListComponent implements OnInit, OnDestroy {
    * @return: none
    */
   submitUpdatedNotes(): void {
+    const oneAndAHalfSeconds: number = 1500;
     this.patchRecipeNotes()
       .subscribe(
         (): void => {
-          console.log('notes submitted');
-          this.toastService.presentToast(
-            'Updated notes',
-            1500,
-            'bottom'
-          );
+          this.toastService.presentToast('Updated notes', oneAndAHalfSeconds, 'bottom');
         },
         (error: any): void => this.errorReporter.handleUnhandledError(error)
       );

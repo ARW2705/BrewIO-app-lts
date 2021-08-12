@@ -1,44 +1,29 @@
 <ion-list *ngIf="notes.length"
           class="ion-no-padding list-border">
-
   <ion-item *ngFor="let note of notes; index as i, last as isLast"
             class="item-buttons">
-
     <ion-grid class="ion-no-padding">
-
       <!-- Open note form modal to edit note button -->
       <button (click)="openNoteModal(i)"
               [ngClass]="{
                 'item-button': true,
                 'border-bottom-medium': !isLast
               }">
-
         <ion-row class="note-container">
-
           <!-- Note icon -->
           <ion-col  size="2"
                     class="note-icon">
-
             <ion-icon color="primary"
                       name="create">
             </ion-icon>
-
           </ion-col>
-
           <!-- Note text -->
           <ion-col  size="10"
                     class="note-text">
-
             <p>{{ note }}</p>
-
           </ion-col>
-
         </ion-row>
-
       </button>
-
     </ion-grid>
-
   </ion-item>
-
 </ion-list>
