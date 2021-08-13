@@ -165,8 +165,8 @@ describe('ProcessCalendarComponent', (): void => {
 
     fixture.detectChanges();
 
-    const descriptionContainer: HTMLElement = fixture.nativeElement.querySelector('#description-container');
-    expect(descriptionContainer.children[0].textContent).toMatch(`Description: ${_mockCalendarProcess.description}`);
+    const descriptionContainer: HTMLElement = fixture.nativeElement.querySelector('app-process-description');
+    expect(descriptionContainer['description']).toMatch(_mockCalendarProcess.description);
     const calendar: HTMLElement = fixture.nativeElement.querySelector('app-calendar');
     expect(calendar).toBeNull();
   });
@@ -186,18 +186,12 @@ describe('ProcessCalendarComponent', (): void => {
     const _stubIdSevice: IdService = injector.get(IdService);
     component.calendarRef = <CalendarComponent>(new CalendarComponentStub(_stubIdSevice));
     component.closestAlert = _mockAlertPresent;
-    SortPipeStub._returnValue = (): any[] => {
-      return [ _mockAlertPresent, _mockAlertFuture ];
-    };
     fixture.detectChanges();
 
-    const alerts: NodeList = fixture.nativeElement.querySelectorAll('ion-item');
-    const presentAlert: HTMLElement = <HTMLElement>alerts.item(0);
-    expect(Array.from(presentAlert.children[0].classList).includes('next-datetime')).toBe(true);
-    expect(presentAlert.children[0].textContent).toMatch('Jan 1, 2020');
-    const futureAlert: HTMLElement = <HTMLElement>alerts.item(1);
-    expect(Array.from(futureAlert.children[0].classList).includes('next-datetime')).toBe(false);
-    expect(futureAlert.children[0].textContent).toMatch('Jan 1, 2021');
+    const alerts: HTMLElement = fixture.nativeElement.querySelector('app-process-calendar-alerts');
+    expect(alerts['alerts']).toStrictEqual([ _mockAlertFuture, _mockAlertPresent ]);
+    expect(alerts['closestAlert']).toStrictEqual(_mockAlertPresent);
+    expect(alerts['description']).toMatch(_mockCalendarProcess.description);
   });
 
 });

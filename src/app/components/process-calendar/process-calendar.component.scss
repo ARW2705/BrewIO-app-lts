@@ -1,50 +1,3 @@
-#description-container {
-  /* Display */
-  width: 100%;
-  margin: 0 5px 5px;
-  padding: 0 16px;
-  border: 1px solid var(--ion-color-secondary);
-  border-radius: 5px;
-}
-
-.alert-datetime {
-  /* Display */
-  width: 100%;
-
-  /* Text */
-  font-size: 1.1rem;
-  text-align: center;
-}
-
-.alert-description {
-  /* Color */
-  color: var(--ion-color-light);
-
-  /* Text */
-  white-space: normal;
-  text-align: center;
-}
-
-.alert-list {
-  .item-inner {
-    /* Display */
-    border: none;
-  }
-
-  h3 {
-    /* Display */
-    margin-top: 0;
-
-    /* Text */
-    text-align: center;
-  }
-}
-
-.calendar-description {
-  /* Text */
-  text-align: center;
-}
-
 .calendar-preview {
   /* Display */
   width: 100%;
@@ -80,12 +33,6 @@
   }
 }
 
-.change-button {
-  /* Display */
-  display: block;
-  margin: 0.6rem auto;
-}
-
 .expand-button {
   /* Display */
   width: 100%;
@@ -96,7 +43,6 @@
 
   /* Text */
   text-align: center;
-  font-size: 2em;
 
   /* Children */
   h2 {
@@ -104,12 +50,17 @@
     margin: 0;
     display: flex;
     justify-content: center;
-  }
-}
+    align-items: center;
 
-.next-datetime {
-  /* Color */
-  color: var(--ion-color-warning);
+    /* Children */
+    ion-icon {
+      font-size: 2rem;
+    }
+
+    span {
+      font-size: 1.75rem;
+    }
+  }
 }
 
 

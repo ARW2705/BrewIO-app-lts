@@ -1,8 +1,6 @@
-<div  *ngIf="calendarProcess"
-      class="container">
-
+<ion-grid   *ngIf="calendarProcess"
+            class="ion-no-padding container">
   <ion-row>
-
     <ion-col size="12">
       <button (click)="toggleShowDescription()"
               class="button expand-button">
@@ -17,51 +15,22 @@
     <ion-col  *ngIf="showDescription || isPreview"
               size="12"
               id="description-container">
-      <p>Description: {{ calendarProcess.description || 'No description available' }}</p>
+      <app-process-description [description]="calendarProcess.description">
+      </app-process-description>
     </ion-col>
-
   </ion-row>
-
 
   <ion-row  *ngIf="!isPreview"
             class="calendar-view">
-
-    <!-- If the calendar step has been started, show information about next part(s) of step -->
-    <ion-col  *ngIf="calendarProcess['startDatetime'] !== undefined"
-              size="12">
-      <p class="calendar-description">
-        {{ calendarProcess.description }}
-      </p>
-      <ion-list lines="none"
-                class="ion-no-padding alert-list">
-        <h3>Next Checks</h3>
-        <ng-container *ngFor="let alert of alerts | sort:'datetime'">
-          <ion-item>
-            <!-- Alert date -->
-            <p [ngClass]="{
-              'alert-datetime': true,
-              'next-datetime': alert === closestAlert
-            }">
-              {{ alert.datetime | date:'mediumDate' }}
-            </p>
-          </ion-item>
-        </ng-container>
-      </ion-list>
-
-      <!-- Edit the calendar step dates -->
-      <ion-button class="change-button"
-                  (click)="changeDate()">
-        Change Dates
-      </ion-button>
-
-    </ion-col>
-
-    <!-- Show calendar if step has not been started -->
+    <app-process-calendar-alerts  *ngIf="calendarProcess['startDatetime'] !== undefined"
+                                  [alerts]="alerts"
+                                  [closestAlert]="closestAlert"
+                                  [description]="calendarProcess.description"
+                                  (changeDateEvent)="changeDate()">
+    </app-process-calendar-alerts>
     <app-calendar #calendar
                   *ngIf="!isPreview && calendarProcess['startDatetime'] === undefined"
                   [calendarProcess]="calendarProcess">
     </app-calendar>
-
   </ion-row>
-
-</div>
+</ion-grid>
