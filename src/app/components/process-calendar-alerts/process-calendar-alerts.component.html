@@ -1,0 +1,22 @@
+<div>
+  <!-- Edit the calendar step dates -->
+  <ion-button class="change-button"
+              (click)="changeDate()">
+    Change Dates
+  </ion-button>
+  <ion-list lines="none"
+            class="ion-no-padding alert-list">
+    <h3>Next Checks</h3>
+    <ng-container *ngFor="let alert of alerts | sort:'datetime'">
+      <ion-item>
+        <!-- Alert date -->
+        <p [ngClass]="{
+          'alert-datetime': true,
+          'next-datetime': alert === closestAlert
+        }">
+          {{ alert.datetime | date:'mediumDate' }}
+        </p>
+      </ion-item>
+    </ng-container>
+  </ion-list>
+</div>
