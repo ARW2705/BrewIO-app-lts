@@ -9,7 +9,6 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 import { mockAlertFuture, mockAlertPast, mockAlertPresent, mockProcessSchedule } from '../../../../test-config/mock-models';
 import { CalendarComponentStub } from '../../../../test-config/component-stubs';
 import { IdServiceStub } from '../../../../test-config/service-stubs';
-import { SortPipeStub } from '../../../../test-config/pipe-stubs';
 
 /* Interface imports */
 import { Alert, CalendarProcess, Process } from '../../shared/interfaces';
@@ -32,8 +31,7 @@ describe('ProcessCalendarComponent', (): void => {
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
       declarations: [
-        ProcessCalendarComponent,
-        SortPipeStub
+        ProcessCalendarComponent
       ],
       providers: [
         { provide: IdService, useClass: IdServiceStub }
@@ -151,7 +149,7 @@ describe('ProcessCalendarComponent', (): void => {
     const descriptionContainer: HTMLElement = fixture.nativeElement.querySelector('#description-container');
     expect(descriptionContainer).toBeNull();
     const calendar: HTMLElement = fixture.nativeElement.querySelector('app-calendar');
-    expect(calendar).toBeDefined();
+    expect(calendar).toBeTruthy();
   });
 
   test('should render template with a preview', (): void => {
@@ -165,8 +163,9 @@ describe('ProcessCalendarComponent', (): void => {
 
     fixture.detectChanges();
 
-    const descriptionContainer: HTMLElement = fixture.nativeElement.querySelector('app-process-description');
-    expect(descriptionContainer['description']).toMatch(_mockCalendarProcess.description);
+    const previewContainer: HTMLElement = fixture.nativeElement.querySelector('app-process-preview-content');
+    expect(previewContainer).toBeTruthy();
+    expect(previewContainer['process']).toStrictEqual(_mockCalendarProcess);
     const calendar: HTMLElement = fixture.nativeElement.querySelector('app-calendar');
     expect(calendar).toBeNull();
   });
@@ -180,18 +179,24 @@ describe('ProcessCalendarComponent', (): void => {
     _mockAlertPresent.datetime = now;
     const _mockAlertFuture: Alert = mockAlertFuture();
     _mockAlertFuture.datetime = future;
-    component.alerts = [ _mockAlertFuture, _mockAlertPresent ];
+    const _mockAlerts: Alert[] = [ _mockAlertFuture, _mockAlertPresent ];
+    component.alerts = _mockAlerts;
     component.isPreview = false;
     component.calendarProcess = _mockCalendarProcess;
     const _stubIdSevice: IdService = injector.get(IdService);
     component.calendarRef = <CalendarComponent>(new CalendarComponentStub(_stubIdSevice));
     component.closestAlert = _mockAlertPresent;
+    component.showDescription = true;
+
     fixture.detectChanges();
 
-    const alerts: HTMLElement = fixture.nativeElement.querySelector('app-process-calendar-alerts');
-    expect(alerts['alerts']).toStrictEqual([ _mockAlertFuture, _mockAlertPresent ]);
-    expect(alerts['closestAlert']).toStrictEqual(_mockAlertPresent);
-    expect(alerts['description']).toMatch(_mockCalendarProcess.description);
+    const descriptionContainer: HTMLElement = global.document.querySelector('app-process-description');
+    expect(descriptionContainer['description']).toStrictEqual(_mockCalendarProcess.description);
+    const alertsContainer: HTMLElement = global.document.querySelector('app-process-calendar-alerts');
+    expect(alertsContainer['alerts']).toStrictEqual(_mockAlerts);
+    expect(alertsContainer['closestAlert']).toStrictEqual(_mockAlertPresent);
+    const calendarContainer: HTMLElement = global.document.querySelector('app-calendar');
+    expect(calendarContainer).toBeNull();
   });
 
 });

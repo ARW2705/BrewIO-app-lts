@@ -7,6 +7,8 @@ import { IonicModule } from '@ionic/angular';
 import { CalendarComponentModule } from '../calendar/calendar.module';
 import { ProcessCalendarAlertsComponentModule } from '../process-calendar-alerts/process-calendar-alerts.module';
 import { ProcessDescriptionComponentModule } from '../process-description/process-description.module';
+import { ProcessHeaderComponentModule } from '../process-header/process-header.module';
+import { ProcessPreviewContentComponentModule } from '../process-preview-content/process-preview-content.module';
 import { ProcessCalendarComponent } from './process-calendar.component';
 
 
@@ -16,7 +18,9 @@ import { ProcessCalendarComponent } from './process-calendar.component';
     CommonModule,
     IonicModule,
     ProcessCalendarAlertsComponentModule,
-    ProcessDescriptionComponentModule
+    ProcessDescriptionComponentModule,
+    ProcessHeaderComponentModule,
+    ProcessPreviewContentComponentModule
   ],
   declarations: [
     ProcessCalendarComponent

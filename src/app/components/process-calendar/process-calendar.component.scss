@@ -1,65 +1,12 @@
-.calendar-preview {
-  /* Display */
-  width: 100%;
-
-  /* Children */
-  .preview-info-container {
-    /* Display */
-    width: 100%;
-    padding: 0 16px;
-    border: 1px solid var(--ion-color-secondary);
-    border-radius: 5px;
-  }
-
-  h2 {
-    /* Display */
-    width: 100%;
-    border-bottom: 1px solid var(--ion-color-light);
-    text-align: center;
-  }
-
-  p {
-    /* Display */
-    width: 100%;
-    border: 0;
-  }
+:host {
+  margin-bottom: 66px !important;
 }
 
-.calendar-preview,
+
 .calendar-view {
   &ion-col:first-child {
     /* Display */
     padding-top: 5px;
-  }
-}
-
-.expand-button {
-  /* Display */
-  width: 100%;
-  background: transparent;
-
-  /* Color */
-  color: var(--ion-color-light);
-
-  /* Text */
-  text-align: center;
-
-  /* Children */
-  h2 {
-    /* Display */
-    margin: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    /* Children */
-    ion-icon {
-      font-size: 2rem;
-    }
-
-    span {
-      font-size: 1.75rem;
-    }
   }
 }
 
@@ -68,4 +15,8 @@ calendar {
   /* Display */
   width: 100%;
   margin: 0 0 60px;
+}
+
+ion-row {
+  width: 100%;
 }

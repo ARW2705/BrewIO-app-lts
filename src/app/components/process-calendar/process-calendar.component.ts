@@ -18,8 +18,8 @@ import { IdService } from '../../services/services';
 })
 export class ProcessCalendarComponent implements OnChanges {
   @Input() alerts: Alert[];
-  @Input() isPreview: boolean;
   @Input() calendarProcess: CalendarProcess;
+  @Input() isPreview: boolean;
   @Output() changeDateEvent: EventEmitter<null> = new EventEmitter<null>();
   @ViewChild('calendar') calendarRef: CalendarComponent;
   closestAlert: Alert = null;
