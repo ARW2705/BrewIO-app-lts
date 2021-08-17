@@ -6,13 +6,10 @@ import { ManualProcess } from '../../shared/interfaces';
 
 
 @Component({
-  selector: 'process-manual',
+  selector: 'app-process-manual',
   templateUrl: './process-manual.component.html',
   styleUrls: ['./process-manual.component.scss']
 })
 export class ProcessManualComponent {
-  @Input() stepData: ManualProcess;
-
-  constructor() { }
-
+  @Input() manualProcess: ManualProcess;
 }

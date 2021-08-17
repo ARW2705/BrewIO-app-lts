@@ -1,35 +1,12 @@
-<div  *ngIf="stepData"
-      id="manual-container">
-
-  <ion-grid>
-
-    <ion-row class="manual-data">
-
-      <!-- Step name -->
-      <ion-col size="12">
-
-        <h2>
-          {{ stepData.name }}
-        </h2>
-
-      </ion-col>
-
-      <!-- Step description -->
-      <ion-col  size="12"
-                class="manual-content">
-
-        <p>
-          Description: {{ stepData.description }}
-        </p>
-
-        <p *ngIf="stepData.expectedDuration">
-          Expected Duration: {{ stepData.expectedDuration }} minutes
-        </p>
-
-      </ion-col>
-
-    </ion-row>
-
-  </ion-grid>
-
-</div>
+<ion-grid *ngIf="manualProcess"
+          class="ion-no-padding">
+  <ion-row>
+    <app-process-header [headerText]="manualProcess.name"
+                        isPreview="false">
+    </app-process-header>
+  </ion-row>
+  <ion-row>
+    <app-process-preview-content [process]="manualProcess">
+    </app-process-preview-content>
+  </ion-row>
+</ion-grid>
