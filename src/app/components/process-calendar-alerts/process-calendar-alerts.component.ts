@@ -13,7 +13,6 @@ import { Alert } from '../../shared/interfaces';
 export class ProcessCalendarAlertsComponent {
   @Input() alerts: Alert[];
   @Input() closestAlert: Alert;
-  @Input() description: string;
   @Output() changeDateEvent: EventEmitter<null> = new EventEmitter<null>();
 
   /**
