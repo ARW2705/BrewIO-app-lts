@@ -16,9 +16,9 @@ import { ProcessListComponent } from './process-list.component';
 
 
 describe('ProcessListComponent', (): void => {
-  let fixture: ComponentFixture<ProcessListComponent>;
-  let processCmp: ProcessListComponent;
   configureTestBed();
+  let fixture: ComponentFixture<ProcessListComponent>;
+  let component: ProcessListComponent;
 
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
@@ -32,33 +32,30 @@ describe('ProcessListComponent', (): void => {
 
   beforeEach((): void => {
     fixture = TestBed.createComponent(ProcessListComponent);
-    processCmp = fixture.componentInstance;
-    processCmp.onRecipeAction = jest
-      .fn();
+    component = fixture.componentInstance;
+    component.openProcessModalEvent.emit = jest.fn();
+    component.reorderEvent.emit = jest.fn();
   });
 
   test('should create the component', (): void => {
     fixture.detectChanges();
 
-    expect(processCmp).toBeDefined();
+    expect(component).toBeDefined();
   });
 
   test('should handle reorder event', (): void => {
     const _mockProcess: Process = mockProcessSchedule()[0];
-    const actionSpy: jest.SpyInstance = jest.spyOn(processCmp, 'onRecipeAction');
-
+    const emitSpy: jest.SpyInstance = jest.spyOn(component.openProcessModalEvent, 'emit');
     const args: any[] = [ _mockProcess.type, _mockProcess, 0 ];
 
     fixture.detectChanges();
 
-    processCmp.openProcessModal(args[0], args[1], args[2]);
-
-    expect(actionSpy).toHaveBeenCalledWith('openProcessModal', args);
+    component.openProcessModal(args[1], args[2]);
+    expect(emitSpy).toHaveBeenCalledWith(args);
   });
 
   test('should handle reorder event', (): void => {
-    const actionSpy: jest.SpyInstance = jest.spyOn(processCmp, 'onRecipeAction');
-
+    const emitSpy: jest.SpyInstance = jest.spyOn(component.reorderEvent, 'emit');
     const event: CustomEvent = new CustomEvent(
       'onReorder',
       {
@@ -70,40 +67,32 @@ describe('ProcessListComponent', (): void => {
 
     fixture.detectChanges();
 
-    processCmp.onReorder(event);
-
-    expect(actionSpy).toHaveBeenCalledWith('onReorder', [ 0 ]);
+    component.onReorder(event);
+    expect(emitSpy).toHaveBeenCalledWith(0);
   });
 
   test('should render a process list', (): void => {
     const _mockProcessSchedule: Process[] = mockProcessSchedule();
-    const manualIndex: number = _mockProcessSchedule
-      .findIndex((process: Process): boolean => {
-        return process.type === 'manual';
-      });
-    const timerIndex: number = _mockProcessSchedule
-      .findIndex((process: Process): boolean => {
-        return process.type === 'timer';
-      });
-    const calendarIndex: number = _mockProcessSchedule
-      .findIndex((process: Process): boolean => {
-        return process.type === 'calendar';
-      });
-
-    processCmp.schedule = _mockProcessSchedule;
+    const manualIndex: number = _mockProcessSchedule.findIndex((process: Process): boolean => {
+      return process.type === 'manual';
+    });
+    const timerIndex: number = _mockProcessSchedule.findIndex((process: Process): boolean => {
+      return process.type === 'timer';
+    });
+    const calendarIndex: number = _mockProcessSchedule.findIndex((process: Process): boolean => {
+      return process.type === 'calendar';
+    });
+    component.schedule = _mockProcessSchedule;
 
     fixture.detectChanges();
 
     const processList: NodeList = fixture.nativeElement.querySelectorAll('ion-item');
-
     const manualProcess: HTMLElement = <HTMLElement>processList.item(manualIndex);
     expect(manualProcess.children[0].children[0].children[0]['name']).toMatch('hand-right-outline');
     expect(manualProcess.children[0].textContent).toMatch(_mockProcessSchedule[manualIndex].name);
-
     const timerProcess: HTMLElement = <HTMLElement>processList.item(timerIndex);
     expect(timerProcess.children[0].children[0].children[0]['name']).toMatch('timer-outline');
     expect(timerProcess.children[0].textContent).toMatch(_mockProcessSchedule[timerIndex].name);
-
     const calendarProcess: HTMLElement = <HTMLElement>processList.item(calendarIndex);
     expect(calendarProcess.children[0].children[0].children[0]['name']).toMatch('calendar-outline');
     expect(calendarProcess.children[0].textContent).toMatch(_mockProcessSchedule[calendarIndex].name);

@@ -1,5 +1,5 @@
 /* Module imports */
-import { Component, Input, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { IonReorderGroup } from '@ionic/angular';
 import { ItemReorderEventDetail } from '@ionic/core';
 
@@ -8,13 +8,14 @@ import { Process } from '../../shared/interfaces';
 
 
 @Component({
-  selector: 'process-list',
+  selector: 'app-process-list',
   templateUrl: './process-list.component.html',
   styleUrls: ['./process-list.component.scss'],
 })
 export class ProcessListComponent {
-  @Input() onRecipeAction: (actionName: string, options: any[]) => void;
   @Input() schedule: Process[];
+  @Output() openProcessModalEvent: EventEmitter<[string, Process, number]> = new EventEmitter<[string, Process, number]>();
+  @Output() reorderEvent: EventEmitter<Process[]> = new EventEmitter<Process[]>();
   @ViewChild(IonReorderGroup) reorderGroup: IonReorderGroup;
   processIcons: object = {
     manual: 'hand-right-outline',
@@ -22,19 +23,16 @@ export class ProcessListComponent {
     calendar: 'calendar-outline'
   };
 
-  constructor() { }
-
   /**
    * Open modal to create, edit, or delete specified process step type
    *
-   * @params: processType - the step type, either 'manual', 'timer', or 'calendar'
    * @params: toUpdate - current step data to be edited or deleted
    * @params: index - index of step
    *
    * @return: none
    */
-  openProcessModal(processType: string, toUpdate: Process, index: number): void {
-    this.onRecipeAction('openProcessModal', [processType, toUpdate, index]);
+  openProcessModal(toUpdate: Process, index: number): void {
+    this.openProcessModalEvent.emit([toUpdate.type, toUpdate, index]);
   }
 
   /**
@@ -45,7 +43,7 @@ export class ProcessListComponent {
    * @return: none
    */
   onReorder(event: CustomEvent<ItemReorderEventDetail>): void {
-    this.onRecipeAction('onReorder', [ event.detail.complete(this.schedule) ]);
+    this.reorderEvent.emit(event.detail.complete(this.schedule));
   }
 
 }
