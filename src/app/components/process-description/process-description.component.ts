@@ -9,7 +9,8 @@ import { Component, Input, OnChanges } from '@angular/core';
 })
 export class ProcessDescriptionComponent implements OnChanges {
   @Input() description: string;
-  @Input() isTimer: boolean;
+  @Input() isDropDown: boolean;
+  @Input() isHopsTimer: boolean;
 
   ngOnChanges(): void {
     if (!this.description) {

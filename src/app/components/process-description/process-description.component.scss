@@ -1,7 +1,25 @@
-p {
+:host {
   /* Display */
   width: 100%;
-  padding: 5% 2%;
+  margin-top: 10px;
+}
+
+
+.drop-down {
+  /* Display */
+  padding: 10px 16px 0;
   border: 1px solid var(--ion-color-secondary);
-  border-radius: 5px;
+}
+
+
+p {
+  /* Display */
+  margin-top: 10px;
+
+  /* Text */
+  font-size: 1.5rem;
+}
+
+span {
+  font-size: 1.5rem;
 }

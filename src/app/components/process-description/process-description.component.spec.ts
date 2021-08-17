@@ -1,5 +1,6 @@
 /* Module imports */
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { By } from '@angular/platform-browser';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 /* Test configuration imports */
@@ -42,6 +43,7 @@ describe('ProcessDescriptionComponent', (): void => {
   });
 
   test('should set a default message if no description', (): void => {
+    component.description = undefined;
     fixture.detectChanges();
 
     component.ngOnChanges();
@@ -56,6 +58,7 @@ describe('ProcessDescriptionComponent', (): void => {
 
     fixture.detectChanges();
 
+    component.ngOnChanges();
     const description: HTMLElement = global.document.querySelector('p');
     expect(description.textContent).toMatch(testDescription);
     expect(pipeSpy).not.toHaveBeenCalled();
@@ -64,12 +67,15 @@ describe('ProcessDescriptionComponent', (): void => {
   test('should render the template with a timer description', (): void => {
     const testDescription: string = 'test description';
     component.description = testDescription;
-    component.isTimer = true;
+    component.isDropDown = true;
+    component.isHopsTimer = true;
     UnitConversionPipeStub._returnValue = (value: any): any => value;
     const pipeSpy: jest.SpyInstance = jest.spyOn(UnitConversionPipeStub, '_returnValue');
 
     fixture.detectChanges();
 
+    const container: HTMLElement = fixture.debugElement.query(By.css('.drop-down')).nativeElement;
+    expect(container.classList).toContain('drop-down');
     const description: HTMLElement = global.document.querySelector('p');
     expect(description.textContent).toMatch(testDescription);
     expect(pipeSpy).toHaveBeenCalled();
