@@ -64,7 +64,6 @@ describe('ProcessCalendarAlertsComponent', (): void => {
     const _mockAlerts: Alert[] = [_mockalertPast, _mockAlertPresent, _mockAlertFuture ];
     component.alerts = _mockAlerts;
     component.closestAlert = _mockAlertPresent;
-    component.description = 'test description';
     SortPipeStub._returnValue = (value: any) => _mockAlerts;
     fixture.detectChanges();
 
