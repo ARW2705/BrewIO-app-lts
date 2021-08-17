@@ -1,9 +1,9 @@
 /* Module imports */
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 
 @Component({
-  selector: 'process-controls',
+  selector: 'app-process-controls',
   templateUrl: './process-controls.component.html',
   styleUrls: ['./process-controls.component.scss'],
 })
@@ -12,10 +12,12 @@ export class ProcessControlsComponent {
   @Input() atViewStart: boolean = false;
   @Input() isCalendarInProgress: boolean = false;
   @Input() isCalendarStep: boolean = false;
-  @Input() onControlAction: (actionName: string, ...options: any[]) => void;
   @Input() onCurrentStep: boolean = false;
-
-  constructor() { }
+  @Output() changeStepEvent: EventEmitter<string> = new EventEmitter<string>();
+  @Output() completeStepEvent: EventEmitter<null> = new EventEmitter<null>();
+  @Output() goToActiveStepEvent: EventEmitter<null> = new EventEmitter<null>();
+  @Output() openMeasurementFormModalEvent: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output() startCalendarEvent: EventEmitter<null> = new EventEmitter<null>();
 
   /**
    * Change the step view
@@ -25,7 +27,7 @@ export class ProcessControlsComponent {
    * @return: none
    */
   changeStep(direction: string): void {
-    this.onControlAction('changeStep', direction);
+    this.changeStepEvent.emit(direction);
   }
 
   /**
@@ -35,7 +37,7 @@ export class ProcessControlsComponent {
    * @return: none
    */
   completeStep(): void {
-    this.onControlAction('completeStep');
+    this.completeStepEvent.emit();
   }
 
   /**
@@ -45,7 +47,7 @@ export class ProcessControlsComponent {
    * @return: none
    */
   goToActiveStep(): void {
-    this.onControlAction('goToActiveStep');
+    this.goToActiveStepEvent.emit();
   }
 
   /**
@@ -55,7 +57,7 @@ export class ProcessControlsComponent {
    * @return: none
    */
   openMeasurementFormModal(): void {
-    this.onControlAction('openMeasurementFormModal', false);
+    this.openMeasurementFormModalEvent.emit(false);
   }
 
   /**
@@ -65,7 +67,7 @@ export class ProcessControlsComponent {
    * @return: none
    */
   startCalendar(): void {
-    this.onControlAction('startCalendar');
+    this.startCalendarEvent.emit();
   }
 
 }
