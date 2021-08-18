@@ -9,7 +9,8 @@
   <ion-row *ngFor="let week of month">
 
       <!-- Calendar Day -->
-      <ion-col *ngFor="let day of week">
+      <ion-col *ngFor="let day of week"
+                class="date-button-container">
 
         <app-date-button  [date]="day.mDate"
                           [isMonth]="day.isMonth"
