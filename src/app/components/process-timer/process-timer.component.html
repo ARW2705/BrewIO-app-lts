@@ -1,113 +1,28 @@
-<div id="timer-container">
-
-  <!-- Active Step View -->
-
-  <!-- 'All' Timer Controls -->
-  <ion-row  *ngIf="!isPreview"
-            id="timer-master-controls">
-
-    <!-- Start All Timers Button -->
-    <ion-col size="6">
-
-      <ion-button color="primary"
-                  (click)="startAllTimers()"
-                  class="button timer-button">
-        Start {{ timers.length > 1 ? 'All': '' }}
-      </ion-button>
-
-    </ion-col>
-
-    <!-- Stop All Timers Button -->
-    <ion-col size="6">
-
-      <ion-button color="primary"
-                  (click)="stopAllTimers()"
-                  class="button timer-button">
-        Stop {{ timers.length > 1 ? 'All': '' }}
-      </ion-button>
-
-    </ion-col>
-
-    <!-- Add minute to All Timers Button -->
-    <ion-col size="6">
-
-      <ion-button color="secondary"
-                  (click)="addToAllTimers()"
-                  class="button timer-button">
-        +1min {{ timers.length > 1 ? 'All': '' }}
-      </ion-button>
-
-    </ion-col>
-
-    <!-- Reset All Timers Button -->
-    <ion-col size="6">
-
-      <ion-button color="secondary"
-                  (click)="resetAllTimers()"
-                  class="button timer-button">
-        Reset {{ timers.length > 1 ? 'All': '' }}
-      </ion-button>
-
-    </ion-col>
-
-    <!-- Timer Description -->
-    <ion-col size="12">
-
-      <ion-button color="tertiary"
-                  (click)="toggleShowDescription()"
-                  class="button timer-button">
-        {{ showDescription ? 'Hide Descriptions': 'Show Descriptions' }}
-      </ion-button>
-
-    </ion-col>
-
+<ion-grid id="timer-container"
+          class="ion-no-padding">
+  <!-- Controls for all timers -->
+  <ion-row *ngIf="!isPreview">
+    <app-timer-controls [processes]="timerProcess"
+                        [timers]="timers">
+    </app-timer-controls>
   </ion-row>
-
+  <!-- Individual timers -->
   <ng-container *ngFor="let timer of timers; index as i" >
-
-    <!-- Preview View -->
-    <ion-row  *ngIf="isPreview"
-              class="timer-preview">
-
-      <ion-col size="12">
-
-        <h2>
-          {{ timer.timer.name }}
-        </h2>
-
-      </ion-col>
-
-      <ion-col  size="12"
-                class="preview-info-container">
-
-        <p>
-          {{ timer.timer.duration | formatTime:'duration' }}
-        </p>
-
-        <p>
-          Interval(s): {{ timer.timer.splitInterval }}
-        </p>
-
-        <p>
-          Description: {{ timer.timer.description | unitConversion:'weightSmall':true:true:true }}
-        </p>
-
-      </ion-col>
-
+    <ion-row  *ngIf="isPreview">
+      <ion-row>
+        <app-process-header isPreview="true"
+                            [headerText]="timer.timer.name">
+        </app-process-header>
+      </ion-row>
+      <ion-row>
+        <app-process-preview-content [process]="timer.timer">
+        </app-process-preview-content>
+      </ion-row>
     </ion-row>
-    <!-- End Preview View -->
-
-    <!-- Timers -->
-    <ng-container *ngIf="!isPreview">
-
-      <timer  [timer]="timer"
-              [onTimerAction]="onTimerAction"
-              [isConcurrent]="isConcurrent"
-              [showDescription]="showDescription">
-      </timer>
-
-    </ng-container>
-
+    <ion-row *ngIf="!isPreview">
+      <app-timer  [process]="timerProcess[i]"
+                  [timer]="timer">
+      </app-timer>
+    </ion-row>
   </ng-container>
-
-</div>
+</ion-grid>

@@ -1,14 +1,18 @@
 /* Module imports */
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 /* Pipe imports */
 import { FormatTimePipeModule, UnitConversionPipeModule } from '../../pipes/pipes';
 
 /* Component imports */
-import { ProcessTimerComponent } from './process-timer.component';
+import { ProcessDescriptionComponentModule } from '../process-description/process-description.module';
+import { ProcessHeaderComponentModule } from '../process-header/process-header.module';
+import { ProcessPreviewContentComponentModule } from '../process-preview-content/process-preview-content.module';
+import { TimerControlsComponentModule } from '../timer-controls/timer-controls.module';
 import { TimerComponentModule } from '../timer/timer.module';
+import { ProcessTimerComponent } from './process-timer.component';
 
 
 @NgModule({
@@ -16,8 +20,12 @@ import { TimerComponentModule } from '../timer/timer.module';
     CommonModule,
     IonicModule,
     FormatTimePipeModule,
-    UnitConversionPipeModule,
-    TimerComponentModule
+    ProcessDescriptionComponentModule,
+    ProcessHeaderComponentModule,
+    ProcessPreviewContentComponentModule,
+    TimerComponentModule,
+    TimerControlsComponentModule,
+    UnitConversionPipeModule
   ],
   declarations: [
     ProcessTimerComponent
