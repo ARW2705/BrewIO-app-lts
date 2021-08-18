@@ -6,7 +6,7 @@ import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
 import { AccordionComponentModule } from '../../components/accordion/accordion.module';
-import { ActiveBatchesComponentModule } from '../../components/active-batches/active-batches.module';
+import { ActiveBatchListComponentModule } from '../../components/active-batch-list/active-batch-list.module';
 import { HeaderComponentModule } from '../../components/header/header.module';
 import { InventoryComponentModule } from '../../components/inventory/inventory.module';
 
@@ -26,7 +26,7 @@ import { SignupPageModule } from '../forms/signup/signup.module';
     IonicModule,
     RouterModule.forChild([ { path: '', component: HomePage } ]),
     AccordionComponentModule,
-    ActiveBatchesComponentModule,
+    ActiveBatchListComponentModule,
     InventoryComponentModule,
     HeaderComponentModule
   ],

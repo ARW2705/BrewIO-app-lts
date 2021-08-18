@@ -24,10 +24,6 @@
 
     </ion-row>
 
-    <ion-button (click)="testError()">
-      Test error report
-    </ion-button>
-
     <!-- List of active batches -->
     <ion-row class="ion-justify-content-center">
 
@@ -48,18 +44,18 @@
     <!-- <ion-row justify-content-center> -->
     <ion-row class="ion-justify-content-center">
 
-      <accordion  [expanded]="showActiveBatches"
-                  [animationDuration]="accordionAnimationDuration"
-                  id="batch-scroll-landmark"
-                  class="home-list">
+      <app-accordion  [expanded]="showActiveBatches"
+                      [animationDuration]="accordionAnimationDuration"
+                      id="batch-scroll-landmark"
+                      class="home-list">
 
-        <active-batches *ngIf="!firstActiveBatchesLoad"
-                        [enterDuration]="accordionAnimationDuration"
-                        [shown]="showActiveBatches"
-                        rootURL="tabs/home">
-        </active-batches>
+        <app-active-batch-list  *ngIf="!firstActiveBatchesLoad"
+                                [enterDuration]="accordionAnimationDuration"
+                                [shown]="showActiveBatches"
+                                rootURL="tabs/home">
+        </app-active-batch-list>
 
-      </accordion>
+      </app-accordion>
 
     </ion-row>
 
@@ -83,16 +79,16 @@
     <!-- <ion-row justify-content-center> -->
     <ion-row class="ion-justify-content-center">
 
-      <accordion  [expanded]="showInventory"
-                  [animationDuration]="accordionAnimationDuration"
-                  id="inventory-scroll-landmark"
-                  class="home-list">
+      <app-accordion  [expanded]="showInventory"
+                      [animationDuration]="accordionAnimationDuration"
+                      id="inventory-scroll-landmark"
+                      class="home-list">
 
-        <inventory *ngIf="!firstInventoryLoad"
-                    [enterDuration]="accordionAnimationDuration">
-        </inventory>
+        <app-inventory  *ngIf="!firstInventoryLoad"
+                        [enterDuration]="accordionAnimationDuration">
+        </app-inventory>
 
-      </accordion>
+      </app-accordion>
 
     </ion-row>
 

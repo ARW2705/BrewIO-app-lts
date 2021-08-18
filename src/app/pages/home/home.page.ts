@@ -36,14 +36,6 @@ export class HomePage implements OnInit, OnDestroy {
     public userService: UserService
   ) { }
 
-  testError() {
-    const myErr = new Error();
-    myErr.name = 'MyError';
-    myErr.message = 'test message';
-    myErr['severity'] = 2;
-    throw myErr;
-  }
-
   /***** Lifecycle Hooks *****/
 
   ngOnInit() {
