@@ -26,7 +26,7 @@
 
     <ion-row id="reports-container">
 
-      <accordion [expanded]="showReports">
+      <app-accordion [expanded]="showReports">
 
         <ng-container *ngFor="let report of reports">
 
@@ -34,7 +34,7 @@
 
         </ng-container>
 
-      </accordion>
+      </app-accordion>
 
     </ion-row>
 
@@ -46,14 +46,14 @@
       <ion-button color="primary"
                   (click)="submitError()"
                   class="form-button">
-        Send Reports And Continue
+        Send And Continue
       </ion-button>
 
       <!-- Form cancel button -->
       <ion-button color="warning"
                   (click)="cancel()"
                   class="form-button">
-        Continue Without Sending Report
+        Continue Without Sending
       </ion-button>
 
 
