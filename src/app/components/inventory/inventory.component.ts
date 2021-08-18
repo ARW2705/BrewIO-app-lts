@@ -1,5 +1,5 @@
 /* Module imports */
-import { AfterViewInit, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, Renderer2, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, QueryList, Renderer2, ViewChild, ViewChildren, ViewContainerRef } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { from, Subject } from 'rxjs';
 import { finalize, take, takeUntil } from 'rxjs/operators';
@@ -12,6 +12,9 @@ import { CustomError } from '../../shared/types';
 
 /* Default imports */
 import { defaultImage } from '../../shared/defaults';
+
+/* Component imports */
+import { AccordionComponent } from '../../components/accordion/accordion.component';
 
 /* Page imports */
 import { InventoryFormPage, QuantityHelperPage } from '../../pages/pages';
@@ -29,6 +32,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
   @Input() enterDuration: number = 0;
   @Input() optionalData: Batch;
   @ViewChild('slidingItemsList', { read: ElementRef }) slidingItemsListRef: ElementRef;
+  @ViewChildren(AccordionComponent, { read: ViewContainerRef }) accordionComponent: QueryList<ViewContainerRef>;
   _defaultImage: Image = defaultImage();
   destroy$: Subject<boolean> = new Subject<boolean>();
   displayList: InventoryItem[] = null;
@@ -107,8 +111,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
       this.itemIndex = -1;
     } else {
       this.itemIndex = index;
-      const elementSelector: string = `app-accordion[data-scroll-landmark="${index}"]`;
-      const accordionElement: HTMLElement = document.querySelector(elementSelector);
+      const accordionElement: HTMLElement = this.accordionComponent.toArray()[index].element.nativeElement;
       const eventName: string = 'scroll-in-sub-component';
       const eventPayload: object = {
         subComponent: 'inventory',

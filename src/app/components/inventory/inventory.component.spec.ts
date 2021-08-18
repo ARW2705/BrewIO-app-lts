@@ -1,6 +1,6 @@
 /* Module imports */
 import { TestBed, ComponentFixture } from '@angular/core/testing';
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, ViewContainerRef } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 
@@ -12,7 +12,7 @@ import { mockBatch, mockErrorReport, mockInventoryItem } from '../../../../test-
 import { AccordionComponentStub } from '../../../../test-config/component-stubs';
 import { AnimationsServiceStub, ErrorReportingServiceStub, EventServiceStub, ImageServiceStub, InventoryServiceStub, ProcessServiceStub, ToastServiceStub } from '../../../../test-config/service-stubs';
 import { FormatStockPipeStub, RoundPipeStub, TruncatePipeStub } from '../../../../test-config/pipe-stubs';
-import { ModalControllerStub, ModalStub } from '../../../../test-config/ionic-stubs';
+import { ModalControllerStub, ModalStub, QueryListStub, ViewContainerRefStub } from '../../../../test-config/ionic-stubs';
 
 /* Interface imports */
 import { Batch, ErrorReport, InventoryItem } from '../../shared/interfaces';
@@ -139,17 +139,36 @@ describe('InventoryComponent', (): void => {
   describe('Display Methods', (): void => {
 
     test('should expand an item', (): void => {
-      const mockElement: HTMLElement = global.document.createElement('div');
-      Object.defineProperty(mockElement, 'offsetTop', { writable: false, value: 100 });
-      global.document.querySelector = jest.fn()
-        .mockReturnValue(mockElement);
       component.event.emit = jest.fn();
       const emitSpy: jest.SpyInstance = jest.spyOn(component.event, 'emit');
 
       fixture.detectChanges();
 
+
+      const mockNativeElement0: HTMLElement = global.document.createElement('div');
+      Object.defineProperty(mockNativeElement0, 'offsetTop', { writable: false, value: 100 });
+      const mockElement0: Element = global.document.createElement('div');
+      Object.defineProperty(mockElement0, 'nativeElement', { writable: false, value: mockNativeElement0 });
+      const mockContainer0: Element = global.document.createElement('div');
+      Object.defineProperty(mockContainer0, 'element', { writable: false, value: mockElement0 });
+      const mockNativeElement1: HTMLElement = global.document.createElement('div');
+      Object.defineProperty(mockNativeElement1, 'offsetTop', { writable: false, value: 50 });
+      const mockElement1: Element = global.document.createElement('div');
+      Object.defineProperty(mockElement1, 'nativeElement', { writable: false, value: mockNativeElement1 });
+      const mockContainer1: Element = global.document.createElement('div');
+      Object.defineProperty(mockContainer1, 'element', { writable: false, value: mockElement1 });
+      const mockList = new QueryListStub<ViewContainerRefStub>();
+      mockList.toArray = jest.fn()
+        .mockReturnValue([ mockContainer0, mockContainer1 ]);
+      component.accordionComponent = mockList;
       component.expandItem(1);
-      expect(emitSpy).toHaveBeenCalled();
+      expect(emitSpy).toHaveBeenCalledWith(
+        'scroll-in-sub-component',
+        {
+          subComponent: 'inventory',
+          offset: 50
+        }
+      );
       expect(component.itemIndex).toEqual(1);
       component.expandItem(1);
       expect(emitSpy).toHaveBeenCalledTimes(1);

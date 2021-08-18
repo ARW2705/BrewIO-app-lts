@@ -48,8 +48,7 @@
                                   (expandItemEvent)="expandItem(i)"
                                   (decrementCountEvent)="decrementCount(item)">
             </app-inventory-slider>
-            <app-accordion  [expanded]="itemIndex === i"
-                            [attr.data-scroll-landmark]="i">
+            <app-accordion [expanded]="itemIndex === i">
               <app-inventory-item [item]="item"
                                   (imageErrorEvent)="onImageError(item, $event)">
               </app-inventory-item>
