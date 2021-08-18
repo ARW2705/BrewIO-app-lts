@@ -1,21 +1,28 @@
 /* Module imports */
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 /* Pipe imports */
 import { UnitConversionPipeModule } from '../../pipes/pipes';
 
 /* Component imports */
-import { TimerComponent } from './timer.component';
+import { AccordionComponentModule } from '../accordion/accordion.module';
+import { ProcessDescriptionComponentModule } from '../process-description/process-description.module';
+import { ProcessHeaderComponentModule } from '../process-header/process-header.module';
 import { ProgressCircleComponentModule } from '../progress-circle/progress-circle.module';
-
+import { TimerControlsComponentModule } from '../timer-controls/timer-controls.module';
+import { TimerComponent } from './timer.component';
 
 @NgModule({
   imports: [
+    AccordionComponentModule,
     CommonModule,
     IonicModule,
+    ProcessDescriptionComponentModule,
+    ProcessHeaderComponentModule,
     ProgressCircleComponentModule,
+    TimerControlsComponentModule,
     UnitConversionPipeModule
   ],
   declarations: [

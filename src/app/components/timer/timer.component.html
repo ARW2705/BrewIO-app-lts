@@ -1,111 +1,37 @@
 <ion-grid *ngIf="timer"
           class="ion-no-padding timer-container">
-
-  <!-- Active Step View Timer Data -->
   <ion-row class="timer-row">
-
-    <ion-col size="12">
-
-      <h2 [ngClass]="{ 'timer-expired': timer.timeRemaining < 1 }">
-
-        <ion-icon *ngIf="timer.timeRemaining < 1"
-                  name="checkmark-circle-outline">
-        </ion-icon>
-
-        <span>{{ timer.timer.name }}</span>
-
-      </h2>
-
-    </ion-col>
-
+    <app-process-header [headerText]="timer.timer.name"
+                        [isExpired]="timer.timeRemaining < 1"
+                        [isPreview]="false"
+                        (toggleShowDescriptionEvent)="toggleShowDescription()">
+    </app-process-header>
   </ion-row>
-
-  <ion-row  *ngIf="showDescription"
-            class="description">
-
-    <p>
-      {{ timer.timer.description }}
-    </p>
-
+  <ion-row>
+    <app-accordion  [expanded]="showDescription"
+                    [animationDuration]="250">
+      <app-process-description  [description]="timer.timer.description"
+                                [isDropDown]="true">
+      </app-process-description>
+    </app-accordion>
   </ion-row>
-
-  <!-- End Active Step View Timer Data -->
-  <div>
-
-    <ion-row  *ngIf="timer.timeRemaining > 0"
-              class="timer-row ion-align-items-center">
-
-      <!-- Timer Progress Circle Component -->
-      <ion-col  *ngIf="timer.settings"
-                size="12">
-
-        <progress-circle  (click)="toggleTimerControls()"
-                          [settings]="timer.settings"
-                          [showButton]="isConcurrent"
-                          [chevronPath]="chevronPath">
-        </progress-circle>
-
-      </ion-col>
-      <!-- End Timer Progress Circle Component -->
-
-
-      <ng-container *ngIf="isConcurrent">
-
-        <!-- Concurrent Timers Individual Controls -->
-        <div  #timerControlsContainer
-              class="timer-individual-controls">
-
-          <!-- Start Individual Timer Button -->
-          <ion-row>
-
-            <ion-button color="primary"
-                        (click)="startSingleTimer()"
-                        class="button timer-button">
-              Start
-            </ion-button>
-
-          </ion-row>
-
-          <!-- Stop Individual Timer Button -->
-          <ion-row>
-
-            <ion-button color="primary"
-                        (click)="stopSingleTimer()"
-                        class="button timer-button">
-              Stop
-            </ion-button>
-
-          </ion-row>
-
-          <!-- Add minute to Individual Timer Button -->
-          <ion-row>
-
-            <ion-button color="secondary"
-                        (click)="addToSingleTimer()"
-                        class="button timer-button">
-              +1min
-            </ion-button>
-
-          </ion-row>
-
-          <!-- Reset Individual Timer Button -->
-          <ion-row>
-
-            <ion-button color="secondary"
-                        (click)="resetSingleTimer()"
-                        class="button timer-button">
-              Reset
-            </ion-button>
-
-          </ion-row>
-
-        </div>
-        <!-- End Concurrent Timers Individual Controls -->
-
-      </ng-container>
-
+  <ion-row  *ngIf="timer.timeRemaining > 0"
+            class="ion-align-items-center timer-row">
+    <ion-row  *ngIf="timer.settings"
+              class="ion-justify-content-center">
+      <app-progress-circle  (click)="toggleTimerControls()"
+                            [chevronPath]="chevronPath"
+                            [settings]="timer.settings"
+                            [showButton]="timer.timer.concurrent">
+      </app-progress-circle>
     </ion-row>
-
-  </div>
-
+    <ion-row *ngIf="timer.timer.concurrent">
+      <div  #timerControlsContainer
+            class="timer-individual-controls">
+        <app-timer-controls [processes]="[process]"
+                            [timers]="[timer]">
+        </app-timer-controls>
+      </div>
+    </ion-row>
+  </ion-row>
 </ion-grid>
