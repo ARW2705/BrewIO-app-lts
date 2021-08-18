@@ -137,7 +137,6 @@ describe('ProcessPreviewContentComponent', (): void => {
   test('should render the template', (): void => {
     const _mockHopsTimerProcess: TimerProcess = <TimerProcess>_mockProcessSchedule[hopsProcessIndex];
     component.process = _mockHopsTimerProcess;
-    component.isHopsTimer = true;
     component.contentToDisplay = [
       { subject: 'Duration:', predicate: '1 hour' },
       { subject: 'Interval:', predicate: '1' }
@@ -155,7 +154,6 @@ describe('ProcessPreviewContentComponent', (): void => {
     expect(interval.children[1].textContent).toMatch('1');
     const description: Element = (<HTMLElement>contentRows.item(2)).children[0];
     expect(description['description']).toMatch(_mockHopsTimerProcess.description);
-    expect(description['isHopsTimer']).toBe(true);
   });
 
 });

@@ -50,30 +50,16 @@ describe('ProcessDescriptionComponent', (): void => {
     expect(component.description).toMatch('Description not available');
   });
 
-  test('should render the template with a non-timer description', (): void => {
+  test('should render the template', (): void => {
     const testDescription: string = 'test description';
     component.description = testDescription;
+    component.isDropDown = true;
     UnitConversionPipeStub._returnValue = (value: any): any => value;
     const pipeSpy: jest.SpyInstance = jest.spyOn(UnitConversionPipeStub, '_returnValue');
 
     fixture.detectChanges();
 
     component.ngOnChanges();
-    const description: HTMLElement = global.document.querySelector('p');
-    expect(description.textContent).toMatch(testDescription);
-    expect(pipeSpy).not.toHaveBeenCalled();
-  });
-
-  test('should render the template with a timer description', (): void => {
-    const testDescription: string = 'test description';
-    component.description = testDescription;
-    component.isDropDown = true;
-    component.isHopsTimer = true;
-    UnitConversionPipeStub._returnValue = (value: any): any => value;
-    const pipeSpy: jest.SpyInstance = jest.spyOn(UnitConversionPipeStub, '_returnValue');
-
-    fixture.detectChanges();
-
     const container: HTMLElement = fixture.debugElement.query(By.css('.drop-down')).nativeElement;
     expect(container.classList).toContain('drop-down');
     const description: HTMLElement = global.document.querySelector('p');

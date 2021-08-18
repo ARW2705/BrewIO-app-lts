@@ -1,6 +1,6 @@
 <div [ngClass]="{ 'drop-down': isDropDown }">
   <span>Description:</span>
   <p>
-    {{ isHopsTimer ? (description | unitConversion:'weightSmall':true:true:true) : description }}
+    {{ description | unitConversion:'weightSmall':true:true:true }}
   </p>
 </div>
