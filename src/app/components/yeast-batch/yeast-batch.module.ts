@@ -1,16 +1,18 @@
 /* Module imports */
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
+import { YeastBatchItemComponentModule } from '../yeast-batch-item/yeast-batch-item.module';
 import { YeastBatchComponent } from './yeast-batch.component';
 
 
 @NgModule({
   imports: [
     CommonModule,
-    IonicModule
+    IonicModule,
+    YeastBatchItemComponentModule
   ],
   declarations: [
     YeastBatchComponent

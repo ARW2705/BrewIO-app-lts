@@ -1,80 +1,14 @@
 <div id="container">
-
   <ion-label class="recipe-group-label">
     Yeast
   </ion-label>
-
   <ion-list lines="none"
             class="ion-no-padding list-border">
-
-    <ion-item *ngFor="let yeast of yeastBatch; last as isLast"
-              class="item-buttons">
-
-      <!-- Yeast item -->
-      <ion-grid class="ion-no-padding">
-
-        <!-- Open ingredient form modal in edit mode -->
-        <button (click)="openIngredientFormModal(yeast)"
-                [ngClass]="{
-                  'item-button': true,
-                  'border-bottom-medium': !isLast
-                }">
-
-          <ion-row>
-
-            <!-- Pencil icon -->
-            <ion-col  size="2"
-                      class="ion-align-self-center">
-
-              <ion-icon color="primary"
-                        name="create-outline">
-              </ion-icon>
-
-            </ion-col>
-
-            <ion-col  size="10"
-                      class="ingredient-text-container">
-
-              <ion-row>
-
-                <!-- Yeast name -->
-                <ion-col  size="10"
-                          class="col-left">
-                  {{ yeast.yeastType.name }}
-                </ion-col>
-
-                <!-- Yeast quantity -->
-                <ion-col  size="2"
-                          class="col-right">
-                  {{ yeast.quantity }}
-                </ion-col>
-
-              </ion-row>
-
-              <ion-row>
-
-                <!-- Yeast type 'liquid' or 'dry' -->
-                <ion-col class="col-left">
-                  {{ yeast.yeastType.form | titlecase }}
-                </ion-col>
-
-                <!-- Display whether starter requires a starter -->
-                <ion-col class="col-right">
-                  {{ yeast.requiresStarter ? 'Starter Required': 'Starter Not Required' }}
-                </ion-col>
-
-              </ion-row>
-
-            </ion-col>
-
-          </ion-row>
-
-        </button>
-
-      </ion-grid>
-
-    </ion-item>
-
+    <ng-container *ngFor="let yeast of yeastBatch; index as i; last as isLast">
+      <app-yeast-batch-item (openIngredientFormButtonEvent)="openIngredientFormModal(yeast)"
+                            [yeast]="yeast"
+                            [isLast]="isLast">
+      </app-yeast-batch-item>
+    </ng-container>
   </ion-list>
-
 </div>

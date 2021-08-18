@@ -17,7 +17,7 @@ import { YeastBatchComponent } from './yeast-batch.component';
 
 describe('YeastBatchComponent', (): void => {
   let fixture: ComponentFixture<YeastBatchComponent>;
-  let ybCmp: YeastBatchComponent;
+  let component: YeastBatchComponent;
   configureTestBed();
 
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
@@ -32,52 +32,38 @@ describe('YeastBatchComponent', (): void => {
 
   beforeEach((): void => {
     fixture = TestBed.createComponent(YeastBatchComponent);
-    ybCmp = fixture.componentInstance;
+    component = fixture.componentInstance;
   });
 
   test('should create the component', (): void => {
     fixture.detectChanges();
 
-    expect(ybCmp).toBeDefined();
+    expect(component).toBeDefined();
   });
 
   test('should handle ingredient form modal open', (): void => {
     const _mockYeastBatch: YeastBatch = mockYeastBatch()[0];
-
-    ybCmp.onRecipeAction = jest
-      .fn();
-
-    const actionSpy: jest.SpyInstance = jest.spyOn(ybCmp, 'onRecipeAction');
+    component.openIngredientFormEvent.emit = jest.fn();
+    const emitSpy: jest.SpyInstance = jest.spyOn(component.openIngredientFormEvent, 'emit');
 
     fixture.detectChanges();
 
-    ybCmp.openIngredientFormModal(_mockYeastBatch);
-
-    expect(actionSpy).toHaveBeenCalledWith('openIngredientFormModal', ['yeast', _mockYeastBatch]);
+    component.openIngredientFormModal(_mockYeastBatch);
+    expect(emitSpy).toHaveBeenCalledWith(_mockYeastBatch);
   });
 
   test('should render the template', (): void => {
     const _mockYeastBatch: YeastBatch[] = mockYeastBatch();
-
-    ybCmp.yeastBatch = _mockYeastBatch;
+    component.yeastBatch = _mockYeastBatch;
 
     fixture.detectChanges();
 
-    const yeastBatchElements: NodeList = fixture.nativeElement.querySelectorAll('.ingredient-text-container');
-
+    const yeastBatchElements: NodeList = fixture.nativeElement.querySelectorAll('app-yeast-batch-item');
     expect(yeastBatchElements.length).toEqual(2);
-
-    const yeastBatchElem: HTMLElement = <HTMLElement>yeastBatchElements.item(0);
-
-    const yeastBatchElemTopRowTopCol: Element = yeastBatchElem.children[0].children[0];
-    expect(yeastBatchElemTopRowTopCol.textContent).toMatch(_mockYeastBatch[0].yeastType.name);
-    const yeastBatchElemTopRowBottomCol: Element = yeastBatchElem.children[0].children[1];
-    expect(yeastBatchElemTopRowBottomCol.textContent).toMatch(_mockYeastBatch[0].quantity.toString());
-
-    const yeastBatchElemBottomRowTopCol: Element = yeastBatchElem.children[1].children[0];
-    expect(yeastBatchElemBottomRowTopCol.textContent).toMatch('Liquid');
-    const yeastBatchElemBottomRowBottomCol: Element = yeastBatchElem.children[1].children[1];
-    expect(yeastBatchElemBottomRowBottomCol.textContent).toMatch('Starter Not Required');
+    expect(yeastBatchElements.item(0)['yeast']).toStrictEqual(_mockYeastBatch[0]);
+    expect(yeastBatchElements.item(0)['isLast']).toBe(false);
+    expect(yeastBatchElements.item(1)['yeast']).toStrictEqual(_mockYeastBatch[1]);
+    expect(yeastBatchElements.item(1)['isLast']).toBe(true);
   });
 
 });
