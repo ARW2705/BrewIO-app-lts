@@ -4,57 +4,42 @@
 </app-header>
 
 <ion-content>
-
   <ion-spinner *ngIf="!selectedBatch"></ion-spinner>
 
   <ion-grid *ngIf="selectedBatch">
-
-    <!-- Manual Step View -->
     <ion-row *ngIf="stepType === 'manual'">
-
-      <process-manual [stepData]="stepData"
-                      class="sub-component">
-      </process-manual>
-
+      <app-process-manual [manualProcess]="stepData"
+                          class="sub-component">
+      </app-process-manual>
     </ion-row>
-    <!-- End Manual Step View -->
-
-
-    <!-- Timer Step View -->
     <ion-row *ngIf="stepType === 'timer'">
-
-      <process-timer  [batchId]="selectedBatch.cid"
-                      [isPreview]="selectedBatch.process.currentStep !== viewStepIndex"
-                      [stepData]="stepData"
-                      class="sub-component">
-      </process-timer>
-
+      <app-process-timer  [batchId]="selectedBatch.cid"
+                          [isPreview]="selectedBatch.process.currentStep !== viewStepIndex"
+                          [timerProcess]="stepData"
+                          class="sub-component">
+      </app-process-timer>
     </ion-row>
-    <!-- End Timer Step View -->
-
-
-    <!-- Calendar Step View -->
     <ion-row *ngIf="stepType === 'calendar'">
-
-      <process-calendar #calendar
-                        [alerts]="alerts"
-                        [isPreview]="selectedBatch.process.currentStep !== viewStepIndex"
-                        [stepData]="stepData"
-                        class="sub-component">
-      </process-calendar>
-
+      <app-process-calendar #calendar
+                            (changeDateEvent)="changeDateEventHandler()"
+                            [alerts]="alerts"
+                            [calendarProcess]="stepData"
+                            [isPreview]="selectedBatch.process.currentStep !== viewStepIndex"
+                            class="sub-component">
+      </app-process-calendar>
     </ion-row>
-    <!-- End Calendar Step View -->
-
   </ion-grid>
-
 </ion-content>
 
-<process-controls *ngIf="selectedBatch"
-                  [onControlAction]="onControlAction"
-                  [atViewStart]="atViewStart"
-                  [atViewEnd]="atViewEnd"
-                  [onCurrentStep]="selectedBatch.process.currentStep === viewStepIndex"
-                  [isCalendarStep]="stepData && stepData.type === 'calendar'"
-                  [isCalendarInProgress]="isCalendarInProgress">
-</process-controls>
+<app-process-controls *ngIf="selectedBatch"
+                      (changeStepEvent)="changeStep($event)"
+                      (completeStepEvent)="completeStep()"
+                      (goToActiveStepEvent)="goToActiveStep()"
+                      (openMeasurementFormModalEvent)="openMeasurementFormModal($event)"
+                      (startCalendarEvent)="startCalendar()"
+                      [atViewStart]="atViewStart"
+                      [atViewEnd]="atViewEnd"
+                      [onCurrentStep]="selectedBatch.process.currentStep === viewStepIndex"
+                      [isCalendarStep]="stepData && stepData.type === 'calendar'"
+                      [isCalendarInProgress]="isCalendarInProgress">
+</app-process-controls>

@@ -2,11 +2,11 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Navigation, Router } from '@angular/router';
 import { ModalController } from '@ionic/angular';
-import { BehaviorSubject, Observable, from, of, Subject, throwError } from 'rxjs';
+import { BehaviorSubject, from, Observable, of, Subject, throwError } from 'rxjs';
 import { catchError, mergeMap, takeUntil, tap } from 'rxjs/operators';
 
 /* Interface imports */
-import { Alert, Batch, BatchProcess, PrimaryValues, Process, TimerProcess } from '../../shared/interfaces';
+import { Alert, Batch, BatchProcess, CalendarMetadata, PrimaryValues, Process, TimerProcess } from '../../shared/interfaces';
 
 /* Type imports */
 import { CustomError } from '../../shared/types';
@@ -31,19 +31,11 @@ export class ProcessPage implements OnInit, OnDestroy {
   alerts: Alert[] = [];
   atViewEnd: boolean = false;
   atViewStart: boolean = true;
-  controlActions: object = {
-    changeStep: this.changeStep.bind(this),
-    completeStep: this.completeStep.bind(this),
-    goToActiveStep: this.goToActiveStep.bind(this),
-    openMeasurementFormModal: this.openMeasurementFormModal.bind(this),
-    startCalendar: this.startCalendar.bind(this)
-  };
   destroy$: Subject<boolean> = new Subject<boolean>();
   hideButton: boolean = false;
   isCalendarInProgress: boolean = false;
   isConcurrent: boolean = false;
   navigateToRoot: () => void = () => this.router.navigate([this.rootURL]);
-  onControlAction: (actionName: string, options?: object) => void;
   requestedUserId: string = null;
   recipeMasterId: string = '';
   recipeVariantId: string = '';
@@ -57,7 +49,6 @@ export class ProcessPage implements OnInit, OnDestroy {
   title: string = '';
   viewStepIndex: number = 0;
 
-
   constructor(
     public errorReporter: ErrorReportingService,
     public event: EventService,
@@ -69,9 +60,7 @@ export class ProcessPage implements OnInit, OnDestroy {
     public timerService: TimerService,
     public toastService: ToastService,
     public userService: UserService
-  ) {
-    this.onControlAction = this.onControlActionHandler.bind(this);
-  }
+  ) { }
 
   /***** Lifecycle Hooks *****/
 
@@ -79,9 +68,6 @@ export class ProcessPage implements OnInit, OnDestroy {
     console.log('process page init');
     this.hideButton = false;
     this.listenForRouteChanges();
-    this.event.register('change-date')
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((): void => this.changeDateEventHandler());
   }
 
   ngOnDestroy() {
@@ -97,6 +83,22 @@ export class ProcessPage implements OnInit, OnDestroy {
   /***** Batch Initialization *****/
 
   /**
+   * Continue an existing batch
+   *
+   * @params: none
+   * @return: none
+   */
+  continueBatch(): void {
+    console.log('continuing batch', this.selectedBatchId);
+    this.selectedBatch$ = this.processService.getBatchById(this.selectedBatchId);
+    if (this.selectedBatch$) {
+      this.listenForBatchChanges(true);
+    } else {
+      this.toastService.presentErrorToast('Internal error: Batch not found', this.navigateToRoot);
+    }
+  }
+
+  /**
    * Listen for changes in selected batch
    *
    * @params: none
@@ -106,18 +108,7 @@ export class ProcessPage implements OnInit, OnDestroy {
     this.selectedBatch$
       .pipe(takeUntil(this.destroy$))
       .subscribe(
-        (selectedBatch: Batch): void => {
-          console.log('batch change', selectedBatch);
-          this.selectedBatch = selectedBatch;
-          this.selectedBatchId = this.idService.getId(selectedBatch);
-          this.title = selectedBatch.contextInfo.recipeMasterName;
-          this.timerService.addBatchTimer(selectedBatch);
-          if (onContinue) {
-            this.goToActiveStep();
-          } else {
-            this.updateViewData();
-          }
-        },
+        (selectedBatch: Batch): void => this.handleBatchChange(selectedBatch, onContinue),
         (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
   }
@@ -134,19 +125,7 @@ export class ProcessPage implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
         mergeMap((): Observable<null> => {
           console.log('route change detected');
-          try {
-            const nav: Navigation = this.router.getCurrentNavigation();
-            const configData: object = nav.extras.state;
-
-            this.rootURL = configData['rootURL'];
-            this.requestedUserId = configData['requestedUserId'];
-            this.recipeMasterId = configData['recipeMasterId'];
-            this.recipeVariantId = configData['recipeVariantId'];
-            this.selectedBatchId = configData['selectedBatchId'];
-            return of(null);
-          } catch (error) {
-            return throwError(error);
-          }
+          return this.handleRouteChange();
         }),
         catchError(this.errorReporter.handleGenericCatchError())
       )
@@ -164,6 +143,48 @@ export class ProcessPage implements OnInit, OnDestroy {
   }
 
   /**
+   * Assign given Batch to page properties accordingly
+   *
+   * @param: batch - a Batch object
+   * @param: onContinue - true if continuing a batch; false to start a new batch
+   *
+   * @return: none
+   */
+  handleBatchChange(batch: Batch, onContinue: boolean): void {
+    this.selectedBatch = batch;
+    this.selectedBatchId = this.idService.getId(batch);
+    this.title = batch.contextInfo.recipeMasterName;
+    this.timerService.addBatchTimer(batch);
+    if (onContinue) {
+      this.goToActiveStep();
+    } else {
+      this.updateViewData();
+    }
+  }
+
+  /**
+   * Get router navigation properties and assign page properties accordingly
+   *
+   * @param: none
+   *
+   * @return: observable of null on successful init
+   */
+  handleRouteChange(): Observable<null> {
+    try {
+      const nav: Navigation = this.router.getCurrentNavigation();
+      const configData: object = nav.extras.state;
+      this.rootURL = configData['rootURL'];
+      this.requestedUserId = configData['requestedUserId'];
+      this.recipeMasterId = configData['recipeMasterId'];
+      this.recipeVariantId = configData['recipeVariantId'];
+      this.selectedBatchId = configData['selectedBatchId'];
+      return of(null);
+    } catch (error) {
+      return throwError(error);
+    }
+  }
+
+  /**
    * Start a new batch from a recipe
    *
    * @params: none
@@ -174,48 +195,23 @@ export class ProcessPage implements OnInit, OnDestroy {
     this.viewStepIndex = 0;
     this.atViewEnd = false;
     this.atViewStart = true;
-
-    this.processService.startNewBatch(
-      this.requestedUserId,
-      this.recipeMasterId,
-      this.recipeVariantId
-    )
-    .pipe(
-      mergeMap((newBatch: Batch): Observable<null> => {
-        this.selectedBatch$ = this.processService.getBatchById(this.idService.getId(newBatch));
-
-        if (!this.selectedBatch$) {
-          const message: string = 'An error occurred trying to start a new batch: new batch not found';
-          return throwError(new CustomError('BatchError', message, 2, message));
-        }
-        return of(null);
-      }),
-      catchError(this.errorReporter.handleGenericCatchError())
-    )
-    .subscribe(
-      (): void => this.listenForBatchChanges(false),
-      (error: any): void => this.errorReporter.handleUnhandledError(error)
-    );
-  }
-
-  /**
-   * Continue an existing batch
-   *
-   * @params: none
-   * @return: none
-   */
-  continueBatch(): void {
-    console.log('continuing batch', this.selectedBatchId);
-    this.selectedBatch$ = this.processService.getBatchById(this.selectedBatchId);
-
-    if (this.selectedBatch$) {
-      this.listenForBatchChanges(true);
-    } else {
-      this.toastService.presentErrorToast(
-        'Internal error: Batch not found',
-        this.navigateToRoot
+    this.processService.startNewBatch(this.requestedUserId, this.recipeMasterId, this.recipeVariantId)
+      .pipe(
+        mergeMap((newBatch: Batch): Observable<null> => {
+          this.selectedBatch$ = this.processService.getBatchById(this.idService.getId(newBatch));
+          if (!this.selectedBatch$) {
+            const message: string = 'An error occurred trying to start a new batch: new batch not found';
+            const severity: number = 2;
+            return throwError(new CustomError('BatchError', message, severity, message));
+          }
+          return of(null);
+        }),
+        catchError(this.errorReporter.handleGenericCatchError())
+      )
+      .subscribe(
+        (): void => this.listenForBatchChanges(false),
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
-    }
   }
 
   /***** End Batch Initialization *****/
@@ -232,10 +228,9 @@ export class ProcessPage implements OnInit, OnDestroy {
    */
   getAlerts(): Alert[] {
     const process: BatchProcess = this.selectedBatch.process;
-    return process.alerts
-      .filter((alert: Alert): boolean => {
-        return alert.title === process.schedule[process.currentStep].name;
-      });
+    return process.alerts.filter((alert: Alert): boolean => {
+      return alert.title === process.schedule[process.currentStep].name;
+    });
   }
 
   /**
@@ -248,10 +243,8 @@ export class ProcessPage implements OnInit, OnDestroy {
    */
   getTimerStepData(): TimerProcess[] {
     const schedule: Process[] = this.selectedBatch.process.schedule;
-
     const start: number = this.viewStepIndex;
     let end: number = start + 1;
-
     if (schedule[start]['concurrent']) {
       for (; end < schedule.length; end++) {
         if (!schedule[end]['concurrent']) {
@@ -261,22 +254,6 @@ export class ProcessPage implements OnInit, OnDestroy {
     }
 
     return <TimerProcess[]>schedule.slice(start, end);
-  }
-
-  /**
-   * Handle child component control function calls
-   *
-   * @params: actionName - the method name called
-   * @params: [options] - optional additional arguments
-   *
-   * @return: none
-   */
-  onControlActionHandler(actionName: string, ...options: any[]): void {
-    try {
-      this.controlActions[actionName](...options);
-    } catch (error) {
-      console.log('Control action error', actionName, error);
-    }
   }
 
   /***** End Child Component Functions *****/
@@ -292,7 +269,6 @@ export class ProcessPage implements OnInit, OnDestroy {
    * @return: none
    */
   advanceBatch(nextIndex: number): void {
-    console.log('advance', this.selectedBatch);
     this.selectedBatch.process.currentStep = nextIndex;
     this.viewStepIndex = nextIndex;
     this.updateViewData();
@@ -312,10 +288,10 @@ export class ProcessPage implements OnInit, OnDestroy {
    */
   changeStep(direction: string): void {
     const nextIndex: number = this.getStep(false, direction);
-
     if (nextIndex !== -1) {
       this.viewStepIndex = nextIndex;
     }
+
     this.updateViewData();
   }
 
@@ -328,7 +304,6 @@ export class ProcessPage implements OnInit, OnDestroy {
    */
   completeStep(): void {
     const nextIndex: number = this.getStep(true, 'next');
-
     if (nextIndex === -1) {
       this.endBatch();
     } else {
@@ -377,8 +352,6 @@ export class ProcessPage implements OnInit, OnDestroy {
           break;
         }
       }
-    } else {
-      console.log('Step direction error', direction);
     }
 
     return nextIndex;
@@ -395,7 +368,6 @@ export class ProcessPage implements OnInit, OnDestroy {
   getStep(onComplete: boolean , direction: string): number {
     const process: BatchProcess = this.selectedBatch.process;
     const viewIndex: number = onComplete ? process.currentStep : this.viewStepIndex;
-
     if (direction === 'next') {
       if (viewIndex < process.schedule.length - 1) {
         if (process.schedule[viewIndex]['concurrent']) {
@@ -437,7 +409,6 @@ export class ProcessPage implements OnInit, OnDestroy {
   updateViewData(): void {
     const process: BatchProcess = this.selectedBatch.process;
     const pendingStep: Process = process.schedule[this.viewStepIndex];
-
     if (pendingStep.type === 'timer') {
       this.stepData = this.getTimerStepData();
       this.stepType = 'timer';
@@ -446,11 +417,12 @@ export class ProcessPage implements OnInit, OnDestroy {
       this.stepType = pendingStep.type;
       this.isCalendarInProgress = this.hasCalendarStarted();
     }
-
     this.alerts = this.getAlerts();
     this.atViewStart = this.viewStepIndex === 0;
-    this.atViewEnd = this.viewStepIndex === process.schedule.length - 1
-      || this.getIndexAfterSkippingConcurrent('next', this.viewStepIndex) === -1;
+    this.atViewEnd = (
+      this.viewStepIndex === process.schedule.length - 1
+      || this.getIndexAfterSkippingConcurrent('next', this.viewStepIndex) === -1
+    );
   }
 
   /***** End View Navigation Methods *****/
@@ -465,11 +437,11 @@ export class ProcessPage implements OnInit, OnDestroy {
    * @return: none
    */
   changeDateEventHandler(): void {
-    this.toastService.presentToast('Select new dates', 1500, 'middle');
+    const secondAndAHalf: number = 1500;
+    this.toastService.presentToast('Select new dates', secondAndAHalf, 'middle');
     delete this.selectedBatch
       .process
-      .schedule[this.selectedBatch.process.currentStep]
-      ['startDatetime'];
+      .schedule[this.selectedBatch.process.currentStep]['startDatetime'];
     this.isCalendarInProgress = false;
     this.clearAlertsForCurrentStep();
   }
@@ -482,10 +454,9 @@ export class ProcessPage implements OnInit, OnDestroy {
    */
   clearAlertsForCurrentStep(): void {
     const process: BatchProcess = this.selectedBatch.process;
-    process.alerts = process.alerts
-      .filter((alert: Alert): boolean => {
-        return alert.title !== process.schedule[process.currentStep].name;
-      });
+    process.alerts = process.alerts.filter((alert: Alert): boolean => {
+      return alert.title !== process.schedule[process.currentStep].name;
+    });
   }
 
   /**
@@ -500,9 +471,7 @@ export class ProcessPage implements OnInit, OnDestroy {
     const process: BatchProcess = this.selectedBatch.process;
     return (
       process.currentStep < process.schedule.length
-      && process
-        .schedule[this.selectedBatch.process.currentStep]
-        .hasOwnProperty('startDatetime')
+      && process.schedule[this.selectedBatch.process.currentStep].hasOwnProperty('startDatetime')
     );
   }
 
@@ -513,8 +482,8 @@ export class ProcessPage implements OnInit, OnDestroy {
    * @return: none
    */
   startCalendar(): void {
-    const values: object = this.calendarRef.startCalendar();
-    this.processService.updateStepById(this.idService.getId(this.selectedBatch), values)
+    const values: CalendarMetadata = this.calendarRef.startCalendar();
+    this.processService.updateCalendarStep(this.idService.getId(this.selectedBatch), values)
       .subscribe(
         (): void => console.log('Started calendar'),
         (error: any): void => this.errorReporter.handleUnhandledError(error)
@@ -552,6 +521,21 @@ export class ProcessPage implements OnInit, OnDestroy {
   /***** Modal *****/
 
   /**
+   * Get measurement form modal options
+   *
+   * @param: onBatchComplete - true if batch is being completed
+   *   and measurement form should be required
+   *
+   * @return: modal componentProps object
+   */
+  getMeasurementFormModalOptions(onBatchComplete: boolean): object {
+    return {
+      areAllRequired: onBatchComplete,
+      batch: this.selectedBatch
+    };
+  }
+
+  /**
    * Handle measurement update on form dismiss
    *
    * @params: onBatchComplete - true if measurements are final
@@ -568,6 +552,7 @@ export class ProcessPage implements OnInit, OnDestroy {
           !onBatchComplete
         );
       }
+
       return of(null);
     };
   }
@@ -596,8 +581,10 @@ export class ProcessPage implements OnInit, OnDestroy {
   onMeasurementFormModalSuccess(onBatchComplete: boolean): (updatedBatch: Batch) => void {
     return (updated: Batch): void => {
       if (updated) {
-        this.toastService.presentToast('Measured Values Updated', 1000, 'bottom');
+        const oneSecond: number = 1000;
+        this.toastService.presentToast('Measured Values Updated', oneSecond, 'bottom');
       }
+
       if (onBatchComplete) {
         this.navToInventory(updated);
       }
@@ -612,16 +599,10 @@ export class ProcessPage implements OnInit, OnDestroy {
    * @return: none
    */
   async openMeasurementFormModal(onBatchComplete: boolean): Promise<void> {
-    const options: object = {
-      areAllRequired: onBatchComplete,
-      batch: this.selectedBatch
-    };
-
     const modal = await this.modalCtrl.create({
       component: ProcessMeasurementsFormPage,
-      componentProps: options
+      componentProps: this.getMeasurementFormModalOptions(onBatchComplete)
     });
-
     from(modal.onDidDismiss())
       .pipe(
         tap(() => { this.hideButton = true; }),
@@ -630,7 +611,6 @@ export class ProcessPage implements OnInit, OnDestroy {
         this.onMeasurementFormModalSuccess(onBatchComplete),
         this.onMeasurementFormModalError()
       );
-
     return await modal.present();
   }
 
