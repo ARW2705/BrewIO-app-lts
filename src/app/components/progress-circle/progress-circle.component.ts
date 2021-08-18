@@ -6,7 +6,7 @@ import { ProgressCircleSettings } from '../../shared/interfaces';
 
 
 @Component({
-  selector: 'progress-circle',
+  selector: 'app-progress-circle',
   templateUrl: './progress-circle.component.html',
   styleUrls: ['./progress-circle.component.scss'],
 })
@@ -14,7 +14,4 @@ export class ProgressCircleComponent {
   @Input() chevronPath: string;
   @Input() settings: ProgressCircleSettings;
   @Input() showButton: boolean;
-
-  constructor() { }
-
 }
