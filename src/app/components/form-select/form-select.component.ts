@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { FormControl } from '@angular/forms';
 
 /* Constant imports */
@@ -7,12 +7,13 @@ import { SELECT_OPTIONS } from '../../shared/constants';
 /* Interface imports */
 import { FormSelectOption } from '../../shared/interfaces';
 
+
 @Component({
   selector: 'app-form-select',
   templateUrl: './form-select.component.html',
   styleUrls: ['./form-select.component.scss'],
 })
-export class FormSelectComponent implements OnChanges, OnInit {
+export class FormSelectComponent implements OnChanges {
   @Input() control: FormControl;
   @Input() label: string;
   @Input() ionChangeEvent: () => any;
@@ -30,16 +31,11 @@ export class FormSelectComponent implements OnChanges, OnInit {
     'options'
   ];
 
-
-  constructor() { }
-
-  ngOnInit() {}
-
   ngOnChanges(changes: SimpleChanges): void {
     console.log(changes);
     this.requiredPropertyKeys.forEach((key: string): void => {
       if (!changes.hasOwnProperty(key) || changes[key] === undefined) {
-        this.setDefault(key);
+        this.setDefault(key); // set default if a value wasn't passed in
       }
     });
 
@@ -48,6 +44,13 @@ export class FormSelectComponent implements OnChanges, OnInit {
     }
   }
 
+  /**
+   * Set a default value for a given property
+   *
+   * @param: key - the property name to assign a default
+   *
+   * @return: none
+   */
   setDefault(key: string): void {
     console.log('setting default for', key);
     switch (key) {
