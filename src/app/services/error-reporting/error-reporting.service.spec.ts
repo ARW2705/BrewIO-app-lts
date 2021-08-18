@@ -208,15 +208,10 @@ describe('ErrorReportingService', () => {
   test('should set an error report with severity that requires viewing the report', (): void => {
     const _mockErrorReport: ErrorReport = mockErrorReport();
     _mockErrorReport.severity = 2;
-
-    errorReporter.logErrorReports = jest.fn();
     errorReporter.openReportModal = jest.fn();
-
     errorReporter.reports = [];
     errorReporter.isErrorModalOpen = false;
-
     const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'error');
-    const logSpy: jest.SpyInstance = jest.spyOn(errorReporter, 'logErrorReports');
     const modalSpy: jest.SpyInstance = jest.spyOn(errorReporter, 'openReportModal');
 
     errorReporter.setErrorReport(_mockErrorReport);
@@ -224,14 +219,10 @@ describe('ErrorReportingService', () => {
     expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch(`${_mockErrorReport.name}: ${_mockErrorReport.message}`);
     expect(errorReporter.reports.length).toEqual(1);
     expect(modalSpy).toHaveBeenCalled();
-    expect(logSpy).not.toHaveBeenCalled();
-
     errorReporter.setErrorReport(_mockErrorReport);
-
     expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch(`${_mockErrorReport.name}: ${_mockErrorReport.message}`);
     expect(errorReporter.reports.length).toEqual(2);
     expect(modalSpy).toHaveBeenCalledTimes(1);
-    expect(logSpy).toHaveBeenCalled();
   });
 
   test('should set an error report with severity that only requires a toast warning', (): void => {
@@ -590,7 +581,7 @@ describe('ErrorReportingService', () => {
 
     errorReporter.navToHome();
 
-    expect(navSpy).toHaveBeenCalledWith(['/tabs/home']);
+    expect(navSpy).toHaveBeenCalledWith(['/tabs/home'], { replaceUrl: true });
   });
 
   test('should present error toast', (): void => {

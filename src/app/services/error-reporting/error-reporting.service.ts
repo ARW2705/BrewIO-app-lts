@@ -1,9 +1,9 @@
 /* Module imports */
-import { Injectable } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { ModalController } from '@ionic/angular';
-import { Observable, from, of, throwError } from 'rxjs';
+import { from, Observable, of, throwError } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
 /* Interface imports */
@@ -27,6 +27,10 @@ import { ToastService } from '../toast/toast.service';
 export class ErrorReportingService {
   reports: ErrorReport[] = [];
   isErrorModalOpen: boolean = false;
+  fatalSeverity: number = 1;
+  nonFatalMaxSeverity: number = 2;
+  moderateSeverity: number = 3;
+  lowestSeverity: number = 4;
 
   constructor(
     public device: DeviceService,
@@ -67,12 +71,12 @@ export class ErrorReportingService {
     dismissFn?: () => void
   ): ErrorReport {
     return {
-      name: name,
-      message: message,
-      severity: severity,
-      timestamp: this.getTimestamp(),
-      userMessage: userMessage,
-      dismissFn: dismissFn
+      dismissFn,
+      message,
+      name,
+      severity,
+      userMessage,
+      timestamp: this.getTimestamp()
     };
   }
 
@@ -136,16 +140,14 @@ export class ErrorReportingService {
   setErrorReport(report: ErrorReport): void {
     report.timestamp = this.getTimestamp();
     const consoleMessage: string = `${report.name}: ${report.message}`;
-    if (report.severity < 3) {
+    if (report.severity < this.moderateSeverity) {
       this.reports.push(report);
       console.error(consoleMessage);
-      if (this.isErrorModalOpen) {
-        this.logErrorReports();
-      } else {
+      if (!this.isErrorModalOpen) {
         this.isErrorModalOpen = true;
         this.openReportModal();
       }
-    } else if (report.severity === 3) {
+    } else if (report.severity === this.moderateSeverity) {
       this.reports.push(report);
       console.warn(consoleMessage);
       this.presentErrorToast(report.userMessage, report.dismissFn);
@@ -237,7 +239,9 @@ export class ErrorReportingService {
    * @return: none
    */
   handleModalError(errorMessage: string, userMessage?: string): void {
-    this.setErrorReport(this.createErrorReport('ModalError', errorMessage, 4, userMessage || ''));
+    this.setErrorReport(
+      this.createErrorReport('ModalError', errorMessage, this.lowestSeverity, userMessage || '')
+    );
   }
 
   /**
@@ -289,7 +293,7 @@ export class ErrorReportingService {
       .reduce(
         (acc: string, curr: string): string => {
           const headers: string[] = error.headers.getAll(curr);
-          return acc + curr + ': ' + headers.join(',') + ', ';
+          return `${acc}${curr}: ${headers.join(',')}, `;
         },
         ''
       );
@@ -303,7 +307,7 @@ export class ErrorReportingService {
    * @return: error severity 1 (highest) - 4 (lowest)
    */
   getReportSeverity(error: Error | CustomError | HttpErrorResponse): number {
-    return error instanceof CustomError ? error.severity : 2;
+    return error instanceof CustomError ? error.severity : this.nonFatalMaxSeverity;
   }
 
   /**
@@ -343,11 +347,12 @@ export class ErrorReportingService {
    */
   formatUnhandledError(error: any): CustomError {
     const baseMessage: string = 'An unhandled error occurred';
-    const messageExtention: string = JSON.stringify(error, null, 2);
+    const jsonIndent: number = 2;
+    const messageExtention: string = JSON.stringify(error, null, jsonIndent);
     return new CustomError(
       'UncaughtError',
       `${baseMessage}: ${messageExtention}`,
-      2,
+      this.nonFatalMaxSeverity,
       baseMessage
     );
   }
@@ -375,7 +380,7 @@ export class ErrorReportingService {
    * @return: none
    */
   navToHome(): void {
-    this.router.navigate(['/tabs/home']);
+    this.router.navigate(['/tabs/home'], { replaceUrl: true });
   }
 
   /**
