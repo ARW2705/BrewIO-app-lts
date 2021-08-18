@@ -48,6 +48,17 @@ describe('InventoryItemImagesComponent', (): void => {
     expect(component).toBeTruthy();
   });
 
+  test('should emit image error event', (): void => {
+    component.imageErrorEvent.emit = jest.fn();
+    const emitSpy: jest.SpyInstance = jest.spyOn(component.imageErrorEvent, 'emit');
+    const event: CustomEvent = new CustomEvent('image-error');
+
+    fixture.detectChanges();
+
+    component.onImageError('itemLabelImage', event);
+    expect(emitSpy).toHaveBeenCalledWith({ imageType: 'itemLabelImage', event });
+  });
+
   test('should render the template with images', (): void => {
     fixture.detectChanges();
 
