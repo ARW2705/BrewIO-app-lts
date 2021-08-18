@@ -27,7 +27,7 @@ import { NoteListComponent } from './note-list.component';
 
 describe('NoteListComponent', (): void => {
   let fixture: ComponentFixture<NoteListComponent>;
-  let noteCmp: NoteListComponent;
+  let component: NoteListComponent;
   let originalOnInit: any;
   let originalOnDestroy: any;
   configureTestBed();
@@ -50,59 +50,43 @@ describe('NoteListComponent', (): void => {
 
   beforeEach((): void => {
     fixture = TestBed.createComponent(NoteListComponent);
-    noteCmp = fixture.componentInstance;
-    originalOnInit = noteCmp.ngOnInit;
-    originalOnDestroy = noteCmp.ngOnDestroy;
-    noteCmp.ngOnInit = jest.fn();
-    noteCmp.ngOnDestroy = jest.fn();
+    component = fixture.componentInstance;
+    originalOnInit = component.ngOnInit;
+    originalOnDestroy = component.ngOnDestroy;
+    component.ngOnInit = jest.fn();
+    component.ngOnDestroy = jest.fn();
   });
 
   test('should create the component', (): void => {
     fixture.detectChanges();
 
-    expect(noteCmp).toBeDefined();
+    expect(component).toBeDefined();
   });
 
   test('should log component init and destroy', (): void => {
-    noteCmp.ngOnInit = originalOnInit;
-    noteCmp.ngOnDestroy = originalOnDestroy;
+    component.ngOnInit = originalOnInit;
+    component.ngOnDestroy = originalOnDestroy;
     const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
 
     fixture.detectChanges();
 
-    noteCmp.ngOnDestroy();
+    component.ngOnDestroy();
     expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 2][0]).toMatch('note list component init');
     expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('note list component destroy');
   });
 
-  test('should get the modal dismiss function', (): void => {
-    const _mockDismissFn: (index?: number) => (data: object) => void = (index?: number) => {
-      return (data: object) => {}
-    };
-    noteCmp.onNoteModalDismiss = jest.fn()
-      .mockReturnValue((data: object) => {});
-
-    fixture.detectChanges();
-
-    const defaultDismiss: (data: object) => void = noteCmp.getModalDismissFn();
-    expect(defaultDismiss).toBe(noteCmp.onNoteModalDismiss());
-    noteCmp.dismissFn = _mockDismissFn;
-    const customDismiss: (data: object) => void = noteCmp.getModalDismissFn();
-    expect(customDismiss).not.toBe(noteCmp.onNoteModalDismiss());
-  });
-
   test('should get modal options', (): void => {
-    noteCmp.notes = [ '1', '2', '3' ];
+    component.notes = [ '1', '2', '3' ];
 
     fixture.detectChanges();
 
-    expect(noteCmp.getModalOptions()).toStrictEqual({
+    expect(component.getModalOptions()).toStrictEqual({
       noteType: 'master',
       formMethod: 'create',
       toUpdate: ''
     });
-    noteCmp.recipeVariantId = 'variantid';
-    expect(noteCmp.getModalOptions(1)).toStrictEqual({
+    component.recipeVariantId = 'variantid';
+    expect(component.getModalOptions(1)).toStrictEqual({
       noteType: 'variant',
       formMethod: 'update',
       toUpdate: '2'
@@ -110,47 +94,45 @@ describe('NoteListComponent', (): void => {
   });
 
   test('should handle not modal dismiss', (): void => {
-    noteCmp.notes = [ 'a', 'b', 'c' ];
-    noteCmp.submitUpdatedNotes = jest.fn();
+    component.notes = [ 'a', 'b', 'c' ];
+    component.submitUpdatedNotes = jest.fn();
 
     fixture.detectChanges();
 
-    const createNote: (data: object) => void = noteCmp.onNoteModalDismiss();
-    const updateNote: (data: object) => void = noteCmp.onNoteModalDismiss(1);
-    const deleteNote: (data: object) => void = noteCmp.onNoteModalDismiss(1);
+    const createNote: (data: object) => void = component.onNoteModalDismiss();
+    const updateNote: (data: object) => void = component.onNoteModalDismiss(1);
+    const deleteNote: (data: object) => void = component.onNoteModalDismiss(1);
     createNote({ data: { method: 'create', note: 'd' } });
-    expect(noteCmp.notes.length).toEqual(4);
-    expect(noteCmp.notes[3]).toMatch('d');
+    expect(component.notes.length).toEqual(4);
+    expect(component.notes[3]).toMatch('d');
     updateNote({ data: { method: 'update', note: 'e' } });
-    expect(noteCmp.notes.length).toEqual(4);
-    expect(noteCmp.notes[1]).toMatch('e');
+    expect(component.notes.length).toEqual(4);
+    expect(component.notes[1]).toMatch('e');
     deleteNote({ data: { method: 'delete' } });
-    expect(noteCmp.notes.length).toEqual(3);
-    expect(noteCmp.notes[1]).toMatch('c');
+    expect(component.notes.length).toEqual(3);
+    expect(component.notes[1]).toMatch('c');
   });
 
   test('should open a note modal with default dismiss', (done: jest.DoneCallback): void => {
     const _stubModal: ModalStub = new ModalStub();
-    const _mockNoteDismissFn: (index?: number) => (data: object) => void = (index?: number) => (data: object) => {};
-    noteCmp.notes = [ 'a', 'b', 'c' ];
-    noteCmp.getModalOptions = jest.fn()
+    component.notes = [ 'a', 'b', 'c' ];
+    component.getModalOptions = jest.fn()
       .mockReturnValue({
         noteType: 'master',
         formMethod: 'update',
         toUpdate: 'b'
       });
-    noteCmp.modalCtrl.create = jest.fn()
+    component.modalCtrl.create = jest.fn()
       .mockReturnValue(Promise.resolve(_stubModal));
-    noteCmp.getModalDismissFn = jest.fn()
-      .mockReturnValue(_mockNoteDismissFn);
+    component.onNoteModalDismiss = jest.fn()
+      .mockReturnValue((data: object): void => {});
     _stubModal.onDidDismiss = jest.fn()
       .mockReturnValue(Promise.resolve());
-    const createSpy: jest.SpyInstance = jest.spyOn(noteCmp.modalCtrl, 'create');
-    const dismissSpy: jest.SpyInstance = jest.spyOn(noteCmp, 'getModalDismissFn');
+    const createSpy: jest.SpyInstance = jest.spyOn(component.modalCtrl, 'create');
 
     fixture.detectChanges();
 
-    noteCmp.openNoteModal(1);
+    component.openNoteModal(1);
     _stubModal.onDidDismiss();
     setTimeout((): void => {
       expect(createSpy).toHaveBeenCalledWith({
@@ -161,7 +143,6 @@ describe('NoteListComponent', (): void => {
           toUpdate: 'b'
         }
       });
-      expect(dismissSpy).toHaveBeenCalledWith(1);
       done();
     }, 10);
   });
@@ -169,15 +150,15 @@ describe('NoteListComponent', (): void => {
   test('should patch recipe master notes', (done: jest.DoneCallback): void => {
     const _mockRecipeMasterInactive: RecipeMaster = mockRecipeMasterInactive();
     const notes: string[] = [ 'a', 'b', 'c' ];
-    noteCmp.recipeService.updateRecipeMasterById = jest.fn()
+    component.recipeService.updateRecipeMasterById = jest.fn()
       .mockReturnValue(of(_mockRecipeMasterInactive));
-    noteCmp.notes = notes;
-    noteCmp.recipeMasterId = _mockRecipeMasterInactive.cid;
-    const masterSpy: jest.SpyInstance = jest.spyOn(noteCmp.recipeService, 'updateRecipeMasterById');
+    component.notes = notes;
+    component.recipeMasterId = _mockRecipeMasterInactive.cid;
+    const masterSpy: jest.SpyInstance = jest.spyOn(component.recipeService, 'updateRecipeMasterById');
 
     fixture.detectChanges();
 
-    noteCmp.patchRecipeNotes();
+    component.patchRecipeNotes();
     setTimeout((): void => {
       expect(masterSpy).toHaveBeenCalledWith(_mockRecipeMasterInactive.cid, { notes: notes });
       done();
@@ -188,16 +169,16 @@ describe('NoteListComponent', (): void => {
     const _mockRecipeMasterInactive: RecipeMaster = mockRecipeMasterInactive();
     const _mockRecipeVariantIncomplete: RecipeVariant = mockRecipeVariantIncomplete();
     const notes: string[] = [ 'a', 'b', 'c' ];
-    noteCmp.recipeService.updateRecipeVariantById = jest.fn()
+    component.recipeService.updateRecipeVariantById = jest.fn()
       .mockReturnValue(of(_mockRecipeVariantIncomplete));
-    noteCmp.notes = notes;
-    noteCmp.recipeVariantId = _mockRecipeVariantIncomplete.cid;
-    noteCmp.recipeMasterId = _mockRecipeMasterInactive.cid;
-    const variantSpy: jest.SpyInstance = jest.spyOn(noteCmp.recipeService, 'updateRecipeVariantById');
+    component.notes = notes;
+    component.recipeVariantId = _mockRecipeVariantIncomplete.cid;
+    component.recipeMasterId = _mockRecipeMasterInactive.cid;
+    const variantSpy: jest.SpyInstance = jest.spyOn(component.recipeService, 'updateRecipeVariantById');
 
     fixture.detectChanges();
 
-    noteCmp.patchRecipeNotes();
+    component.patchRecipeNotes();
     setTimeout((): void => {
       expect(variantSpy).toHaveBeenCalledWith(
         _mockRecipeMasterInactive.cid,
@@ -209,14 +190,14 @@ describe('NoteListComponent', (): void => {
   });
 
   test('should submit notes', (done: jest.DoneCallback): void => {
-    noteCmp.toastService.presentToast = jest.fn();
-    noteCmp.patchRecipeNotes = jest.fn()
+    component.toastService.presentToast = jest.fn();
+    component.patchRecipeNotes = jest.fn()
       .mockReturnValue(of({}));
-    const toastSpy: jest.SpyInstance = jest.spyOn(noteCmp.toastService, 'presentToast');
+    const toastSpy: jest.SpyInstance = jest.spyOn(component.toastService, 'presentToast');
 
     fixture.detectChanges();
 
-    noteCmp.submitUpdatedNotes();
+    component.submitUpdatedNotes();
     setTimeout((): void => {
       expect(toastSpy).toHaveBeenCalledWith('Updated notes', 1500, 'bottom');
       done();
@@ -225,15 +206,15 @@ describe('NoteListComponent', (): void => {
 
   test('should get an error submitting notes', (done: jest.DoneCallback): void => {
     const _mockError: Error = new Error('test-error');
-    noteCmp.toastService.presentToast = jest.fn();
-    noteCmp.patchRecipeNotes = jest.fn()
+    component.toastService.presentToast = jest.fn();
+    component.patchRecipeNotes = jest.fn()
       .mockReturnValue(throwError(_mockError));
-    noteCmp.errorReporter.handleUnhandledError = jest.fn();
-    const errorSpy: jest.SpyInstance = jest.spyOn(noteCmp.errorReporter, 'handleUnhandledError');
+    component.errorReporter.handleUnhandledError = jest.fn();
+    const errorSpy: jest.SpyInstance = jest.spyOn(component.errorReporter, 'handleUnhandledError');
 
     fixture.detectChanges();
 
-    noteCmp.submitUpdatedNotes();
+    component.submitUpdatedNotes();
     setTimeout((): void => {
       expect(errorSpy).toHaveBeenCalledWith(_mockError);
       done();
@@ -242,7 +223,7 @@ describe('NoteListComponent', (): void => {
 
   test('should display a list of notes', (): void => {
     const notes: string[] = [ 'test1', 'test2', 'test3' ];
-    noteCmp.notes = notes;
+    component.notes = notes;
 
     fixture.detectChanges();
 
