@@ -81,10 +81,10 @@
           <!-- Selected Grain Bill -->
           <ng-container *ngIf="variant.grains.length">
 
-            <grain-bill [grainBill]="variant.grains"
-                        [onRecipeAction]="onRecipeAction"
-                        [refreshPipes]="refreshPipes">
-            </grain-bill>
+            <app-grain-bill (openIngredientFormEvent)="openIngredientFormModal('grains', $event)"
+                            [grainBill]="variant.grains"
+                            [refresh]="refreshIngredients">
+            </app-grain-bill>
 
           </ng-container>
 
@@ -92,10 +92,10 @@
           <!-- Selected Hops Schedule -->
           <ng-container *ngIf="variant.hops.length">
 
-            <hops-schedule  [variant]="variant"
-                            [onRecipeAction]="onRecipeAction"
-                            [refreshPipes]="refreshPipes">
-            </hops-schedule>
+            <app-hops-schedule  (openIngredientFormEvent)="openIngredientFormModal('hops', $event)"
+                                [variant]="variant"
+                                [refresh]="refreshIngredients">
+            </app-hops-schedule>
 
           </ng-container>
 
@@ -103,9 +103,9 @@
           <!-- Selected Yeast Batch -->
           <ng-container *ngIf="variant.yeast.length">
 
-            <yeast-batch  [yeastBatch]="variant.yeast"
-                          [onRecipeAction]="onRecipeAction">
-            </yeast-batch>
+            <app-yeast-batch  (openIngredientFormEvent)="openIngredientFormModal('yeast', $event)"
+                              [yeastBatch]="variant.yeast">
+            </app-yeast-batch>
 
           </ng-container>
 
@@ -113,9 +113,9 @@
           <!-- Other Ingredients -->
           <ng-container *ngIf="variant.otherIngredients.length">
 
-            <other-ingredients  [otherIngredients]="variant.otherIngredients"
-                                [onRecipeAction]="onRecipeAction">
-            </other-ingredients>
+            <app-other-ingredients  (openIngredientFormEvent)="openIngredientFormModal('otherIngredients', $event)"
+                                    [otherIngredients]="variant.otherIngredients">
+            </app-other-ingredients>
 
           </ng-container>
 
@@ -140,9 +140,10 @@
 
         <ion-col *ngIf="variant.processSchedule.length">
 
-          <process-list [schedule]="variant.processSchedule"
-                        [onRecipeAction]="onRecipeAction">
-          </process-list>
+          <app-process-list (openProcessModalEvent)="openProcessModalHelper($event)"
+                            (reorderEvent)="onReorder($event)"
+                            [schedule]="variant.processSchedule">
+          </app-process-list>
 
         </ion-col>
 
@@ -168,12 +169,11 @@
         <!-- Recipe master note list -->
         <ion-col size="12">
 
-          <note-list  [dismissFn]="onNoteDismiss"
-                      [recipeMasterId]="master.cid"
-                      [recipeVariantId]="formType === 'variant' ? variant.cid: undefined"
-                      [notes]="formType === 'master'? master.notes: variant.notes"
-                      #noteList>
-          </note-list>
+          <app-note-list  [recipeMasterId]="master.cid"
+                          [recipeVariantId]="formType === 'variant' ? variant.cid: undefined"
+                          [notes]="formType === 'master'? master.notes: variant.notes"
+                          #noteList>
+          </app-note-list>
 
         </ion-col>
 

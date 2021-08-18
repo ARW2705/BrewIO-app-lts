@@ -40,16 +40,8 @@ export class RecipeFormPage implements OnInit, OnDestroy {
   isLoaded: boolean = false;
   isGeneralFormComplete: boolean = false;
   master: RecipeMaster = null;
-  onNoteDismiss: (index?: number) => (data: object) => void;
-  onRecipeAction: (actionName: string, options?: any[]) => void;
   previousRoute: string = '/tabs/recipe';
-  recipeActions: object = {
-    openIngredientFormModal: this.openIngredientFormModal.bind(this),
-    openNoteModal: this.openNoteModal.bind(this),
-    openProcessModal: this.openProcessModal.bind(this),
-    onReorder: this.onReorder.bind(this)
-  };
-  refreshPipes: boolean = false;
+  refreshIngredients: boolean = false;
   styleLibrary: Style[] = null;
   submitSuccessMessage: string = '';
   textarea: string = '';
@@ -72,10 +64,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
     public router: Router,
     public toastService: ToastService,
     public utilService: UtilityService
-  ) {
-    this.onNoteDismiss = this.onNoteModalDismiss.bind(this);
-    this.onRecipeAction = this.onRecipeActionHandler.bind(this);
-  }
+  ) { }
 
   /***** Lifecycle Hooks *****/
 
@@ -143,7 +132,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
             options['variantData']
           );
           this.isLoaded = true;
-          this.refreshPipes = !this.refreshPipes;
+          this.refreshIngredients = !this.refreshIngredients;
           return of(null);
         }),
         catchError(this.errorReporter.handleGenericCatchError())
@@ -310,11 +299,11 @@ export class RecipeFormPage implements OnInit, OnDestroy {
     };
 
     if (type === 'grains') {
-      data['ingredientLibrary'] = this.grainsLibrary;
+      Object.assign(data, { ingredientLibrary: this.grainsLibrary });
     } else if (type === 'hops') {
-      data['ingredientLibrary'] = this.hopsLibrary;
+      Object.assign(data, { ingredientLibrary: this.hopsLibrary });
     } else if (type === 'yeast') {
-      data['ingredientLibrary'] = this.yeastLibrary;
+      Object.assign(data, { ingredientLibrary: this.yeastLibrary });
     }
     // No additional data needed for an 'other ingredient'
 
@@ -485,6 +474,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
    * @return: none
    */
   async openProcessModal(type: string, toUpdate?: Process, index?: number): Promise<void> {
+    console.log('PROCESS MODAL', type);
     const modal: HTMLIonModalElement = await this.modalCtrl.create({
       component: ProcessFormPage,
       componentProps: this.getProcessFormModalOptions(type, toUpdate)
@@ -497,6 +487,18 @@ export class RecipeFormPage implements OnInit, OnDestroy {
       );
 
     return await modal.present();
+  }
+
+  /**
+   * Helper function for event emitted from child component to unpack multiple params
+   *
+   * @param: eventParams - array of params to be applied to process modal in the order
+   *   of types 'string', 'Process', then 'number'
+   *
+   * @return: none
+   */
+  openProcessModalHelper(eventParams: [string, Process, number]): void {
+    this.openProcessModal(...eventParams);
   }
 
   /***** End Modals *****/
@@ -1132,7 +1134,7 @@ export class RecipeFormPage implements OnInit, OnDestroy {
     }
 
     this.sortIngredients(type);
-    this.refreshPipes = !this.refreshPipes;
+    this.refreshIngredients = !this.refreshIngredients;
   }
 
   /***** End ingredient list *****/
@@ -1160,22 +1162,6 @@ export class RecipeFormPage implements OnInit, OnDestroy {
    */
   isValidFormType(): boolean {
     return this.formType === 'master' || this.formType === 'variant';
-  }
-
-  /**
-   * Handle calls on functions that have been passed to a sub component
-   *
-   * @params: actionName - the method name called
-   * @params: options - optional method parameters
-   *
-   * @return: none
-   */
-  onRecipeActionHandler(actionName: string, options: any[]): void {
-    try {
-      this.recipeActions[actionName](...options);
-    } catch (error) {
-      console.log('Recipe action error', actionName, ...options, error);
-    }
   }
 
   /**
