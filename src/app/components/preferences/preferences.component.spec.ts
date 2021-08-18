@@ -534,7 +534,7 @@ describe('PreferencesComponent', (): void => {
 
     fixture.detectChanges();
 
-    const selects: NodeList = global.document.querySelectorAll('app-preferences-select');
+    const selects: NodeList = global.document.querySelectorAll('app-form-select');
     expect(selects.length).toEqual(2);
     const toggles: NodeList = global.document.querySelectorAll('app-preferences-toggle');
     expect(toggles.length).toEqual(5);
