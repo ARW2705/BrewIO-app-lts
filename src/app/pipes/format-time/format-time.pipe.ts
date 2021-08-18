@@ -1,10 +1,17 @@
 /* Module imports */
 import { Pipe, PipeTransform } from '@angular/core';
 
+/* Service imports */
+import { TimerService } from '../../services/services';
+
+
 @Pipe({
   name: 'formatTime',
 })
 export class FormatTimePipe implements PipeTransform {
+
+  constructor(public timerService: TimerService) {}
+
   /**
    * Format time value to text
    */
@@ -25,16 +32,6 @@ export class FormatTimePipe implements PipeTransform {
    * @return: formatted string of minutes in n hours m minutes
    */
   formatDuration(duration: number): string {
-    let result: string = 'Duration: ';
-    if (duration > 59) {
-      const hours = Math.floor(duration / 60);
-      result += `${hours} hour${hours > 1 ? 's' : ''}`;
-      duration = duration % 60;
-      result += (duration) ? ' ' : '';
-    }
-    if (duration) {
-      result += `${duration} minute${duration > 1 ? 's' : ''}`;
-    }
-    return result;
+    return this.timerService.getFormattedDurationString(duration);
   }
 }
