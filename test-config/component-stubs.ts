@@ -10,7 +10,7 @@ export { ConfirmationPageStub } from './component-stubs/confirmation-stub.page';
 export { HeaderComponentStub } from './component-stubs/header-stub.component';
 export { NoteListComponentStub } from './component-stubs/note-list-stub.component';
 export { IngredientListComponentStub } from './component-stubs/ingredient-list-stub.component';
-export { ActiveBatchesComponentStub } from './component-stubs/active-batches-stub.component';
+export { ActiveBatchListComponentStub } from './component-stubs/active-batch-list-stub.component';
 export { InventoryComponentStub } from './component-stubs/inventory-stub.component';
 export { AboutComponentStub } from './component-stubs/about-stub.component';
 export { PreferencesComponentStub } from './component-stubs/preferences-stub.component';

@@ -9,7 +9,7 @@ import { Batch } from '../../src/app/shared/interfaces';
 import { ActiveBatchListComponent } from '../../src/app/components/active-batch-list/active-batch-list.component';
 
 @Component({
-  selector: 'active-batches',
+  selector: 'app-active-batch-list',
   template: '',
   providers: [
     { provide: ActiveBatchListComponent, useClass: ActiveBatchListComponentStub }

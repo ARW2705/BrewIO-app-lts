@@ -5,7 +5,7 @@ import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { IdServiceStub } from '../service-stubs';
 
 /* Interface imports */
-import { CalendarDate } from '../../src/app/shared/interfaces';
+import { CalendarDate, CalendarProcess } from '../../src/app/shared/interfaces';
 
 /* Service imports */
 import { IdService } from '../../src/app/services/services';
@@ -22,34 +22,41 @@ import { CalendarComponent } from '../../src/app/components/calendar/calendar.co
   ]
 })
 export class CalendarComponentStub implements OnInit, OnChanges {
-  @Input() stepData: object;
+  @Input() calendarProcess: CalendarProcess;
   currentDate: moment.Moment = null;
   displayDate: moment.Moment = null;
   editType: string = '';
-  isProjectedSelection: boolean = false;
   month: CalendarDate[][] = [];
   projectedDates: CalendarDate[] = [];
-  refreshChildInputs: boolean = false;
-  selectedDay: CalendarDate = null;
   startDate: CalendarDate = null;
-  weekdays: string[] = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  weekCount: number = 6;
+  weekLength: number = 7;
 
   constructor(public idService: IdService) {}
 
   ngOnInit() {}
-  ngOnChanges() {}
-  addToProjectedDates() {}
-  changeMonthYear() {}
-  fillDates(...options: any[]): any {}
+  ngOnChanges(): any {}
+  buildCalendar(): any {}
+  buildCalendarDate(): any {}
+  buildMonthMatrix(): any {}
+  buildWeekArray(): any {}
+  addToProjectedDates(): any {}
+  changeMonth(): any {}
   getFinal(): any {}
+  getFirstDateForCalendarMatrix(): any {}
+  getFirstDayOfWeekInDisplayedMonth(): any {}
+  handleDateButtonClick(): any {}
   initCalendar(): any {}
   isMonth(...options: any[]): any {}
   isProjected(...options: any[]): any {}
   isStart(...options: any[]): any {}
   isToday(...options: any[]): any {}
-  populateCalendar(): any {}
+  mapProjectedDatesToAlerts(): any {}
+  removeProjectedDateByIndex(): any {}
   resetProjectedDates(): any {}
   selectStartDate(...options: any[]): any {}
+  setInitialProjectedDate(): any {}
+  setInitialDates(): any {}
   toggleEdit(...options: any[]): any {}
   toggleProjectedDate(...options: any[]): any {}
   updateView(): any {}
