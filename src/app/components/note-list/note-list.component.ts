@@ -14,12 +14,11 @@ import { ErrorReportingService, RecipeService, ToastService } from '../../servic
 
 
 @Component({
-  selector: 'note-list',
+  selector: 'app-note-list',
   templateUrl: './note-list.component.html',
   styleUrls: ['./note-list.component.scss'],
 })
 export class NoteListComponent implements OnInit, OnDestroy {
-  @Input() dismissFn: (index?: number) => (data: object) => void;
   @Input() recipeMasterId: string;
   @Input() recipeVariantId: string;
   @Input() notes: string[] = [];
@@ -42,18 +41,6 @@ export class NoteListComponent implements OnInit, OnDestroy {
   }
 
   /***** End Lifecycle Hooks *****/
-
-  /**
-   * Get callback function for modal on dismiss; if a dismiss function was supplied to component
-   * use that function, else use default onNoteModalDismiss function
-   *
-   * @param: [index] - optional array index that was modified
-   *
-   * @return: modal dismiss callback function
-   */
-  getModalDismissFn(index?: number): (date: object) => void {
-    return this.dismissFn ? this.dismissFn(index) : this.onNoteModalDismiss(index);
-  }
 
   /**
    * Get note form modal options
@@ -106,7 +93,7 @@ export class NoteListComponent implements OnInit, OnDestroy {
       component: NoteFormPage,
       componentProps: this.getModalOptions(index)
     });
-    from(modal.onDidDismiss()).subscribe(this.getModalDismissFn(index));
+    from(modal.onDidDismiss()).subscribe(this.onNoteModalDismiss(index));
     return await modal.present();
   }
 

@@ -1,5 +1,4 @@
 .border-bottom-medium {
-  /* Display */
   border-bottom: 2px solid var(--ion-color-medium);
 }
 
@@ -11,7 +10,6 @@
   --padding-end: 0;
   --padding-start: 0;
   --padding-top: 0;
-
   --inner-padding-bottom: 0;
   --inner-padding-end: 0;
   --inner-padding-start: 0;
@@ -29,7 +27,6 @@
 }
 
 .note-container {
-  /* Text */
   align-items: center;
 }
 
@@ -43,8 +40,8 @@
   font-size: 1.3rem;
 }
 
+
 ion-icon {
-  /* Text */
   font-size: 2.5em;
 }
 
