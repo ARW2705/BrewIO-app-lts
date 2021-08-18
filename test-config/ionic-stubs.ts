@@ -43,3 +43,5 @@ export { LoadingStub } from './ionic-stubs/loading-stub';
 export { LoadingControllerStub } from './ionic-stubs/loading-controller-stub';
 export { IonContentStub } from './ionic-stubs/ion-content-stub';
 export { Renderer2Stub } from './ionic-stubs/renderer2-stub';
+export { QueryListStub } from './ionic-stubs/query-list-stub';
+export { ViewContainerRefStub } from './ionic-stubs/view-container-ref-stub';
