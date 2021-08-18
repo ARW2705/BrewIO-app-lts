@@ -1,6 +1,6 @@
 /* Module imports */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
@@ -16,14 +16,14 @@ import { ProcessManualComponent } from './process-manual.component';
 
 
 describe('ProcessManualComponent', (): void => {
-  let fixture: ComponentFixture<ProcessManualComponent>;
-  let processCmp: ProcessManualComponent;
   configureTestBed();
+  let fixture: ComponentFixture<ProcessManualComponent>;
+  let component: ProcessManualComponent;
 
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
       declarations: [ ProcessManualComponent ],
-      schemas: [ NO_ERRORS_SCHEMA ]
+      schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
     await TestBed.compileComponents();
   })()
@@ -32,13 +32,13 @@ describe('ProcessManualComponent', (): void => {
 
   beforeEach((): void => {
     fixture = TestBed.createComponent(ProcessManualComponent);
-    processCmp = fixture.componentInstance;
+    component = fixture.componentInstance;
   });
 
   test('should create the component', (): void => {
     fixture.detectChanges();
 
-    expect(processCmp).toBeDefined();
+    expect(component).toBeDefined();
   });
 
   test('should render a manual process', (): void => {
@@ -47,21 +47,15 @@ describe('ProcessManualComponent', (): void => {
         return process.type === 'manual';
       });
     _mockProcess.expectedDuration = 10;
-
-    processCmp.stepData = _mockProcess;
+    component.manualProcess = _mockProcess;
 
     fixture.detectChanges();
 
-    const ionCols: NodeList = fixture.nativeElement.querySelectorAll('ion-col');
-
-    const nameCol: HTMLElement = <HTMLElement>ionCols.item(0);
-    expect(nameCol.children[0].textContent).toMatch(_mockProcess.name);
-
-    const contentCol: HTMLElement = <HTMLElement>ionCols.item(1);
-    const description: HTMLElement = <HTMLElement>contentCol.children[0];
-    expect(description.textContent).toMatch(`Description: ${_mockProcess.description}`);
-    const duration: HTMLElement = <HTMLElement>contentCol.children[1];
-    expect(duration.textContent).toMatch('Expected Duration: 10 minutes');
+    const header: HTMLElement = fixture.nativeElement.querySelector('app-process-header');
+    expect(header['headerText']).toMatch(_mockProcess.name);
+    expect(header['isPreview']).toBe(false);
+    const preview: HTMLElement = fixture.nativeElement.querySelector('app-process-preview-content');
+    expect(preview['process']).toStrictEqual(_mockProcess);
   });
 
 });
