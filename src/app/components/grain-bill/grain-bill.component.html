@@ -1,22 +1,15 @@
 <div id="container">
-
   <ion-label class="recipe-group-label">
     Grain Bill
   </ion-label>
-
   <ion-list lines="none"
             class="ion-no-padding list-border">
-
     <ng-container *ngFor="let grains of grainBill; index as i; last as isLast">
-
       <app-grain-bill-item  (openIngredientFormButtonEvent)="openIngredientFormModal(grains)"
                             [grains]="grains"
                             [isLast]="isLast"
                             [ratio]="ratios[i]">
       </app-grain-bill-item>
-
     </ng-container>
-
   </ion-list>
-
 </div>

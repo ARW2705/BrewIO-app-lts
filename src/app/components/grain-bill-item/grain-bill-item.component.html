@@ -1,25 +1,19 @@
 <ion-item class="item-buttons">
-
   <ion-grid class="ion-no-padding">
-
     <button (click)="openIngredientFormModal()"
             [ngClass]="{
               'item-button': true,
               'border-bottom-medium': !isLast
             }">
-
       <ion-row>
-
         <ion-col  size="2"
                   class="ion-align-self-center">
           <ion-icon color="primary"
                     name="create-outline">
           </ion-icon>
         </ion-col>
-
         <ion-col  size="10"
                   class="ingredient-text-container">
-
           <ion-row>
             <ion-col  size="8"
                       class="col-left">
@@ -30,7 +24,6 @@
               {{ grains.quantity | unitConversion:'weightLarge':true }}
             </ion-col>
           </ion-row>
-
           <ion-row>
             <ion-col class="col-left">
               {{ grains.grainType.gravity | unitConversion:'density':true }}
@@ -45,13 +38,8 @@
               {{ ratio }}
             </ion-col>
           </ion-row>
-
         </ion-col>
-
       </ion-row>
-
     </button>
-
   </ion-grid>
-
 </ion-item>
