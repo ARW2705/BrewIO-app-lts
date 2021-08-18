@@ -1,7 +1,10 @@
+/* Module imports */
 import { Component, Input, OnInit } from '@angular/core';
 
+/* Interface imports */
 import { Timer, TimerProcess } from '../../shared/interfaces';
 
+/* Service imports */
 import { IdService, TimerService } from '../../services/services';
 
 
