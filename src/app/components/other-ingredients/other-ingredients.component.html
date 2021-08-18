@@ -1,21 +1,14 @@
 <div id="container">
-
   <ion-label class="recipe-group-label">
     Other Ingredients
   </ion-label>
-
   <ion-list lines="none"
             class="ion-no-padding list-border">
-
     <ng-container *ngFor="let other of otherIngredients; index as i; last as isLast">
-
       <app-other-ingredients-item (openIngredientFormButtonEvent)="openIngredientFormModal(other)"
                                   [isLast]="isLast"
                                   [other]="other">
       </app-other-ingredients-item>
-
     </ng-container>
-
   </ion-list>
-
 </div>
