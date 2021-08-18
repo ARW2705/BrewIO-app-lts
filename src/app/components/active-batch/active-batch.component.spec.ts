@@ -1,19 +1,15 @@
 /* Module imorts */
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockBatch, mockErrorReport } from '../../../../test-config/mock-models';
-import { AnimationsServiceStub, ErrorReportingServiceStub, IdServiceStub, ProcessServiceStub, ToastServiceStub, UtilityServiceStub } from '../../../../test-config/service-stubs';
+import { mockBatch } from '../../../../test-config/mock-models';
 
 /* Interface imports */
-import { Batch, ErrorReport } from '../../shared/interfaces';
-
-/* Service imports */
-import { AnimationsService, ErrorReportingService, IdService, ProcessService, ToastService, UtilityService } from '../../services/services';
+import { Batch } from '../../shared/interfaces';
 
 /* Component imports */
 import { ActiveBatchComponent } from './active-batch.component';
@@ -62,11 +58,11 @@ describe('ActiveBatchComponent', () => {
     fixture.detectChanges();
 
     const summaryContainer: HTMLElement = fixture.nativeElement.querySelector('.summary-text-container');
-    expect(summaryContainer.children[0].textContent.toLowerCase()).toMatch(`${_mockBatch.contextInfo.recipeMasterName} • ${_mockBatch.contextInfo.recipeVariantName}`);
-    expect(summaryContainer.children[1].textContent.toLowerCase()).toMatch(`next step: ${ _mockBatch.process.schedule[_mockBatch.process.currentStep].name.toLowerCase()}`);
-    expect(summaryContainer.children[2].textContent).toMatch('Started on ');
-    expect(summaryContainer.children[2].textContent).toMatch('January 1');
-
+    expect(summaryContainer.children[0].textContent.toLowerCase())
+      .toMatch(`${_mockBatch.contextInfo.recipeMasterName} • ${_mockBatch.contextInfo.recipeVariantName}`);
+    expect(summaryContainer.children[1].textContent.toLowerCase())
+      .toMatch(`next step: ${ _mockBatch.process.schedule[_mockBatch.process.currentStep].name.toLowerCase()}`);
+    expect(summaryContainer.children[2].textContent).toMatch('Started on Wed, Jan 1');
     const slidingButton: HTMLElement = fixture.nativeElement.querySelector('.sliding-button-container');
     expect(slidingButton.children[1].textContent).toMatch('Continue');
   });
