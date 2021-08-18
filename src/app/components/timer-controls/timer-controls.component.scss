@@ -1,0 +1,16 @@
+:host {
+  width: 100%;
+}
+
+.timer-controls {
+  /* Display */
+  margin-bottom: 10px;
+  
+  /* Text */
+  text-align: center;
+
+  /* Children */
+  ion-col {
+    padding: 5px;
+  }
+}
