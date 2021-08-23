@@ -1,0 +1,26 @@
+<div *ngIf="control">
+  <ion-item [ngClass]="{
+    'item-valid': !controlErrors && control.valid,
+    'item-error': controlErrors
+  }">
+    <ion-label  [ngClass]="{ 'required': shouldRequire }"
+                position="floating">
+      {{ label | titlecase }}
+    </ion-label>
+    <ion-input  (ionBlur)="onInputBlur()"
+                (ionChange)="onInputChange()"
+                [autocapitalize]="shouldAutocapitalize ? 'on' : 'off'"
+                [autocomplete]="shouldAutocomplete ? 'on' : 'off'"
+                [autocorrect]="shouldAutocorrect ? 'on' : 'off'"
+                [formControl]="control"
+                [required]="shouldRequire ? true : false"
+                [spellcheck]="shouldSpellcheck"
+                [type]="type">
+    </ion-input>
+  </ion-item>
+  <app-form-error *ngIf="showError"
+                  [formName]="formName"
+                  [controlName]="controlName"
+                  [controlErrors]="controlErrors">
+  </app-form-error>
+</div>
