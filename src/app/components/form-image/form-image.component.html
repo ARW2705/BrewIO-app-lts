@@ -1,0 +1,16 @@
+<div>
+  <ion-item>
+    <ion-label>
+      {{ label | titlecase }}
+    </ion-label>
+    <ion-button (click)="openImageModal()"
+                class="image-input">
+      <ion-avatar>
+        <img  *ngIf="image"
+              [src]="image.url"/>
+        <img  *ngIf="!image"
+              [src]="missingImageURL"/>
+      </ion-avatar>
+    </ion-button>
+  </ion-item>
+</div>
