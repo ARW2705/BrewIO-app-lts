@@ -2,7 +2,7 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA, SimpleChange, SimpleChanges } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
-import { FormControl } from '@angular/forms';
+import { FormControl, ValidationErrors } from '@angular/forms';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 /* Test configuration imports */
@@ -10,9 +10,6 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
 import { mockPreferencesSelectOptions } from '../../../../test-config/mock-models';
-
-/* Interface imports */
-import { FormSelectOption } from '../../shared/interfaces';
 
 /* Component imports */
 import { FormSelectComponent } from './form-select.component';
@@ -44,10 +41,11 @@ describe('FormSelectComponent', (): void => {
     component = fixture.componentInstance;
     originalOnChanges = component.ngOnChanges;
     component.ngOnChanges = jest.fn();
-    component.ionChangeEvent = (): void => {};
     component.options = mockPreferencesSelectOptions();
     component.control = new FormControl();
     component.label = 'test-name';
+    component.ionCancelEvent.emit = jest.fn();
+    component.ionChangeEvent.emit = jest.fn();
   });
 
   test('should create the component', (): void => {
@@ -69,12 +67,11 @@ describe('FormSelectComponent', (): void => {
     fixture.detectChanges();
 
     component.ngOnChanges(simpleChanges);
-    expect(setSpy).toHaveBeenNthCalledWith(1, 'control');
-    expect(setSpy).toHaveBeenNthCalledWith(2, 'label');
-    expect(setSpy).toHaveBeenNthCalledWith(3, 'ionChangeEvent');
-    expect(setSpy).toHaveBeenNthCalledWith(4, 'ionCancelEvent');
-    expect(setSpy).toHaveBeenNthCalledWith(5, 'compareWithFn');
-    expect(setSpy).toHaveBeenNthCalledWith(6, 'options');
+    expect(setSpy).toHaveBeenNthCalledWith(1, 'compareWithFn');
+    expect(setSpy).toHaveBeenNthCalledWith(2, 'confirmText');
+    expect(setSpy).toHaveBeenNthCalledWith(3, 'control');
+    expect(setSpy).toHaveBeenNthCalledWith(4, 'dismissText');
+    expect(setSpy).toHaveBeenNthCalledWith(5, 'labelPosition');
   });
 
   test('should set control value on changes', (): void => {
@@ -82,11 +79,6 @@ describe('FormSelectComponent', (): void => {
     component.setDefault = jest.fn();
     const testControl: FormControl = new FormControl();
     component.control = testControl;
-    component.options = [
-      { label: 'first' , value: 1 },
-      { label: 'second', value: 2 },
-      { label: 'third' , value: 3 }
-    ];
     const valueChange: SimpleChange = new SimpleChange(null, 2, true);
     const simpleChanges: SimpleChanges = { value: valueChange };
 
@@ -96,51 +88,113 @@ describe('FormSelectComponent', (): void => {
     expect(component.control.value).toEqual(2);
   });
 
+  test('should check for errors', (): void => {
+    fixture.detectChanges();
+
+    const formError: ValidationErrors = { maxlength: true };
+    component.control.setErrors(formError);
+    component.control.markAsTouched();
+    component.checkForErrors();
+    expect(component.controlErrors).toStrictEqual(formError);
+    expect(component.showError).toBe(true);
+  });
+
+  test('should handle ion cancel event', (): void => {
+    component.checkForErrors = jest.fn();
+    const checkSpy: jest.SpyInstance = jest.spyOn(component, 'checkForErrors');
+    const emitSpy: jest.SpyInstance = jest.spyOn(component.ionCancelEvent, 'emit');
+
+    fixture.detectChanges();
+
+    const event: CustomEvent = new CustomEvent('test');
+    component.ionCancel(event);
+    expect(emitSpy).toHaveBeenCalledWith(event);
+    expect(checkSpy).toHaveBeenCalled();
+  });
+
+  test('should handle ion change event', (): void => {
+    component.checkForErrors = jest.fn();
+    const checkSpy: jest.SpyInstance = jest.spyOn(component, 'checkForErrors');
+    const emitSpy: jest.SpyInstance = jest.spyOn(component.ionChangeEvent, 'emit');
+
+    fixture.detectChanges();
+
+    const event: CustomEvent = new CustomEvent('test');
+    component.ionChange(event);
+    expect(emitSpy).toHaveBeenCalledWith(event);
+    expect(checkSpy).toHaveBeenCalled();
+  });
+
   test('should set defaults on required properties', (): void => {
     fixture.detectChanges();
 
-    component.control = undefined;
-    component.label = undefined;
-    component.ionChangeEvent = undefined;
-    component.ionCancelEvent = undefined;
     component.compareWithFn = undefined;
-    component.options = undefined;
-    component.setDefault('control');
-    expect(component.control).toBeInstanceOf(FormControl);
-    component.setDefault('label');
-    expect(component.label).toBeDefined();
-    expect(component.label.length).toEqual(0);
-    component.setDefault('ionChangeEvent');
-    expect(component.ionChangeEvent).toBeInstanceOf(Function);
-    expect(component.ionChangeEvent()).toBeUndefined();
-    component.setDefault('ionCancelEvent');
-    expect(component.ionCancelEvent).toBeInstanceOf(Function);
-    expect(component.ionCancelEvent()).toBeUndefined();
+    component.confirmText = undefined;
+    component.control = undefined;
+    component.dismissText = undefined;
+    component.labelPosition = undefined;
+    component.setDefault('none');
+    expect(component.compareWithFn).toBeUndefined();
+    expect(component.confirmText).toBeUndefined();
+    expect(component.control).toBeUndefined();
+    expect(component.dismissText).toBeUndefined();
+    expect(component.labelPosition).toBeUndefined();
     component.setDefault('compareWithFn');
     expect(component.compareWithFn).toBeInstanceOf(Function);
+    component.setDefault('confirmText');
+    expect(component.confirmText).toMatch('Okay');
     const compareObj: object = {};
     expect(component.compareWithFn(compareObj, compareObj)).toBe(true);
-    component.setDefault('options');
-    expect(Array.isArray(component.options)).toBe(true);
-    component.setDefault('not-covered');
+    component.setDefault('control');
     expect(component.control).toBeInstanceOf(FormControl);
-    expect(component.label).toBeDefined();
-    expect(component.label.length).toEqual(0);
-    expect(component.ionChangeEvent).toBeInstanceOf(Function);
-    expect(component.ionCancelEvent).toBeInstanceOf(Function);
-    expect(component.compareWithFn).toBeInstanceOf(Function);
-    expect(Array.isArray(component.options)).toBe(true);
-});
+    component.setDefault('dismissText');
+    expect(component.dismissText).toMatch('Dismiss');
+    component.setDefault('labelPosition');
+    expect(component.labelPosition).toMatch('floating');
+  });
 
-  test('should render the template', (): void => {
+  test('should render the template without errors', (): void => {
+    component.confirmText = 'confirm';
+    component.control = new FormControl();
+    component.dismissText = 'dismiss';
+    component.formName = 'form';
+    component.labelPosition = 'position';
+    component.compareWithFn = (o1: any, o2: any): boolean => o1 === o2;
+    component.shouldRequire = false;
+
     fixture.detectChanges();
 
     const label: HTMLElement = global.document.querySelector('ion-label');
     expect(label.textContent).toMatch('Test-name');
+    const select: HTMLElement = global.document.querySelector('ion-select');
+    expect(select['cancelText']).toMatch('dismiss');
+    expect(select['okText']).toMatch('confirm');
     const options: NodeList = global.document.querySelectorAll('ion-select-option');
     expect(options.item(0).textContent).toMatch('Label1');
     expect(options.item(1).textContent).toMatch('Label2');
     expect(options.item(2).textContent).toMatch('Label3');
+    const error: HTMLElement = global.document.querySelector('app-form-error');
+    expect(error).toBeNull();
+  });
+
+  test('should render the template without errors', (): void => {
+    component.confirmText = 'confirm';
+    component.control = new FormControl();
+    component.controlName = 'control';
+    component.dismissText = 'dismiss';
+    component.formName = 'form';
+    component.labelPosition = 'position';
+    component.compareWithFn = (o1: any, o2: any): boolean => o1 === o2;
+    component.shouldRequire = false;
+    component.showError = true;
+    component.controlErrors = { maxlength: true };
+
+    fixture.detectChanges();
+
+    const error: HTMLElement = global.document.querySelector('app-form-error');
+    expect(error['formName']).toMatch('form');
+    expect(error['controlName']).toMatch('control');
+    expect(error['controlErrors']).toStrictEqual({ maxlength: true });
   });
 
 });

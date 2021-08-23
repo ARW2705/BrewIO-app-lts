@@ -5,6 +5,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
+import { FormErrorComponentModule } from '../form-error/form-error.module';
 import { FormSelectComponent } from './form-select.component';
 
 
@@ -12,6 +13,7 @@ import { FormSelectComponent } from './form-select.component';
   imports: [
     CommonModule,
     IonicModule,
+    FormErrorComponentModule,
     FormsModule,
     ReactiveFormsModule
   ],
