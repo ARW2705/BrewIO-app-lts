@@ -1,8 +1,7 @@
 /* Module imports */
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ModalController } from '@ionic/angular';
-import { Subject, from } from 'rxjs';
+import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 /* Default imports */
@@ -11,24 +10,22 @@ import { defaultImage } from '../../shared/defaults';
 /* Interface imports */
 import { Image, User } from '../../shared/interfaces';
 
-/* Page imports */
-import { ImageFormPage } from '../../pages/forms/image-form/image-form.page';
-
 /* Service imports */
 import { ErrorReportingService, ImageService, ToastService, UserService } from '../../services/services';
 
 
 @Component({
-  selector: 'profile',
+  selector: 'app-profile',
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss']
 })
 export class ProfileComponent implements OnInit, OnDestroy {
+  _defaultImage: Image = defaultImage();
   breweryLabelImage: Image;
-  defaultImage: Image = defaultImage();
   destroy$: Subject<boolean> = new Subject<boolean>();
   editing: string = '';
   isLoggedIn: boolean = false;
+  maxCharLimit: number = 50;
   user: User = null;
   userForm: FormGroup = null;
   userImage: Image;
@@ -37,12 +34,11 @@ export class ProfileComponent implements OnInit, OnDestroy {
     public errorReporter: ErrorReportingService,
     public formBuilder: FormBuilder,
     public imageService: ImageService,
-    public modalCtrl: ModalController,
     public toastService: ToastService,
     public userService: UserService
   ) {
-    this.breweryLabelImage = this.defaultImage;
-    this.userImage = this.defaultImage;
+    this.breweryLabelImage = this._defaultImage;
+    this.userImage = this._defaultImage;
   }
 
   /***** Lifecycle Hooks *****/
@@ -73,23 +69,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
   /***** Form Methods *****/
 
   /**
-   * Get image data to pass to modal
-   *
-   * @params: imageType - the type of image to add, either 'user' or 'brewery'
-   *
-   * @return: modal options object or null if image is the default image
-   */
-  getImageModalOptions(imageType: string): object {
-    let options: { image: Image } = null;
-    if (imageType === 'user' && !this.imageService.hasDefaultImage(this.userImage)) {
-      options = { image: this.userImage };
-    } else if (imageType === 'brewery' && !this.imageService.hasDefaultImage(this.breweryLabelImage)) {
-      options = { image: this.breweryLabelImage };
-    }
-    return options;
-  }
-
-  /**
    * Create form with profile values in form fields
    *
    * @params: user - user profile object
@@ -104,11 +83,11 @@ export class ProfileComponent implements OnInit, OnDestroy {
       ],
       firstname: [
         (user && user.firstname ? user.firstname : ''),
-        [Validators.maxLength(50)]
+        [Validators.maxLength(this.maxCharLimit)]
       ],
       lastname: [
         (user && user.lastname ? user.lastname : ''),
-        [Validators.maxLength(50)]
+        [Validators.maxLength(this.maxCharLimit)]
       ]
     });
     if (user.userImage) {
@@ -120,57 +99,19 @@ export class ProfileComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Handle image modal error
+   * Replace a particular image with a new image
    *
-   * @params: none
-   *
-   * @return: modal error handling function
-   */
-  onImageModalError(): (error: string) => void {
-    return (error: string): void => {
-      console.log('modal dismiss error', error);
-      this.toastService.presentErrorToast('Error selecting image');
-    };
-  }
-
-  /**
-   * Handle image modal success
-   *
-   * @params: imageType - the type of image, either 'user' or 'brewery'
-   *
-   * @return: modal success handling function
-   */
-  onImageModalSuccess(imageType: string): (data: object) => void {
-    return (data: object): void => {
-      const _data: Image = data['data'];
-      if (imageType === 'user' && _data) {
-        this.userImage = _data;
-      } else if (imageType === 'brewery' && _data) {
-        this.breweryLabelImage = _data;
-      }
-    };
-  }
-
-  /**
-   * Open image selection modal
-   *
-   * @params: imageType - identifies image as either userImage or breweryLabelImage
+   * @param: imageType - identifier of which image should be replaced
+   * @param: image - the new image to apply
    *
    * @return: none
    */
-  async openImageModal(imageType: string): Promise<void> {
-    const modal: HTMLIonModalElement = await this.modalCtrl.create({
-      component: ImageFormPage,
-      componentProps: this.getImageModalOptions(imageType)
-    });
-
-    from(modal.onDidDismiss())
-      .subscribe(
-        this.onImageModalSuccess(imageType),
-        this.onImageModalError()
-      );
-
-    await modal.present();
+  onImageSelection(imageType: string, image: Image): void {
+    if (imageType === 'userImage') {
+      this.userImage = image;
+    } else if (imageType === 'breweryLabelImage') {
+      this.breweryLabelImage = image;
+    }
   }
 
   /**
@@ -192,7 +133,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
     this.userService.updateUserProfile(userUpdate)
       .subscribe(
         (): void => {
-          this.toastService.presentToast('Profile Updated', 1000);
+          const oneSecond: number = 1000;
+          this.toastService.presentToast('Profile Updated', oneSecond);
         },
         (error: any): void => this.errorReporter.handleUnhandledError(error)
       );

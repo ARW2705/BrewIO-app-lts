@@ -29,7 +29,7 @@ import { ProfileComponent } from './profile.component';
 
 describe('ProfileComponent', (): void => {
   let fixture: ComponentFixture<ProfileComponent>;
-  let profileCmp: ProfileComponent;
+  let component: ProfileComponent;
   let originalOnInit: any;
   let originalOnDestroy: any;
   configureTestBed();
@@ -60,21 +60,21 @@ describe('ProfileComponent', (): void => {
 
   beforeEach((): void => {
     fixture = TestBed.createComponent(ProfileComponent);
-    profileCmp = fixture.componentInstance;
-    originalOnInit = profileCmp.ngOnInit;
-    originalOnDestroy = profileCmp.ngOnDestroy;
-    profileCmp.ngOnInit = jest
+    component = fixture.componentInstance;
+    originalOnInit = component.ngOnInit;
+    originalOnDestroy = component.ngOnDestroy;
+    component.ngOnInit = jest
       .fn();
-    profileCmp.ngOnDestroy = jest
+    component.ngOnDestroy = jest
       .fn();
-    profileCmp.errorReporter.handleUnhandledError = jest
+    component.errorReporter.handleUnhandledError = jest
       .fn();
   });
 
   test('should create the component', (): void => {
     fixture.detectChanges();
 
-    expect(profileCmp).toBeDefined();
+    expect(component).toBeDefined();
   });
 
   describe('Lifecycle', (): void => {
@@ -83,26 +83,26 @@ describe('ProfileComponent', (): void => {
       const _mockUser: User = mockUser();
       const _mockUser$: BehaviorSubject<User> = new BehaviorSubject<User>(_mockUser);
 
-      profileCmp.ngOnInit = originalOnInit;
+      component.ngOnInit = originalOnInit;
 
-      profileCmp.initForm = jest
+      component.initForm = jest
         .fn();
 
-      profileCmp.userService.isLoggedIn = jest
+      component.userService.isLoggedIn = jest
         .fn()
         .mockReturnValue(true);
 
-      profileCmp.userService.getUser = jest
+      component.userService.getUser = jest
         .fn()
         .mockReturnValue(_mockUser$);
 
       fixture.detectChanges();
 
-      profileCmp.ngOnInit();
+      component.ngOnInit();
 
       setTimeout((): void => {
-        expect(profileCmp.user).toStrictEqual(_mockUser);
-        expect(profileCmp.isLoggedIn).toBe(true);
+        expect(component.user).toStrictEqual(_mockUser);
+        expect(component.isLoggedIn).toBe(true);
         done();
       }, 10);
     });
@@ -110,17 +110,17 @@ describe('ProfileComponent', (): void => {
     test('should get an error on component init', (done: jest.DoneCallback): void => {
       const _mockError: Error = new Error('test-error');
 
-      profileCmp.ngOnInit = originalOnInit;
+      component.ngOnInit = originalOnInit;
 
-      profileCmp.userService.getUser = jest
+      component.userService.getUser = jest
         .fn()
         .mockReturnValue(throwError(_mockError));
 
-      const errorSpy: jest.SpyInstance = jest.spyOn(profileCmp.errorReporter, 'handleUnhandledError');
+      const errorSpy: jest.SpyInstance = jest.spyOn(component.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
-      profileCmp.ngOnInit();
+      component.ngOnInit();
 
       setTimeout((): void => {
         expect(errorSpy).toHaveBeenCalledWith(_mockError);
@@ -129,14 +129,14 @@ describe('ProfileComponent', (): void => {
     });
 
     test('should handle component destroy', (): void => {
-      const nextSpy: jest.SpyInstance = jest.spyOn(profileCmp.destroy$, 'next');
-      const completeSpy: jest.SpyInstance = jest.spyOn(profileCmp.destroy$, 'complete');
+      const nextSpy: jest.SpyInstance = jest.spyOn(component.destroy$, 'next');
+      const completeSpy: jest.SpyInstance = jest.spyOn(component.destroy$, 'complete');
 
-      profileCmp.ngOnDestroy = originalOnDestroy;
+      component.ngOnDestroy = originalOnDestroy;
 
       fixture.detectChanges();
 
-      profileCmp.ngOnDestroy();
+      component.ngOnDestroy();
 
       expect(nextSpy).toHaveBeenCalledWith(true);
       expect(completeSpy).toHaveBeenCalled();
@@ -147,49 +147,27 @@ describe('ProfileComponent', (): void => {
 
   describe('Form Methods', (): void => {
 
-    test('should get image modal options', (): void => {
-      const _mockImage1: Image = mockImage();
-      const _mockImage2: Image = mockImage();
-      _mockImage2.url = 'other-url';
-
-      profileCmp.imageService.hasDefaultImage = jest
-        .fn()
-        .mockReturnValueOnce(false)
-        .mockReturnValueOnce(false)
-        .mockReturnValueOnce(true);
-
-      profileCmp.userImage = _mockImage1;
-      profileCmp.breweryLabelImage = _mockImage2;
-
-      fixture.detectChanges();
-
-      expect(profileCmp.getImageModalOptions('user')).toStrictEqual({ image: _mockImage1 });
-      expect(profileCmp.getImageModalOptions('brewery')).toStrictEqual({ image: _mockImage2 });
-      expect(profileCmp.getImageModalOptions('user')).toBeNull();
-      expect(profileCmp.getImageModalOptions('invalid')).toBeNull();
-    });
-
     test('should init the form with values', (): void => {
       const _mockUser: User = mockUser();
 
       fixture.detectChanges();
 
-      profileCmp.initForm(_mockUser);
+      component.initForm(_mockUser);
 
-      const formWithValues: object = profileCmp.userForm.value;
+      const formWithValues: object = component.userForm.value;
       expect(formWithValues['email']).toMatch(_mockUser.email);
       expect(formWithValues['firstname']).toMatch(_mockUser.firstname);
       expect(formWithValues['lastname']).toMatch(_mockUser.lastname);
-      expect(profileCmp.userImage).toStrictEqual(_mockUser.userImage);
-      expect(profileCmp.breweryLabelImage).toStrictEqual(_mockUser.breweryLabelImage);
+      expect(component.userImage).toStrictEqual(_mockUser.userImage);
+      expect(component.breweryLabelImage).toStrictEqual(_mockUser.breweryLabelImage);
 
       delete _mockUser.email;
       delete _mockUser.firstname;
       delete _mockUser.lastname;
       delete _mockUser.userImage;
       delete _mockUser.breweryLabelImage;
-      profileCmp.userImage = null;
-      profileCmp.breweryLabelImage = null;
+      component.userImage = null;
+      component.breweryLabelImage = null;
     });
 
     test('should init the form with values', (): void => {
@@ -204,99 +182,34 @@ describe('ProfileComponent', (): void => {
 
       fixture.detectChanges();
 
-      profileCmp.initForm(_mockUser);
+      component.initForm(_mockUser);
 
-      const formWithOutValues: object = profileCmp.userForm.value;
+      const formWithOutValues: object = component.userForm.value;
       expect(formWithOutValues['email'].length).toEqual(0);
       expect(formWithOutValues['firstname'].length).toEqual(0);
       expect(formWithOutValues['lastname'].length).toEqual(0);
-      expect(profileCmp.userImage).toStrictEqual(_defaultImage);
-      expect(profileCmp.breweryLabelImage).toStrictEqual(_defaultImage);
+      expect(component.userImage).toStrictEqual(_defaultImage);
+      expect(component.breweryLabelImage).toStrictEqual(_defaultImage);
     });
 
-    test('should handle image modal error', (): void => {
-      const toastSpy: jest.SpyInstance = jest.spyOn(profileCmp.toastService, 'presentErrorToast');
-
-      fixture.detectChanges();
-
-      const errorHandler: (error: string) => void = profileCmp.onImageModalError();
-      errorHandler('test-error');
-
-      expect(toastSpy).toHaveBeenCalledWith('Error selecting image');
-    });
-
-    test('should hanlde image modal success', (): void => {
+    test('should handle image selection event', (): void => {
+      const _mockImage: Image = mockImage();
       const _defaultImage: Image = defaultImage();
-      const _mockImage1: Image = mockImage();
-      const _mockImage2: Image = mockImage();
-      _mockImage2.url = 'other-url';
+      component.userImage = _defaultImage;
+      component.breweryLabelImage = _defaultImage;
 
       fixture.detectChanges();
 
-      expect(profileCmp.userImage).toStrictEqual(_defaultImage);
-      expect(profileCmp.breweryLabelImage).toStrictEqual(_defaultImage);
-
-      const userHandler: (data: object) => void = profileCmp.onImageModalSuccess('user');
-      const breweryHandler: (data: object) => void = profileCmp.onImageModalSuccess('brewery');
-      const invalidHandler: (data: object) => void = profileCmp.onImageModalSuccess('invalid');
-      const noneHandler: (data: object) => void = profileCmp.onImageModalSuccess('user');
-
-      userHandler({ data: _mockImage1 });
-      expect(profileCmp.userImage).toStrictEqual(_mockImage1);
-
-      breweryHandler({ data: _mockImage1 });
-      expect(profileCmp.breweryLabelImage).toStrictEqual(_mockImage1);
-
-      invalidHandler({ data: _mockImage2 });
-      expect(profileCmp.userImage).toStrictEqual(_mockImage1);
-      expect(profileCmp.breweryLabelImage).toStrictEqual(_mockImage1);
-
-      noneHandler({ other: _mockImage2 });
-      expect(profileCmp.userImage).toStrictEqual(_mockImage1);
-      expect(profileCmp.breweryLabelImage).toStrictEqual(_mockImage1);
-    });
-
-    test('should open the image modal', (done: jest.DoneCallback): void => {
-      const _stubModal: ModalStub = new ModalStub();
-
-      profileCmp.modalCtrl.create = jest
-        .fn()
-        .mockReturnValue(_stubModal);
-
-      _stubModal.present = jest
-        .fn();
-
-      _stubModal.onDidDismiss = jest
-        .fn()
-        .mockReturnValueOnce(Promise.resolve())
-        .mockReturnValueOnce(Promise.reject());
-
-      profileCmp.onImageModalSuccess = jest
-        .fn()
-        .mockReturnValue((): void => {});
-
-      profileCmp.onImageModalError = jest
-        .fn()
-        .mockReturnValue((): void => {});
-
-      const successSpy: jest.SpyInstance = jest.spyOn(profileCmp, 'onImageModalSuccess');
-      const errorSpy: jest.SpyInstance = jest.spyOn(profileCmp, 'onImageModalError');
-
-      fixture.detectChanges();
-
-      profileCmp.openImageModal('user');
-
-      setTimeout((): void => {
-        expect(successSpy).toHaveBeenCalledWith('user');
-        expect(errorSpy).toHaveBeenCalled();
-        done();
-      }, 10);
+      component.onImageSelection('userImage', _mockImage);
+      expect(component.userImage).toStrictEqual(_mockImage);
+      component.onImageSelection('breweryLabelImage', _mockImage);
+      expect(component.breweryLabelImage).toStrictEqual(_mockImage);
     });
 
     test('should handle a profile update', (done: jest.DoneCallback): void => {
       const _mockImage: Image = mockImage();
 
-      profileCmp.userForm = new FormGroup({
+      component.userForm = new FormGroup({
         email: new FormControl('test@email'),
         firstname: new FormControl('testfirst'),
         lastname: new FormControl('testlast'),
@@ -304,23 +217,20 @@ describe('ProfileComponent', (): void => {
         breweryLabelImage: new FormControl(_mockImage)
       });
 
-      profileCmp.imageService.hasDefaultImage = jest
-        .fn()
+      component.imageService.hasDefaultImage = jest.fn()
         .mockReturnValueOnce(false)
         .mockReturnValueOnce(false);
 
-      profileCmp.userService.updateUserProfile = jest
-        .fn()
+      component.userService.updateUserProfile = jest.fn()
         .mockReturnValue(of({}));
 
-      profileCmp.toastService.presentToast = jest
-        .fn();
+      component.toastService.presentToast = jest.fn();
 
-      const toastSpy: jest.SpyInstance = jest.spyOn(profileCmp.toastService, 'presentToast');
+      const toastSpy: jest.SpyInstance = jest.spyOn(component.toastService, 'presentToast');
 
       fixture.detectChanges();
 
-      profileCmp.onUpdate();
+      component.onUpdate();
 
       setTimeout((): void => {
         expect(toastSpy).toHaveBeenCalledWith('Profile Updated', 1000);
@@ -331,22 +241,22 @@ describe('ProfileComponent', (): void => {
     test('should get an error updating profile', (done: jest.DoneCallback): void => {
       const _mockError: Error = new Error('test-error');
 
-      profileCmp.userForm = new FormGroup({});
+      component.userForm = new FormGroup({});
 
-      profileCmp.imageService.hasDefaultImage = jest
+      component.imageService.hasDefaultImage = jest
         .fn()
         .mockReturnValueOnce(true)
         .mockReturnValueOnce(true);
 
-      profileCmp.userService.updateUserProfile = jest
+      component.userService.updateUserProfile = jest
         .fn()
         .mockReturnValue(throwError(_mockError));
 
-      const errorSpy: jest.SpyInstance = jest.spyOn(profileCmp.errorReporter, 'handleUnhandledError');
+      const errorSpy: jest.SpyInstance = jest.spyOn(component.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
-      profileCmp.onUpdate();
+      component.onUpdate();
 
       setTimeout((): void => {
         expect(errorSpy).toHaveBeenCalledWith(_mockError);
@@ -375,11 +285,11 @@ describe('ProfileComponent', (): void => {
       _mockImage2.url = 'other-url';
       const _mockUser: User = mockUser();
 
-      profileCmp.user = _mockUser;
-      profileCmp.isLoggedIn = true;
-      profileCmp.userImage = _mockImage1;
-      profileCmp.breweryLabelImage = _mockImage2;
-      profileCmp.userForm = new FormGroup({
+      component.user = _mockUser;
+      component.isLoggedIn = true;
+      component.userImage = _mockImage1;
+      component.breweryLabelImage = _mockImage2;
+      component.userForm = new FormGroup({
         email: new FormControl('test@email'),
         firstname: new FormControl('testfirst'),
         lastname: new FormControl('testlast')
@@ -387,27 +297,19 @@ describe('ProfileComponent', (): void => {
 
       fixture.detectChanges();
 
-      const items: NodeList = fixture.nativeElement.querySelectorAll('ion-item');
-
-      const email: HTMLElement = <HTMLElement>items.item(0);
-      expect(email.children[0].textContent).toMatch('Email');
-      expect(email.children[1]['value']).toMatch('test@email');
-
-      const firstName: HTMLElement = <HTMLElement>items.item(1);
-      expect(firstName.children[0].textContent).toMatch('First Name');
-      expect(firstName.children[1]['value']).toMatch('testfirst');
-
-      const lastName: HTMLElement = <HTMLElement>items.item(2);
-      expect(lastName.children[0].textContent).toMatch('Last Name');
-      expect(lastName.children[1]['value']).toMatch('testlast');
-
-      const userImage: HTMLElement = <HTMLElement>items.item(3);
-      expect(userImage.children[0].textContent).toMatch('User Avatar');
-      expect(userImage.children[1].children[0].children[0]['src']).toMatch(_mockImage1.url);
-
-      const breweryImage: HTMLElement = <HTMLElement>items.item(4);
-      expect(breweryImage.children[0].textContent).toMatch('Brewery Image');
-
+      const inputs: NodeList = fixture.nativeElement.querySelectorAll('app-form-input');
+      const email: HTMLElement = <HTMLElement>inputs.item(0);
+      console.log('EMAIL', email.getAttribute('controlName'));
+      expect(email.getAttribute('controlName')).toMatch('email');
+      const firstName: HTMLElement = <HTMLElement>inputs.item(1);
+      expect(firstName.getAttribute('controlName')).toMatch('firstname');
+      const lastName: HTMLElement = <HTMLElement>inputs.item(2);
+      expect(lastName.getAttribute('controlName')).toMatch('lastname');
+      const images: NodeList = fixture.nativeElement.querySelectorAll('app-form-image');
+      const userImage: HTMLElement = <HTMLElement>images.item(0);
+      expect(userImage.getAttribute('label')).toMatch('user avatar');
+      const breweryImage: HTMLElement = <HTMLElement>images.item(1);
+      expect(breweryImage.getAttribute('label')).toMatch('brewery image');
       const updateButton: HTMLElement = fixture.nativeElement.querySelector('.user-button-container');
       expect(updateButton.children[0].textContent).toMatch('Update Profile');
     });
