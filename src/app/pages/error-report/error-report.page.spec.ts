@@ -15,7 +15,7 @@ import { ErrorReportPage } from './error-report.page';
 
 
 describe('ErrorReportPage', () => {
-  let reportPage: ErrorReportPage;
+  let page: ErrorReportPage;
   let fixture: ComponentFixture<ErrorReportPage>;
   configureTestBed();
 
@@ -37,47 +37,40 @@ describe('ErrorReportPage', () => {
 
   beforeEach((): void => {
     fixture = TestBed.createComponent(ErrorReportPage);
-    reportPage = fixture.componentInstance;
-    reportPage.modalCtrl.dismiss = jest
-      .fn();
+    page = fixture.componentInstance;
+    page.modalCtrl.dismiss = jest.fn();
   });
 
   test('should create the component', (): void => {
-    expect(reportPage).toBeTruthy();
+    expect(page).toBeTruthy();
   });
 
   test('should cancel the modal', (): void => {
-    const dismissSpy: jest.SpyInstance = jest.spyOn(reportPage.modalCtrl, 'dismiss');
+    const dismissSpy: jest.SpyInstance = jest.spyOn(page.modalCtrl, 'dismiss');
 
     fixture.detectChanges();
 
-    reportPage.cancel();
-
+    page.cancel();
     expect(dismissSpy).toHaveBeenCalledWith();
   });
 
   test('should submit error modal', (): void => {
-    const dismissSpy: jest.SpyInstance = jest.spyOn(reportPage.modalCtrl, 'dismiss');
+    const dismissSpy: jest.SpyInstance = jest.spyOn(page.modalCtrl, 'dismiss');
 
     fixture.detectChanges();
 
-    reportPage.submitError();
-
+    page.submitError();
     expect(dismissSpy).toHaveBeenCalledWith({ log: true });
   });
 
   test('should toggle error report visibilty', (): void => {
     fixture.detectChanges();
 
-    reportPage.showReports = false;
-
-    reportPage.toggleReports();
-
-    expect(reportPage.showReports).toBe(true);
-
-    reportPage.toggleReports();
-
-    expect(reportPage.showReports).toBe(false);
+    page.showReports = false;
+    page.toggleReports();
+    expect(page.showReports).toBe(true);
+    page.toggleReports();
+    expect(page.showReports).toBe(false);
   });
 
 });

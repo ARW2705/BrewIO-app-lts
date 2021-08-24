@@ -3,62 +3,39 @@
 </app-header>
 
 <ion-content>
-
   <ion-grid class="ion-padding">
-
-    <ion-row>
-
-      <ion-col size="12">
-
+    <ion-row class="ion-justify-content-center">
+      <ion-row class="ion-justify-content-center">
         <h2>System Error{{ reports.length > 1 ? 's' : '' }}</h2>
-
-      </ion-col>
-
-      <ion-col size="12">
-
+      </ion-row>
+      <ion-row>
         <ion-button color="primary"
                     (click)="toggleReports()"
                     class="form-button">
           {{ showReports ? 'Hide' : 'Show ' + reports.length }} Report{{ reports.length > 1 ? 's' : '' }}
         </ion-button>
-
-      </ion-col>
-
-    <ion-row id="reports-container">
-
-      <app-accordion [expanded]="showReports">
-
-        <ng-container *ngFor="let report of reports">
-
-          <p>{{ report.userMessage }}</p>
-
-        </ng-container>
-
-      </app-accordion>
-
+      </ion-row>
+      <ion-row id="reports-container">
+        <app-accordion [expanded]="showReports">
+          <ng-container *ngFor="let report of reports">
+            <p>{{ report.userMessage }}</p>
+          </ng-container>
+        </app-accordion>
+      </ion-row>
     </ion-row>
-
-    </ion-row>
-
     <ion-row>
-
       <!-- Form submit button -->
-      <ion-button color="primary"
-                  (click)="submitError()"
+      <ion-button (click)="submitError()"
+                  color="primary"
                   class="form-button">
         Send And Continue
       </ion-button>
-
       <!-- Form cancel button -->
-      <ion-button color="warning"
-                  (click)="cancel()"
+      <ion-button (click)="cancel()"
+                  color="warning"
                   class="form-button">
         Continue Without Sending
       </ion-button>
-
-
     </ion-row>
-
   </ion-grid>
-
 </ion-content>

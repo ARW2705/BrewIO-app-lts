@@ -22,8 +22,13 @@ ion-grid {
   height: 100%;
 }
 
+ion-row {
+  width: 100%;
+}
+
 h2 {
   /* Display */
+  width: 100%;
   border-bottom: 1px solid var(--ion-color-light);
 
   /* Text */
