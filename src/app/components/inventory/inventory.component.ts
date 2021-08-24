@@ -42,9 +42,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
   itemIndex: number = -1;
   refreshPipes: boolean = false;
   sortBy: string = 'alphabetical';
-  onDirectionChangeEvent: (event: any) => void = this.onDirectionChange.bind(this);
   oneAndAHalfSeconds: number = 1500;
-  onSortChangeEvent: (event: any) => void = this.onSortChange.bind(this);
   sortOptions: FormSelectOption[] = [
     { label: 'alphabetical', value: 'alphabetical' },
     { label: 'remaining', value: 'remaining' },

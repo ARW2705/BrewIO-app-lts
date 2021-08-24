@@ -19,21 +19,20 @@
   </ion-row>
   <!-- If list is loaded and has items -->
   <ng-container *ngIf="displayList !== null && displayList.length">
-
     <!-- Sorting and filtering inputs -->
     <ion-row>
       <ion-list id="search-option-list">
         <!-- Sorting Selection -->
-          <app-form-select  label="sort"
-                            value="alphabetical"
-                            [ionChangeEvent]="onSortChangeEvent"
-                            [options]="sortOptions">
+          <app-form-select  (ionChangeEvent)="onSortChange($event)"
+                            label="sort"
+                            [options]="sortOptions"
+                            value="alphabetical">
           </app-form-select>
           <!-- Order Selection -->
-          <app-form-select  label="order"
-                            [value]="true"
-                            [ionChangeEvent]="onDirectionChangeEvent"
-                            [options]="orderOptions">
+          <app-form-select  (ionChangeEvent)="onDirectionChange($event)"
+                            label="order"
+                            [options]="orderOptions"
+                            [value]="true">
           </app-form-select>
       </ion-list>
     </ion-row>
@@ -43,14 +42,14 @@
         <ion-list #slidingItemsList
                   id="inventory-list">
           <ng-container *ngFor="let item of displayList; index as i">
-            <app-inventory-slider [item]="item"
-                                  (inventoryFormEvent)="openInventoryFormModal({item: item})"
+            <app-inventory-slider (decrementCountEvent)="decrementCount(item)"
                                   (expandItemEvent)="expandItem(i)"
-                                  (decrementCountEvent)="decrementCount(item)">
+                                  (inventoryFormEvent)="openInventoryFormModal({item: item})"
+                                  [item]="item">
             </app-inventory-slider>
             <app-accordion [expanded]="itemIndex === i">
-              <app-inventory-item [item]="item"
-                                  (imageErrorEvent)="onImageError(item, $event)">
+              <app-inventory-item (imageErrorEvent)="onImageError(item, $event)"
+                                  [item]="item">
               </app-inventory-item>
             </app-accordion>
           </ng-container>
