@@ -10,7 +10,7 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 /* Mock imports */
 import { mockUser } from '../../../../test-config/mock-models';
 import { ErrorReportingServiceStub, EventServiceStub, ToastServiceStub, UserServiceStub } from '../../../../test-config/service-stubs';
-import { AccordionComponentStub, ActiveBatchesComponentStub, InventoryComponentStub, HeaderComponentStub, LoginPageStub, SignupPageStub } from '../../../../test-config/component-stubs';
+import { AccordionComponentStub, ActiveBatchListComponentStub, InventoryComponentStub, HeaderComponentStub, LoginPageStub, SignupPageStub } from '../../../../test-config/component-stubs';
 
 /* Interface imports */
 import { User } from '../../shared/interfaces';
@@ -55,7 +55,7 @@ describe('HomePage', (): void => {
       declarations: [
         HomePage,
         ModifiedAccordionStub,
-        ActiveBatchesComponentStub,
+        ActiveBatchListComponentStub,
         InventoryComponentStub,
         HeaderComponentStub,
         LoginPageStub,
@@ -363,7 +363,7 @@ describe('HomePage', (): void => {
       const batchesItem: Element = <Element>items.item(0);
       expect(batchesItem.children[0].textContent).toMatch('Hide Active Batches');
 
-      const activeBatchesElem: Element = fixture.nativeElement.querySelector('active-batches');
+      const activeBatchesElem: Element = fixture.nativeElement.querySelector('app-active-batch-list');
       expect(activeBatchesElem.getAttribute('rootURL')).toMatch('tabs/home');
 
       const inventoryItem: Element = <Element>items.item(1);

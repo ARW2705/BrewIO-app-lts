@@ -24,6 +24,7 @@ export class HomePage implements OnInit, OnDestroy {
   firstInventoryLoad: boolean = true;
   isLoggedIn: boolean = false;
   notifications: string[] = [];
+  oneSecond: number = 1000;
   showActiveBatches: boolean = false;
   showInventory: boolean = false;
   user: User = null;
@@ -86,11 +87,12 @@ export class HomePage implements OnInit, OnDestroy {
       .subscribe((data: object): void => {
         if (data['subComponent'] === 'inventory' && data['offset']) {
           const scrollElement: HTMLElement = document.querySelector('#inventory-scroll-landmark');
+          const estimatedExpansionButtonHeight: number = 150;
           if (scrollElement) {
             this.ionContent.scrollToPoint(
               0,
-              scrollElement.offsetTop + data['offset'] + 150,
-              1000
+              scrollElement.offsetTop + data['offset'] + estimatedExpansionButtonHeight,
+              this.oneSecond
             );
           }
         }
@@ -107,7 +109,7 @@ export class HomePage implements OnInit, OnDestroy {
   scrollToId(idName: string): void {
     const accordionElement: HTMLElement = document.querySelector(`#${idName}`);
     if (accordionElement) {
-      this.ionContent.scrollToPoint(0, accordionElement.offsetTop, 1000);
+      this.ionContent.scrollToPoint(0, accordionElement.offsetTop, this.oneSecond);
     }
   }
 

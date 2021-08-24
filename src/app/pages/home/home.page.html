@@ -3,95 +3,66 @@
 </app-header>
 
 <ion-content [scrollEvents]="true">
-
   <ion-grid id="home-container">
-
     <!-- Main decoration image -->
     <ion-row>
-
       <img  id="home-image"
             src="assets/imgs/beer-glass.jpg"
             alt="A glass of beer"/>
-
     </ion-row>
-
     <!-- Welcome header -->
     <ion-row class="ion-justify-content-center">
-
       <h2 id="welcome-message">
         {{ welcomeMessage }}
       </h2>
-
     </ion-row>
-
-    <!-- List of active batches -->
+    <!-- Active Batches Expansion Button -->
     <ion-row class="ion-justify-content-center">
-
       <ion-item button
                 detail="false"
                 lines="none"
                 (click)="toggleActiveBatches()"
                 class="expand-button">
-
         <ion-label>
           {{ showActiveBatches ? 'Hide': 'Show' }} Active Batches
         </ion-label>
-
       </ion-item>
-
     </ion-row>
-
-    <!-- <ion-row justify-content-center> -->
+    <!-- Active Batches -->
     <ion-row class="ion-justify-content-center">
-
       <app-accordion  [expanded]="showActiveBatches"
                       [animationDuration]="accordionAnimationDuration"
                       id="batch-scroll-landmark"
                       class="home-list">
-
         <app-active-batch-list  *ngIf="!firstActiveBatchesLoad"
                                 [enterDuration]="accordionAnimationDuration"
                                 [shown]="showActiveBatches"
                                 rootURL="tabs/home">
         </app-active-batch-list>
-
       </app-accordion>
-
     </ion-row>
-
-    <!-- List inventory -->
+    <!-- Inventory Expansion Button -->
     <ion-row class="ion-justify-content-center">
-
       <ion-item button
                 detail="false"
                 lines="none"
                 (click)="toggleInventory()"
                 class="expand-button">
-
         <ion-label>
           {{ showInventory ? 'Hide': 'Show' }} Inventory
         </ion-label>
-
       </ion-item>
-
     </ion-row>
-
-    <!-- <ion-row justify-content-center> -->
+    <!-- Inventory -->
     <ion-row class="ion-justify-content-center">
-
       <app-accordion  [expanded]="showInventory"
                       [animationDuration]="accordionAnimationDuration"
                       id="inventory-scroll-landmark"
                       class="home-list">
-
         <app-inventory  *ngIf="!firstInventoryLoad"
                         [enterDuration]="accordionAnimationDuration">
         </app-inventory>
-
       </app-accordion>
-
     </ion-row>
-
   </ion-grid>
-
 </ion-content>
