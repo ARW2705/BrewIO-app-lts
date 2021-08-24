@@ -14,7 +14,7 @@ import { FormErrorComponent } from './form-error.component';
 
 describe('FormErrorComponent', (): void => {
   let fixture: ComponentFixture<FormErrorComponent>;
-  let formErrorCmp: FormErrorComponent;
+  let component: FormErrorComponent;
   configureTestBed();
 
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
@@ -29,24 +29,24 @@ describe('FormErrorComponent', (): void => {
 
   beforeEach((): void => {
     fixture = TestBed.createComponent(FormErrorComponent);
-    formErrorCmp = fixture.componentInstance;
+    component = fixture.componentInstance;
   });
 
   test('should create the component', (): void => {
     fixture.detectChanges();
 
-    expect(formErrorCmp).toBeDefined();
+    expect(component).toBeTruthy();
   });
 
   test('should assemble errors on input changes', (): void => {
-    expect(formErrorCmp.errors.length).toEqual(0);
-    formErrorCmp.controlErrors = {
+    expect(component.errors.length).toEqual(0);
+    component.controlErrors = {
       required: true,
       min: true
     };
-    formErrorCmp.controlName = 'quantity';
-    formErrorCmp.formName = 'ingredient';
-    formErrorCmp.ngOnChanges();
+    component.controlName = 'quantity';
+    component.formName = 'ingredient';
+    component.ngOnChanges();
 
     fixture.detectChanges();
 
@@ -55,14 +55,14 @@ describe('FormErrorComponent', (): void => {
     const minText: string = FORM_ERROR_MESSAGES['ingredient']['quantity']['min'];
     expect(ingredientErrors.item(0).textContent).toMatch(requiredText);
     expect(ingredientErrors.item(1).textContent).toMatch(minText);
-    expect(formErrorCmp.errors).toStrictEqual([ requiredText, minText ]);
-    formErrorCmp.controlErrors = {
+    expect(component.errors).toStrictEqual([ requiredText, minText ]);
+    component.controlErrors = {
       required: true,
       passwordInvalid: true
     };
-    formErrorCmp.controlName = 'password';
-    formErrorCmp.formName = 'signup';
-    formErrorCmp.ngOnChanges();
+    component.controlName = 'password';
+    component.formName = 'signup';
+    component.ngOnChanges();
 
     fixture.detectChanges();
 
@@ -71,7 +71,7 @@ describe('FormErrorComponent', (): void => {
     const passwordInvalidText: string = FORM_ERROR_MESSAGES['signup']['password']['passwordInvalid'];
     expect(signupErrors.item(0).textContent).toMatch(requiredPasswordText);
     expect(signupErrors.item(1).textContent).toMatch(passwordInvalidText);
-    expect(formErrorCmp.errors).toStrictEqual([ requiredPasswordText, passwordInvalidText ]);
+    expect(component.errors).toStrictEqual([ requiredPasswordText, passwordInvalidText ]);
   });
 
 });

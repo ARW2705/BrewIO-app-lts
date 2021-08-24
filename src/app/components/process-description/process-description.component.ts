@@ -12,7 +12,6 @@ export class ProcessDescriptionComponent implements OnChanges {
   @Input() isDropDown: boolean;
 
   ngOnChanges(): void {
-    console.log(this.description);
     if (!this.description) {
       this.description = 'Description not available';
     }

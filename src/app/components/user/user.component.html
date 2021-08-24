@@ -1,95 +1,58 @@
 <ion-list *ngIf="isLoggedIn">
-
   <!-- Profile section -->
   <ion-item button
             (click)="toggleExpandContent('profile')">
-
     <ion-label>
-
       <ion-icon color="primary"
                 item-start
                 name="person-outline">
       </ion-icon>
-
       Profile
-
     </ion-label>
-
   </ion-item>
-
-  <accordion [expanded]="expandedContent === 'profile'">
-
-    <profile></profile>
-
-  </accordion>
-  <!-- End Profile section -->
-
-
+  <app-accordion [expanded]="expandedContent === 'profile'">
+    <app-profile></app-profile>
+  </app-accordion>
   <!-- Friends section -->
   <ion-item button
             (click)="toggleExpandContent('friends')">
-
     <ion-label>
-
       <ion-icon color="primary"
                 item-start
                 name="people-outline">
       </ion-icon>
-
       Friends
-
     </ion-label>
-
   </ion-item>
-
-  <accordion [expanded]="expandedContent === 'friends'">
-
-    <friends></friends>
-
-  </accordion>
-
+  <app-accordion [expanded]="expandedContent === 'friends'">
+    <app-friends></app-friends>
+  </app-accordion>
 </ion-list>
-<!-- End Friends section -->
-
-
 <!-- Login/Signup button -->
 <ion-grid>
-
   <ion-row  *ngIf="!isLoggedIn"
             class="section-row login-signup-container">
-
     <ion-col size="12">
       Log in or Sign up to view more options
     </ion-col>
-
     <ion-col>
-
       <ion-button color="primary"
                   (click)="openLogin()">
         Log In
       </ion-button>
-
     </ion-col>
-
     <ion-col>
-
       <ion-button color="primary"
                   (click)="openSignup()">
         Sign Up
       </ion-button>
-
     </ion-col>
-
   </ion-row>
-
   <ion-row  *ngIf="isLoggedIn"
             class="ion-justify-content-center">
-
     <ion-button color="primary"
                 (click)="logOut()">
       Log Out
     </ion-button>
-
   </ion-row>
-
 </ion-grid>

@@ -13,7 +13,7 @@ import { UserService } from '../../services/user/user.service';
 
 
 @Component({
-  selector: 'user',
+  selector: 'app-user',
   templateUrl: './user.component.html',
   styleUrls: ['./user.component.scss']
 })
@@ -59,7 +59,7 @@ export class UserComponent implements OnInit, OnDestroy {
    * @return: none
    */
   async openLogin(): Promise<void> {
-    const modal = await this.modalCtrl.create({
+    const modal: HTMLIonModalElement = await this.modalCtrl.create({
       component: LoginPage
     });
     return await modal.present();
@@ -72,7 +72,7 @@ export class UserComponent implements OnInit, OnDestroy {
    * @return: none
    */
   async openSignup(): Promise<void> {
-    const modal = await this.modalCtrl.create({
+    const modal: HTMLIonModalElement = await this.modalCtrl.create({
       component: SignupPage
     });
     return await modal.present();

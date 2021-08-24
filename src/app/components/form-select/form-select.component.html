@@ -1,4 +1,4 @@
-<div>
+<div *ngIf="control">
   <ion-item [ngClass]="{
     'item-valid': !controlErrors && control.valid,
     'item-error': controlErrors

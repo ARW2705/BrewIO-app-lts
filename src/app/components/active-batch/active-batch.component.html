@@ -1,5 +1,4 @@
 <ion-item-sliding class="batch-item">
-
   <ion-item class="active-batch-summary"
             data-sliding-item>
     <div class="summary-text-container">
@@ -13,11 +12,8 @@
         Started on {{ batch.createdAt | date:'EEE, MMM d' }}
       </p>
     </div>
-
   </ion-item>
-
   <ion-item-options side="end">
-
     <ion-item-option  (click)="onContinueClick()"
                       color="primary">
       <div class="sliding-button-container">
@@ -25,7 +21,5 @@
         <span>Continue</span>
       </div>
     </ion-item-option>
-
   </ion-item-options>
-
 </ion-item-sliding>
