@@ -6,12 +6,16 @@
   font-size: 6vw;
 }
 
-.preference-toggle {
+.toggle-label {
   /* Display */
   display: flex;
   justify-content: space-between;
 }
 
+
+div {
+  padding: 0 16px;
+}
 
 ion-item {
   /* Display */

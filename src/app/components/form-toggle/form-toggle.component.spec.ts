@@ -8,21 +8,18 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
-/* Mock imports */
-import { mockPreferencesSelectOptions } from '../../../../test-config/mock-models';
-
 /* Component imports */
-import { PreferencesToggleComponent } from './preferences-toggle.component';
+import { FormToggleComponent } from './form-toggle.component';
 
 
-describe('PreferencesToggleComponent', (): void => {
+describe('FormToggleComponent', (): void => {
   configureTestBed();
-  let fixture: ComponentFixture<PreferencesToggleComponent>;
-  let component: PreferencesToggleComponent;
+  let fixture: ComponentFixture<FormToggleComponent>;
+  let component: FormToggleComponent;
 
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
-      declarations: [ PreferencesToggleComponent ],
+      declarations: [ FormToggleComponent ],
       imports: [
         IonicModule,
         FormsModule,
@@ -36,11 +33,8 @@ describe('PreferencesToggleComponent', (): void => {
   .catch(done.fail));
 
   beforeEach((): void => {
-    fixture = TestBed.createComponent(PreferencesToggleComponent);
+    fixture = TestBed.createComponent(FormToggleComponent);
     component = fixture.componentInstance;
-    component.control = new FormControl();
-    component.preferenceName = 'test-name';
-    component.preferenceUnit = 'test-unit';
   });
 
   test('should create the component', (): void => {
@@ -49,28 +43,29 @@ describe('PreferencesToggleComponent', (): void => {
     expect(component).toBeTruthy();
   });
 
-  test('should handle toggle event', (): void => {
+  test('should handle toggle click', (): void => {
     component.toggleEvent.emit = jest.fn();
     const emitSpy: jest.SpyInstance = jest.spyOn(component.toggleEvent, 'emit');
 
     fixture.detectChanges();
 
-    component.onToggle(null);
-    expect(emitSpy).toHaveBeenCalled();
+    const event: CustomEvent = new CustomEvent('test');
+    component.onToggle(event);
+    expect(emitSpy).toHaveBeenCalledWith(event);
   });
 
   test('should render the component', (): void => {
-    component.onToggle = jest.fn();
-    const toggleSpy: jest.SpyInstance = jest.spyOn(component, 'onToggle');
+    component.toggleName = 'toggle';
+    component.toggleAdditionalName = 'additional';
+    component.control = new FormControl();
 
     fixture.detectChanges();
 
-    const labels: NodeList = global.document.querySelectorAll('span');
-    expect(labels.item(0).textContent).toMatch('test-name');
-    expect(labels.item(1).textContent).toMatch('Test-unit');
+    const spans: NodeList = global.document.querySelectorAll('span');
+    expect(spans.item(0).textContent).toMatch('Toggle');
+    expect(spans.item(1).textContent).toMatch('Additional');
     const toggle: HTMLElement = global.document.querySelector('ion-toggle');
-    toggle.dispatchEvent(new Event('ionChange'));
-    expect(toggleSpy).toHaveBeenCalled();
+    expect(toggle['color']).toMatch('primary');
   });
 
 });

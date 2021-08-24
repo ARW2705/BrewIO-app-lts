@@ -4,14 +4,14 @@ import { FormControl } from '@angular/forms';
 
 
 @Component({
-  selector: 'app-preferences-toggle',
-  templateUrl: './preferences-toggle.component.html',
-  styleUrls: ['./preferences-toggle.component.scss'],
+  selector: 'app-form-toggle',
+  templateUrl: './form-toggle.component.html',
+  styleUrls: ['./form-toggle.component.scss'],
 })
-export class PreferencesToggleComponent {
+export class FormToggleComponent {
   @Input() control: FormControl;
-  @Input() preferenceName: string;
-  @Input() preferenceUnit: string;
+  @Input() toggleName: string;
+  @Input() toggleAdditionalName?: string;
   @Output() toggleEvent: EventEmitter<CustomEvent> = new EventEmitter<CustomEvent>();
 
   /**
@@ -24,5 +24,4 @@ export class PreferencesToggleComponent {
   onToggle(event: CustomEvent): void {
     this.toggleEvent.emit(event);
   }
-
 }

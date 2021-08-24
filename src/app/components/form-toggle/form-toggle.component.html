@@ -1,0 +1,16 @@
+<div *ngIf="control">
+  <ion-item>
+    <ion-label class="toggle-label">
+      <span>
+        {{ toggleName | titlecase }}
+      </span>
+      <span *ngIf="toggleAdditionalName">
+        {{ toggleAdditionalName | titlecase }}
+      </span>
+    </ion-label>
+    <ion-toggle (ionChange)="onToggle($event)"
+                color="primary"
+                [formControl]="control">
+    </ion-toggle>
+  </ion-item>
+</div>
