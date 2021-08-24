@@ -1,48 +1,61 @@
 <div>
-
   <!-- Form generation error notification -->
-  <div *ngIf="preferencesForm === null">
+  <div *ngIf="preferencesForm === null || !setUnits">
     Form Load Error
   </div>
-
   <ng-container *ngIf="preferencesForm !== null && setUnits">
-
     <form [formGroup]="preferencesForm"
           id="preference-form">
-
-      <ng-container *ngFor="let select of selects">
-
-        <app-form-select  [control]="preferencesForm.controls[select.controlName]"
-                          [label]="select.label"
-                          [ionChangeEvent]="select.ionChangeEvent"
-                          [options]="select.options">
-        </app-form-select>
-
-      </ng-container>
-
-      <ng-container *ngFor="let toggle of toggles">
-
-        <app-preferences-toggle [control]="preferencesForm.controls[toggle.controlName]"
-                                [preferenceName]="toggle.label"
-                                [preferenceUnit]="displayUnits[toggle.controlName]"
-                                (toggleEvent)="onToggle(toggle.controlName, $event)">
-        </app-preferences-toggle>
-
-      </ng-container>
-
+      <app-form-select  (ionChangeEvent)="onSystemChange($event)"
+                        [control]="preferencesForm.controls['preferredUnitSystem']"
+                        label="preferred unit system"
+                        [options]="preferredSelectOptions">
+      </app-form-select>
+      <app-form-select  (ionChangeEvent)="onSystemChange($event)"
+                        [control]="preferencesForm.controls['density']"
+                        label="density"
+                        [options]="densitySelectOptions">
+      </app-form-select>
+      <!-- Small Weight Toggle -->
+      <app-form-toggle  (toggleEvent)="onToggle('weightSmall', $event)"
+                        [control]="preferencesForm.controls['weightSmall']"
+                        toggleName="Weight (small)"
+                        [toggleAdditionalName]="displayUnits['weightSmall']">
+      </app-form-toggle>
+      <!-- Large Weight Toggle -->
+      <app-form-toggle  (toggleEvent)="onToggle('weightLarge', $event)"
+                        [control]="preferencesForm.controls['weightLarge']"
+                        toggleName="Weight (large)"
+                        [toggleAdditionalName]="displayUnits['weightLarge']">
+      </app-form-toggle>
+      <!-- Small Volume Toggle -->
+      <app-form-toggle  (toggleEvent)="onToggle('volumeSmall', $event)"
+                        [control]="preferencesForm.controls['volumeSmall']"
+                        toggleName="Volume (small)"
+                        [toggleAdditionalName]="displayUnits['volumeSmall']">
+      </app-form-toggle>
+      <!-- Large Volume Toggle -->
+      <app-form-toggle  (toggleEvent)="onToggle('volumeLarge', $event)"
+                        [control]="preferencesForm.controls['volumeLarge']"
+                        toggleName="Volume (large)"
+                        [toggleAdditionalName]="displayUnits['volumeLarge']">
+      </app-form-toggle>
+      <!-- Temperature Toggle -->
+      <app-form-toggle  (toggleEvent)="onToggle('temperature', $event)"
+                        [control]="preferencesForm.controls['temperature']"
+                        toggleName="Temperature"
+                        [toggleAdditionalName]="displayUnits['temperature']">
+      </app-form-toggle>
     </form>
-
     <!-- Submit update button -->
     <ion-grid>
       <ion-row class="ion-justify-content-center">
-        <ion-button color="primary"
-                    (click)="onSubmit()"
+        <ion-button (click)="onSubmit()"
+                    color="primary"
                     class="form-button">
           Update
         </ion-button>
       </ion-row>
     </ion-grid>
-
   </ng-container>
-
 </div>

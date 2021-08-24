@@ -8,7 +8,7 @@ import { catchError, mergeMap, take } from 'rxjs/operators';
 import { BRIX, PLATO, SPECIFIC_GRAVITY } from '../../shared/constants';
 
 /* Interface imports */
-import { FormFieldContext, FormSelectContext, SelectedUnits, Unit, User } from '../../shared/interfaces';
+import { FormSelectOption, SelectedUnits, Unit, User } from '../../shared/interfaces';
 
 /* Type imports */
 import { CustomError } from '../../shared/types';
@@ -33,36 +33,17 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   mappableUnits: string[] = ['weightSmall', 'weightLarge', 'volumeSmall', 'volumeLarge', 'temperature'];
   preferencesForm: FormGroup = null;
   preferredUnits: string = '';
-  selects: FormSelectContext[] = [
-    {
-      controlName: 'preferredUnitSystem',
-      label: 'Preferred Unit System',
-      ionChangeEvent: this.onSystemChange.bind(this),
-      options: [
-        { label: 'English Standard', value: 'englishStandard' },
-        { label: 'Metric', value: 'metric' },
-        { label: 'Other/Mixed ', value: 'other' }
-      ]
-    },
-    {
-      controlName: 'density',
-      label: 'Density',
-      ionChangeEvent: (): void => {},
-      options: [
-        { label: 'Specific Gravity', value: 'specificGravity' },
-        { label: 'Brix', value: 'brix' },
-        { label: 'Plato ', value: 'plato' }
-      ]
-    }
+  preferredSelectOptions: FormSelectOption[] = [
+    { label: 'English Standard', value: 'englishStandard' },
+    { label: 'Metric'          , value: 'metric'          },
+    { label: 'Other/Mixed '    , value: 'other'           }
+  ];
+  densitySelectOptions: FormSelectOption[] = [
+    { label: 'Specific Gravity', value: 'specificGravity' },
+    { label: 'Brix'            , value: 'brix'            },
+    { label: 'Plato '          , value: 'plato'           }
   ];
   setUnits: SelectedUnits = null;
-  toggles: FormFieldContext[] = [
-    { controlName: 'weightSmall', label: 'Weight (small)' },
-    { controlName: 'weightLarge', label: 'Weight (large)' },
-    { controlName: 'volumeSmall', label: 'Volume (small)' },
-    { controlName: 'volumeLarge', label: 'Volume (large)' },
-    { controlName: 'temperature', label: 'Temperature'    }
-  ];
   user: User = null;
 
 
@@ -276,7 +257,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
    * @return: none
    */
   onSystemChange(event: CustomEvent): void {
-    if (event.detail.value !== 'other') {
+    if (event.detail.value === 'englishStandard' || event.detail.value === 'metric') {
       this.mappableUnits.forEach((unitName: string): void => {
         this.preferencesForm.get(unitName).setValue(event.detail.value === 'englishStandard');
       });

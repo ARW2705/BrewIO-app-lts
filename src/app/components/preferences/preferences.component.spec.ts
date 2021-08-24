@@ -10,14 +10,14 @@ import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockEnglishUnits, mockMetricUnits, mockPreferencesSelectOptions, mockUser } from '../../../../test-config/mock-models';
+import { mockEnglishUnits, mockMetricUnits, mockUser } from '../../../../test-config/mock-models';
 import { ErrorReportingServiceStub, PreferencesServiceStub, ToastServiceStub, UserServiceStub } from '../../../../test-config/service-stubs';
 
 /* Default imports */
 import { defaultEnglishUnits, defaultMetricUnits } from '../../shared/defaults';
 
 /* Interface imports */
-import { FormSelectOption, SelectedUnits, Unit, User } from '../../shared/interfaces';
+import { SelectedUnits, Unit, User } from '../../shared/interfaces';
 
 /* Type impots */
 import { CustomError } from '../../shared/types';
@@ -536,7 +536,7 @@ describe('PreferencesComponent', (): void => {
 
     const selects: NodeList = global.document.querySelectorAll('app-form-select');
     expect(selects.length).toEqual(2);
-    const toggles: NodeList = global.document.querySelectorAll('app-preferences-toggle');
+    const toggles: NodeList = global.document.querySelectorAll('app-form-toggle');
     expect(toggles.length).toEqual(5);
   });
 
