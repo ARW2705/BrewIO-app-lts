@@ -7,9 +7,6 @@ import { finalize, take, takeUntil } from 'rxjs/operators';
 /* Interface imports */
 import { Batch, ErrorReport, FormSelectOption, Image, InventoryItem } from '../../shared/interfaces';
 
-/* Type imports */
-import { CustomError } from '../../shared/types';
-
 /* Default imports */
 import { defaultImage } from '../../shared/defaults';
 
@@ -565,22 +562,6 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
   }
 
   /**
-   * Report an animation error when containing element is not found
-   *
-   * @param: none
-   * @return: none
-   */
-  reportSlidingHintError(): void {
-    const message: string = 'Cannot find content container';
-    const severity: number = 4;
-    this.errorReporter.setErrorReport(
-      this.errorReporter.getCustomReportFromError(
-        new CustomError('AnimationError', message, severity, message)
-      )
-    );
-  }
-
-  /**
    * Trigger horizontally sliding gesture hint animations
    *
    * @param: none
@@ -589,7 +570,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
   runSlidingHints(): void {
     const topLevelContent: HTMLElement = this.getTopLevelContainer();
     if (!topLevelContent) {
-      this.reportSlidingHintError();
+      this.animationService.reportSlidingHintError();
       return;
     }
 

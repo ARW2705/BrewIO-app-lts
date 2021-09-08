@@ -856,8 +856,8 @@ describe('InventoryComponent', (): void => {
     test('should get an error running sliding hints with missing content element', (): void => {
       component.getTopLevelContainer = jest.fn()
         .mockReturnValue(null);
-      component.reportSlidingHintError = jest.fn();
-      const reportSpy: jest.SpyInstance = jest.spyOn(component, 'reportSlidingHintError');
+      component.animationService.reportSlidingHintError = jest.fn();
+      const reportSpy: jest.SpyInstance = jest.spyOn(component.animationService, 'reportSlidingHintError');
       const toggleSpy: jest.SpyInstance = jest.spyOn(component, 'toggleSlidingItemClass');
 
       fixture.detectChanges();
@@ -888,21 +888,6 @@ describe('InventoryComponent', (): void => {
         expect(reportSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
-    });
-
-    test('should report an animation error', (): void => {
-      const _mockErrorReport: ErrorReport = mockErrorReport();
-      component.errorReporter.setErrorReport = jest.fn();
-      component.errorReporter.getCustomReportFromError = jest.fn()
-        .mockReturnValue(_mockErrorReport);
-      const setSpy: jest.SpyInstance = jest.spyOn(component.errorReporter, 'setErrorReport');
-      const getSpy: jest.SpyInstance = jest.spyOn(component.errorReporter, 'getCustomReportFromError');
-
-      fixture.detectChanges();
-
-      component.reportSlidingHintError();
-      expect(setSpy).toHaveBeenCalledWith(_mockErrorReport);
-      expect(getSpy.mock.calls[0][0].name).toMatch('AnimationError');
     });
 
     test('should toggle sliding item class', (): void => {
