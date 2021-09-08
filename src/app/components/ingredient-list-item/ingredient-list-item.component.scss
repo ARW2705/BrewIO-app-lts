@@ -3,7 +3,7 @@
   margin-top: 5px;
 
   /* Text */
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   text-align: left;
 
   &:not(:last-child) {
@@ -39,16 +39,15 @@ ion-item-divider {
   --color: var(--ion-color-secondary-tint);
   --background: transparent;
 
-  > span {
+  span {
     /* Display */
     margin: 0 auto;
 
     /* Text */
-    font-size: 1.5rem;
+    font-size: 2rem;
   }
 }
 
 ion-item-group {
-  /* Display */
-  margin: 5px 0;
+  margin: 0 0 3% 0;
 }
