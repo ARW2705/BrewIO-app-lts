@@ -1,7 +1,7 @@
-export interface OtherIngredients {
-  name: string;
+import { Ingredient } from './ingredient.interface';
+
+export interface OtherIngredients extends Ingredient {
   type: string;
-  description: string;
   quantity: number;
   units: string;
 }

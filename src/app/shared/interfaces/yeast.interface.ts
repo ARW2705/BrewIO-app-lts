@@ -1,13 +1,9 @@
+import { Ingredient } from './ingredient.interface';
 import { Style } from './style.interface';
 
-export interface Yeast {
-  _id: string;
-  createdAt: string;
-  updatedAt: string;
-  name: string;
+export interface Yeast extends Ingredient {
   brand: string;
   form: string;
-  description: string;
   attenuation: number[];
   flocculation: string;
   optimumTemperature: number[];

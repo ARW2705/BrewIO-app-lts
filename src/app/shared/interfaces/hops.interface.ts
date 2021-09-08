@@ -1,13 +1,8 @@
-import { Style } from './style.interface';
+import { Ingredient } from './ingredient.interface';
 
-export interface Hops {
-  _id: string;
-  createdAt: string;
-  updatedAt: string;
-  name: string;
+export interface Hops extends Ingredient {
   alphaAcid: number;
   type: string;
-  description: string;
-  usedFor: Style[];
-  alternatives: Hops[];
+  usedFor: string[]; // Style server ids
+  alternatives: string[]; // Hops server ids
 }

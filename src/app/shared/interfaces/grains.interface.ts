@@ -1,9 +1,6 @@
-export interface Grains {
-  _id: string;
-  createdAt: string;
-  updatedAt: string;
-  name: string;
+import { Ingredient } from './ingredient.interface';
+
+export interface Grains extends Ingredient {
   lovibond: number;
   gravity: number;
-  description: string;
 }
