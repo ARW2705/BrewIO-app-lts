@@ -5,7 +5,7 @@
   }">
     <ion-label  [ngClass]="{ 'required': shouldRequire }"
                 [position]="labelPosition">
-      {{ label | titlecase }}
+      {{ overrideTitleCase ? label : (label | titlecase ) }}
     </ion-label>
     <ion-select (ionCancel)="ionCancel($event)"
                 (ionChange)="ionChange($event)"

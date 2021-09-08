@@ -6,7 +6,10 @@ import { FormControl } from '@angular/forms';
 import { SELECT_OPTIONS } from '../../shared/constants';
 
 /* Interface imports */
-import { FormSelectOption } from '../../shared/interfaces';
+import { FormChanges, FormSelectOption } from '../../shared/interfaces';
+
+/* Service imports */
+import { FormAttributeService } from '../../services/services';
 
 
 @Component({
@@ -15,39 +18,44 @@ import { FormSelectOption } from '../../shared/interfaces';
   styleUrls: ['./form-select.component.scss'],
 })
 export class FormSelectComponent implements OnChanges {
-  @Input() confirmText: string;
-  @Input() control: FormControl;
-  @Input() controlName: string;
-  @Input() dismissText: string;
-  @Input() formName: string;
-  @Input() label: string;
-  @Input() labelPosition: string;
-  @Input() compareWithFn: (...options: any) => any;
-  @Input() options: FormSelectOption[];
-  @Input() shouldRequire: boolean;
+  @Input() confirmText: string = null;
+  @Input() control: FormControl = null;
+  @Input() controlName: string = null;
+  @Input() dismissText: string = null;
+  @Input() formName: string = null;
+  @Input() label: string = null;
+  @Input() labelPosition: string = null;
+  @Input() compareWithFn: (...options: any) => any = null;
+  @Input() options: FormSelectOption[] = null;
+  @Input() overrideTitleCase: boolean = false;
+  @Input() shouldRequire: boolean = null;
   @Input() value: any;
   @Output() ionCancelEvent: EventEmitter<CustomEvent> = new EventEmitter<CustomEvent>();
   @Output() ionChangeEvent: EventEmitter<CustomEvent> = new EventEmitter<CustomEvent>();
   controlErrors: object = null;
   selectOptions: object = SELECT_OPTIONS;
   showError: boolean = false;
-  optionalPropertyKeys: string[] = [
-    'compareWithFn',
-    'confirmText',
-    'control',
-    'dismissText',
-    'labelPosition'
-  ];
+
+  constructor(public formAttributeService: FormAttributeService) {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    this.optionalPropertyKeys.forEach((key: string): void => {
-      if (!changes.hasOwnProperty(key) || changes[key] === undefined) {
-        this.setDefault(key); // set default if a value wasn't given from parent component
-      }
-    });
+    this.assignFormChanges(
+      this.formAttributeService.handleFormChange('select', this.control, changes)
+    );
+  }
 
-    if (changes.hasOwnProperty('value') && changes.value.firstChange) {
-      this.control.setValue(changes.value.currentValue);
+  /**
+   * Apply form changes object values to component
+   *
+   * @param: formChanges - contains key: value pairs of component attributes
+   *
+   * @return: none
+   */
+  assignFormChanges(formChanges: FormChanges): void {
+    for (const key in formChanges) {
+      if (this.hasOwnProperty(key)) {
+        this[key] = formChanges[key];
+      }
     }
   }
 
@@ -70,7 +78,6 @@ export class FormSelectComponent implements OnChanges {
    * @return: none
    */
   ionCancel(event: CustomEvent): void {
-    console.log('select cancel', event);
     this.ionCancelEvent.emit(event);
     this.checkForErrors();
   }
@@ -83,38 +90,8 @@ export class FormSelectComponent implements OnChanges {
    * @return: none
    */
   ionChange(event: CustomEvent): void {
-    console.log('select change', event);
     this.ionChangeEvent.emit(event);
     this.checkForErrors();
-  }
-
-  /**
-   * Set a default value for a given property
-   *
-   * @param: key - the property name to assign a default
-   *
-   * @return: none
-   */
-  setDefault(key: string): void {
-    switch (key) {
-      case 'compareWithFn':
-        this.compareWithFn = (o1: any, o2: any): boolean => o1 === o2;
-        break;
-      case 'confirmText':
-        this.confirmText = 'Okay';
-        break;
-      case 'control':
-        this.control = new FormControl();
-        break;
-      case 'dismissText':
-        this.dismissText = 'Dismiss';
-        break;
-      case 'labelPosition':
-        this.labelPosition = 'floating';
-        break;
-      default:
-        break;
-    }
   }
 
 }

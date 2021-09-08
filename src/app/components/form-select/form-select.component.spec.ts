@@ -10,6 +10,13 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
 import { mockPreferencesSelectOptions } from '../../../../test-config/mock-models';
+import { FormAttributeServiceStub } from '../../../../test-config/service-stubs';
+
+/* Interface imports */
+import { FormSelectChanges } from '../../shared/interfaces';
+
+/* Service imports */
+import { FormAttributeService } from '../../services/services';
 
 /* Component imports */
 import { FormSelectComponent } from './form-select.component';
@@ -29,6 +36,7 @@ describe('FormSelectComponent', (): void => {
         FormsModule,
         ReactiveFormsModule
       ],
+      providers: [ { provide: FormAttributeService, useClass: FormAttributeServiceStub } ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
     await TestBed.compileComponents();
@@ -54,38 +62,45 @@ describe('FormSelectComponent', (): void => {
     expect(component).toBeTruthy();
   });
 
-  test('should set defaults on changes', (): void => {
+  test('should handle component changes', (): void => {
     component.ngOnChanges = originalOnChanges;
-    component.setDefault = jest.fn();
-    const setSpy: jest.SpyInstance = jest.spyOn(component, 'setDefault');
-    const noValueChange: SimpleChange = new SimpleChange(null, undefined, true);
-    const simpleChanges: SimpleChanges = {
-      none: noValueChange,
-      label: undefined
-    };
+    const control: FormControl = new FormControl();
+    component.control = control;
+    component.assignFormChanges = jest.fn();
+    component.formAttributeService.handleFormChange = jest.fn();
+    const handleSpy: jest.SpyInstance = jest.spyOn(component.formAttributeService, 'handleFormChange');
+    const change: SimpleChange = new SimpleChange(null, 'test', false);
 
     fixture.detectChanges();
 
-    component.ngOnChanges(simpleChanges);
-    expect(setSpy).toHaveBeenNthCalledWith(1, 'compareWithFn');
-    expect(setSpy).toHaveBeenNthCalledWith(2, 'confirmText');
-    expect(setSpy).toHaveBeenNthCalledWith(3, 'control');
-    expect(setSpy).toHaveBeenNthCalledWith(4, 'dismissText');
-    expect(setSpy).toHaveBeenNthCalledWith(5, 'labelPosition');
+    component.ngOnChanges({ label: change });
+    expect(handleSpy).toHaveBeenCalledWith('select', control, { label: change });
   });
 
-  test('should set control value on changes', (): void => {
-    component.ngOnChanges = originalOnChanges;
-    component.setDefault = jest.fn();
-    const testControl: FormControl = new FormControl();
-    component.control = testControl;
-    const valueChange: SimpleChange = new SimpleChange(null, 2, true);
-    const simpleChanges: SimpleChanges = { value: valueChange };
-
+  test('should assign changes to component', (): void => {
     fixture.detectChanges();
 
-    component.ngOnChanges(simpleChanges);
-    expect(component.control.value).toEqual(2);
+    const control: FormControl = new FormControl();
+    const compareWithFn: (o1: any, o2: any) => boolean = (...options: any): boolean => true;
+    const confirmText: string = 'confirm';
+    const dismissText: string = 'dismiss';
+    const labelPosition: string = 'floating';
+    const shouldRequire: boolean = true;
+    const changes: FormSelectChanges = {
+      control      : control,
+      compareWithFn: compareWithFn,
+      confirmText  : confirmText,
+      dismissText  : dismissText,
+      labelPosition: labelPosition,
+      shouldRequire: shouldRequire
+    };
+    component.assignFormChanges(changes);
+    expect(component.control).toStrictEqual(control);
+    expect(component.compareWithFn()).toBe(true);
+    expect(component.confirmText).toBe(confirmText);
+    expect(component.dismissText).toBe(dismissText);
+    expect(component.labelPosition).toBe(labelPosition);
+    expect(component.shouldRequire).toBe(shouldRequire);
   });
 
   test('should check for errors', (): void => {
@@ -123,34 +138,6 @@ describe('FormSelectComponent', (): void => {
     component.ionChange(event);
     expect(emitSpy).toHaveBeenCalledWith(event);
     expect(checkSpy).toHaveBeenCalled();
-  });
-
-  test('should set defaults on required properties', (): void => {
-    fixture.detectChanges();
-
-    component.compareWithFn = undefined;
-    component.confirmText = undefined;
-    component.control = undefined;
-    component.dismissText = undefined;
-    component.labelPosition = undefined;
-    component.setDefault('none');
-    expect(component.compareWithFn).toBeUndefined();
-    expect(component.confirmText).toBeUndefined();
-    expect(component.control).toBeUndefined();
-    expect(component.dismissText).toBeUndefined();
-    expect(component.labelPosition).toBeUndefined();
-    component.setDefault('compareWithFn');
-    expect(component.compareWithFn).toBeInstanceOf(Function);
-    component.setDefault('confirmText');
-    expect(component.confirmText).toMatch('Okay');
-    const compareObj: object = {};
-    expect(component.compareWithFn(compareObj, compareObj)).toBe(true);
-    component.setDefault('control');
-    expect(component.control).toBeInstanceOf(FormControl);
-    component.setDefault('dismissText');
-    expect(component.dismissText).toMatch('Dismiss');
-    component.setDefault('labelPosition');
-    expect(component.labelPosition).toMatch('floating');
   });
 
   test('should render the template without errors', (): void => {
