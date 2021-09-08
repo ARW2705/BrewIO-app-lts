@@ -15,7 +15,7 @@ export class ActiveBatchComponent {
   @Output() continueButtonEvent: EventEmitter<null> = new EventEmitter<null>();
 
   /**
-   * Emit batch continue button event
+   * Emit continueButtonEvent with no value
    *
    * @param: none
    * @return: none
