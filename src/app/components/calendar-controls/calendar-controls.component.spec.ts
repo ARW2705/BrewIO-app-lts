@@ -48,8 +48,8 @@ describe('CalendarControlsComponent', () => {
 
     fixture.detectChanges();
 
-    component.onChangeClick('next');
-    expect(emitSpy).toHaveBeenCalledWith('next');
+    component.onChangeClick(true);
+    expect(emitSpy).toHaveBeenCalledWith(true);
   });
 
   test('should handle select button click', (): void => {

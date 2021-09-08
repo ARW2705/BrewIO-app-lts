@@ -3,7 +3,7 @@
   <ion-row class="ion-align-items-center">
     <!-- Go back month button -->
     <ion-col size="2">
-      <app-calendar-controls-change-button  (changeButtonEvent)="onChangeClick('prev')"
+      <app-calendar-controls-change-button  (changeButtonEvent)="onChangeClick(false)"
                                             iconName="caret-back-circle-outline">
       </app-calendar-controls-change-button>
     </ion-col>
@@ -13,7 +13,7 @@
 
     <!-- Go forward month button -->
     <ion-col size="2">
-      <app-calendar-controls-change-button  (changeButtonEvent)="onChangeClick('next')"
+      <app-calendar-controls-change-button  (changeButtonEvent)="onChangeClick(true)"
                                             iconName="caret-forward-circle-outline">
       </app-calendar-controls-change-button>
     </ion-col>

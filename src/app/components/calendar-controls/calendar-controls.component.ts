@@ -13,18 +13,17 @@ import { CalendarDate } from '../../shared/interfaces';
 export class CalendarControlsComponent {
   @Input() displayDate: CalendarDate;
   @Input() editType: string;
-  @Output() changeButtonEvent: EventEmitter<string> = new EventEmitter<string>();
+  @Output() changeButtonEvent: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() selectButtonEvent: EventEmitter<string> = new EventEmitter<string>();
 
   /**
    * Emit change month click event
    *
-   * @param: direction - either 'prev' or 'next'
-   *
+   * @param: isForward - true to advance month; false to go back
    * @return: none
    */
-  onChangeClick(direction: string): void {
-    this.changeButtonEvent.emit(direction);
+  onChangeClick(isForward: boolean): void {
+    this.changeButtonEvent.emit(isForward);
   }
 
   /**
