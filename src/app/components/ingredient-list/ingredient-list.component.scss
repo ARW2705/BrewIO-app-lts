@@ -11,12 +11,10 @@
 
     /* Children */
     ion-icon {
-      /* Text */
       font-size: 2rem;
     }
 
     span {
-      /* Text */
       font-size: 1.7rem;
     }
   }
@@ -34,12 +32,16 @@
 
 ion-card {
   /* Display */
-  margin-bottom: 1px;
-  border: 1px solid var(--ion-color-primary);
+  margin: 0;
+  border: 3px solid var(--ion-color-primary);
   border-radius: 10px;
   background: #5a5a5a;
   -webkit-box-shadow: inset 0 0 40px 20px #4a4a4a;
   box-shadow: inset 0 0 40px 20px #4a4a4a;
+}
+
+ion-card-content {
+  padding: 10px 6px;
 }
 
 ion-item {
@@ -49,7 +51,6 @@ ion-item {
 
   /* Children */
   &:not(:last-child) {
-    /* Display */
     border-bottom: 1px solid var(--ion-color-light-shade);
   }
 }

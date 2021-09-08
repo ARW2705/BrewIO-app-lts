@@ -16,7 +16,6 @@ export class IngredientListComponent implements OnChanges {
   hasIngredients: boolean = false;
 
   ngOnChanges(): void {
-    console.log('ingredient list changes');
     this.hasIngredients = this.recipeVariant
       && (
         this.recipeVariant.grains.length > 0
