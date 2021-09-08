@@ -1,4 +1,4 @@
-import { Unit } from '../interfaces';
+import { Unit } from '../../interfaces';
 
 export const SMALL_ENGLISH_WEIGHT: Unit = {
   system: 'englishStandard',

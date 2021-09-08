@@ -1,4 +1,4 @@
-import { Unit } from '../interfaces';
+import { Unit } from '../../interfaces';
 
 export const PLATO: Unit = {
   system: 'none',

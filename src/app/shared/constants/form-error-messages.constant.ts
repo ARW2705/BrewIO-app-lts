@@ -140,6 +140,18 @@ export const FORM_ERROR_MESSAGES: object = {
       min: 'Please enter a non-negative value'
     }
   },
+  profile: {
+    email: {
+      required: 'Email address is required',
+      email: 'Email address is invalid'
+    },
+    firstname: {
+      maxlength: 'First name is limited to 50 characters'
+    },
+    lastname: {
+      maxlength: 'Last name is limited to 50 characters'
+    }
+  },
   measurements: {
     originalGravity: {
       required: 'Please enter an original gravity value',

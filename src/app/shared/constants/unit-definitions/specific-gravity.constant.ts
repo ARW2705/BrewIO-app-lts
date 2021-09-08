@@ -1,4 +1,4 @@
-import { Unit } from '../interfaces';
+import { Unit } from '../../interfaces';
 
 export const SPECIFIC_GRAVITY: Unit = {
   system: 'none',
