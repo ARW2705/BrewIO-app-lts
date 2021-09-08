@@ -7,14 +7,14 @@ import * as moment from 'moment';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockAlert, mockCalendarDate, mockCalendarProcess } from '../../../../test-config/mock-models';
-import { IdServiceStub } from '../../../../test-config/service-stubs';
+import {  mockCalendarDate, mockCalendarProcess } from '../../../../test-config/mock-models';
+import { CalendarServiceStub, IdServiceStub } from '../../../../test-config/service-stubs';
 
 /* Interface imports*/
 import { Alert, CalendarDate, CalendarMetadata, CalendarProcess, Process } from '../../shared/interfaces';
 
 /* Service imports */
-import { IdService } from '../../services/services';
+import { CalendarService, IdService } from '../../services/services';
 
 /* Component imports */
 import { CalendarComponent } from './calendar.component';
@@ -32,6 +32,7 @@ describe('CalendarComponent', (): void => {
     TestBed.configureTestingModule({
       declarations: [ CalendarComponent ],
       providers: [
+        { provide: CalendarService, useClass: CalendarServiceStub },
         { provide: IdService, useClass: IdServiceStub }
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
@@ -96,77 +97,9 @@ describe('CalendarComponent', (): void => {
         calendarProcess: new SimpleChange(oldCalendarProcess, newCalendarProcess, false)
       };
       component.ngOnChanges(calendarProcessChange);
-
       expect(component.calendarProcess).not.toStrictEqual(oldCalendarProcess);
       expect(component.calendarProcess).toStrictEqual(newCalendarProcess);
       expect(initSpy).toHaveBeenCalled();
-    });
-
-  });
-
-
-  describe('Calendar Display Construction', (): void => {
-
-    test('should build a calendar', (): void => {
-      const _mockCalendarDate: CalendarDate = mockCalendarDate();
-      component.getFirstDayOfWeekInDisplayedMonth = jest.fn().mockReturnValue(1);
-      component.getFirstDateForCalendarMatrix = jest.fn().mockReturnValue(_mockCalendarDate.mDate);
-      component.buildMonthMatrix = jest.fn().mockReturnValue([[]]);
-      const daySpy: jest.SpyInstance = jest.spyOn(component, 'getFirstDayOfWeekInDisplayedMonth');
-      const dateSpy: jest.SpyInstance = jest.spyOn(component, 'getFirstDateForCalendarMatrix');
-      const buildSpy: jest.SpyInstance = jest.spyOn(component, 'buildMonthMatrix');
-
-      fixture.detectChanges();
-
-      component.buildCalendar();
-      expect(daySpy).toHaveBeenCalled();
-      expect(dateSpy).toHaveBeenCalledWith(1);
-      expect(buildSpy).toHaveBeenCalledWith(_mockCalendarDate.mDate);
-    });
-
-    test('should build a calendar date', (): void => {
-      const _mockCalendarDate: CalendarDate = mockCalendarDate();
-      component.isMonth = jest.fn().mockReturnValue(true);
-      component.isProjected = jest.fn().mockReturnValue(true);
-      component.isStart = jest.fn().mockReturnValue(false);
-      component.isToday = jest.fn().mockReturnValue(false);
-
-      fixture.detectChanges();
-
-      const buildDate: CalendarDate = component.buildCalendarDate(_mockCalendarDate.mDate);
-      expect(buildDate.mDate).toStrictEqual(_mockCalendarDate.mDate);
-      expect(buildDate.isMonth).toBe(true);
-      expect(buildDate.isProjected).toBe(true);
-      expect(buildDate.isStart).toBe(false);
-      expect(buildDate.isToday).toBe(false);
-    });
-
-    test('should build a month matrix', (): void => {
-      const _mockCalendarDate: CalendarDate = mockCalendarDate();
-      component.buildWeekArray = jest.fn()
-        .mockReturnValue([]);
-      const buildSpy: jest.SpyInstance = jest.spyOn(component, 'buildWeekArray');
-
-      fixture.detectChanges();
-
-      const calendar: CalendarDate[][] = component.buildMonthMatrix(_mockCalendarDate.mDate);
-      expect(buildSpy).toHaveBeenCalledTimes(6);
-    });
-
-    test('should build a week array', (): void => {
-      const _mockCalendarDate: CalendarDate = mockCalendarDate();
-      component.buildCalendarDate = jest.fn()
-        .mockReturnValue(_mockCalendarDate);
-      const buildSpy: jest.SpyInstance = jest.spyOn(component, 'buildCalendarDate');
-
-      fixture.detectChanges();
-
-      const weekArray: CalendarDate[] = component.buildWeekArray(_mockCalendarDate.mDate, 2);
-      expect(weekArray.length).toEqual(7);
-      const firstDateOfThirdWeek: number = 15;
-      for (let i = 0; i < 7; i++) {
-        expect(buildSpy.mock.calls[i][0].date()).toEqual(i + firstDateOfThirdWeek);
-      }
     });
 
   });
@@ -183,6 +116,24 @@ describe('CalendarComponent', (): void => {
       expect(component.projectedDates[0].isProjected).toBe(true);
     });
 
+    test('should call buildCalendar', (): void => {
+      const _mockCalendarDate: CalendarDate = mockCalendarDate();
+      component.displayDate = _mockCalendarDate.mDate;
+      component.projectedDates = [];
+      component.startDate = _mockCalendarDate;
+      component.calendarService.buildCalendar = jest.fn();
+      const buildSpy: jest.SpyInstance = jest.spyOn(component.calendarService, 'buildCalendar');
+
+      fixture.detectChanges();
+
+      component.buildCalendar();
+      expect(buildSpy).toHaveBeenCalledWith({
+        displayDate: _mockCalendarDate.mDate,
+        projectedDates: [],
+        startDate: _mockCalendarDate.mDate
+      });
+    });
+
     test('should change displayed month forward', (): void => {
       component.buildCalendar = jest.fn();
       component.updateView = jest.fn();
@@ -191,7 +142,7 @@ describe('CalendarComponent', (): void => {
 
       expect(component.displayDate.month()).toEqual(0);
       expect(component.displayDate.year()).toEqual(2020);
-      component.changeMonth('next');
+      component.changeMonth(true);
       expect(component.displayDate.month()).toEqual(1);
       expect(component.displayDate.year()).toEqual(2020);
     });
@@ -204,53 +155,43 @@ describe('CalendarComponent', (): void => {
 
       expect(component.displayDate.month()).toEqual(0);
       expect(component.displayDate.year()).toEqual(2020);
-      component.changeMonth('prev');
+      component.changeMonth(false);
       expect(component.displayDate.month()).toEqual(11);
       expect(component.displayDate.year()).toEqual(2019);
     });
 
-    test('should get current calendar state', (): void => {
-      const _mockCalendarProcess: CalendarProcess = mockCalendarProcess();
-      const _mockStartDate: CalendarDate = mockCalendarDate();
-      const _mockProjectedDate: CalendarDate = mockCalendarDate();
-      _mockProjectedDate.mDate = moment('2020-02-01T12:00:00.000Z');
+    test('should check if a date is in projected dates', (): void => {
+      component.calendarService.isProjected = jest.fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+      const checkSpy: jest.SpyInstance = jest.spyOn(component.calendarService, 'isProjected');
+      const _mockCalendarDate: CalendarDate = mockCalendarDate();
+      component.projectedDates = [];
+
+      fixture.detectChanges();
+
+      const shouldHave: boolean = component.containsProjectedDate(_mockCalendarDate.mDate);
+      expect(checkSpy).toHaveBeenCalledWith([], _mockCalendarDate.mDate);
+      expect(shouldHave).toBe(true);
+      const shouldNotHave: boolean = component.containsProjectedDate(_mockCalendarDate.mDate);
+      expect(checkSpy).toHaveBeenCalledWith([], _mockCalendarDate.mDate);
+      expect(shouldNotHave).toBe(false);
+    });
+
+    test('should get the selected date data', (): void => {
       component.idService.getId = jest.fn()
-        .mockReturnValue(_mockCalendarProcess['_id']);
-      const _mockAlert: Alert = mockAlert();
+        .mockReturnValue('000');
+      const _mockCalendarDate: CalendarDate = mockCalendarDate();
+      component.startDate = _mockCalendarDate;
       component.mapProjectedDatesToAlerts = jest.fn()
-        .mockReturnValue([_mockAlert]);
+        .mockReturnValue([]);
 
       fixture.detectChanges();
 
-      component.calendarProcess = _mockCalendarProcess;
-      component.startDate = _mockStartDate;
-      component.projectedDates = [ _mockProjectedDate ];
-      const data: CalendarMetadata = component.getFinal();
-      expect(data.id).toMatch(_mockCalendarProcess['_id']);
-      expect(data.startDatetime).toMatch(testISOString);
-      expect(data.alerts.length).toEqual(1);
-      expect(data.alerts[0]).toStrictEqual(_mockAlert);
-    });
-
-    test('should get first date for calendar matrix', (): void => {
-      const _mockCalendarDate: CalendarDate = mockCalendarDate();
-      component.displayDate = _mockCalendarDate.mDate;
-
-      fixture.detectChanges();
-
-      const firstDate1: moment.Moment = component.getFirstDateForCalendarMatrix(1);
-      expect(firstDate1.date()).toEqual(31);
-      const firstDate2: moment.Moment = component.getFirstDateForCalendarMatrix(0);
-      expect(firstDate2.date()).toEqual(25);
-    });
-
-    test('should get first day of week', (): void => {
-      const _mockCalendarDate: CalendarDate = mockCalendarDate();
-      component.displayDate = _mockCalendarDate.mDate;
-
-      fixture.detectChanges();
-
-      expect(component.getFirstDayOfWeekInDisplayedMonth()).toEqual(3);
+      const data: CalendarMetadata = component.getSelectedCalendarData();
+      expect(data.id).toMatch('000');
+      expect(data.startDatetime).toMatch(_mockCalendarDate.mDate.toISOString());
+      expect(data.alerts).toStrictEqual([]);
     });
 
     test('should handle date button click event', (): void => {
@@ -275,67 +216,33 @@ describe('CalendarComponent', (): void => {
       expect(toggleSpy).toHaveBeenCalled();
     });
 
-    test('should initialize calendar', (): void => {
-      const _mockCalendarProcess: CalendarProcess = mockCalendarProcess();
-      component.calendarProcess = _mockCalendarProcess;
-      component.setInitialDates = jest.fn();
-      component.setInitialProjectedDate = jest.fn();
+    test('should init the calendar', (): void => {
+      component.setInitialStartDate = jest.fn();
+      component.resetProjectedDates = jest.fn();
       component.buildCalendar = jest.fn();
-      const startSpy: jest.SpyInstance = jest.spyOn(component, 'setInitialDates');
+      const setSpy: jest.SpyInstance = jest.spyOn(component, 'setInitialStartDate');
+      const resetSpy: jest.SpyInstance = jest.spyOn(component, 'resetProjectedDates');
       const buildSpy: jest.SpyInstance = jest.spyOn(component, 'buildCalendar');
 
       fixture.detectChanges();
 
       component.initCalendar();
-      expect(startSpy).toHaveBeenCalled();
+      expect(setSpy).toHaveBeenCalled();
+      expect(resetSpy).toHaveBeenCalled();
       expect(buildSpy).toHaveBeenCalled();
     });
 
     test('should check if given date is the same month/year as displayed', (): void => {
       const now: moment.Moment = moment(testISOString);
-      const diffMonth: moment.Moment = moment('2020-02-01T12:00:00.000Z');
-      const sameMonthDiffYear: moment.Moment = moment('2021-01-01T12:00:00.000Z');
       component.displayDate = now;
+      component.calendarService.isMonth = jest.fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
 
       fixture.detectChanges();
 
       expect(component.isMonth(now)).toBe(true);
-      expect(component.isMonth(diffMonth)).toBe(false);
-      expect(component.isMonth(sameMonthDiffYear)).toBe(false);
-    });
-
-    test('should check if given date is present in projected dates', (): void => {
-      const _mockCalendarDate: CalendarDate = mockCalendarDate();
-      _mockCalendarDate.mDate = moment(testISOString);
-      const nonProjected: moment.Moment = moment('2020-02-01T12:00:00.000Z');
-      component.projectedDates = [ _mockCalendarDate ];
-
-      fixture.detectChanges();
-
-      expect(component.isProjected(nonProjected)).toBe(false);
-      expect(component.isProjected(_mockCalendarDate.mDate)).toBe(true);
-    });
-
-    test('should check if given date is start date', (): void => {
-      const _mockCalendarDate: CalendarDate = mockCalendarDate();
-      _mockCalendarDate.mDate = moment(testISOString);
-      const nonStart: moment.Moment = moment('2020-02-01T12:00:00.000Z');
-      component.startDate = _mockCalendarDate;
-
-      fixture.detectChanges();
-
-      expect(component.isStart(nonStart)).toBe(false);
-      expect(component.isStart(_mockCalendarDate.mDate)).toBe(true);
-    });
-
-    test('should check if given date is today\'s date', (): void => {
-      const now: moment.Moment = moment(testISOString);
-      const notNow: moment.Moment = moment('2020-02-01T12:00:00.000Z');
-
-      fixture.detectChanges();
-
-      expect(component.isToday(now)).toBe(true);
-      expect(component.isToday(notNow)).toBe(false);
+      expect(component.isMonth(now)).toBe(false);
     });
 
     test('should map projected dates to alerts', (): void => {
@@ -352,17 +259,6 @@ describe('CalendarComponent', (): void => {
         expect(alert.title).toMatch(_mockCalendarProcess.name);
         expect(alert.datetime).toMatch(_mockCalendarDate.mDate.toISOString());
       });
-    });
-
-    test('should remove a projected date by index', (): void => {
-      const _mockTargetDate: CalendarDate = mockCalendarDate();
-      const _mockOtherDate: CalendarDate = mockCalendarDate();
-      component.projectedDates = [ _mockOtherDate, _mockTargetDate, _mockOtherDate ];
-
-      fixture.detectChanges();
-
-      component.removeProjectedDateByIndex(1);
-      expect(component.projectedDates).toStrictEqual([ _mockOtherDate, _mockOtherDate ]);
     });
 
     test('should reset projected dates', (): void => {
@@ -413,15 +309,21 @@ describe('CalendarComponent', (): void => {
 
     test('should set initial start date', (): void => {
       component.selectStartDate = jest.fn();
+      const _mockCalendarDate: CalendarDate = mockCalendarDate();
+      component.currentDate = _mockCalendarDate.mDate;
       const selectSpy: jest.SpyInstance = jest.spyOn(component, 'selectStartDate');
-      const now: moment.Moment = moment();
-      component.currentDate = now;
 
       fixture.detectChanges();
 
-      component.setInitialDates();
-      expect(component.startDate.mDate).toStrictEqual(now);
-      expect(selectSpy.mock.calls[0][0].mDate).toStrictEqual(now);
+      component.setInitialStartDate();
+      const date: CalendarDate = {
+        mDate: _mockCalendarDate.mDate,
+        isStart: true,
+        isProjected: false,
+        isToday: true
+      };
+      expect(component.startDate).toStrictEqual(date);
+      expect(selectSpy).toHaveBeenCalledWith(date);
     });
 
     test('should toggle editing flag', (): void => {
@@ -437,58 +339,75 @@ describe('CalendarComponent', (): void => {
     });
 
     test('should toggle projected date', (): void => {
-      const _mockStartDate: CalendarDate = mockCalendarDate();
-      const _mockPastDate: CalendarDate = mockCalendarDate();
-      _mockPastDate.mDate = moment('2019-12-31T12:00:00.000Z');
       const _mockCalendarDate: CalendarDate = mockCalendarDate();
-      _mockCalendarDate.mDate = moment('2020-01-08T12:00:00.000Z');
-      _mockCalendarDate.isProjected = true;
-      component.startDate = _mockStartDate;
-      component.projectedDates = [ _mockCalendarDate ];
       component.addToProjectedDates = jest.fn();
-      component.removeProjectedDateByIndex = jest.fn();
+      component.removeFromProjectedDates = jest.fn();
       const addSpy: jest.SpyInstance = jest.spyOn(component, 'addToProjectedDates');
-      const removeSpy: jest.SpyInstance = jest.spyOn(component, 'removeProjectedDateByIndex');
+      const removeSpy: jest.SpyInstance = jest.spyOn(component, 'removeFromProjectedDates');
+      component.projectedDates = [];
+      const startDate: CalendarDate = mockCalendarDate();
+      startDate.mDate = startDate.mDate.subtract(1, 'day');
+      console.log(startDate.mDate);
+      component.startDate = startDate;
 
       fixture.detectChanges();
 
-      component.toggleProjectedDate(_mockCalendarDate);
-      expect(removeSpy).toHaveBeenCalledWith(0);
-      component.projectedDates = [];
       component.toggleProjectedDate(_mockCalendarDate);
       expect(addSpy).toHaveBeenCalledWith(_mockCalendarDate);
-      component.toggleProjectedDate(_mockPastDate);
-      expect(removeSpy).toHaveBeenCalledTimes(1);
+      component.projectedDates = [_mockCalendarDate];
+      component.toggleProjectedDate(_mockCalendarDate);
+      expect(removeSpy).toHaveBeenCalledWith(_mockCalendarDate, 0);
+      const earlierDate: CalendarDate = mockCalendarDate();
+      earlierDate.mDate = earlierDate.mDate.subtract(2, 'day');
+      component.toggleProjectedDate(earlierDate);
       expect(addSpy).toHaveBeenCalledTimes(1);
+      expect(removeSpy).toHaveBeenCalledTimes(1);
     });
 
-    test('should update the calendar view', (): void => {
+    test('should remove a date from projected dates', (): void => {
       const _mockCalendarDate: CalendarDate = mockCalendarDate();
-      let dayCount = 0;
-      component.month = Array.from({ length: 6 }, () => {
-        return Array.from({ length: 7 }, () => {
-          const _mockDate: CalendarDate = mockCalendarDate();
-          _mockDate.mDate = _mockDate.mDate.add(dayCount++, 'day');
-          return _mockDate;
-        });
-      });
-      component.startDate = _mockCalendarDate;
-      component.isProjected = jest.fn()
-        .mockImplementation((mDate: moment.Moment): boolean => {
-          return mDate.isSame(component.month[1][0].mDate);
-        });
+      _mockCalendarDate.isProjected = true;
+      const _mockDateToRemove: CalendarDate = mockCalendarDate();
+      _mockDateToRemove.isProjected = true;
+      component.projectedDates = [ _mockCalendarDate, _mockDateToRemove ];
 
       fixture.detectChanges();
 
-      expect(component.month[0][0].isMonth).toBe(false);
-      expect(component.month[1][0].isMonth).toBe(false);
-      expect(component.month[5][6].isMonth).toBe(false);
+      component.removeFromProjectedDates(_mockDateToRemove, 1);
+      expect(_mockDateToRemove.isProjected).toBe(false);
+      expect(component.projectedDates).toStrictEqual([_mockCalendarDate]);
+    });
+
+    test('should update the view for each day', (): void => {
+      component.updateViewDay = jest.fn();
+      const viewSpy: jest.SpyInstance = jest.spyOn(component, 'updateViewDay');
+      const _mockCalendarDate: CalendarDate = mockCalendarDate();
+      component.month = Array.from(Array(6), (): CalendarDate[] => {
+        return Array.from(Array(7), (): CalendarDate => _mockCalendarDate);
+      });
+
+      fixture.detectChanges();
+
       component.updateView();
-      expect(component.month[0][0].isMonth).toBe(true);
-      expect(component.month[0][0].isStart).toBe(true);
-      expect(component.month[1][0].isMonth).toBe(true);
-      expect(component.month[1][0].isProjected).toBe(true);
-      expect(component.month[5][6].isMonth).toBe(false);
+      expect(viewSpy).toHaveBeenCalledTimes(42);
+    });
+
+    test('should update the view of a day', (): void => {
+      component.isMonth = jest.fn()
+        .mockReturnValue(true);
+      component.containsProjectedDate = jest.fn()
+        .mockReturnValue(false);
+      const _mockStartDate: CalendarDate = mockCalendarDate();
+      _mockStartDate.mDate = _mockStartDate.mDate.subtract(10, 'day');
+      component.startDate = _mockStartDate;
+
+      fixture.detectChanges();
+
+      const _mockCalendarDate: CalendarDate = mockCalendarDate();
+      component.updateViewDay(_mockCalendarDate);
+      expect(_mockCalendarDate.isMonth).toBe(true);
+      expect(_mockCalendarDate.isStart).toBe(false);
+      expect(_mockCalendarDate.isProjected).toBe(false);
     });
 
   });
