@@ -8,7 +8,7 @@ import { Alert, CalendarMetadata, CalendarProcess } from '../../shared/interface
 import { CalendarComponent } from '../calendar/calendar.component';
 
 /* Service imports */
-import { IdService } from '../../services/services';
+import { CalendarAlertService, IdService } from '../../services/services';
 
 
 @Component({
@@ -25,11 +25,14 @@ export class ProcessCalendarComponent implements OnChanges {
   closestAlert: Alert = null;
   showDescription: boolean = false;
 
-  constructor(public idService: IdService) { }
+  constructor(
+    public calendarAlertService: CalendarAlertService,
+    public idService: IdService
+  ) { }
 
   ngOnChanges() {
     console.log('process calendar changes');
-    this.closestAlert = this.getClosestAlertByGroup();
+    this.closestAlert = this.calendarAlertService.getClosestAlertByGroup(this.alerts);
   }
 
   /**
@@ -43,37 +46,14 @@ export class ProcessCalendarComponent implements OnChanges {
   }
 
   /**
-   * Get alert for a particular step that is closest to the present datetime
+   * Get calendar metadata from child calendar component
    *
-   * @params: none
+   * @param: none
    *
-   * @return: alert that is closest to the current datetime
+   * @return: calendar component data
    */
-  getClosestAlertByGroup(): Alert {
-    if (this.alerts.length) {
-      const now: number = new Date().getTime();
-      return this.alerts.reduce(
-        (acc: Alert, curr: Alert): Alert => {
-          const accDiff: number = new Date(acc.datetime).getTime() - now;
-          const currDiff: number = new Date(curr.datetime).getTime() - now;
-          const isCurrCloser: boolean = Math.abs(currDiff) < Math.abs(accDiff) && currDiff > 0;
-          return isCurrCloser ? curr : acc;
-        }
-      );
-    }
-
-    return null;
-  }
-
-  /**
-   * Set the start of a calendar step and update server
-   *
-   * @params: none
-   *
-   * @return: calendar metadata
-   */
-  startCalendar(): CalendarMetadata {
-    return this.calendarRef.getFinal();
+  getSelectedCalendarData(): CalendarMetadata {
+    return this.calendarRef.getSelectedCalendarData();
   }
 
   /**
