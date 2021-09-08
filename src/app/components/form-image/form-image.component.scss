@@ -18,7 +18,7 @@ ion-item {
   --padding-end: 0;
 
   /* Color */
-  --border-color: var(--ion-color-light);
+  border-bottom: 2px solid var(--ion-color-light);
 }
 
 ion-label {

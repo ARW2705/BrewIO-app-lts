@@ -24,6 +24,7 @@ import { ImageService, ToastService } from '../../services/services';
 export class FormImageComponent {
   @Input() label: string;
   @Input() image: Image;
+  @Input() overrideTitleCase: boolean = false;
   @Output() imageModalEvent: EventEmitter<Image> = new EventEmitter<Image>();
   missingImageURL: string = MISSING_IMAGE_URL;
 
