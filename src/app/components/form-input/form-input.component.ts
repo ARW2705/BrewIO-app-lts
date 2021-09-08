@@ -1,6 +1,12 @@
 /* Module imports */
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { FormControl } from '@angular/forms';
+
+/* Interface imports */
+import { FormChanges } from '../../shared/interfaces';
+
+/* Service imports */
+import { FormAttributeService } from '../../services/services';
 
 
 @Component({
@@ -9,37 +15,42 @@ import { FormControl } from '@angular/forms';
   styleUrls: ['./form-input.component.scss'],
 })
 export class FormInputComponent implements OnChanges {
-  @Input() control: FormControl;
-  @Input() controlName: string;
-  @Input() formName: string;
-  @Input() label: string;
-  @Input() shouldAutocapitalize: boolean;
-  @Input() shouldAutocomplete: boolean;
-  @Input() shouldAutocorrect: boolean;
-  @Input() shouldRequire: boolean;
-  @Input() shouldSpellcheck: boolean;
+  @Input() control: FormControl = null;
+  @Input() controlName: string = null;
+  @Input() formName: string = null;
+  @Input() label: string = null;
+  @Input() overrideTitleCase: boolean = false;
+  @Input() shouldAutocapitalize: boolean = null;
+  @Input() shouldAutocomplete: boolean = null;
+  @Input() shouldAutocorrect: boolean = null;
+  @Input() shouldRequire: boolean = null;
+  @Input() shouldSpellcheck: boolean = null;
   @Input() type: string;
+  @Output() ionBlurEvent: EventEmitter<CustomEvent> = new EventEmitter<CustomEvent>();
+  @Output() ionChangeEvent: EventEmitter<CustomEvent> = new EventEmitter<CustomEvent>();
   controlErrors: object = null;
-  requiredPropertyKeys: string[] = [
-    'control',
-    'shouldAutocapitalize',
-    'shouldAutocomplete',
-    'shouldAutocorrect',
-    'shouldRequire',
-    'shouldSpellcheck',
-    'type'
-  ];
   showError: boolean = false;
 
-  ngOnChanges(changes: SimpleChanges): void {
-    this.requiredPropertyKeys.forEach((key: string): void => {
-      if (!changes.hasOwnProperty(key) || changes[key] === undefined) {
-        this.setDefault(key); // set default if a value wasn't passed in
-      }
-    });
+  constructor(public formAttributeService: FormAttributeService) {}
 
-    if (changes.hasOwnProperty('value') && changes.value.firstChange) {
-      this.control.setValue(changes.value.currentValue);
+  ngOnChanges(changes: SimpleChanges): void {
+    this.assignFormChanges(
+      this.formAttributeService.handleFormChange('input', this.control, changes)
+    );
+  }
+
+  /**
+   * Apply form changes object values to component
+   *
+   * @param: formChanges - contains key: value pairs of component attributes
+   *
+   * @return: none
+   */
+  assignFormChanges(formChanges: FormChanges): void {
+    for (const key in formChanges) {
+      if (this.hasOwnProperty(key)) {
+        this[key] = formChanges[key];
+      }
     }
   }
 
@@ -55,61 +66,28 @@ export class FormInputComponent implements OnChanges {
   }
 
   /**
+   * Input blur event handler; check for errors after user finishes input
+   *
+   * @param: none
+   * @return: none
+   */
+  onInputBlur(event: CustomEvent): void {
+    this.checkForErrors();
+    this.ionBlurEvent.emit(event);
+  }
+
+  /**
    * Input change event handler; if an error is showing, recheck
    * for errors in order to clear the error as soon as input is valid
    *
    * @param: none
    * @return: none
    */
-  onInputChange(): void {
+  onInputChange(event: CustomEvent): void {
     if (this.showError) {
       this.checkForErrors();
     }
-  }
-
-  /**
-   * Input blur event handler; check for errors after user finishes input
-   *
-   * @param: none
-   * @return: none
-   */
-  onInputBlur(): void {
-    this.checkForErrors();
-  }
-
-  /**
-   * Set default values if component inputs were not provided
-   *
-   * @param: key - the property key to set
-   *
-   * @return: none
-   */
-  setDefault(key: string): void {
-    switch (key) {
-      case 'shouldAutocapitalize':
-        this.shouldAutocapitalize = false;
-        break;
-      case 'shouldAutocomplete':
-        this.shouldAutocomplete = false;
-        break;
-      case 'shouldAutocorrect':
-        this.shouldAutocorrect = false;
-        break;
-      case 'control':
-        this.control = new FormControl();
-        break;
-      case 'shouldRequire':
-        this.shouldRequire = false;
-        break;
-      case 'shouldSpellcheck':
-        this.shouldSpellcheck = false;
-        break;
-      case 'type':
-        this.type = 'text';
-        break;
-      default:
-        break;
-    }
+    this.ionChangeEvent.emit(event);
   }
 
 }

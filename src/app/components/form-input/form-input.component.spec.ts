@@ -7,6 +7,15 @@ import { FormControl } from '@angular/forms';
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
+/* Mock imports */
+import { FormAttributeServiceStub } from '../../../../test-config/service-stubs';
+
+/* Interface imports */
+import { FormInputChanges } from '../../shared/interfaces';
+
+/* Service imports */
+import { FormAttributeService } from '../../services/services';
+
 /* Component imports */
 import { FormInputComponent } from './form-input.component';
 
@@ -20,6 +29,7 @@ describe('FormInputComponent', (): void => {
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
       declarations: [ FormInputComponent ],
+      providers: [ { provide: FormAttributeService, useClass: FormAttributeServiceStub } ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
     await TestBed.compileComponents();
@@ -51,33 +61,48 @@ describe('FormInputComponent', (): void => {
     expect(component).toBeDefined();
   });
 
-  test('should handle default changes', (): void => {
+  test('should handle component changes', (): void => {
     component.ngOnChanges = originalOnChanges;
-    component.control = undefined
-    component.shouldAutocapitalize = undefined;
-    component.shouldAutocomplete = undefined;
-    component.shouldAutocorrect = undefined;
-    component.shouldRequire = undefined;
-    component.shouldSpellcheck = undefined;
-    component.type = undefined;
-    const setSpy: jest.SpyInstance = jest.spyOn(component, 'setDefault');
+    const control: FormControl = new FormControl();
+    component.control = control;
+    component.assignFormChanges = jest.fn();
+    component.formAttributeService.handleFormChange = jest.fn();
+    const handleSpy: jest.SpyInstance = jest.spyOn(component.formAttributeService, 'handleFormChange');
+    const change: SimpleChange = new SimpleChange(null, 'test', false);
 
     fixture.detectChanges();
 
-    const defaultChange: SimpleChange = new SimpleChange({}, {}, true);
-    component.ngOnChanges({ test: defaultChange });
-    expect(setSpy).toHaveBeenCalledTimes(7);
-    for (let i = 0; i < 7; i++) {
-      expect(setSpy.mock.calls[i][0]).toMatch(component.requiredPropertyKeys[i]);
-    }
+    component.ngOnChanges({ label: change });
+    expect(handleSpy).toHaveBeenCalledWith('input', control, { label: change });
   });
 
-  test('should set form control value on first change', (): void => {
+  test('should assign changes to component', (): void => {
     fixture.detectChanges();
 
-    const valueChange: SimpleChange = new SimpleChange('prev', 'curr', true);
-    component.ngOnChanges({ value: valueChange });
-    expect(component.control.value).toMatch('curr');
+    const control: FormControl = new FormControl();
+    const shouldAutocapitalize: boolean = true;
+    const shouldAutocomplete: boolean = true;
+    const shouldAutocorrect: boolean = true;
+    const shouldRequire: boolean = true;
+    const shouldSpellcheck: boolean = true;
+    const type: string = 'text';
+    const changes: FormInputChanges = {
+      control             : control,
+      shouldAutocapitalize: shouldAutocapitalize,
+      shouldAutocomplete  : shouldAutocomplete,
+      shouldAutocorrect   : shouldAutocorrect,
+      shouldRequire       : shouldRequire,
+      shouldSpellcheck    : shouldSpellcheck,
+      type                : type
+    };
+    component.assignFormChanges(changes);
+    expect(component.control).toStrictEqual(control);
+    expect(component.shouldAutocapitalize).toBe(shouldAutocapitalize);
+    expect(component.shouldAutocomplete).toBe(shouldAutocomplete);
+    expect(component.shouldAutocorrect).toBe(shouldAutocorrect);
+    expect(component.shouldRequire).toBe(shouldRequire);
+    expect(component.shouldSpellcheck).toBe(shouldSpellcheck);
+    expect(component.type).toMatch(type);
   });
 
   test('should check for errors', (): void => {
@@ -92,64 +117,34 @@ describe('FormInputComponent', (): void => {
     expect(component.showError).toBe(true);
   });
 
-  test('should handle input change', (): void => {
+  test('should handle input blur event', (): void => {
+    component.ionBlurEvent.emit = jest.fn();
+    const blurSpy: jest.SpyInstance = jest.spyOn(component.ionBlurEvent, 'emit');
     component.checkForErrors = jest.fn();
     const checkSpy: jest.SpyInstance = jest.spyOn(component, 'checkForErrors');
-    component.showError = false;
-
-    fixture.detectChanges();
-
-    component.onInputChange();
-    expect(checkSpy).not.toHaveBeenCalled();
+    const event: CustomEvent = new CustomEvent('test');
     component.showError = true;
-    component.onInputChange();
+
+    fixture.detectChanges();
+
+    component.onInputBlur(event);
+    expect(blurSpy).toHaveBeenCalledWith(event);
     expect(checkSpy).toHaveBeenCalled();
   });
 
-  test('should handle input blur', (): void => {
+  test('should handle input change event', (): void => {
+    component.ionChangeEvent.emit = jest.fn();
+    const changeSpy: jest.SpyInstance = jest.spyOn(component.ionChangeEvent, 'emit');
     component.checkForErrors = jest.fn();
     const checkSpy: jest.SpyInstance = jest.spyOn(component, 'checkForErrors');
+    const event: CustomEvent = new CustomEvent('test');
+    component.showError = true;
 
     fixture.detectChanges();
 
-    component.onInputBlur();
+    component.onInputChange(event);
+    expect(changeSpy).toHaveBeenCalledWith(event);
     expect(checkSpy).toHaveBeenCalled();
-  });
-
-  test('should set default value', (): void => {
-    component.control = undefined
-    component.shouldAutocapitalize = undefined;
-    component.shouldAutocomplete = undefined;
-    component.shouldAutocorrect = undefined;
-    component.shouldRequire = undefined;
-    component.shouldSpellcheck = undefined;
-    component.type = undefined;
-
-    fixture.detectChanges();
-
-    component.setDefault('none');
-    expect(component.control).toBeUndefined();
-    expect(component.shouldAutocapitalize).toBeUndefined();
-    expect(component.shouldAutocomplete).toBeUndefined();
-    expect(component.shouldAutocorrect).toBeUndefined();
-    expect(component.shouldRequire).toBeUndefined();
-    expect(component.shouldSpellcheck).toBeUndefined();
-    expect(component.type).toBeUndefined();
-    component.setDefault('shouldAutocapitalize');
-    expect(component.shouldAutocapitalize).toBe(false);
-    component.setDefault('shouldAutocomplete');
-    expect(component.shouldAutocomplete).toBe(false);
-    component.setDefault('shouldAutocorrect');
-    expect(component.shouldAutocorrect).toBe(false);
-    component.setDefault('control');
-    expect(component.control).toBeDefined();
-    expect(component.control instanceof FormControl).toBe(true);
-    component.setDefault('shouldRequire');
-    expect(component.shouldRequire).toBe(false);
-    component.setDefault('shouldSpellcheck');
-    expect(component.shouldSpellcheck).toBe(false);
-    component.setDefault('type');
-    expect(component.type).toBe('text');
   });
 
   test('should render the template without an error', (): void => {

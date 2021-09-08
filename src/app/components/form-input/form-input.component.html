@@ -5,10 +5,10 @@
   }">
     <ion-label  [ngClass]="{ 'required': shouldRequire }"
                 position="floating">
-      {{ label | titlecase }}
+      {{ overrideTitleCase ? label : (label | titlecase ) }}
     </ion-label>
-    <ion-input  (ionBlur)="onInputBlur()"
-                (ionChange)="onInputChange()"
+    <ion-input  (ionBlur)="onInputBlur($event)"
+                (ionChange)="onInputChange($event)"
                 [autocapitalize]="shouldAutocapitalize ? 'on' : 'off'"
                 [autocomplete]="shouldAutocomplete ? 'on' : 'off'"
                 [autocorrect]="shouldAutocorrect ? 'on' : 'off'"
