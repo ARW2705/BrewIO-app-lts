@@ -1,13 +1,16 @@
 export { ActionSheetServiceStub } from './service-stubs/action-sheet-stub.service';
 export { BackgroundModeServiceStub } from './service-stubs/background-mode-stub.service';
 export { CalculationsServiceStub } from './service-stubs/calculations-stub.service';
-export { IdServiceStub } from './service-stubs/id-stub.service';
+export { CalendarServiceStub } from './service-stubs/calendar-stub.service';
+export { CalendarAlertServiceStub } from './service-stubs/calendar-alert-stub.service';
 export { ConnectionServiceStub } from './service-stubs/connection-stub.service';
 export { CustomErrorServiceStub } from './service-stubs/custom-error-stub.service';
 export { DeviceServiceStub } from './service-stubs/device-stub.service';
 export { ErrorReportingServiceStub } from './service-stubs/error-reporting-stub.service';
 export { EventServiceStub } from './service-stubs/event-stub.service';
 export { FileServiceStub } from './service-stubs/file-stub.service';
+export { FormAttributeServiceStub } from './service-stubs/form-attribute-stub.service';
+export { IdServiceStub } from './service-stubs/id-stub.service';
 export { ImageServiceStub } from './service-stubs/image-stub.service';
 export { InventoryServiceStub } from './service-stubs/inventory-stub.service';
 export { LibraryServiceStub } from './service-stubs/library-stub.service';

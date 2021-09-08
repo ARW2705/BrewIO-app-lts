@@ -2,13 +2,13 @@
 import { Component, Input, OnChanges, OnInit } from '@angular/core';
 
 /* Mock imports */
-import { IdServiceStub } from '../service-stubs';
+import { CalendarServiceStub, IdServiceStub } from '../service-stubs';
 
 /* Interface imports */
 import { CalendarDate, CalendarProcess } from '../../src/app/shared/interfaces';
 
 /* Service imports */
-import { IdService } from '../../src/app/services/services';
+import { CalendarService, IdService } from '../../src/app/services/services';
 
 /* Component imports */
 import { CalendarComponent } from '../../src/app/components/calendar/calendar.component';
@@ -18,6 +18,7 @@ import { CalendarComponent } from '../../src/app/components/calendar/calendar.co
   template: '',
   providers: [
     { provide: CalendarComponent, useClass: CalendarComponentStub },
+    { provide: CalendarService, useClass: CalendarServiceStub },
     { provide: IdService, useClass: IdServiceStub }
   ]
 })
@@ -29,35 +30,30 @@ export class CalendarComponentStub implements OnInit, OnChanges {
   month: CalendarDate[][] = [];
   projectedDates: CalendarDate[] = [];
   startDate: CalendarDate = null;
-  weekCount: number = 6;
-  weekLength: number = 7;
 
-  constructor(public idService: IdService) {}
+  constructor(
+    public calendarService: CalendarService,
+    public idService: IdService
+  ) {}
 
   ngOnInit() {}
   ngOnChanges(): any {}
+  addToProjectedDates(...options: any): any {}
   buildCalendar(): any {}
-  buildCalendarDate(): any {}
-  buildMonthMatrix(): any {}
-  buildWeekArray(): any {}
-  addToProjectedDates(): any {}
-  changeMonth(): any {}
-  getFinal(): any {}
-  getFirstDateForCalendarMatrix(): any {}
-  getFirstDayOfWeekInDisplayedMonth(): any {}
-  handleDateButtonClick(): any {}
+  changeMonth(...options: any): any {}
+  containsProjectedDate(...options: any): any {}
+  getSelectedCalendarData(): any {}
+  handleDateButtonClick(...options: any): any {}
   initCalendar(): any {}
   isMonth(...options: any[]): any {}
-  isProjected(...options: any[]): any {}
-  isStart(...options: any[]): any {}
-  isToday(...options: any[]): any {}
   mapProjectedDatesToAlerts(): any {}
-  removeProjectedDateByIndex(): any {}
+  removeFromProjectedDates(...options: any): any {}
   resetProjectedDates(): any {}
   selectStartDate(...options: any[]): any {}
   setInitialProjectedDate(): any {}
-  setInitialDates(): any {}
+  setInitialStartDate(): void {}
   toggleEdit(...options: any[]): any {}
   toggleProjectedDate(...options: any[]): any {}
-  updateView(): any {}
+  updateView(...options: any): any {}
+  updateViewDay(...options: any): any {}
 }

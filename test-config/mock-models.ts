@@ -12,6 +12,7 @@ export { mockBatchTimer } from './mock-models/mock-batch-timer';
 export { mockBatch } from './mock-models/mock-batch';
 export { mockBlob } from './mock-models/mock-blob';
 export { mockCalendarDate } from './mock-models/mock-calendar-date';
+export { mockCalendarMetadata } from './mock-models/mock-calendar-metadata';
 export { mockCalendarProcess } from './mock-models/mock-calendar-process';
 export { mockConcurrentTimers } from './mock-models/mock-concurrent-timers';
 export { mockDeviceInfo } from './mock-models/mock-device-info';
