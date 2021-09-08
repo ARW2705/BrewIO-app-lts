@@ -34,16 +34,12 @@ export class AccordionComponent implements OnChanges {
       if (this.expanded) {
         animation = this.animationService.expand(
           this.container.nativeElement,
-          {
-            duration: this.animationDuration
-          }
+          { duration: this.animationDuration }
         );
       } else {
         animation = this.animationService.collapse(
           this.container.nativeElement,
-          {
-            duration: this.animationDuration
-          }
+          { duration: this.animationDuration }
         );
       }
       await animation.play();
