@@ -1,0 +1,16 @@
+.master-summary-grid {
+  /* Display */
+  width: 100%;
+}
+
+.master-summary-header {
+  ion-col {
+    /* Text */
+    font-size: 8vw;
+  }
+
+  ion-col:last-child {
+    /* Text */
+    font-size: 6.5vw;
+  }
+}
