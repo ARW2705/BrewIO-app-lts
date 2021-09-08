@@ -10,6 +10,8 @@ import { FormControl } from '@angular/forms';
 })
 export class FormToggleComponent {
   @Input() control: FormControl;
+  @Input() overrideNameTitleCase: boolean = false;
+  @Input() overrideAdditionalNameTitleCase: boolean = false;
   @Input() toggleName: string;
   @Input() toggleAdditionalName?: string;
   @Output() toggleEvent: EventEmitter<CustomEvent> = new EventEmitter<CustomEvent>();
