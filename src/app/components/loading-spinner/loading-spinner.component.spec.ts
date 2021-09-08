@@ -40,7 +40,7 @@ describe('LoadingSpinnerComponent', () => {
     fixture.detectChanges();
 
     const label: HTMLElement = global.document.querySelector('span');
-    expect(label.textContent).toMatch('loading');
+    expect(label.textContent).toMatch('Loading');
     const spinner: HTMLElement = global.document.querySelector('ion-spinner');
     expect(spinner.getAttribute('name')).toMatch('circular');
   });
