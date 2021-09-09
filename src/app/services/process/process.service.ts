@@ -8,7 +8,7 @@ import { catchError, finalize, map, mergeMap, take, tap } from 'rxjs/operators';
 import { API_VERSION, BASE_URL } from '../../shared/constants';
 
 /* Interface imports */
-import { Alert, Batch, BatchAnnotations, BatchContext, BatchProcess, PrimaryValues, Process, RecipeMaster, RecipeVariant, SyncData, SyncError, SyncMetadata, SyncRequests, SyncResponse, User } from '../../shared/interfaces';
+import { Alert, Batch, BatchAnnotations, BatchContext, BatchProcess, CalendarMetadata, CalendarProcess, PrimaryValues, Process, RecipeMaster, RecipeVariant, SyncData, SyncError, SyncMetadata, SyncRequests, SyncResponse, User } from '../../shared/interfaces';
 
 /* Type guard imports */
 import { AlertGuardMetadata, BatchGuardMetadata, BatchContextGuardMetadata, BatchAnnotationsGuardMetadata, BatchProcessGuardMetadata, PrimaryValuesGuardMetadata } from '../../shared/type-guard-metadata';
@@ -299,38 +299,23 @@ export class ProcessService {
    *
    * @return: observable of updated batch
    */
-  updateStepById(batchId: string, stepUpdate: object): Observable<Batch> {
-    const batch$: BehaviorSubject<Batch> = this.getBatchById(batchId);
-    if (!batch$) {
-      const message: string = 'An error occurring trying to update batch step: missing batch';
-      const additionalMessage: string = `Batch with id ${batchId} not found`;
-      return throwError(this.getMissingError(message, additionalMessage));
+  updateCalendarStep(batchId: string, calendarUpdate: CalendarMetadata): Observable<Batch> {
+    try {
+      const batch$: BehaviorSubject<Batch> = this.getBatchById(batchId);
+      const batch: Batch = batch$.value;
+      const processIndex: number = batch.process.schedule.findIndex((step: Process) => {
+        return this.idService.hasId(step, calendarUpdate.id);
+      });
+
+      batch.process.alerts = batch.process.alerts.concat(calendarUpdate.alerts);
+      const calendarProcess: CalendarProcess = <CalendarProcess>batch.process.schedule[processIndex];
+      calendarProcess.startDatetime = calendarUpdate.startDatetime;
+
+      return this.updateBatch(batch);
+    } catch (error) {
+      const userMessage: string = 'An error occurring trying to update batch step';
+      return throwError(this.getMissingError(error.message, userMessage));
     }
-    const batch: Batch = batch$.value;
-
-    if (!batch.owner) {
-      const message: string = 'An error occurring trying to update batch step: missing batch owner id';
-      return throwError(this.getMissingError(message));
-    }
-
-    if (!stepUpdate.hasOwnProperty('id')) {
-      const message: string = 'An error occurring trying to update batch step: missing step id';
-      return throwError(this.getMissingError(message));
-    }
-
-    const stepIndex: number = batch.process.schedule
-      .findIndex((step: Process) => this.idService.hasId(step, stepUpdate['id']));
-
-    if (stepIndex === -1) {
-      const message: string = 'An error occurring trying to update batch step: missing step';
-      const additionalMessage: string = `Step with id ${stepUpdate['id']} not found`;
-      return throwError(this.getMissingError(message, additionalMessage));
-    }
-
-    batch.process.alerts = batch.process.alerts.concat(stepUpdate['update']['alerts']);
-    batch.process.schedule[stepIndex]['startDatetime'] = stepUpdate['update']['startDatetime'];
-
-    return this.updateBatch(batch);
   }
 
   /***** End API access methods *****/
@@ -896,7 +881,9 @@ export class ProcessService {
     const active$: BehaviorSubject<Batch> = this.getBatchList(true).value
       .find((batch$: BehaviorSubject<Batch>): boolean => this.idService.hasId(batch$.value, batchId));
 
-    if (active$ !== undefined) return active$;
+    if (active$ !== undefined) {
+      return active$;
+    }
 
     return this.getBatchList(false).value
       .find((batch$: BehaviorSubject<Batch>): boolean => {
@@ -1134,17 +1121,6 @@ export class ProcessService {
    */
   isSafeProcessSchedule(schedule: Process[]): boolean {
     return this.recipeService.isSafeProcessSchedule(schedule);
-  }
-
-  /**
-   * Check if given process is a TimerProcess
-   *
-   * @param: process - the process to check
-   *
-   * @return: true if process has a concurrent property (required by and unique to TimerProcess)
-   */
-  isTimerProcess(process: Process): boolean {
-    return process.hasOwnProperty('concurrent');
   }
 
   /***** End Type Guard *****/
