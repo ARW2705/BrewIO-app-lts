@@ -131,7 +131,14 @@ export class ImageService {
             );
           return this.copyImageToLocalTmpDir(path, originalName);
         }),
-        catchError(this.errorReporter.handleGenericCatchError())
+        catchError((error: Error | unknown): Observable<null | never> => {
+          if (error instanceof Error) {
+            return this.errorReporter.handleGenericCatchError()(error);
+          } else {
+            console.log(error);
+            return of(null);
+          }
+        })
       );
   }
 
