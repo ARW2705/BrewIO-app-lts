@@ -56,11 +56,13 @@ export class EventService {
    * @return: none
    */
   unregister(name: string): void {
-    if (this.subscribers[name].subscriberCount === 1) {
-      this.subscribers[name].message.complete();
-      delete this.subscribers[name];
-    } else {
-      this.subscribers[name].subscriberCount--;
+    if (this.subscribers.hasOwnProperty(name)) {
+      if (this.subscribers[name].subscriberCount === 1) {
+        this.subscribers[name].message.complete();
+        delete this.subscribers[name];
+      } else {
+        this.subscribers[name].subscriberCount--;
+      }
     }
   }
 
