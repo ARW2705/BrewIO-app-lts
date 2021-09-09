@@ -50,8 +50,8 @@ export class CalculationsService {
       )
     ) {
       return (Math.abs(
-        (SG_TO_PLATO[0] * Math.pow(density, 3))
-        - (SG_TO_PLATO[1] * Math.pow(density, 2))
+        (SG_TO_PLATO[0] * density ** 3)
+        - (SG_TO_PLATO[1] * density ** 2)
         + (SG_TO_PLATO[2] * density)
         - SG_TO_PLATO[3]
       ));
