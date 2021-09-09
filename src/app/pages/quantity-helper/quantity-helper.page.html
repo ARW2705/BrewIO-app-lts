@@ -3,117 +3,81 @@
 </app-header>
 
 <ion-content>
-
   <ion-grid>
-
     <ion-row class="ion-justify-content-center">
-
       <header>
         {{ headerText | titlecase }}
       </header>
-
       <section  (ionInput)="onQuantityChange($event)"
                 (ionBlur)="checkQuantities($event)">
-
         <ion-item id="pints"
                   class="form-input">
-
           <ion-label position="stacked">
             Pints
           </ion-label>
-
           <ion-input  #pintInput
                       type="number"
                       debounce=500
                       [(ngModel)]="quantityPints">
           </ion-input>
-
         </ion-item>
-
         <ion-item id="ounces"
                   class="form-input">
-
           <ion-label position="stacked">
             Fluid Ounces
           </ion-label>
-
           <ion-input  type="number"
                       debounce=500
                       [(ngModel)]="quantityOunces">
           </ion-input>
-
         </ion-item>
-
         <ion-item id="centiliters"
                   class="form-input">
-
           <ion-label position="stacked">
             Centiliters
           </ion-label>
-
           <ion-input  type="number"
                       debounce=500
                       [(ngModel)]="quantityCentiliters">
           </ion-input>
-
         </ion-item>
-
       </section>
-
       <section *ngIf="showCommonContainers">
-
         <ion-item class="form-input">
-
           <ion-label position="floating">
             Common Containers
           </ion-label>
-
           <ion-select okText="Okay"
                       cancelText="Dismiss"
                       (ionChange)="onCommonSelect($event)"
                       [compareWith]="compareWithFn"
                       [interfaceOptions]="selectOptions">
-
             <ion-select-option  *ngFor="let container of commonContainers"
                                 [value]="container">
               {{ container.name | titlecase }} ({{ container.capacity }} pints)
             </ion-select-option>
-
           </ion-select>
-
         </ion-item>
-
       </section>
-
     </ion-row>
-
-
+    <!-- Form Buttons -->
     <ion-row>
-
       <!-- Cancel button -->
       <ion-col size="6">
-
         <ion-button color="primary"
                     (click)="dismiss()"
                     class="form-button">
           Cancel
         </ion-button>
-
       </ion-col>
-
       <!-- Confirmation button -->
       <ion-col size="6">
-
         <ion-button color="primary"
                     (click)="submit()"
                     class="form-button">
           Submit
         </ion-button>
-
       </ion-col>
-
     </ion-row>
-
   </ion-grid>
-
 </ion-content>
