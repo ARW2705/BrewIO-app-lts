@@ -69,8 +69,8 @@
         <ion-col  size="12"
                   class="ion-no-padding">
 
-          <accordion  [expanded]="showNotes"
-                      #noteContainerScrollLandmark>
+          <app-accordion  [expanded]="showNotes"
+                          #noteContainerScrollLandmark>
 
             <div  *ngIf="!recipeMaster.notes.length"
                   id="empty-notes">
@@ -85,13 +85,13 @@
 
             </div>
 
-            <note-list  *ngIf="recipeMaster.notes.length"
-                        [recipeMasterId]="recipeMaster.cid"
-                        [notes]="recipeMaster.notes"
-                        #noteList>
-            </note-list>
+            <app-note-list  *ngIf="recipeMaster.notes.length"
+                            [recipeMasterId]="recipeMaster.cid"
+                            [notes]="recipeMaster.notes"
+                            #noteList>
+            </app-note-list>
 
-          </accordion>
+          </app-accordion>
 
         </ion-col>
 
@@ -270,11 +270,11 @@
             </ion-item-sliding>
 
             <!-- Ingredient list -->
-            <accordion  [expanded]="recipeIndex === i">
+            <app-accordion [expanded]="recipeIndex === i">
 
               <ingredient-list [recipeVariant]="variant"></ingredient-list>
 
-            </accordion>
+            </app-accordion>
 
           </ng-container>
 
