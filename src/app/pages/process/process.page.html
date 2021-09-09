@@ -37,7 +37,7 @@
                       (goToActiveStepEvent)="goToActiveStep()"
                       (openMeasurementFormModalEvent)="openMeasurementFormModal($event)"
                       (startCalendarEvent)="startCalendar()"
-                      [atViewStart]="atViewStart"
+                      [atViewStart]="viewStepIndex === 0"
                       [atViewEnd]="atViewEnd"
                       [onCurrentStep]="selectedBatch.process.currentStep === viewStepIndex"
                       [isCalendarStep]="stepData && stepData.type === 'calendar'"
