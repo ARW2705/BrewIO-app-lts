@@ -13,6 +13,9 @@ import { defaultDismissButton } from '../../shared/defaults';
   providedIn: 'root'
 })
 export class ToastService {
+  shortDuration: number = 1000;
+  mediumDuration: number = 1500;
+  longDuration: number = 2000;
 
   constructor(public toastCtrl: ToastController) { }
 
@@ -59,7 +62,7 @@ export class ToastService {
     dismissFn?: any
   ): Promise<void> {
     const toastOptions: object = {
-      message: message,
+      message,
       cssClass: 'toast-main',
       buttons: [ defaultDismissButton() ]
     };
