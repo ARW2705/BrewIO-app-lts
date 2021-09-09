@@ -45,8 +45,8 @@ describe('ProcessControlsComponent', (): void => {
 
     fixture.detectChanges();
 
-    component.changeStep('next');
-    expect(actionSpy).toHaveBeenCalledWith('next');
+    component.changeStep(true);
+    expect(actionSpy).toHaveBeenCalledWith(true);
   });
 
   test('should handle complete step', (): void => {

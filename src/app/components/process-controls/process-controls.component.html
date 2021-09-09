@@ -6,7 +6,7 @@
     <!-- View previous step if not at start -->
     <ion-col>
       <ion-button color="primary"
-                  (click)="changeStep('prev')"
+                  (click)="changeStep(false)"
                   [disabled]="atViewStart">
         <ion-icon name="caret-back-outline"
                   class="nav-process-button">
@@ -49,7 +49,7 @@
     <!-- View next step if not at end -->
     <ion-col>
       <ion-button color="primary"
-                  (click)="changeStep('next')"
+                  (click)="changeStep(true)"
                   [disabled]="atViewEnd">
         <ion-icon name="caret-forward-outline"
                   class="nav-process-button">

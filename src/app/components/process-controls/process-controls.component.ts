@@ -13,7 +13,7 @@ export class ProcessControlsComponent {
   @Input() isCalendarInProgress: boolean = false;
   @Input() isCalendarStep: boolean = false;
   @Input() onCurrentStep: boolean = false;
-  @Output() changeStepEvent: EventEmitter<string> = new EventEmitter<string>();
+  @Output() changeStepEvent: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() completeStepEvent: EventEmitter<null> = new EventEmitter<null>();
   @Output() goToActiveStepEvent: EventEmitter<null> = new EventEmitter<null>();
   @Output() openMeasurementFormModalEvent: EventEmitter<boolean> = new EventEmitter<boolean>();
@@ -22,18 +22,18 @@ export class ProcessControlsComponent {
   /**
    * Change the step view
    *
-   * @params: direction - the direction to go; either 'next' or 'prev'
+   * @param: isForward - true to advance forward; false to go back
    *
    * @return: none
    */
-  changeStep(direction: string): void {
-    this.changeStepEvent.emit(direction);
+  changeStep(isForward: boolean): void {
+    this.changeStepEvent.emit(isForward);
   }
 
   /**
    * Complete the current step
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   completeStep(): void {
@@ -43,7 +43,7 @@ export class ProcessControlsComponent {
   /**
    * Change view to the current step
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   goToActiveStep(): void {
@@ -53,7 +53,7 @@ export class ProcessControlsComponent {
   /**
    * Open the measurement form modal (submission will not be required)
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   openMeasurementFormModal(): void {
@@ -63,7 +63,7 @@ export class ProcessControlsComponent {
   /**
    * Start the calendar step with selected dates
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   startCalendar(): void {
