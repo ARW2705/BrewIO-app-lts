@@ -4,30 +4,20 @@
 
 <ion-content>
   <ion-grid>
-    <ion-row>
+    <ion-row *ngIf="message">
       <ion-col  size="12"
                 id="message">
         <span>{{ message }}</span>
       </ion-col>
     </ion-row>
+
     <ion-row>
-      <!-- Cancel button -->
-      <ion-col size="6">
-        <ion-button color="primary"
-                    (click)="submit(false)"
-                    class="form-button">
-          Cancel
-        </ion-button>
-      </ion-col>
-      <!-- Confirmation button -->
-      <ion-col size="6">
-        <ion-button color="danger"
-                    (click)="submit(true)"
-                    class="form-button">
-          Confirm
-        </ion-button>
-      </ion-col>
+      <app-form-buttons (cancelEvent)="submit(false)"
+                        (submitEvent)="submit(true)"
+                        [shouldCautionSubmit]="true">
+      </app-form-buttons>
     </ion-row>
+
     <ion-row  *ngIf="subMessage"
               class="ion-justify-content-end">
       <ion-col  size="6"

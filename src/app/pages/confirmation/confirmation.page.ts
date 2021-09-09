@@ -9,8 +9,8 @@ import { ModalController } from '@ionic/angular';
   styleUrls: ['./confirmation.page.scss'],
 })
 export class ConfirmationPage {
-  @Input() message: string = '';
-  @Input() subMessage: string = null;
+  @Input() message: string;
+  @Input() subMessage: string;
   onBackClick: () => void;
 
   constructor(public modalCtrl: ModalController) {
