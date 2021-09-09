@@ -38,11 +38,13 @@ export class LoggingService {
    */
   logErrorReports(reports: ErrorReport[]): void {
     console.log('logging reports', reports);
-    this.http.post(`${BASE_URL}/${API_VERSION}/reporting/error`, reports)
-      .pipe(
-        catchError((_: any): Observable<any> => this.storeErrorReports(reports))
-      )
-      .subscribe((): void => console.log('error reports sent'));
+    if (reports && reports.length) {
+      this.http.post(`${BASE_URL}/${API_VERSION}/reporting/error`, reports)
+        .pipe(
+          catchError((_: any): Observable<any> => this.storeErrorReports(reports))
+        )
+        .subscribe((): void => console.log('error reports sent'));
+    }
   }
 
   /**
