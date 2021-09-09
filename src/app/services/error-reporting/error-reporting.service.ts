@@ -27,10 +27,10 @@ import { ToastService } from '../toast/toast.service';
 export class ErrorReportingService {
   reports: ErrorReport[] = [];
   isErrorModalOpen: boolean = false;
-  fatalSeverity: number = 1;
-  nonFatalMaxSeverity: number = 2;
-  moderateSeverity: number = 3;
-  lowestSeverity: number = 4;
+  readonly fatalSeverity: number = 1;
+  readonly highSeverity: number = 2;
+  readonly moderateSeverity: number = 3;
+  readonly lowestSeverity: number = 4;
 
   constructor(
     public device: DeviceService,
@@ -94,13 +94,13 @@ export class ErrorReportingService {
       name: overrides.hasOwnProperty('name') ? overrides['name'] : error.name,
       message: overrides.hasOwnProperty('message') ? overrides['message'] : error.message,
       severity: overrides.hasOwnProperty('severity')
-                ? overrides['severity']
-                : this.getReportSeverity(error),
+        ? overrides['severity']
+        : this.getReportSeverity(error),
       stackTrace: error.stack,
       timestamp: this.getTimestamp(),
       userMessage:  overrides.hasOwnProperty('userMessage')
-                    ? overrides['userMessage']
-                    : this.getReportUserMessage(error)
+        ? overrides['userMessage']
+        : this.getReportUserMessage(error)
     };
   }
 
@@ -119,14 +119,14 @@ export class ErrorReportingService {
       name: overrides.hasOwnProperty('name') ? overrides['name'] : error.name,
       message: overrides.hasOwnProperty('message') ? overrides['message'] : error.message,
       severity: overrides.hasOwnProperty('severity')
-                ? overrides['severity']
-                : this.getReportSeverity(error),
+        ? overrides['severity']
+        : this.getReportSeverity(error),
       statusCode: error.status,
       timestamp: this.getTimestamp(),
       url: error.url,
       userMessage:  overrides.hasOwnProperty('userMessage')
-                    ? overrides['userMessage']
-                    : this.getReportUserMessage(error)
+        ? overrides['userMessage']
+        : this.getReportUserMessage(error)
     };
   }
 
@@ -142,19 +142,30 @@ export class ErrorReportingService {
     const consoleMessage: string = `${report.name}: ${report.message}`;
     if (report.severity < this.moderateSeverity) {
       this.reports.push(report);
-      console.error(consoleMessage);
+      console.error(consoleMessage, report.severity, report.stackTrace);
       if (!this.isErrorModalOpen) {
         this.isErrorModalOpen = true;
         this.openReportModal();
       }
     } else if (report.severity === this.moderateSeverity) {
       this.reports.push(report);
-      console.warn(consoleMessage);
+      console.warn(consoleMessage, report.severity, report.stackTrace);
       this.presentErrorToast(report.userMessage, report.dismissFn);
       this.logErrorReports();
     } else {
       console.log(consoleMessage);
     }
+  }
+
+  /**
+   * Set an error report based on given error
+   *
+   * @param: error - the triggering error event
+   *
+   * @return: none
+   */
+  setErrorReportFromCustomError(error: CustomError | Error): void {
+    this.setErrorReport(this.getCustomReportFromError(error));
   }
 
   /***** End Error Report *****/
@@ -201,7 +212,7 @@ export class ErrorReportingService {
         return of(resolvedValue as any);
       } else if (error && error instanceof HttpErrorResponse) {
         this.setErrorReport(this.getCustomReportFromHttpError(error));
-      } else if (error) {
+      } else if (error && error instanceof HttpErrorResponse) {
         this.setErrorReport(this.getCustomReportFromError(error));
       }
       return throwError(null);
@@ -307,7 +318,7 @@ export class ErrorReportingService {
    * @return: error severity 1 (highest) - 4 (lowest)
    */
   getReportSeverity(error: Error | CustomError | HttpErrorResponse): number {
-    return error instanceof CustomError ? error.severity : this.nonFatalMaxSeverity;
+    return error instanceof CustomError ? error.severity : this.highSeverity;
   }
 
   /**
@@ -352,7 +363,7 @@ export class ErrorReportingService {
     return new CustomError(
       'UncaughtError',
       `${baseMessage}: ${messageExtention}`,
-      this.nonFatalMaxSeverity,
+      this.highSeverity,
       baseMessage
     );
   }
