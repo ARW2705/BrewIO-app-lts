@@ -232,7 +232,7 @@ export class InventoryService {
     console.log('creating item from batch');
     return combineLatest(
       this.recipeService.getPublicAuthorByRecipeId(batch.recipeMasterId),
-      this.recipeService.getRecipeMasterById(batch.recipeMasterId),
+      this.recipeService.getRecipeMasterById(batch.recipeMasterId) || of(undefined),
       this.libraryService.getStyleById(batch.annotations.styleId)
     )
     .pipe(
@@ -243,7 +243,6 @@ export class InventoryService {
         const style: Style = _style;
         const measuredValues: PrimaryValues = batch.annotations.measuredValues;
         const contextInfo: BatchContext = batch.contextInfo;
-
         const generatedItemValues: object = {
           supplierName: author.username !== '' ? author.username : 'pending',
           supplierLabelImage: author.breweryLabelImage,
@@ -262,7 +261,7 @@ export class InventoryService {
           batchId: this.idService.getId(batch),
           originalRecipeId: this.idService.getId(recipeMaster),
           sourceType:
-            batch.owner === 'offline' || batch.owner === recipeMaster.owner
+            batch.owner === 'offline' || (recipeMaster && batch.owner === recipeMaster.owner)
               ? 'self'
               : 'other'
         };
