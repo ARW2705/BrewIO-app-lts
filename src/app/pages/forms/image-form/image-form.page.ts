@@ -64,7 +64,6 @@ export class ImageFormPage implements OnInit {
       .pipe(finalize(() => loading.dismiss()))
       .subscribe(
         (imageData: Image): void => {
-          console.log('got image', imageData);
           this.image = imageData;
           this.cdRef.detectChanges();
         },
