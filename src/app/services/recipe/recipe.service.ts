@@ -71,7 +71,7 @@ export class RecipeService {
    * Perform any pending sync operations first then fetch recipes
    * On completion, emit event to trigger batch init
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   initFromServer(): void {
@@ -101,7 +101,7 @@ export class RecipeService {
   /**
    * Get recipes from storage - use these recipes if there has not been a server response
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   initFromStorage(): void {
@@ -120,7 +120,7 @@ export class RecipeService {
   /**
    * Get recipe masters
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   initializeRecipeMasterList(): void {
@@ -137,7 +137,7 @@ export class RecipeService {
   /**
    * Set up event listeners
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   registerEvents(): void {
@@ -155,7 +155,7 @@ export class RecipeService {
   /**
    * Get recipe author data
    *
-   * @params: masterId - recipe master to use as base for user search
+   * @param: masterId - recipe master to use as base for user search
    *
    * @return: observable of author data
    */
@@ -209,7 +209,7 @@ export class RecipeService {
   /**
    * Get a public recipe master by its id
    *
-   * @params: masterId - recipe master id string to search
+   * @param: masterId - recipe master id string to search
    *
    * @return: Observable of recipe master
    */
@@ -223,7 +223,7 @@ export class RecipeService {
   /**
    * Get all public recipe masters owned by a user
    *
-   * @params: userId - user id string to search
+   * @param: userId - user id string to search
    *
    * @return: Observable of an array of recipe masters
    */
@@ -235,8 +235,8 @@ export class RecipeService {
   /**
    * Get a public recipe variant by its id
    *
-   * @params: masterId - recipe master id which requested recipe belongs
-   * @params: variantId - recipe id string to search
+   * @param: masterId - recipe master id which requested recipe belongs
+   * @param: variantId - recipe id string to search
    *
    * @return: Observable of recipe
    */
@@ -255,7 +255,7 @@ export class RecipeService {
   /**
    * Create a new recipe master and initial variant
    *
-   * @params: newMasterValues - object with data to construct
+   * @param: newMasterValues - object with data to construct
    * recipe master and an initial recipe variant
    *
    * @return: observable of new recipe master
@@ -286,8 +286,8 @@ export class RecipeService {
   /**
    * Create a new recipe variant
    *
-   * @params: masterId - recipe master id to add variant to
-   * @params: variant - the new RecipeVariant to add
+   * @param: masterId - recipe master id to add variant to
+   * @param: variant - the new RecipeVariant to add
    *
    * @return: observable of new variant
    */
@@ -319,7 +319,7 @@ export class RecipeService {
   /**
    * Remove a recipe master and its variants
    *
-   * @params: masterId - if of recipe master to delete
+   * @param: masterId - if of recipe master to delete
    *
    * @return: observable resulting data not required; using for error throw/handling
    */
@@ -360,8 +360,8 @@ export class RecipeService {
   /**
    * Remove a recipe variant from its parent
    *
-   * @params: masterId - recipe variant's master's id
-   * @params: variantId - id of variant to delete
+   * @param: masterId - recipe variant's master's id
+   * @param: variantId - id of variant to delete
    *
    * @return: observable resulting data not required; using for error throw/handling
    */
@@ -401,8 +401,8 @@ export class RecipeService {
   /**
    * Update a recipe master
    *
-   * @params: masterId - recipe master's id
-   * @params: update - object containing update data
+   * @param: masterId - recipe master's id
+   * @param: update - object containing update data
    *
    * @return: observable of updated recipe master
    */
@@ -454,9 +454,9 @@ export class RecipeService {
   /**
    * Update a recipe variant
    *
-   * @params: masterId - if of recipe variant's parent master
-   * @params: variantId - if of variant to update
-   * @params: update - object containing update data
+   * @param: masterId - if of recipe variant's parent master
+   * @param: variantId - if of variant to update
+   * @param: update - object containing update data
    *
    * @return: observable of the updated recipe
    */
@@ -494,9 +494,9 @@ export class RecipeService {
   /**
    * Configure a background request while defining which error handling method to use
    *
-   * @params: syncMethod - the http method to apply
-   * @params: recipeMaster - the RecipeMaster to use in request
-   * @params: shouldResolveError - true if error should return the error response as an observable
+   * @param: syncMethod - the http method to apply
+   * @param: recipeMaster - the RecipeMaster to use in request
+   * @param: shouldResolveError - true if error should return the error response as an observable
    * or false if error should be handled as an error
    *
    * @return: observable of RecipeMaster or HttpErrorResponse
@@ -521,10 +521,10 @@ export class RecipeService {
   /**
    * Construct a server background request
    *
-   * @params: syncMethod - the http method: 'post', 'patch', and 'delete' are valid
-   * @params: recipeMaster - the recipe master to base the request on
-   * @params: [recipeVariant] - optional recipe variant to base the request on
-   * @params: [deletionId] - optional id for deletion if client side doc has already been deleted
+   * @param: syncMethod - the http method: 'post', 'patch', and 'delete' are valid
+   * @param: recipeMaster - the recipe master to base the request on
+   * @param: [recipeVariant] - optional recipe variant to base the request on
+   * @param: [deletionId] - optional id for deletion if client side doc has already been deleted
    *
    * @return: observable of server request
    */
@@ -587,29 +587,34 @@ export class RecipeService {
   /**
    * Handle updating client doc with server response
    *
-   * @params: masterId - recipe master's id to update or variant's master's id
-   * @params: variantId - recipe variant id to update
-   * @params: recipeResponse - the updated recipe master or variant
+   * @param: masterId - recipe master's id to update or variant's master's id
+   * @param: variantId - recipe variant id to update
+   * @param: recipeResponse - the updated recipe master or variant
+   * @param: method - the request method; 'delete' requests need no further processing
    *
    * @return: observable of the updated recipe master or variant
    */
   handleBackgroundUpdateResponse(
     masterId: string,
     variantId: string,
-    recipeResponse: RecipeMaster | RecipeVariant
+    recipeResponse: RecipeMaster | RecipeVariant,
+    method: string
   ): Observable<RecipeMaster | RecipeVariant> {
-    if (!variantId) {
+    if (method === 'delete') {
+      return of(null);
+    } else if (!variantId) {
       return this.updateRecipeMasterInList(masterId, <RecipeMaster>recipeResponse);
+    } else {
+      return this.updateRecipeVariantOfMasterInList(masterId, variantId, <RecipeVariant>recipeResponse);
     }
-    return this.updateRecipeVariantOfMasterInList(masterId, variantId, <RecipeVariant>recipeResponse);
   }
 
   /**
    * Update server in background
    *
-   * @params: syncMethod - the http method to apply
-   * @params: recipeMaster - the RecipeMaster to base request on
-   * @params: [recipeVariant] - optional RecipeVariant to base request on
+   * @param: syncMethod - the http method to apply
+   * @param: recipeMaster - the RecipeMaster to base request on
+   * @param: [recipeVariant] - optional RecipeVariant to base request on
    *
    * @return: none
    */
@@ -636,7 +641,7 @@ export class RecipeService {
       .pipe(
         map((recipeResponse: RecipeMaster | RecipeVariant): Observable<RecipeMaster | RecipeVariant> => {
           const variantId: string = recipeVariant ? recipeVariant.cid : null;
-          return this.handleBackgroundUpdateResponse(recipeMaster.cid, variantId, recipeResponse);
+          return this.handleBackgroundUpdateResponse(recipeMaster.cid, variantId, recipeResponse, syncMethod);
         }),
         catchError(this.errorReporter.handleGenericCatchError())
       )
@@ -654,8 +659,8 @@ export class RecipeService {
   /**
    * Add a sync flag for a recipe
    *
-   * @params: method - options: 'create', 'update', or 'delete'
-   * @params: docId - document id to apply sync
+   * @param: method - options: 'create', 'update', or 'delete'
+   * @param: docId - document id to apply sync
    *
    * @return: none
    */
@@ -672,7 +677,7 @@ export class RecipeService {
   /**
    * Clear all sync errors
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   dismissAllSyncErrors(): void {
@@ -682,7 +687,7 @@ export class RecipeService {
   /**
    * Clear a sync error at the given index
    *
-   * @params: index - error array index to remove
+   * @param: index - error array index to remove
    *
    * @return: none
    */
@@ -693,7 +698,7 @@ export class RecipeService {
   /**
    * Construct sync requests based on stored sync flags
    *
-   * @params: none
+   * @param: none
    *
    * @return: configured sync requests object
    */
@@ -746,7 +751,7 @@ export class RecipeService {
   /**
    * Process sync successes to update in memory docs
    *
-   * @params: syncedData - an array of successfully synced docs; deleted docs
+   * @param: syncedData - an array of successfully synced docs; deleted docs
    * will contain a special flag to avoid searching for a removed doc in memory
    *
    * @return: none
@@ -775,7 +780,7 @@ export class RecipeService {
   /**
    * Process all sync flags on login or reconnect; ignore reconnects if not logged in
    *
-   * @params: onLogin - true if calling sync at login, false for sync on reconnect
+   * @param: onLogin - true if calling sync at login, false for sync on reconnect
    *
    * @return: none
    */
@@ -806,8 +811,8 @@ export class RecipeService {
   /**
    * Network reconnect event handler
    *
-   * @params: none
-   * @params: none
+   * @param: none
+   * @param: none
    */
   syncOnReconnect(): void {
     this.syncOnConnection(false)
@@ -820,7 +825,7 @@ export class RecipeService {
   /**
    * Post all stored recipes to server
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   syncOnSignup(): void {
@@ -867,7 +872,7 @@ export class RecipeService {
   /**
    * Convert new recipe master to a behavior subject then push to master list
    *
-   * @params: recipeMaster - the new recipe master
+   * @param: recipeMaster - the new recipe master
    *
    * @return: observable of new recipe master
    */
@@ -883,8 +888,8 @@ export class RecipeService {
   /**
    * Add a recipe to the recipe master and update behavior subject
    *
-   * @params: masterId - recipe's master's id
-   * @params: variant - new RecipeVariant to add to a master
+   * @param: masterId - recipe's master's id
+   * @param: variant - new RecipeVariant to add to a master
    *
    * @return: Observable of new recipe
    */
@@ -919,7 +924,7 @@ export class RecipeService {
   /**
    * Check if able to send an http request
    *
-   * @params: [ids] - optional array of ids to check
+   * @param: [ids] - optional array of ids to check
    *
    * @return: true if ids are valid, device is connected to network, and user logged in
    */
@@ -934,7 +939,7 @@ export class RecipeService {
   /**
    * Call complete for all recipe subjects and clear recipeMasterList array
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   clearRecipes(): void {
@@ -949,7 +954,7 @@ export class RecipeService {
   /**
    * Format a new RecipeMaster from initial values
    *
-   * @params: newMasterValues - object with recipe master and initial recipe variant values
+   * @param: newMasterValues - object with recipe master and initial recipe variant values
    *
    * @return: a new recipe master
    */
@@ -993,7 +998,7 @@ export class RecipeService {
   /**
    * Trigger an emit event of the master list behavior subject
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   emitListUpdate(): void {
@@ -1008,7 +1013,7 @@ export class RecipeService {
    * 30 minutes and again at 15 minutes), combine the two addition amounts and keep one instance of
    * that type of hops
    *
-   * @params: hopsSchedule - the recipe's hops schedule
+   * @param: hopsSchedule - the recipe's hops schedule
    *
    * @return: combined hops schedule
    */
@@ -1057,7 +1062,7 @@ export class RecipeService {
   /**
    * Get a recipe master by its id
    *
-   * @params: masterId - recipe master server id or client id string to search
+   * @param: masterId - recipe master server id or client id string to search
    *
    * @return: the recipe master subject if found, else undefined
    */
@@ -1071,7 +1076,7 @@ export class RecipeService {
   /**
    * Get list of recipe masters, fetch from server if list is empty
    *
-   * @params: none
+   * @param: none
    *
    * @return: subject of array of recipe master subjects
    */
@@ -1082,8 +1087,8 @@ export class RecipeService {
   /**
    * Get a recipe by its id using its master's id to help search
    *
-   * @params: masterId - recipe variant's master's id
-   * @params: variantId - recipe variant's id
+   * @param: masterId - recipe variant's master's id
+   * @param: variantId - recipe variant's id
    *
    * @return: observable of requested recipe variant
    */
@@ -1103,7 +1108,7 @@ export class RecipeService {
    * Check if there is a process schedule available for a recipe variant. A
    * recipe will have a process if processSchedule has content
    *
-   * @params: variant - recipe variant to check for a process
+   * @param: variant - recipe variant to check for a process
    *
    * @return: true if at least one process is in the schedule
    */
@@ -1120,7 +1125,7 @@ export class RecipeService {
    * BehaviorSubjects of recipe masters; concat the current recipe master
    * subjects that have a sync flag.
    *
-   * @params: recipeMasterList - array of recipe masters
+   * @param: recipeMasterList - array of recipe masters
    *
    * @return: none
    */
@@ -1131,8 +1136,8 @@ export class RecipeService {
   /**
    * Remove a recipe variant from a recipe master
    *
-   * @params: master$ - the recipe's master subject
-   * @params: variantId - recipe variant to remove
+   * @param: master$ - the recipe's master subject
+   * @param: variantId - recipe variant to remove
    *
    * @return: Observable - success requires no data, using for error throw/handling
    */
@@ -1168,7 +1173,7 @@ export class RecipeService {
   /**
    * Remove a recipe master and its variants from the master list and update list subject
    *
-   * @params: masterId - the recipe master to delete
+   * @param: masterId - the recipe master to delete
    *
    * @return: Observable - success requires no data, using for error throw/handling
    */
@@ -1199,8 +1204,8 @@ export class RecipeService {
    * that is not the currently selected variant as the new master. Do not perform
    * action if there is only one variant
    *
-   * @params: recipeMaster - the recipe master that the recipe variant belongs to
-   * @params: changeIndex - the index of the recipe master's recipes array which
+   * @param: recipeMaster - the recipe master that the recipe variant belongs to
+   * @param: changeIndex - the index of the recipe master's recipes array which
    * needs to be changed
    *
    * @return: none
@@ -1219,8 +1224,8 @@ export class RecipeService {
   /**
    * Set a recipe variant as the master, deselect previous master
    *
-   * @params: recipeMaster - the recipe master that the recipe variant belongs to
-   * @params: changeIndex - the index of the recipe master's recipes array which
+   * @param: recipeMaster - the recipe master that the recipe variant belongs to
+   * @param: changeIndex - the index of the recipe master's recipes array which
    * needs to be changed
    *
    * @return: none
@@ -1236,7 +1241,7 @@ export class RecipeService {
   /**
    * Populate recipe variant and child property cid fields
    *
-   * @params: variant - RecipeVariant to update
+   * @param: variant - RecipeVariant to update
    *
    * @return: none
    */
@@ -1262,7 +1267,7 @@ export class RecipeService {
   /**
    * Populate all cid fields of each object in array
    *
-   * @params: itemArray - array of objects that require a cid field
+   * @param: itemArray - array of objects that require a cid field
    *
    * @return: none
    */
@@ -1273,7 +1278,7 @@ export class RecipeService {
   /**
    * Store the current recipe master list in storage
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   updateRecipeStorage(): void {
@@ -1291,8 +1296,8 @@ export class RecipeService {
   /**
    * Update a recipe master subject in the master list
    *
-   * @params: masterId - id of recipe master to update
-   * @params: update - update may be either a complete or partial RecipeMaster
+   * @param: masterId - id of recipe master to update
+   * @param: update - update may be either a complete or partial RecipeMaster
    *
    * @return: Observable of updated recipe master
    */
@@ -1317,9 +1322,9 @@ export class RecipeService {
   /**
    * Update a recipe variant within a recipe master in list and update the subject
    *
-   * @params: masterId - recipe master of variant
-   * @params: variantId - recipe variant id to update
-   * @params: update - may be either a complete or partial RecipeVariant
+   * @param: masterId - recipe master of variant
+   * @param: variantId - recipe variant id to update
+   * @param: update - may be either a complete or partial RecipeVariant
    *
    * @return: Observable of updated recipe
    */
