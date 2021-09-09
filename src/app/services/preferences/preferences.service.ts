@@ -67,13 +67,15 @@ export class PreferencesService {
    * @return: true if all units are valid
    */
   isValidUnits(units: SelectedUnits): boolean {
-    return  this.isValidSystem(units.system)
+    return (
+      this.isValidSystem(units.system)
       && this.isValidWeightUnit(units.weightSmall.longName.toLowerCase())
       && this.isValidWeightUnit(units.weightLarge.longName.toLowerCase())
       && this.isValidVolumeUnit(units.volumeSmall.longName.toLowerCase())
       && this.isValidVolumeUnit(units.volumeLarge.longName.toLowerCase())
       && this.isValidTemperatureUnit(units.temperature.longName.toLowerCase())
-      && this.isValidDensityUnit(units.density.longName.toLowerCase());
+      && this.isValidDensityUnit(units.density.longName.toLowerCase())
+    );
   }
 
   /**
@@ -85,10 +87,7 @@ export class PreferencesService {
    * @return: true if a valid unit
    */
   isValidVolumeUnit(unit: string): boolean {
-    return  unit === 'milliliter'
-      || unit === 'liter'
-      || unit === 'fluid ounce'
-      || unit === 'gallon';
+    return unit === 'milliliter' || unit === 'liter' || unit === 'fluid ounce' || unit === 'gallon';
   }
 
   /**
@@ -99,10 +98,7 @@ export class PreferencesService {
    * @return: true if a valid unit
    */
   isValidWeightUnit(unit: string): boolean {
-    return  unit === 'gram'
-      || unit === 'kilogram'
-      || unit === 'pound'
-      || unit === 'ounce';
+    return unit === 'gram' || unit === 'kilogram' || unit === 'pound' || unit === 'ounce';
   }
 
   /**
@@ -113,9 +109,7 @@ export class PreferencesService {
    * @return: true if a valid unit
    */
   isValidSystem(system: string): boolean {
-    return  system === 'metric'
-      || system === 'englishStandard'
-      || system === 'other';
+    return system === 'metric' || system === 'englishStandard' || system === 'other';
   }
 
   /**
