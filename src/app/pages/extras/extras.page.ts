@@ -10,11 +10,9 @@ import { Batch, InventoryItem } from '../../shared/interfaces';
 /* Animation imports */
 import { AnimationsService, ErrorReportingService, UtilityService } from '../../services/services';
 
-// For testing purposes only
-// import { ConnectionProvider } from '../../providers/connection/connection';
 
 @Component({
-  selector: 'page-extras',
+  selector: 'app-page-extras',
   templateUrl: './extras.page.html',
   styleUrls: ['./extras.page.scss']
 })
@@ -29,26 +27,11 @@ export class ExtrasPage implements OnInit, OnDestroy {
   currentIndex: number = -1;
   destroy$: Subject<boolean> = new Subject<boolean>();
   extras: { title: string, icon: string }[] = [
-    {
-      title: 'active batches',
-      icon: 'flask'
-    },
-    {
-      title: 'inventory',
-      icon: 'clipboard'
-    },
-    {
-      title: 'preferences',
-      icon: 'options'
-    },
-    {
-      title: 'user',
-      icon: 'settings'
-    },
-    {
-      title: 'about',
-      icon: 'bulb'
-    }
+    { title: 'active batches', icon: 'flask'     },
+    { title: 'inventory'     , icon: 'clipboard' },
+    { title: 'preferences'   , icon: 'options'   },
+    { title: 'user'          , icon: 'settings'  },
+    { title: 'about'         , icon: 'bulb'      }
   ];
   onBackClick: () => void;
   optionalInventoryData: Batch | InventoryItem = null;
@@ -101,12 +84,6 @@ export class ExtrasPage implements OnInit, OnDestroy {
 
   /***** End Lifecycle Hooks *****/
 
-  // For testing purposes only
-  // toggleConnection(): void {
-  //   this.connection.toggleConnection();
-  //   console.log(this.connection.isConnected());
-  // }
-
   /**
    * Reset the extras page to view the list
    *
@@ -118,10 +95,7 @@ export class ExtrasPage implements OnInit, OnDestroy {
       try {
         const animation = this.animationService.slideOut(
           this.getContainer(fromIndex),
-          {
-            duration: this.animationDuration,
-            direction: -100
-          }
+          { duration: this.animationDuration, direction: -100 }
         );
         await animation.play();
       } catch (error) {
@@ -149,9 +123,7 @@ export class ExtrasPage implements OnInit, OnDestroy {
       if (!passThrough) {
         const animation = this.animationService.slideIn(
           this.getContainer(index),
-          {
-            duration: this.animationDuration
-          }
+          { duration: this.animationDuration }
         );
         await animation.play();
       }

@@ -3,71 +3,46 @@
 </app-header>
 
 <ion-content>
-
   <!-- Extras List -->
   <div #listContainer>
-
     <ion-list *ngIf="title === 'More Options'">
-
       <ion-item *ngFor="let extra of extras; index as i"
                 button
                 (click)="displayComponent(i)">
-
         <ion-label>
-
           <ion-icon color="primary"
                     item-start
                     [name]="extra.icon">
           </ion-icon>
-
           {{ extra.title | titlecase }}
-
         </ion-label>
-
       </ion-item>
-
     </ion-list>
-
   </div>
-  <!-- End Extras List -->
-
-
   <!-- Active Batches Component -->
   <div #activeBatchesContainer>
-    <active-batches *ngIf="title === 'Active Batches'"
-                    [enterDuration]="animationDuration"
-                    rootURL="tabs/extras">
-    </active-batches>
+    <app-active-batch-list  *ngIf="title === 'Active Batches'"
+                            [enterDuration]="animationDuration"
+                            rootURL="tabs/extras">
+    </app-active-batch-list>
   </div>
-
-
   <!-- Inventory Component -->
   <div #inventoryContainer>
-    <inventory  *ngIf="title === 'Inventory'"
-                [optionalData]="optionalInventoryData"
-                [enterDuration]="animationDuration">
-    </inventory>
+    <app-inventory  *ngIf="title === 'Inventory'"
+                    [optionalData]="optionalInventoryData"
+                    [enterDuration]="animationDuration">
+    </app-inventory>
   </div>
-
-
   <!-- Preferences Component -->
   <div #preferencesContainer>
-    <preferences *ngIf="title === 'Preferences'"></preferences>
+    <app-preferences *ngIf="title === 'Preferences'"></app-preferences>
   </div>
-
-
   <!-- User Container -->
   <div #userContainer>
-    <user *ngIf="title === 'User'"></user>
+    <app-user *ngIf="title === 'User'"></app-user>
   </div>
-
-
   <!-- About Container -->
   <div #aboutContainer>
-    <about *ngIf="title === 'About'"></about>
+    <app-about *ngIf="title === 'About'"></app-about>
   </div>
-
-  <!-- For testing purposes only -->
-  <!-- <button (click)="toggleConnection()">Connection</button> -->
-
 </ion-content>

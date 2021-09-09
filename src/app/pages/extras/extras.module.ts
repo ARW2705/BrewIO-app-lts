@@ -11,7 +11,7 @@ import { SignupPageModule } from '../forms/signup/signup.module';
 
 /* Component imports */
 import { AboutComponentModule } from '../../components/about/about.module';
-import { ActiveBatchesComponentModule } from '../../components/active-batches/active-batches.module';
+import { ActiveBatchListComponentModule } from '../../components/active-batch-list/active-batch-list.module';
 import { HeaderComponentModule } from '../../components/header/header.module';
 import { InventoryComponentModule } from '../../components/inventory/inventory.module';
 import { PreferencesComponentModule } from '../../components/preferences/preferences.module';
@@ -26,7 +26,7 @@ import { UserComponentModule } from '../../components/user/user.module';
     SignupPageModule,
     HeaderComponentModule,
     AboutComponentModule,
-    ActiveBatchesComponentModule,
+    ActiveBatchListComponentModule,
     InventoryComponentModule,
     PreferencesComponentModule,
     UserComponentModule,
