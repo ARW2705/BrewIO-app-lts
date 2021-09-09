@@ -1,45 +1,51 @@
 /* Module imports */
-import { Component, ElementRef, OnDestroy, OnInit, Renderer2, ViewChild } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
-import { IonContent, IonList, ModalController } from '@ionic/angular';
-import { BehaviorSubject, from, Subject } from 'rxjs';
+import { Component, ElementRef, OnDestroy, OnInit, QueryList, Renderer2, ViewChild, ViewChildren, ViewContainerRef } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { IonContent, IonList } from '@ionic/angular';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { finalize, map, takeUntil } from 'rxjs/operators';
 
 /* Interface imports */
 import { RecipeMaster, RecipeVariant } from '../../shared/interfaces';
 
-/* Type imports */
-import { CustomError } from '../../shared/types';
+/* Component imports */
+import { RecipeSliderComponent } from '../../components/recipe-slider/recipe-slider.component';
 
 /* Page imports */
 import { ConfirmationPage } from '../confirmation/confirmation.page';
 
 /* Service imports */
-import { AnimationsService, ErrorReportingService, IdService, RecipeService, ToastService, UserService, UtilityService } from '../../services/services';
+import { AnimationsService, ErrorReportingService, IdService, ModalService, RecipeService, ToastService, UserService, UtilityService } from '../../services/services';
 
 
 @Component({
-  selector: 'page-recipe',
+  selector: 'app-page-recipe',
   templateUrl: './recipe.page.html',
   styleUrls: ['./recipe.page.scss']
 })
 export class RecipePage implements OnInit, OnDestroy {
   @ViewChild(IonContent, { static: false }) ionContent: IonContent;
+  @ViewChild('createButtonContainer', { read: ElementRef }) createButtonContainer: ElementRef;
   @ViewChild('slidingItemsList') slidingItemsList: IonList;
   @ViewChild('slidingItemsList', { read: ElementRef }) slidingItemsListRef: ElementRef;
+  @ViewChildren(RecipeSliderComponent, { read: ViewContainerRef }) recipeSliderComponent: QueryList<ViewContainerRef>;
   creationMode: boolean = false;
   destroy$: Subject<boolean> = new Subject<boolean>();
   isLoggedIn: boolean = false;
-  masterIndex: number = -1;
-  masterList: RecipeMaster[] = null;
+  oneSecond: number = 1000;
+  recipeIndex: number = -1;
+  recipeList: RecipeMaster[] = null;
   refreshPipes: boolean = false;
   variantList: RecipeVariant[] = null;
+  sliderHeight: number = 0;
+  createButtonHeight: number = 0;
+  scrollOffsetHeight: number = 24; // offset is sum of app-recipe-slider's ion-sliding-item top and bottom margin and ion-list padding top
 
   constructor(
     public animationService: AnimationsService,
     public errorReporter: ErrorReportingService,
-    public modalCtrl: ModalController,
     public idService: IdService,
+    public modalService: ModalService,
     public recipeService: RecipeService,
     public renderer: Renderer2,
     public route: ActivatedRoute,
@@ -51,33 +57,38 @@ export class RecipePage implements OnInit, OnDestroy {
 
   /***** Lifecycle Hooks *****/
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.listenForRecipes();
     this.listenForUser();
   }
 
-  ionViewWillEnter() {
+  ionViewWillEnter(): void {
     this.refreshPipes = !this.refreshPipes;
+    if (this.recipeSliderComponent.length) {
+      const slider: HTMLElement = this.recipeSliderComponent.toArray()[0].element.nativeElement;
+      const sliderItem: HTMLElement = <HTMLElement>slider.firstChild;
+      this.sliderHeight = sliderItem.clientHeight;
+    }
+    this.createButtonHeight = this.createButtonContainer.nativeElement.clientHeight;
+    console.log('slider height', this.sliderHeight, 'button height', this.createButtonHeight);
   }
 
-  ionViewDidEnter() {
+  ionViewDidEnter(): void {
     if (this.animationService.shouldShowHint('sliding', 'recipe')) {
       this.runSlidingHints();
     }
   }
 
   // Close all sliding items on view exit
-  ionViewDidLeave() {
+  ionViewDidLeave(): void {
     try {
-      this.slidingItemsList.closeSlidingItems()
-        .then(() => console.log('sliding items closed'))
-        .catch((error: any) => console.log('error closing sliding items', error));
+      this.slidingItemsList.closeSlidingItems().then((): void => console.log('sliding items closed'));
     } catch (error) {
       console.log('Unable to close sliding items', error);
     }
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.destroy$.next(true);
     this.destroy$.complete();
   }
@@ -106,8 +117,8 @@ export class RecipePage implements OnInit, OnDestroy {
       )
       .subscribe(
         (masterList: RecipeMaster[]): void => {
-          this.masterList = masterList;
-          console.log('got list', this.masterList);
+          this.recipeList = masterList;
+          console.log('got list', this.recipeList);
           this.mapMasterRecipes();
         },
         (error: any): void => this.errorReporter.handleUnhandledError(error)
@@ -123,10 +134,7 @@ export class RecipePage implements OnInit, OnDestroy {
   listenForUser(): void {
     this.userService.getUser()
       .pipe(takeUntil(this.destroy$))
-      .subscribe(
-        (): void => {
-          this.isLoggedIn = this.userService.isLoggedIn();
-        },
+      .subscribe((): void => { this.isLoggedIn = this.userService.isLoggedIn(); },
         (error: any): void => {
           this.isLoggedIn = false;
           this.errorReporter.handleUnhandledError(error);
@@ -148,8 +156,9 @@ export class RecipePage implements OnInit, OnDestroy {
    * @return: none
    */
   navToBrewProcess(recipeMaster: RecipeMaster): void {
-    const variant: RecipeVariant = recipeMaster.variants
-      .find((_variant: RecipeVariant) => this.idService.hasId(_variant, recipeMaster.master));
+    const variant: RecipeVariant = recipeMaster.variants.find((_variant: RecipeVariant): boolean => {
+      return this.idService.hasId(_variant, recipeMaster.master);
+    });
 
     if (this.recipeService.isRecipeProcessPresent(variant)) {
       this.router.navigate(
@@ -169,7 +178,7 @@ export class RecipePage implements OnInit, OnDestroy {
         this.errorReporter.createErrorReport(
           'MissingError',
           message,
-          3,
+          this.errorReporter.moderateSeverity,
           message,
         )
       );
@@ -185,18 +194,18 @@ export class RecipePage implements OnInit, OnDestroy {
    */
   navToDetails(index: number): void {
     try {
-      this.router.navigate([`tabs/recipe/${this.idService.getId(this.masterList[index])}`]);
+      this.router.navigate([`tabs/recipe/${this.idService.getId(this.recipeList[index])}`]);
     } catch (error) {
       console.log('Details nav error', error);
       const message: string = 'Recipe details not found';
-      const recipeIds: string[] = this.masterList.map((recipe: RecipeMaster) => {
+      const recipeIds: string[] = this.recipeList.map((recipe: RecipeMaster) => {
         return `${recipe._id ? recipe._id : recipe.cid},`;
       });
       this.errorReporter.setErrorReport(
         this.errorReporter.createErrorReport(
           'MissingError',
           `${message}: list index ${index}, present list [${recipeIds}]`,
-          3,
+          this.errorReporter.moderateSeverity,
           message,
         )
       );
@@ -212,12 +221,7 @@ export class RecipePage implements OnInit, OnDestroy {
   navToRecipeForm(): void {
     this.router.navigate(
       ['tabs/recipe-form'],
-      {
-        state: {
-          formType: 'master',
-          docMethod: 'create'
-        }
-      }
+      { state: { formType: 'master', docMethod: 'create' } }
     );
   }
 
@@ -227,60 +231,28 @@ export class RecipePage implements OnInit, OnDestroy {
   /***** Modals *****/
 
   /**
-   * Handle confirmation modal success
-   *
-   * @params: index = the index to apply deletion if confirmed
-   *
-   * @return: success handler function
-   */
-  onConfirmDeleteSuccess(index: number): (data: object) => void {
-    return (confirmation: object): void => {
-      const confirmed: boolean = confirmation['data'];
-      if (confirmed) {
-        this.deleteMaster(index);
-      }
-    };
-  }
-
-  /**
-   * Handle confirmation modal error
-   *
-   * @params: none
-   *
-   * @return: error handler function
-   */
-  onConfirmDeleteError(): (error: string) => void {
-    return (error: string): void => {
-      this.errorReporter.handleModalError(
-        error,
-        'An internal error occurred trying to delete the recipe'
-      );
-    };
-  }
-
-  /**
    * Open confirmation modal prior to deletion
    *
    * @params: index - index of recipe master to delete
    *
    * @return: none
    */
-  async confirmDelete(index: number): Promise<void> {
-    const modal: HTMLIonModalElement = await this.modalCtrl.create({
-      component: ConfirmationPage,
-      componentProps: {
-        message: `Confirm deletion of "${this.masterList[index].name}" and its variants`,
+  confirmDelete(index: number): void {
+    this.modalService.openModal<boolean>(
+      ConfirmationPage,
+      {
+        message: `Confirm deletion of "${this.recipeList[index].name}" and its variants`,
         subMessage: 'This action cannot be reversed'
       }
-    });
-
-    from(modal.onDidDismiss())
-      .subscribe(
-        this.onConfirmDeleteSuccess(index),
-        this.onConfirmDeleteError()
-      );
-
-    return await modal.present();
+    )
+    .subscribe(
+      (shouldDelete: boolean): void => {
+        if (shouldDelete) {
+          this.deleteMaster(index);
+        }
+      },
+      (error: Error): void => this.errorReporter.handleUnhandledError(error)
+    );
   }
 
   /***** End Modals *****/
@@ -296,15 +268,10 @@ export class RecipePage implements OnInit, OnDestroy {
    * @return: none
    */
   deleteMaster(index: number): void {
-    this.recipeService.removeRecipeMasterById(this.idService.getId(this.masterList[index]))
+    this.recipeService.removeRecipeMasterById(this.idService.getId(this.recipeList[index]))
       .subscribe(
         (): void => {
-          this.toastService.presentToast(
-            'Deleted Recipe',
-            1000,
-            'middle',
-            'toast-bright'
-          );
+          this.toastService.presentToast('Deleted Recipe', this.oneSecond, 'middle', 'toast-bright');
         },
         (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
@@ -314,19 +281,20 @@ export class RecipePage implements OnInit, OnDestroy {
    * Toggle recipe master ingredient list expansion; if expanding, scroll to
    * the opened list
    *
-   * @params: index - index in masterIndex array to expand
+   * @params: index - index in recipeIndex array to expand
    *
    * @return: none
    */
-  expandMaster(index: number): void {
-    if (this.masterIndex === index) {
-      this.masterIndex = -1;
+  expandIngredientList(index: number): void {
+    if (this.recipeIndex === index) {
+      this.recipeIndex = -1;
     } else {
-      this.masterIndex = index;
-      const accordionElement: HTMLElement = document.querySelector(
-        `accordion[data-scroll-landmark="${index}"]`
+      this.recipeIndex = index;
+      this.ionContent.scrollToPoint(
+        0,
+        this.sliderHeight * index + this.createButtonHeight + this.scrollOffsetHeight,
+        this.oneSecond
       );
-      this.ionContent.scrollToPoint(0, accordionElement.offsetTop, 1000);
     }
   }
 
@@ -339,7 +307,7 @@ export class RecipePage implements OnInit, OnDestroy {
    */
   mapMasterRecipes(): void {
     try {
-      this.variantList = this.masterList
+      this.variantList = this.recipeList
         .map((master: RecipeMaster): RecipeVariant => {
           const selected: RecipeVariant = this.utilService.clone(
               master.variants.find((variant: RecipeVariant): boolean => {
@@ -372,12 +340,7 @@ export class RecipePage implements OnInit, OnDestroy {
   runSlidingHints(): void {
     const topLevelContent: HTMLElement = this.ionContent['el'];
     if (!topLevelContent) {
-      const message: string = 'Cannot find content container';
-      this.errorReporter.setErrorReport(
-        this.errorReporter.getCustomReportFromError(
-          new CustomError('AnimationError', message, 4, message)
-        )
-      );
+      this.animationService.reportSlidingHintError();
       return;
     }
 

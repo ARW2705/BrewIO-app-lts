@@ -1,210 +1,44 @@
 <app-header title="Recipes"></app-header>
 
 <ion-content [scrollEvents]="true">
-
   <ion-grid>
-
-    <ion-row class="ion-justify-content-center">
-
+    <ion-row  #createButtonContainer
+              class="ion-justify-content-center">
       <header class="inner-header">
-
         <ion-button (click)="navToRecipeForm()"
                     class="form-button">
           CREATE NEW RECIPE
         </ion-button>
-
       </header>
-
     </ion-row>
-
-    <ion-row  *ngIf="!masterList.length || !variantList.length"
-              class="ion-justify-content-center no-recipes">
-
-      No Recipes Yet
-
-    </ion-row>
-
-    <ion-row *ngIf="masterList && variantList">
-
-      <!-- Recipe masters list -->
-      <ion-list #slidingItemsList
-                id="master-list">
-
-        <ng-container *ngFor="let master of masterList; index as i">
-
-          <!-- Slide left or right for actions, click to toggle ingredient list -->
-          <ion-item-sliding class="recipe-master-item">
-
-            <!-- Delete the recipe master button -->
-            <ion-item-options side="start">
-
-              <ion-item-option  color="danger"
-                                (click)="confirmDelete(i)"
-                                class="delete-button">
-
-                <div class="sliding-button-container">
-
-                  <ion-icon name="trash"></ion-icon>
-
-                  <span>
-                    Delete
-                  </span>
-
-                </div>
-
-              </ion-item-option>
-
-            </ion-item-options>
-
-            <!-- Toggle ingredient list button -->
-            <ion-item button
-                      detail="false"
-                      lines="none"
-                      (click)="expandMaster(i)"
-                      class="ion-no-padding expand-button"
-                      data-sliding-item>
-
-              <!-- Recipe master quick info -->
-              <ion-grid class="master-summary-grid ion-no-padding">
-
-                <ion-row class="master-summary-header">
-
-                  <!-- Recipe master name -->
-                  <ion-col size="12">
-
-                    <ion-label>
-                      {{ master.name | titlecase }}
-                    </ion-label>
-
-                  </ion-col>
-
-                  <!-- Recipe style name -->
-                  <ion-col size="12">
-
-                    <ion-label>
-                      {{ master.style.name }}
-                    </ion-label>
-
-                  </ion-col>
-
-                </ion-row>
-
-                <!-- Recipe master volume, type, ABV, IBU, and SRM -->
-                <ion-row class="master-summary-subheader">
-
-                  <ion-col>
-
-                    <p>
-
-                      <span>|</span>
-
-                      <span>
-                        {{ variantList[i].batchVolume | unitConversion:'volumeLarge':true:refreshPipes }}
-                      </span>
-
-                      <span>|</span>
-
-                      <span>
-                        {{ variantList[i].ABV | truncate:1 }}% ABV
-                      </span>
-
-                      <span>|</span>
-
-                      <span>
-                        {{ variantList[i].IBU | round }} IBU
-                      </span>
-
-                      <span>|</span>
-
-                      <span>
-                        {{ variantList[i].SRM | round }} SRM
-                      </span>
-
-                      <span>|</span>
-
-                    </p>
-
-                  </ion-col>
-
-                </ion-row>
-
-              </ion-grid>
-
-            </ion-item>
-
-            <ion-item-options side="end">
-
-              <!-- Start a new brew process button -->
-              <ion-item-option  color="secondary"
-                                (click)="navToBrewProcess(master)">
-
-                <div class="sliding-button-container">
-
-                  <ion-icon name="beer"></ion-icon>
-
-                  <span>
-                    Brew
-                  </span>
-
-                </div>
-
-              </ion-item-option>
-
-              <!-- Go to recipe master details page button -->
-              <ion-item-option  color="tertiary"
-                                (click)="navToDetails(i)">
-
-                <div class="sliding-button-container">
-
-                  <ion-icon name="menu"></ion-icon>
-
-                  <span>
-                    Details
-                  </span>
-
-                </div>
-
-              </ion-item-option>
-
-            </ion-item-options>
-
-          </ion-item-sliding>
-
+    <ion-row *ngIf="recipeList && variantList">
+      <!-- Recipe List -->
+      <ion-list #slidingItemsList>
+        <ng-container *ngFor="let recipe of recipeList; index as i">
+          <app-recipe-slider  (confirmDeleteEvent)="confirmDelete(i)"
+                              (expandIngredientListEvent)="expandIngredientList(i)"
+                              (navToBrewProcessEvent)="navToBrewProcess(recipe)"
+                              (navToDetailsEvent)="navToDetails(i)"
+                              [recipe]="recipe"
+                              [refreshPipes]="refreshPipes"
+                              [variant]="variantList[i]">
+          </app-recipe-slider>
           <!-- Recipe ingredient list -->
-          <accordion  [expanded]="masterIndex === i"
-                      [attr.data-scroll-landmark]="i">
-
+          <app-accordion  [expanded]="recipeIndex === i">
             <ingredient-list  [recipeVariant]="variantList[i]"
                               [refreshPipes]="refreshPipes">
             </ingredient-list>
-
-          </accordion>
-
+          </app-accordion>
         </ng-container>
-
       </ion-list>
-
     </ion-row>
-
+    <ion-row  *ngIf="!recipeList.length || !variantList.length"
+              class="ion-justify-content-center no-recipes">
+      No Recipes Yet
+    </ion-row>
     <!-- Loading spinner -->
-    <ng-container *ngIf="isLoggedIn && !masterList">
-
-      <ion-row>
-
-        <ion-spinner name="circular"></ion-spinner>
-
-      </ion-row>
-
-      <ion-row class="loading-message">
-
-        <p>
-          Loading Recipes
-        </p>
-
-      </ion-row>
-
-    </ng-container>
-
+    <app-loading-spinner  *ngIf="isLoggedIn && !recipeList"
+                          loadingMessage="loading recipes">
+    </app-loading-spinner>
   </ion-grid>
-
 </ion-content>
