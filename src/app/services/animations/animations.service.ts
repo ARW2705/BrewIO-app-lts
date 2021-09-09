@@ -2,6 +2,13 @@
 import { Injectable, Renderer2 } from '@angular/core';
 import { Animation, AnimationController } from '@ionic/angular';
 import { Observable, Observer, forkJoin, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+
+/* Servic eimports */
+import { ErrorReportingService } from '../error-reporting/error-reporting.service';
+
+/* Type imports */
+import { CustomError } from '../../shared/types';
 
 
 @Injectable({
@@ -17,7 +24,10 @@ export class AnimationsService {
     }
   };
 
-  constructor(public animationCtrl: AnimationController) {}
+  constructor(
+    public animationCtrl: AnimationController,
+    public errorReporter: ErrorReportingService
+  ) {}
 
   /**
    * Collapse element vertically
@@ -362,7 +372,13 @@ export class AnimationsService {
       return throwError(error);
     }
 
-    return forkJoin(animationQueue);
+    return forkJoin(animationQueue)
+      .pipe(catchError(this.errorReporter.handleGenericCatchError(this.getAnimationError())));
+  }
+
+  getAnimationError(): Error {
+    const message: string = 'An error occurred playing sliding hint animations';
+    return new CustomError('AnimationError', message, 4, message);
   }
 
   /**
@@ -393,5 +409,25 @@ export class AnimationsService {
   }
 
   /***** End HTML Element Helpers *****/
+
+
+  /***** Animation Errors *****/
+
+  /**
+   * Report an animation error when containing element is not found
+   *
+   * @param: none
+   * @return: none
+   */
+  reportSlidingHintError(): void {
+    const message: string = 'Cannot find content container';
+    this.errorReporter.setErrorReport(
+      this.errorReporter.getCustomReportFromError(
+        new CustomError('AnimationError', message, this.errorReporter.lowestSeverity, message)
+      )
+    );
+  }
+
+  /***** End Animation Errors *****/
 
 }
