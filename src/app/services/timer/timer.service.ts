@@ -1,7 +1,7 @@
 /* Module imports */
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { Platform } from '@ionic/angular';
+import { BehaviorSubject } from 'rxjs';
 
 /* Interface imports */
 import { Batch, BatchTimer, Process, ProgressCircleSettings, Timer, TimerProcess } from '../../shared/interfaces';
@@ -91,18 +91,21 @@ export class TimerService {
   /**
    * Add a minute to a timer
    *
-   * @param: batchId - batch id associated with BatchTimer
    * @param: timerId - timer id within BatchTimer to update
    *
-   * @return: observable of updated timer
+   * @return: none
    */
-  addTimeToTimer(batchId: string, timerId: string): Observable<Timer> {
-    const timer$: BehaviorSubject<Timer> = this.getTimerSubjectById(batchId, timerId);
+  addTimeToTimer(timerId: string): void {
+    const timer$: BehaviorSubject<Timer> = this.getTimerSubjectById(timerId);
 
     if (!timer$) {
       const message: string = 'An error occurred trying to add time to timer: missing timer';
       const additionalMessage: string = `Timer with id ${timerId} not found`;
-      return throwError(this.getMissingError(message, additionalMessage));
+      this.errorReporter.setErrorReport(
+        this.errorReporter.getCustomReportFromError(
+          this.getMissingError(message, additionalMessage)
+        )
+      );
     }
 
     const timer: Timer = timer$.value;
@@ -112,8 +115,6 @@ export class TimerService {
     this.setProgress(timer);
 
     timer$.next(timer);
-
-    return of(timer);
   }
 
   /**
@@ -229,20 +230,21 @@ export class TimerService {
    */
   getFormattedDurationString(duration: number): string {
     let result: string = 'Duration: ';
+    if (duration === 0) {
+      return `${result}0 minutes`;
+    }
 
-    // Get hours
-    if (duration > 59) {
-      const hours = Math.floor(duration / 60);
+    const hourInMinutes: number = 60;
+    let durationRemaining = duration;
+    if (duration >= hourInMinutes) {
+      const hours = Math.floor(durationRemaining / hourInMinutes);
       result += `${hours} hour${hours > 1 ? 's' : ''}`;
-      duration = duration % 60;
-      result += (duration) ? ' ' : '';
+      durationRemaining = durationRemaining % hourInMinutes;
+      result += (durationRemaining) ? ' ' : '';
     }
-
-    // Get minutes
-    if (duration) {
-      result += `${duration} minute${duration > 1 ? 's' : ''}`;
+    if (durationRemaining) {
+      result += `${durationRemaining} minute${durationRemaining > 1 ? 's' : ''}`;
     }
-
     return result;
   }
 
@@ -304,23 +306,19 @@ export class TimerService {
   /**
    * Get timer behaviorsubject by its id
    *
-   * @param: batchId - batch id used to search for BatchTimer
    * @param: timerId - Timer id to search
    *
    * @return: timer behaviorsubject else undefined if not found
    */
-  getTimerSubjectById(batchId: string, timerId: string): BehaviorSubject<Timer> {
-    const batchTimer: BatchTimer = this.getBatchTimerById(batchId);
-
-    if (batchTimer === undefined) {
-      return undefined;
+  getTimerSubjectById(timerId: string): BehaviorSubject<Timer> {
+    for (const batchTimer of this.batchTimers) {
+      for (const timer$ of batchTimer.timers) {
+        if (this.idService.hasId(timer$.value, timerId)) {
+          return timer$;
+        }
+      }
     }
-
-    return batchTimer
-      .timers
-      .find((timer$: BehaviorSubject<Timer>): boolean => {
-        return this.idService.hasId(timer$.value, timerId);
-      });
+    return undefined;
   }
 
   /**
@@ -370,7 +368,7 @@ export class TimerService {
    * @return: true if process is a TimerProcess and concurrent is true
    */
   isConcurrentTimer(process: Process): boolean {
-    return this.processService.isTimerProcess(process) && (<TimerProcess>process).concurrent;
+    return process.type === 'timer' && (<TimerProcess>process).concurrent;
   }
 
   /**
@@ -395,19 +393,22 @@ export class TimerService {
   /**
    * Stop a timer and reset its duration and time remaining
    *
-   * @param: batchId - batch id associated with BatchTimer
    * @param: timerId - timer id within BatchTimer to update
    * @param: duration - duration in minutes
    *
    * @return: observable of updated timer
    */
-  resetTimer(batchId: string, timerId: string, duration: number): Observable<Timer> {
-    const timer$: BehaviorSubject<Timer> = this.getTimerSubjectById(batchId, timerId);
+  resetTimer(timerId: string, duration: number): void {
+    const timer$: BehaviorSubject<Timer> = this.getTimerSubjectById(timerId);
 
     if (!timer$) {
-      const message: string = `An error occurred trying to reset timer: missing timer`;
+      const message: string = 'An error occurred trying to reset timer: missing timer';
       const additionalMessage: string = `Timer with id ${timerId} not found`;
-      return throwError(this.getMissingError(message, additionalMessage));
+      this.errorReporter.setErrorReport(
+        this.errorReporter.getCustomReportFromError(
+          this.getMissingError(message, additionalMessage)
+        )
+      );
     }
 
     const timer: Timer = timer$.value;
@@ -419,8 +420,6 @@ export class TimerService {
     this.setProgress(timer);
 
     timer$.next(timer);
-
-    return of(timer);
   }
 
   /**
@@ -452,43 +451,44 @@ export class TimerService {
   /**
    * Start a timer by id
    *
-   * @param: batchId - batch id associated with BatchTimer
    * @param: timerId - timer id within BatchTimer to update
    *
    * @return: observable of updated timer
    */
-  startTimer(batchId: string, timerId: string): Observable<Timer> {
-    return this.switchTimer(batchId, timerId, true);
+  startTimer(timerId: string): void {
+    this.switchTimer(timerId, true);
   }
 
   /**
    * Stop a timer by id
    *
-   * @param: batchId - batch id associated with BatchTimer
    * @param: timerId - timer id within BatchTimer to update
    *
    * @return: observable of updated timer
    */
-  stopTimer(batchId: string, timerId: string): Observable<Timer> {
-    return this.switchTimer(batchId, timerId, false);
+  stopTimer(timerId: string): void {
+    this.switchTimer(timerId, false);
   }
 
   /**
    * Toggle timer start/stop
    *
-   * @param: batchId - batch id associated with BatchTimer
    * @param: timerId - timer id within BatchTimer to update
    * @param: run - true if timer should run, false if should stop
    *
    * @return: observable of updated timer
    */
-  switchTimer(batchId: string, timerId: string, run: boolean): Observable<Timer> {
-    const timer$: BehaviorSubject<Timer> = this.getTimerSubjectById(batchId, timerId);
+  switchTimer(timerId: string, run: boolean): void {
+    const timer$: BehaviorSubject<Timer> = this.getTimerSubjectById(timerId);
 
     if (!timer$) {
       const message: string = `An error occurred trying to ${ run ? 'start' : 'stop' } timer`;
       const additionalMessage: string = `Timer with id ${timerId} not found`;
-      return throwError(this.getMissingError(message, additionalMessage));
+      this.errorReporter.setErrorReport(
+        this.errorReporter.getCustomReportFromError(
+          this.getMissingError(message, additionalMessage)
+        )
+      );
     }
 
     const timer: Timer = timer$.value;
@@ -497,8 +497,6 @@ export class TimerService {
     this.setProgress(timer);
 
     timer$.next(timer);
-
-    return of(timer);
   }
 
   /**
@@ -571,6 +569,57 @@ export class TimerService {
   /***** Other *****/
 
   /**
+   * Get the next index, treating adjacent concurrent timers as a single step
+   *
+   * @param: isForward - true to advance forward; false to go back
+   * @param: startIndex - the current index
+   *
+   * @return: next index to use or -1 if at the beginning or end of schedule
+   */
+  getIndexSkippingConcurrent(isForward: boolean, startIndex: number, schedule: Process[]): number {
+    if (isForward) {
+      return this.getNextIndexSkippingConcurrent(startIndex, schedule);
+    }
+    return this.getPreviousIndexSkippingConcurrent(startIndex, schedule);
+  }
+
+  /**
+   * Get the next step, skipping over neighboring concurrent timers
+   *
+   * @param: viewIndex - the view index to start from
+   *
+   * @return: next index or -1 if at end
+   */
+  getNextIndexSkippingConcurrent(startIndex: number, schedule: Process[]): number {
+    let nextIndex: number = -1;
+    for (let i = startIndex; i < schedule.length; i++) {
+      if (!schedule[i]['concurrent']) {
+        nextIndex = i;
+        break;
+      }
+    }
+    return nextIndex;
+  }
+
+  /**
+   * Get the previous step, skipping over neighboring concurrent timers
+   *
+   * @param: viewIndex - the view index to start from
+   *
+   * @return: next index or -1 if at start
+   */
+  getPreviousIndexSkippingConcurrent(startIndex: number, schedule: Process[]): number {
+    let previousIndex: number = -1;
+    for (let i = startIndex - 1; i >= 0; i--) {
+      if (!schedule[i]['concurrent']) {
+        previousIndex = i + 1;
+        break;
+      }
+    }
+    return previousIndex;
+  }
+
+  /**
    * Get a custom error for missing timer
    *
    * @param: baseMessage - base error message for user and internal
@@ -585,6 +634,27 @@ export class TimerService {
       2,
       baseMessage
     );
+  }
+
+  /**
+   * Get the timer process step starting at a given index and including neighbor concurrent timers
+   *
+   * @param: schedule - process schedule in which to search for timer processes
+   * @param: startIndex - the starting index in the schedule
+   *
+   * @return: Array of timer processes
+   */
+  getTimerStepData(schedule: Process[], startIndex: number): TimerProcess[] {
+    let end: number = startIndex + 1;
+    if (schedule[startIndex]['concurrent']) {
+      for (; end < schedule.length; end++) {
+        if (!schedule[end]['concurrent']) {
+          break;
+        }
+      }
+    }
+
+    return <TimerProcess[]>schedule.slice(startIndex, end);
   }
 
   /***** End Other *****/
