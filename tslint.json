@@ -1,5 +1,10 @@
 {
   "extends": "tslint:recommended",
+  "linterOptions": {
+    "exclude": [
+      "**/*.spec*"
+    ]
+  },
   "rules": {
     "align": {
       "options": [
@@ -8,20 +13,19 @@
       ],
       "severity": "warning"
     },
+    "array-callback-return": { "severity": "warning" },
     "array-type": false,
-    "arrow-parens": {
-      "severity": "warning"
-    },
+    "arrow-parens": { "severity": "warning" },
     "arrow-return-shorthand": true,
-    "curly": false,
-    "deprecation": {
-      "severity": "warning"
-    },
+    "curly": true,
     "component-class-suffix": {
       "options": [true, "Page", "Component", "Stub"],
       "severity": "warning"
     },
     "contextual-lifecycle": true,
+    "deprecation": {
+      "severity": "warning"
+    },
     "directive-class-suffix": true,
     "directive-selector": [
       true,
@@ -35,19 +39,24 @@
       "app",
       "kebab-case"
     ],
+    "default-param-last": { "severity": "warning" },
     "eofline": true,
     "experimentalDecorators": { "severity": "warning" },
     "forin": { "severity": "warning" },
+    "func-style": { "severity": "warning" },
+    "function-paren-newline": { "severity": "warning" },
+    "implicit-arrow-linebreak": { "severity": "warning" },
     "import-blacklist": [
       true,
       "rxjs/Rx"
     ],
     "import-spacing": true,
-    "indent": {
-      "options": [
-        "spaces"
-      ]
-    },
+    "import/prefer-default-export": { "severity": "warning" },
+    "indent": [
+      true,
+      "spaces",
+      2
+    ],
     "interface-name": [
       true,
       "never-prefix"
@@ -85,24 +94,46 @@
     ],
     "no-empty": false,
     "no-empty-interface": false,
+    "no-eval": { "severity": "warning" },
+    "no-conflicting-lifecycle": true,
+    "no-duplicate-imports": true,
+    "no-host-metadata-property": true,
     "no-inferrable-types": [
       false,
       "ignore-params"
     ],
+    "no-input-rename": true,
+    "no-inputs-metadata-property": true,
+    "no-iterator": { "severity": "warning" },
+    "no-loop-func": true,
+    "no-magic-numbers": { "severity": "warning" },
+    "no-new-func": true,
     "no-non-null-assertion": true,
+    "no-output-native": true,
+    "no-output-on-prefix": true,
+    "no-output-rename": true,
+    "no-outputs-metadata-property": true,
+    "no-parameter-reassignment": { "severity": "warning" },
     "no-redundant-jsdoc": true,
     "no-string-literal": false,
     "no-switch-case-fall-through": true,
     "no-trailing-whitespace": { "severity": "warning" },
+    "no-useless-constructor": { "severity": "warning" },
+    "no-useless-escape": { "severity": "warning" },
     "no-var-requires": false,
     "object-literal-key-quotes": [
       true,
       "as-needed"
     ],
-    "object-literal-shorthand": false,
-    "ordered-imports": [false],
+    "object-literal-shorthand": { "severity": "warning" },
     "object-literal-sort-keys": [false],
+    "one-variable-per-declaration": true,
+    "only-arrow-functions": true,
+    "ordered-imports": { "severity": "warning" },
+    "prefer-arrow-callback": true,
     "prefer-const": { "severity": "warning" },
+    "prefer-object-spread": { "severity": "warning" },
+    "prefer-template": { "severity": "warning" },
     "quotemark": [
       true,
       "single"
@@ -123,6 +154,7 @@
       }
     },
     "trailing-comma": false,
+    "triple-equals": true,
     "typedef-whitespace": {
       "options": [
         {
@@ -159,19 +191,10 @@
       ],
       "severity": "warning"
     },
-    "no-conflicting-lifecycle": true,
-    "no-host-metadata-property": true,
-    "no-input-rename": true,
-    "no-inputs-metadata-property": true,
-    "no-output-native": true,
-    "no-output-on-prefix": true,
-    "no-output-rename": true,
-    "no-outputs-metadata-property": true,
     "template-banana-in-box": true,
     "template-no-negated-async": true,
     "use-lifecycle-interface": true,
-    "use-pipe-transform-interface": true,
-    "object-literal-sort-keys": false
+    "use-pipe-transform-interface": true
   },
   "rulesDirectory": [
     "codelyzer"
