@@ -1,34 +1,44 @@
 /* Module imports */
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { ModalController } from '@ionic/angular';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+
+/* Constant imports */
+import { DESCRIPTION_MAX_LENGTH, NAME_MAX_LENGTH, NAME_MIN_LENGTH, UNIT_NAME_MAX_LENGTH } from '../../../shared/constants';
 
 /* Interface imports */
-import { GrainBill, Grains, HopsSchedule, Hops, OtherIngredients, SelectedUnits, YeastBatch, Yeast } from '../../../shared/interfaces';
+import { FormSelectOption, GrainBill, HopsSchedule, Ingredient, OtherIngredients, SelectedUnits, YeastBatch } from '../../../shared/interfaces';
+
+/* Component imports */
+import { FormInputComponent } from '../../../components/form-input/form-input.component';
 
 /* Service imports */
 import { CalculationsService, FormValidationService, PreferencesService, UtilityService } from '../../../services/services';
 
 
 @Component({
-  selector: 'page-ingredient-form',
+  selector: 'app-page-ingredient-form',
   templateUrl: './ingredient-form.page.html',
   styleUrls: ['./ingredient-form.page.scss']
 })
 export class IngredientFormPage implements OnInit {
   @Input() boilTime: number;
   @Input() ingredientType: string;
-  @Input() ingredientLibrary: Grains[] | Hops[] | Yeast[];
+  @Input() ingredientLibrary: Ingredient[];
   @Input() update: GrainBill | HopsSchedule | YeastBatch | OtherIngredients;
+  @ViewChild('quantityField') quantityField: FormInputComponent;
+  @ViewChild('subQuantityField') subQuantityField: FormInputComponent;
   compareWithFn: (o1: any, o2: any) => boolean;
   formType: string;
   hasSubQuantity: boolean = false;
   ingredientForm: FormGroup = null;
   onBackClick: () => void;
+  ouncesPerPound: number = 16;
+  ingredientOptions: FormSelectOption[] = [];
+  quantityRoundToPlaces: number = 2;
   requiresConversionLarge: boolean = false;
   requiresConversionSmall: boolean = false;
   selection: any = null;
-  selectOptions: object = { cssClass: 'select-popover' };
   selectTouched: boolean = false;
   showTextArea: boolean = false;
   title: string = '';
@@ -48,7 +58,7 @@ export class IngredientFormPage implements OnInit {
 
   /***** Lifecycle Hooks *****/
 
-  ngOnInit() {
+  ngOnInit(): void {
     if (!this.ingredientType) {
       this.dismissOnError('Missing ingredient type');
       return;
@@ -58,7 +68,7 @@ export class IngredientFormPage implements OnInit {
     this.units = this.preferenceService.getSelectedUnits();
     this.requiresConversionLarge = this.calculator.requiresConversion('weightLarge', this.units);
     this.requiresConversionSmall = this.calculator.requiresConversion('weightSmall', this.units);
-
+    this.buildFormSelectOptions();
     this.initForm();
   }
 
@@ -66,6 +76,38 @@ export class IngredientFormPage implements OnInit {
 
 
   /***** Form Methods *****/
+
+  /**
+   * Build ingredient select options
+   *
+   * @param: none
+   * @return: none
+   */
+  buildFormSelectOptions(): void {
+    if (this.ingredientLibrary) {
+      this.ingredientOptions = this.ingredientLibrary
+        .map((ingredient: Ingredient): FormSelectOption => {
+          return { label: ingredient.name, value: ingredient };
+        });
+    }
+  }
+
+  /**
+   * Check quantity and subquantity form validity when either of them changes
+   *
+   * @param: none
+   * @return: none
+   */
+  checkCompanionInput(): void {
+    const quantityControl: AbstractControl = this.ingredientForm.controls.quantity;
+    quantityControl.markAsTouched();
+    quantityControl.updateValueAndValidity();
+    const subQuantityControl: AbstractControl = this.ingredientForm.controls.subQuantity;
+    subQuantityControl.markAsTouched();
+    subQuantityControl.updateValueAndValidity();
+    this.quantityField.checkForErrors();
+    this.subQuantityField.checkForErrors();
+  }
 
   /**
    * Call modal controller dismiss method
@@ -81,47 +123,20 @@ export class IngredientFormPage implements OnInit {
    * Dismiss form with error message
    *
    * @params: error - error message
-   *
    * @return: none
    */
   dismissOnError(error: any): void {
-    this.modalCtrl.dismiss({error: error});
-  }
-
-  /**
-   * Convert and combine quantity and sub quantity into a single value
-   *
-   * @params: formValues - submitted form values
-   *
-   * @return: combined quantity value
-   */
-  getCombinedQuantity(formValues: object): number {
-    let quantity: number = parseFloat(formValues['quantity']) || 0;
-    quantity = this.requiresConversionLarge
-      ? this.calculator.convertWeight(quantity, true, true)
-      : quantity;
-
-    let subQuantity: number = parseFloat(formValues['subQuantity']) || 0;
-    if (subQuantity) {
-      subQuantity = this.requiresConversionSmall
-        ? this.calculator.convertWeight(subQuantity, false, true)
-        : subQuantity;
-      quantity += subQuantity / 16;
-    }
-
-    return quantity;
+    this.modalCtrl.dismiss({ error });
   }
 
   /**
    * Format a form response for grains ingredient
    *
    * @params: none
-   *
    * @return: formatted response object
    */
   formatGrainsResponse(): object {
     const formValues: object = this.ingredientForm.value;
-
     return {
       grainType: formValues['type'],
       quantity: this.getCombinedQuantity(formValues),
@@ -133,20 +148,18 @@ export class IngredientFormPage implements OnInit {
    * Format a form response for hops ingredient
    *
    * @params: none
-   *
    * @return: formatted response object
    */
   formatHopsResponse(): object {
     const formValues: object = this.ingredientForm.value;
-
     let quantity: number = parseFloat(formValues['subQuantity']) || 0;
-    quantity = this.requiresConversionSmall
-      ? this.calculator.convertWeight(quantity, false, true)
-      : quantity;
+    if (this.requiresConversionSmall) {
+      quantity = this.calculator.convertWeight(quantity, false, true);
+    }
 
     return {
+      quantity,
       hopsType: formValues['type'],
-      quantity: quantity,
       duration: parseFloat(formValues['duration']) || 0,
       dryHop: formValues['dryHop']
     };
@@ -156,7 +169,6 @@ export class IngredientFormPage implements OnInit {
    * Format a form response for other ingredients
    *
    * @params: none
-   *
    * @return: formatted response object
    */
   formatOtherIngredientsResponse(): object {
@@ -175,7 +187,6 @@ export class IngredientFormPage implements OnInit {
    * Format a form response for yeast ingredient
    *
    * @params: none
-   *
    * @return: formatted response
    */
   formatYeastResponse(): object {
@@ -186,6 +197,46 @@ export class IngredientFormPage implements OnInit {
       quantity: parseFloat(formValues['quantity']) || 0,
       requiresStarter: formValues['requiresStarter']
     };
+  }
+
+  /**
+   * Convert and combine quantity and sub quantity into a single value
+   *
+   * @params: formValues - submitted form values
+   * @return: combined quantity value
+   */
+  getCombinedQuantity(formValues: object): number {
+    return (
+      this.getQuantity(parseFloat(formValues['quantity']) || 0)
+      + this.getSubQuantity(parseFloat(formValues['subQuantity']) || 0)
+    );
+  }
+
+  /**
+   * Get quantity that has been unit converted if necessary
+   *
+   * @params: formQuantity - quantity form field value
+   * @return: converted ingredient quantity
+   */
+  getQuantity(formQuantity: number): number {
+    if (this.requiresConversionLarge) {
+      return this.calculator.convertWeight(formQuantity, true, true);
+    }
+    return formQuantity;
+  }
+
+  /**
+   * Get sub quantity and convert to quantity unit
+   *
+   * @params: formQuantity - subQuantity form field value
+   * @return: converted ingredient subQuantity
+   */
+  getSubQuantity(formQuantity: number): number {
+    if (this.requiresConversionSmall) {
+      return this.calculator.convertWeight(formQuantity, false, true);
+    }
+
+    return formQuantity / this.ouncesPerPound;
   }
 
   /**
@@ -229,11 +280,8 @@ export class IngredientFormPage implements OnInit {
    */
   initGrainsFields(): void {
     const requiresConversion: boolean = this.calculator.requiresConversion('weightLarge', this.units);
-
     this.hasSubQuantity = !requiresConversion;
-
     this.ingredientForm.addControl('mill', new FormControl(null));
-
     if (this.update) {
       let quantity: number = this.update.quantity;
       let subQuantity: number = null;
@@ -245,15 +293,19 @@ export class IngredientFormPage implements OnInit {
         if (this.calculator.requiresConversion('weightSmall', this.units)) {
           subQuantity = this.calculator.convertWeight(subQuantity, false, false);
         } else {
-          subQuantity *= 16;
+          subQuantity *= this.ouncesPerPound;
         }
         quantity = Math.floor(quantity);
-        this.ingredientForm.controls.subQuantity.setValue(this.utilService.roundToDecimalPlace(subQuantity, 2));
+        this.ingredientForm.controls.subQuantity.setValue(
+          this.utilService.roundToDecimalPlace(subQuantity, this.quantityRoundToPlaces)
+        );
       }
 
-      this.ingredientForm.controls.quantity.setValue(this.utilService.roundToDecimalPlace(quantity, 2));
-      this.ingredientForm.controls.type.setValue((<GrainBill>this.update).grainType);
-      this.ingredientForm.controls.mill.setValue((<GrainBill>this.update).mill);
+      this.ingredientForm.controls.quantity.setValue(
+        this.utilService.roundToDecimalPlace(quantity, this.quantityRoundToPlaces)
+      );
+      this.ingredientForm.controls.type.setValue((this.update as GrainBill).grainType);
+      this.ingredientForm.controls.mill.setValue((this.update as GrainBill).mill);
     }
   }
 
@@ -264,6 +316,7 @@ export class IngredientFormPage implements OnInit {
    * @return: none
    */
   initHopsFields(): void {
+    const sixtyMinutes: number = 60;
     this.ingredientForm.addControl(
       'duration',
       new FormControl(
@@ -271,19 +324,20 @@ export class IngredientFormPage implements OnInit {
         [
           Validators.required,
           Validators.min(0),
-          Validators.max(this.boilTime || 60)
+          Validators.max(this.boilTime || sixtyMinutes)
         ]
       )
     );
     this.ingredientForm.addControl('dryHop', new FormControl(false));
-
     if (this.update) {
       let quantity: number = this.update.quantity;
       if (this.calculator.requiresConversion('weightSmall', this.units)) {
         quantity = this.calculator.convertWeight(quantity, false, false);
       }
 
-      this.ingredientForm.controls.subQuantity.setValue(this.utilService.roundToDecimalPlace(quantity, 2));
+      this.ingredientForm.controls.subQuantity.setValue(
+        this.utilService.roundToDecimalPlace(quantity, this.quantityRoundToPlaces)
+      );
       this.ingredientForm.controls.type.setValue((<HopsSchedule>this.update).hopsType);
       this.ingredientForm.controls.duration.setValue((<HopsSchedule>this.update).duration);
       this.ingredientForm.controls.dryHop.setValue((<HopsSchedule>this.update).dryHop);
@@ -298,7 +352,6 @@ export class IngredientFormPage implements OnInit {
    */
   initYeastFields(): void {
     this.ingredientForm.addControl('requiresStarter', new FormControl(false));
-
     if (this.update) {
       this.ingredientForm.controls.type.setValue((<YeastBatch>this.update).yeastType);
       this.ingredientForm.controls.quantity.setValue((<YeastBatch>this.update).quantity);
@@ -318,8 +371,8 @@ export class IngredientFormPage implements OnInit {
       new FormControl(
         '',
         [
-          Validators.minLength(2),
-          Validators.maxLength(50),
+          Validators.minLength(NAME_MIN_LENGTH),
+          Validators.maxLength(NAME_MAX_LENGTH),
           Validators.required
         ]
       )
@@ -329,8 +382,8 @@ export class IngredientFormPage implements OnInit {
       new FormControl(
         '',
         [
-          Validators.minLength(2),
-          Validators.maxLength(500),
+          Validators.minLength(1),
+          Validators.maxLength(DESCRIPTION_MAX_LENGTH),
           Validators.required
         ]
       )
@@ -341,7 +394,7 @@ export class IngredientFormPage implements OnInit {
         '',
         [
           Validators.minLength(1),
-          Validators.maxLength(20),
+          Validators.maxLength(UNIT_NAME_MAX_LENGTH),
           Validators.required
         ]
       )
@@ -371,33 +424,17 @@ export class IngredientFormPage implements OnInit {
    * dry hop or not
    *
    * @params: dryHop - ion-toggle event
-   *
    * @return: none
    */
   onDryHopChange(dryHop: CustomEvent): void {
     if (dryHop.detail.checked) {
       this.ingredientForm.get('duration').clearValidators();
     } else {
-      this.ingredientForm.get('duration')
-        .setValidators(
-          [
-            Validators.required,
-            Validators.min(0),
-            Validators.max(this.boilTime)
-          ]
-        );
+      this.ingredientForm.get('duration').setValidators(
+        [ Validators.required, Validators.min(0), Validators.max(this.boilTime) ]
+      );
     }
     this.ingredientForm.get('duration').updateValueAndValidity();
-  }
-
-  /**
-   * Set ingredient ion-select touched property based on whether it has a value
-   *
-   * @params: none
-   * @return: none
-   */
-  onIngredientSelect(): void {
-    this.selectTouched = !this.ingredientForm.controls.type.value;
   }
 
   /**
@@ -408,7 +445,6 @@ export class IngredientFormPage implements OnInit {
    */
   onSubmit(): void {
     let result: object = {};
-
     if (this.ingredientType === 'grains') {
       result = this.formatGrainsResponse();
     } else if (this.ingredientType === 'hops') {

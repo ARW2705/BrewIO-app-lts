@@ -1,11 +1,14 @@
 /* Module imports */
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { FormErrorComponentModule } from '../../../components/form-error/form-error.module';
+import { FormButtonsComponentModule } from '../../../components/form-buttons/form-buttons.module';
+import { FormInputComponentModule } from '../../../components/form-input/form-input.module';
+import { FormSelectComponentModule } from '../../../components/form-select/form-select.module';
+import { FormToggleComponentModule } from '../../../components/form-toggle/form-toggle.module';
 import { HeaderComponentModule } from '../../../components/header/header.module';
 
 /* Page imports */
@@ -15,11 +18,14 @@ import { IngredientFormPage } from './ingredient-form.page';
 @NgModule({
   imports: [
     CommonModule,
+    FormButtonsComponentModule,
+    FormInputComponentModule,
+    FormSelectComponentModule,
     FormsModule,
-    ReactiveFormsModule,
+    FormToggleComponentModule,
+    HeaderComponentModule,
     IonicModule,
-    FormErrorComponentModule,
-    HeaderComponentModule
+    ReactiveFormsModule
   ],
   declarations: [
     IngredientFormPage
