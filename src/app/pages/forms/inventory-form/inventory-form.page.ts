@@ -1,8 +1,8 @@
 /* Module imports */
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { LoadingController, ModalController } from '@ionic/angular';
-import { AbstractControl, FormGroup, FormBuilder, FormControl, Validators } from '@angular/forms';
-import { Observable, forkJoin, from, of } from 'rxjs';
+import { forkJoin, from, Observable, of } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
 /* Contants imports */
@@ -12,18 +12,18 @@ import { OPTIONAL_INVENTORY_DATA_KEYS, PINT, STOCK_TYPES } from '../../../shared
 import { defaultImage } from '../../../shared/defaults';
 
 /* Interface imports */
-import { Author, Batch, Image, InventoryItem, StockType, Style } from '../../../shared/interfaces';
+import { Author, Batch, FormSelectOption, Image, InventoryItem, StockType, Style } from '../../../shared/interfaces';
 
 /* Page imports */
-import { ImageFormPage } from '../image-form/image-form.page';
 import { QuantityHelperPage } from '../../quantity-helper/quantity-helper.page';
+import { ImageFormPage } from '../image-form/image-form.page';
 
 /* Service imports */
-import { CalculationsService, ErrorReportingService, IdService, ImageService, LibraryService, PreferencesService, RecipeService, ToastService, UserService, UtilityService } from '../../../services/services';
+import { ErrorReportingService, IdService, ImageService, LibraryService, RecipeService, ToastService, UtilityService } from '../../../services/services';
 
 
 @Component({
-  selector: 'page-inventory-form',
+  selector: 'app-page-inventory-form',
   templateUrl: './inventory-form.page.html',
   styleUrls: ['./inventory-form.page.scss']
 })
@@ -48,17 +48,22 @@ export class InventoryFormPage implements OnInit {
   onBackClick: () => void;
   quantityHint: string = '';
   selectOptions: object = { cssClass: 'select-popover' };
+  sourceOptions: FormSelectOption[] = [
+    { label: 'My Recipe'        , value: 'self'  },
+    { label: 'Other User Recipe', value: 'other' },
+    { label: 'Third Party'      , value: 'third' }
+  ];
   sourceTouched: boolean = false;
   stockTouched: boolean = false;
-  stockTypes: StockType[] = STOCK_TYPES;
+  stockTypeOptions: FormSelectOption[] = [];
   styles: Style[] = null;
   styleSelection: Style;
   styleTouched: boolean = false;
+  styleOptions: FormSelectOption[] = [];
   supplierLabelImage: Image = this._defaultImage;
   title: string = '';
 
   constructor(
-    public calculator: CalculationsService,
     public errorReporter: ErrorReportingService,
     public formBuilder: FormBuilder,
     public idService: IdService,
@@ -66,10 +71,8 @@ export class InventoryFormPage implements OnInit {
     public libraryService: LibraryService,
     public loadingCtrl: LoadingController,
     public modalCtrl: ModalController,
-    public preferencesService: PreferencesService,
     public recipeService: RecipeService,
     public toastService: ToastService,
-    public userService: UserService,
     public utilService: UtilityService
   ) {
     this.compareWithFn = this.utilService.compareWith.bind(this);
@@ -99,6 +102,7 @@ export class InventoryFormPage implements OnInit {
       ([styles, author]): void => {
         this.onBackClick = this.isRequired ? undefined : this.dismiss.bind(this);
         this.styles = styles;
+        this.buildFormSelectOptions();
         this.author = author;
         this.initForm();
       },
@@ -112,6 +116,17 @@ export class InventoryFormPage implements OnInit {
 
 
   /***** Initializations *****/
+
+  buildFormSelectOptions(): void {
+    this.stockTypeOptions = STOCK_TYPES.map((stockType: StockType): FormSelectOption => {
+      return { label: stockType.name, value: stockType.name };
+    });
+    if (this.styles) {
+      this.styleOptions = this.styles.map((style: Style): FormSelectOption => {
+        return { label: style.name, value: style };
+      });
+    }
+  }
 
   /**
    * Get recipe author prior to form generation
@@ -522,6 +537,20 @@ export class InventoryFormPage implements OnInit {
 
 
   /***** Other *****/
+
+  /**
+   * Replace a particular image with a new image
+   *
+   * @param: imageType - identifier of which image should be replaced
+   * @param: image - the new image to apply
+   *
+   * @return: none
+   */
+  onImageSelection(imageType: string, image: Image): void {
+    if (imageType === 'itemLabelImage') {
+      this.itemLabelImage = image;
+    }
+  }
 
   /**
    * Set quantity helper modal button display and hint based on stock type;

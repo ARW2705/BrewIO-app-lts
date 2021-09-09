@@ -1,24 +1,8 @@
-.image-input {
-  /* Display */
-  height: auto;
-}
-
-.item {
-  /* Display */
-  padding-left: 16px;
-  padding-right: 16px;
-}
-
 .form-button.modal-button {
   /* Display */
-  width: 48px;
-  margin-right: 0;
-}
-
-.form-error-container {
-  /* Display */
-  padding-left: 16px;
-  padding-right: 16px;
+  min-width: 56px;
+  width: 20%;
+  margin: 0 1% -2px 0; // margin bottom needs -2px to offset sibling's bottom border
 }
 
 .form-section-header {
@@ -33,19 +17,11 @@
 }
 
 .form-section-header:not(:first-child) {
-  /* Display */
   margin-top: 60px;
 }
 
-
-ion-item {
+.quantity-field-container {
   /* Display */
-  --padding-start: 0;
-  --inner-padding-start: 0;
-  --padding-end: 0;
-  --inner-padding-end: 0;
-  --highlight-color-valid: var(--ion-color-primary);
-  --highlight-color-invalid: transparent;
-  --highlight-color-focused: transparent;
-  --border-color: var(--ion-color-light);
+  display: flex;
+  align-items: center;
 }
