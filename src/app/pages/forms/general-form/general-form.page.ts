@@ -1,38 +1,40 @@
 /* Module imports */
-import { Component, OnInit, Input, ViewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { ModalController, IonSelect } from '@ionic/angular';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { from } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
+import { IonSelect, ModalController } from '@ionic/angular';
+
+/* Constant imports */
+import { DURATION_MAX, EFFICIENCY_MAX, NAME_MAX_LENGTH, NAME_MIN_LENGTH, VOLUME_MAX } from '../../../shared/constants';
 
 /* Default imports */
 import { defaultImage } from '../../../shared/defaults';
 
 /* Interface imports */
-import { Image, SelectedUnits, Style } from '../../../shared/interfaces';
-
-/* Page imports */
-import { ImageFormPage } from '../image-form/image-form.page';
+import { FormSelectOption, Image, SelectedUnits, Style } from '../../../shared/interfaces';
 
 /* Service imports */
-import { CalculationsService, PreferencesService, ToastService, UtilityService } from '../../../services/services';
-
+import { CalculationsService, PreferencesService, UtilityService } from '../../../services/services';
 
 
 @Component({
-  selector: 'page-general-form',
+  selector: 'app-page-general-form',
   templateUrl: './general-form.page.html',
   styleUrls: ['./general-form.page.scss']
 })
 export class GeneralFormPage implements OnInit {
-  @Input() data: object;
   @Input() docMethod: string;
   @Input() formType: string;
   @Input() styles: Style[];
+  @Input() update: object;
   @ViewChild('styleSelect') styleSelect: IonSelect;
-  brewingTouched: boolean = false;
+  readonly brewingSelectOptions: FormSelectOption[] = [
+    { label: 'Extract'      , value: 'extract'  },
+    { label: 'Brew in a Bag', value: 'biab'     },
+    { label: 'All Grain'    , value: 'allgrain' }
+  ];
   compareWithFn: (o1: any, o2: any) => boolean;
-  controlsToConvertToNumber: string[] = [
+  readonly controlsToConvertToNumber: string[] = [
     'efficiency',
     'batchVolume',
     'boilVolume',
@@ -40,18 +42,12 @@ export class GeneralFormPage implements OnInit {
     'boilDuration',
     'mashDuration'
   ];
-  controlsToConvertUnits: string[] = [
-    'batchVolume',
-    'boilVolume',
-    'mashVolume',
-  ];
-  defaultImage: Image = defaultImage();
+  readonly controlsToConvertUnits: string[] = [ 'batchVolume', 'boilVolume', 'mashVolume' ];
+  readonly defaultImage: Image = defaultImage();
   generalForm: FormGroup = null;
   labelImage: Image = this.defaultImage;
   onBackClick: () => void;
-  selectOptions: object = { cssClass: 'select-popover' };
-  styleSelection: Style;
-  styleTouched: boolean = false;
+  styleSelectOptions: FormSelectOption[] = [];
   units: SelectedUnits = null;
 
 
@@ -61,7 +57,6 @@ export class GeneralFormPage implements OnInit {
     public modalCtrl: ModalController,
     public calculator: CalculationsService,
     public preferenceService: PreferencesService,
-    public toastService: ToastService,
     public utilService: UtilityService
   ) {
     this.compareWithFn = this.utilService.compareWith.bind(this);
@@ -70,7 +65,13 @@ export class GeneralFormPage implements OnInit {
 
   /***** Lifecycle Hooks *****/
 
-  ngOnInit() {
+  ngOnInit(): void {
+    if (this.styles) {
+      this.styleSelectOptions = this.styles.map((style: Style): FormSelectOption => {
+        return { label: style.name, value: style };
+      });
+    }
+
     this.units = this.preferenceService.getSelectedUnits();
     this.initForm();
   }
@@ -78,69 +79,46 @@ export class GeneralFormPage implements OnInit {
   /***** End Lifecycle Hooks *****/
 
 
-  /***** Form Methods *****/
-
-  /**
-   * Add name form control to form group based on the formType
-   *
-   * @params: none
-   * @return: none
-   */
-  addNameControl(): void {
-    this.generalForm.addControl(
-      this.formType === 'master' ? 'name' : 'variantName',
-      new FormControl(
-        '',
-        [Validators.minLength(2), Validators.maxLength(50), Validators.required]
-      )
-    );
-  }
-
   /**
    * Convert numeric string values to numbers and store units converted to
    * english standard
    *
    * @params: none
-   *
    * @return: a submission ready object of form values
    */
   convertForSubmission(): object {
-    const formValues: object = {};
+    const formValues: object = { labelImage: this.labelImage };
     for (const key in this.generalForm.value) {
       if (this.generalForm.value.hasOwnProperty(key)) {
-        if (this.controlsToConvertToNumber.includes(key)) {
-          formValues[key] = parseFloat(this.generalForm.value[key]);
-        } else {
-          formValues[key] = this.generalForm.value[key];
-        }
+        formValues[key] = this.parseFormNumber(this.generalForm.value[key]);
         if (this.requiresConversion(key)) {
           formValues[key] = this.calculator.convertVolume(formValues[key], true, true);
         }
       }
     }
-    formValues['labelImage'] = this.labelImage;
+
     return formValues;
   }
 
   /**
-   * Call ModalController dismiss method
+   * Convert strings of numbers into number; ion-input elements store type number values as strings
+   *
+   * @param: value - a form value to convert
+   * @return: the parsed value if it was a string of numbers; else the original value
+   */
+  parseFormNumber(value: string | number | boolean): string | number | boolean {
+    const parsed: number = parseFloat(value.toString());
+    return isNaN(parsed) ? value : parsed;
+  }
+
+  /**
+   * Call Ionic ModalController dismiss
    *
    * @params: none
    * @return: none
    */
-  dismiss() {
+  dismiss(): void {
     this.modalCtrl.dismiss();
-  }
-
-  /**
-   * Check if there is a value key that should be mapped to the form
-   *
-   * @params: valueName - the value name to check
-   *
-   * @return: true if value should be mapped to form
-   */
-  hasMappableValue(valueName: string): boolean {
-    return valueName !== 'labelImage' && valueName !== 'isFavorite' && valueName !== 'isMaster';
   }
 
   /**
@@ -150,135 +128,62 @@ export class GeneralFormPage implements OnInit {
    * @return: none
    */
   initForm(): void {
+    const efficiency: number = 70;
+    const duration: number = 60;
     this.generalForm = this.formBuilder.group({
-      style:        ['',   [Validators.required]],
-      brewingType:  ['',   [Validators.required]],
-      efficiency:   [70,   [Validators.required, Validators.min(0), Validators.max(100)]],
-      mashDuration: [60,   [Validators.required, Validators.min(0), Validators.max(1440)]],
-      boilDuration: [60,   [Validators.required, Validators.min(0), Validators.max(1440)]],
-      batchVolume:  [null, [Validators.required, Validators.min(0), Validators.max(1000)]],
-      boilVolume:   [null, [Validators.required, Validators.min(0), Validators.max(1000)]],
-      mashVolume:   [null, [Validators.required, Validators.min(0), Validators.max(1000)]],
+      style:        ['',         [Validators.required]                                                   ],
+      brewingType:  ['',         [Validators.required]                                                   ],
+      efficiency:   [efficiency, [Validators.required, Validators.min(0), Validators.max(EFFICIENCY_MAX)]],
+      mashDuration: [duration,   [Validators.required, Validators.min(0), Validators.max(DURATION_MAX)]  ],
+      boilDuration: [duration,   [Validators.required, Validators.min(0), Validators.max(DURATION_MAX)]  ],
+      batchVolume:  [null,       [Validators.required, Validators.min(0), Validators.max(VOLUME_MAX)]    ],
+      boilVolume:   [null,       [Validators.required, Validators.min(0), Validators.max(VOLUME_MAX)]    ],
+      mashVolume:   [null,       [Validators.required, Validators.min(0), Validators.max(VOLUME_MAX)]    ],
       isFavorite:   false,
       isMaster:     false
     });
-
-    this.addNameControl();
+    this.setNameControl();
     this.mapDataToForm();
   }
 
   /**
-   * Map given data to form values if present; Perform unit conversion if required
+   * Map values to form from given update object performing unit conversion if required
    *
    * @params: none
    * @return: none
    */
   mapDataToForm(): void {
-    if (this.data) {
-      for (const key in this.data) {
-        if (this.hasMappableValue(key)) {
+    if (this.update) {
+      for (const key in this.update) {
+        if (key !== 'labelImage') {
           if (this.controlsToConvertUnits.includes(key)) {
             if (this.calculator.requiresConversion('volumeLarge', this.units)) {
-              this.data[key] = this.calculator.convertVolume(this.data[key], true, false);
+              this.update[key] = this.calculator.convertVolume(this.update[key], true, false);
             }
+            const twoPlaces: number = 2;
             this.generalForm.controls[key].setValue(
-              this.utilService.roundToDecimalPlace(this.data[key], 2)
+              this.utilService.roundToDecimalPlace(this.update[key], twoPlaces)
             );
           } else {
-            this.generalForm.controls[key].setValue(this.data[key]);
+            this.generalForm.controls[key].setValue(this.update[key]);
           }
         }
       }
-      this.styleSelection = this.data['style'];
-      this.labelImage = this.data['labelImage'] || this.defaultImage;
+
+      this.labelImage = this.update['labelImage'] || this.defaultImage;
     }
   }
 
   /**
-   * Get image modal error handler
+   * Update labelImage if a result was returned from form image
    *
-   * @params: none
-   *
-   * @return: modal error handler function
-   */
-  onImageModalError(): (error: string) => void {
-    return (error: string): void => {
-      console.log('modal dismiss error', error);
-      this.toastService.presentErrorToast('Error selecting image');
-    };
-  }
-
-  /**
-   * Get image modal success handler
-   *
-   * @params: none
-   *
-   * @return: modal success handler function
-   */
-  onImageModalSuccess(): (data: object) => void {
-    return (data: object): void => {
-      const _data: Image = data['data'];
-      if (_data) {
-        let previousServerFilename: string;
-        if (this.labelImage && this.labelImage.serverFilename) {
-          previousServerFilename = this.labelImage.serverFilename;
-        }
-        this.labelImage = _data;
-        this.labelImage.serverFilename = previousServerFilename;
-      }
-    };
-  }
-
-  /**
-   * Open image modal
-   *
-   * @params: none
+   * @param: image - a new image to apply or null if cancelled; do not apply null
    * @return: none
    */
-  async openImageModal(): Promise<void> {
-    const modal: HTMLIonModalElement = await this.modalCtrl.create({
-      component: ImageFormPage,
-      componentProps: { image: this.labelImage }
-    });
-
-    from(modal.onDidDismiss())
-      .subscribe(
-        this.onImageModalSuccess(),
-        this.onImageModalError()
-      );
-
-    await modal.present();
-  }
-
-  /**
-   * Set style ion-select touched property based on whether it has a value
-   *
-   * @params: none
-   * @return: none
-   */
-  onBrewingSelect() {
-    this.brewingTouched = !this.generalForm.controls.brewingType.value;
-  }
-
-  /**
-   * Set style ion-select touched property based on whether it has a value
-   *
-   * @params: none
-   * @return: none
-   */
-  onStyleSelect(): void {
-    this.styleTouched = !this.generalForm.controls.style.value;
-  }
-
-  /**
-   * Update style selection on form selection
-   *
-   * @params: style - form select result event
-   *
-   * @return: none
-   */
-  onStyleSelection(style: Style): void {
-    this.styleSelection = style;
+  imageModalDismiss(image: Image): void {
+    if (image) {
+      this.labelImage = image;
+    }
   }
 
   /**
@@ -296,15 +201,33 @@ export class GeneralFormPage implements OnInit {
    * Check if value should have a unit conversion applied
    *
    * @params: valueName - the key name to check for
-   *
-   * @return: true if valueName is included in controlsToConvertUnits and unit
-   * requires conversion
+   * @return: true if valueName is included in controlsToConvertUnits and unit requires conversion
    */
   requiresConversion(valueName: string): boolean {
-    return this.controlsToConvertUnits.includes(valueName)
-      && this.calculator.requiresConversion('volumeLarge', this.units);
+    return (
+      this.controlsToConvertUnits.includes(valueName)
+      && this.calculator.requiresConversion('volumeLarge', this.units)
+    );
   }
 
-  /***** End Form Methods *****/
+  /**
+   * Add 'name' or 'variantName' form control to form group based on the formType
+   *
+   * @params: none
+   * @return: none
+   */
+  setNameControl(): void {
+    this.generalForm.addControl(
+      this.formType === 'master' ? 'name' : 'variantName',
+      new FormControl(
+        '',
+        [
+          Validators.minLength(NAME_MIN_LENGTH),
+          Validators.maxLength(NAME_MAX_LENGTH),
+          Validators.required
+        ]
+      )
+    );
+  }
 
 }
