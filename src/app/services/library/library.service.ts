@@ -296,10 +296,18 @@ export class LibraryService {
     this.storageService.getLibrary()
       .subscribe(
         (libraries: LibraryStorage): void => {
-          if (this.grainsLibrary === null) this.grainsLibrary = libraries.grains;
-          if (this.hopsLibrary === null) this.hopsLibrary = libraries.hops;
-          if (this.yeastLibrary === null) this.yeastLibrary = libraries.yeast;
-          if (this.styleLibrary === null) this.styleLibrary = libraries.style;
+          if (this.grainsLibrary === null) {
+             this.grainsLibrary = libraries.grains;
+           }
+          if (this.hopsLibrary === null) {
+             this.hopsLibrary = libraries.hops;
+           }
+          if (this.yeastLibrary === null) {
+             this.yeastLibrary = libraries.yeast;
+           }
+          if (this.styleLibrary === null) {
+             this.styleLibrary = libraries.style;
+           }
         },
         (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
@@ -315,9 +323,15 @@ export class LibraryService {
    *          0 if equal
    */
   sortAlpha(a: any, b: any): number {
-    if (!a.name || !b.name) return 0;
-    if (a.name < b.name) return -1;
-    if (a.name > b.name) return 1;
+    if (!a.name || !b.name) {
+      return 0;
+    }
+    if (a.name < b.name) {
+      return -1;
+    }
+    if (a.name > b.name) {
+      return 1;
+    }
     return 0;
   }
 
@@ -365,12 +379,6 @@ export class LibraryService {
    */
   isSafeHops(hops: any): boolean {
     if (!this.typeGuard.hasValidProperties(hops, HopsGuardMetadata)) {
-      return false;
-    }
-    if (!hops.usedFor.every((style: Style): boolean => this.isSafeStyle(style))) {
-      return false;
-    }
-    if (!hops.alternatives.every((_hops: Hops): boolean => this.typeGuard.hasValidProperties(_hops, HopsGuardMetadata))) {
       return false;
     }
     return true;
