@@ -10,6 +10,6 @@ export const UserGuardMetadata: DocumentGuard = {
   lastname:            { type: 'string', required: false },
   email:               { type: 'string', required: false },
   friendList:          { type: 'string', required: false },
-  token:               { type: 'string', required: true  },
+  token:               { type: 'string', required: false },
   preferredUnitSystem: { type: 'string', required: true  }
 };
