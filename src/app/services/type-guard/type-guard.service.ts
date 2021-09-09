@@ -1,5 +1,6 @@
 /* Module imports */
 import { Injectable } from '@angular/core';
+import { environment } from '../../../environments/environment';
 
 /* Interface imports */
 import { DocumentGuard } from '../../shared/interfaces';
@@ -9,8 +10,9 @@ import { DocumentGuard } from '../../shared/interfaces';
   providedIn: 'root'
 })
 export class TypeGuardService {
+  strictDebug: boolean = false;
 
-  constructor() { }
+  constructor() {}
 
   /**
    * Combine two or more type guard metadata into a single guard
@@ -41,11 +43,15 @@ export class TypeGuardService {
    * @return: true if all properties with primitive types are correct
    */
   hasValidProperties(source: any, guard: DocumentGuard): boolean {
-    console.log('Checking...', source);
+    if (this.strictDebug) {
+      console.log('Checking...', source);
+    }
     if (source && typeof source === 'object') {
       for (const key in guard) {
         if (!this.hasValidPropertyHelper(source, key, guard[key].type, guard[key].required)) {
-          console.error(`Invalid type for ${key}: expected ${guard[key].type}, got ${typeof source[key]}`);
+          if (this.strictDebug) {
+            console.error(`Invalid type for ${key}: expected ${guard[key].type}, got ${typeof source[key]}`);
+          }
           return false;
         }
       }
