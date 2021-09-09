@@ -1,12 +1,16 @@
 /* Module imports */
-import { Injectable } from '@angular/core';
+import { Injectable, SimpleChange } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+
+/* Custom Type imports */
+import { ArrayElement, CustomError } from '../../shared/types';
 
 
 @Injectable({
   providedIn: 'root'
 })
 export class UtilityService {
+  protoHasProperty: (v: string | number | symbol) => boolean = Object.prototype.hasOwnProperty;
   staticLibraryProperties: string[] = [
     'grainType',
     'hopsType',
@@ -19,7 +23,53 @@ export class UtilityService {
     'updatedAt'
   ];
 
-  constructor() { }
+  /***** Array Helpers *****/
+
+  /**
+   * Typescript array union workaround
+   * https://github.com/microsoft/TypeScript/issues/30271
+   * https://github.com/Microsoft/TypeScript/issues/7294#issuecomment-465794460
+   *
+   * @param: array - input array to convert
+   * @return: converted array
+   */
+  flattenArrayType<T>(array: T): ArrayElement<T>[] {
+    return array as any;
+  }
+
+  /**
+   * Perform provided callback function within a given range of numbers
+   *
+   * @param: callbackFn - callback function to execute for each number
+   * @param: stop - stop after this count (exclusive)
+   * @param: [start] - optional start number; defaults to 0
+   * @param: [step] - optional step size; defaults to 1
+   *
+   * @return: none
+   */
+  forInRange(
+    callbackFn: (index: number) => void,
+    stop: number,
+    start: number = 0,
+    step: number = 1
+  ): void {
+    if (step === 0) {
+      const message: string = 'Range step interval must not be 0';
+      const severity: number = 2;
+      throw new CustomError('ValueError', message, severity, message);
+    }
+
+    const isIncreasing: boolean = step > 0;
+    if (isIncreasing ? stop > start : stop < start) {
+      const loopStop: number = Math.abs(stop);
+      for (let i: number = start; Math.abs(i) < loopStop; i += step) {
+        callbackFn(i);
+      }
+    }
+  }
+
+  /***** End Array Helpers *****/
+
 
   /***** Object Helpers *****/
 
@@ -75,6 +125,19 @@ export class UtilityService {
     }
   }
 
+  /**
+   * Determines whether an object has a property with a specified name
+   *
+   *
+   * @param: obj - the object to test
+   * @param: key - property identifier
+   *
+   * @return: true if object contains the key
+   */
+  hasProperty(obj: object, key: (string | number | symbol)): boolean {
+    return this.protoHasProperty.call(obj, key);
+  }
+
   /***** End Object Helpers *****/
 
 
@@ -120,7 +183,8 @@ export class UtilityService {
     if (places < 0) {
       return -1;
     }
-    return Math.round(baseNum * Math.pow(10, places)) / Math.pow(10, places);
+    const tens: number = 10;
+    return Math.round(baseNum * tens ** places) / tens ** places;
   }
 
   /**
@@ -139,7 +203,9 @@ export class UtilityService {
       }
     } else if (typeof obj === 'object' && obj !== null) {
       for (const key in obj) {
-        if (this.staticLibraryProperties.includes(key)) continue;
+        if (this.staticLibraryProperties.includes(key)) {
+          continue;
+        }
 
         if (this.sharedProperties.includes(key)) {
           delete obj[key];
@@ -165,5 +231,34 @@ export class UtilityService {
   }
 
   /***** End Formatting Helpers *****/
+
+
+  /***** Lifecycle Helpers *****/
+
+  /**
+   * Check if new SimpleChange value has the same values as the previous SimpleChange value
+   *
+   * @params: changes - changes detected from ngOnChanges
+   *
+   * @return: true if current values are different than previous values
+   */
+  hasChanges(changes: SimpleChange): boolean {
+    return JSON.stringify(changes.currentValue) !== JSON.stringify(changes.previousValue);
+  }
+
+  /***** End Lifecycle Helpers *****/
+
+
+  /***** String Helpers *****/
+
+  isUpperCase(str: string): boolean {
+    return !(new RegExp(/[a-z]+/)).test(str);
+  }
+
+  isLowerCase(str: string): boolean {
+    return !(new RegExp(/[A-Z]+/)).test(str);
+  }
+
+  /***** End String Helpers *****/
 
 }
