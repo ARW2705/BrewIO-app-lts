@@ -338,6 +338,13 @@ export class UserService {
       );
   }
 
+  getImagePath(user: User, imageName: string): string {
+    if (user && user.hasOwnProperty(imageName)) {
+      return user[imageName].filePath;
+    }
+    return null;
+  }
+
   /**
    * Update user profile
    *
@@ -348,13 +355,9 @@ export class UserService {
   updateUserProfile(userUpdate: object): Observable<User> {
     const user$: BehaviorSubject<User> = this.getUser();
     const user: User = user$.value;
-
-    // TODO handle image check and update
-    const previousUserImagePath: string = user.userImage.filePath;
-    const previousBreweryLabelImagePath: string = user.breweryLabelImage.filePath;
-
+    const previousUserImagePath: string = this.getImagePath(user, 'userImage');
+    const previousBreweryLabelImagePath: string = this.getImagePath(user, 'breweryLabelImage');
     this.mapUserData(userUpdate, user);
-
     const storeImages: Observable<Image>[] = this.composeImageStoreRequests(
       user,
       {
@@ -637,8 +640,8 @@ export class UserService {
     }
     return (
       this.preferenceService.isValidUnits(user.units)
-      && (!user.breweryLabelImage || this.imageService.isSafeImage(user.breweryLabelImage))
-      && (!user.userImage || this.imageService.isSafeImage(user.userImage))
+      && (!user.hasOwnProperty('userImage') || !user.breweryLabelImage || this.imageService.isSafeImage(user.breweryLabelImage))
+      && (!user.hasOwnProperty('breweryLabelImage') || !user.userImage || this.imageService.isSafeImage(user.userImage))
     );
   }
 
