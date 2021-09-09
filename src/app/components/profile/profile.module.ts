@@ -7,7 +7,7 @@ import { IonicModule } from '@ionic/angular';
 /* Component imports */
 import { FormErrorComponentModule } from '../form-error/form-error.module';
 import { FormImageComponentModule } from '../form-image/form-image.module';
-import { FormInputComponentModule } from '../form-input/from-input.module';
+import { FormInputComponentModule } from '../form-input/form-input.module';
 import { ProfileComponent } from './profile.component';
 
 
