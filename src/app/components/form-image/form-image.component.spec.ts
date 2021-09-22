@@ -1,21 +1,17 @@
 /* Module imports */
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
-import { ModalController } from '@ionic/angular';
+import { of, throwError } from 'rxjs';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
 import { mockImage } from '../../../../test-config/mock-models';
-import { ModalControllerStub, ModalStub } from '../../../../test-config/ionic-stubs';
-import { ImageServiceStub, ToastServiceStub } from '../../../../test-config/service-stubs';
+import { ImageServiceStub, ModalServiceStub, ErrorReportingServiceStub } from '../../../../test-config/service-stubs';
 
 /* Constant imports */
 import { MISSING_IMAGE_URL } from '../../shared/constants';
-
-/* Default imports */
-import { defaultImage } from '../../shared/defaults';
 
 /* Interface imports */
 import { Image } from '../../shared/interfaces';
@@ -24,7 +20,7 @@ import { Image } from '../../shared/interfaces';
 import { ImageFormPage } from '../../pages/forms/image-form/image-form.page';
 
 /* Service imports */
-import { ImageService, ToastService } from '../../services/services';
+import { ImageService, ModalService, ErrorReportingService } from '../../services/services';
 
 /* Component imports */
 import { FormImageComponent } from './form-image.component';
@@ -39,9 +35,9 @@ describe('FormImageComponent', (): void => {
     TestBed.configureTestingModule({
       declarations: [ FormImageComponent ],
       providers: [
+        { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: ImageService, useClass: ImageServiceStub },
-        { provide: ModalController, useClass: ModalControllerStub },
-        { provide: ToastService, useClass: ToastServiceStub }
+        { provide: ModalService, useClass: ModalServiceStub }
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
@@ -58,85 +54,70 @@ describe('FormImageComponent', (): void => {
   test('should create the component', (): void => {
     fixture.detectChanges();
 
-    expect(component).toBeDefined();
+    expect(component).toBeTruthy();
   });
 
-  test('should get image modal options', (): void => {
-    component.imageService.hasDefaultImage = jest.fn()
-      .mockReturnValueOnce(true)
-      .mockReturnValueOnce(false);
+  test('should open image modal and handle cancelled modal', (done: jest.DoneCallback): void => {
     const _mockImage: Image = mockImage();
+    const _mockOriginalImage: Image = mockImage();
     component.image = _mockImage;
-
-    fixture.detectChanges();
-
-    const defaultOption: object = component.getImageModalOptions();
-    expect(defaultOption).toBeNull();
-    const nonDefaultOption: object = component.getImageModalOptions();
-    expect(nonDefaultOption).toStrictEqual({image: _mockImage});
-  });
-
-  test('should handle image modal error', (): void => {
-    const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
-    const toastSpy: jest.SpyInstance = jest.spyOn(component.toastService, 'presentErrorToast');
-
-    fixture.detectChanges();
-
-    const handler: (error: string) => void = component.onImageModalError();
-    handler('test-error');
-    const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
-    expect(consoleCalls[0]).toMatch('modal dismiss error');
-    expect(consoleCalls[1]).toMatch('test-error');
-    expect(toastSpy).toHaveBeenCalledWith('Error selecting image');
-  });
-
-  test('should handle image modal success', (): void => {
-    const _mockPreviousImage: Image = mockImage();
-    _mockPreviousImage.serverFilename = `${_mockPreviousImage}-test`;
-    const _mockNewImage: Image = mockImage();
-    _mockNewImage.cid = 'image-2';
-    component.image = _mockPreviousImage;
-    component.imageModalEvent.emit = jest.fn();
+    component.modalService.openModal = jest.fn()
+      .mockReturnValue(of(null));
+    component.imageService.hasDefaultImage = jest.fn()
+      .mockReturnValue(true);
+    const openSpy: jest.SpyInstance = jest.spyOn(component.modalService, 'openModal');
     const emitSpy: jest.SpyInstance = jest.spyOn(component.imageModalEvent, 'emit');
-
-    fixture.detectChanges();
-
-    const handler: (data: object) => void = component.onImageModalSuccess();
-    handler({ data: _mockNewImage });
-    const emitCall: Image = emitSpy.mock.calls[0][0];
-    expect(emitCall.serverFilename).toMatch(_mockPreviousImage.serverFilename);
-    expect(emitCall.cid).toMatch(_mockNewImage.cid);
-  });
-
-  test('should open image modal', (done: jest.DoneCallback): void => {
-    const _stubModal: ModalStub = new ModalStub();
-    component.getImageModalOptions = jest.fn()
-      .mockReturnValue({});
-    component.modalCtrl.create = jest.fn()
-      .mockReturnValue(_stubModal);
-    component.onImageModalSuccess = jest.fn();
-    _stubModal.onDidDismiss = jest.fn()
-      .mockReturnValue(Promise.resolve());
-    const successSpy: jest.SpyInstance = jest.spyOn(component, 'onImageModalSuccess');
 
     fixture.detectChanges();
 
     component.openImageModal();
-    _stubModal.onDidDismiss();
     setTimeout((): void => {
-      expect(successSpy).toHaveBeenCalled();
+      expect(openSpy).toHaveBeenCalledWith(ImageFormPage, null);
+      expect(emitSpy).not.toHaveBeenCalled();
+      expect(component.image).toStrictEqual(_mockOriginalImage);
       done();
     }, 10);
   });
 
-  test('should perform no actions if modal was cancelled', (): void => {
+  test('should open image modal and handle new image', (done: jest.DoneCallback): void => {
+    const _mockImage: Image = mockImage();
+    const _mockNewImage: Image = mockImage();
+    _mockNewImage.cid = 'new';
+    _mockNewImage.serverFilename = 'other name';
+    component.image = _mockImage;
+    component.modalService.openModal = jest.fn()
+      .mockReturnValue(of(_mockNewImage));
+    component.imageService.hasDefaultImage = jest.fn()
+      .mockReturnValue(false);
+    const openSpy: jest.SpyInstance = jest.spyOn(component.modalService, 'openModal');
     const emitSpy: jest.SpyInstance = jest.spyOn(component.imageModalEvent, 'emit');
 
     fixture.detectChanges();
 
-    const handler: (data: object) => void = component.onImageModalSuccess();
-    handler({ data: null });
-    expect(emitSpy).not.toHaveBeenCalled();
+    component.openImageModal();
+    setTimeout((): void => {
+      expect(openSpy).toHaveBeenCalledWith(ImageFormPage, { image: _mockImage });
+      expect(emitSpy).toHaveBeenCalledWith(_mockNewImage);
+      done();
+    }, 10);
+  });
+
+  test('should open image and catch error', (done: jest.DoneCallback): void => {
+    const _mockError: Error = new Error('test-error');
+    component.modalService.openModal = jest.fn()
+      .mockReturnValue(throwError(_mockError));
+    component.imageService.hasDefaultImage = jest.fn()
+      .mockReturnValue(false);
+    component.errorReporter.handleUnhandledError = jest.fn();
+    const errorSpy: jest.SpyInstance = jest.spyOn(component.errorReporter, 'handleUnhandledError');
+
+    fixture.detectChanges();
+
+    component.openImageModal();
+    setTimeout((): void => {
+      expect(errorSpy).toHaveBeenCalledWith(_mockError);
+      done();
+    }, 10);
   });
 
   test('should render the template with an image', (): void => {
