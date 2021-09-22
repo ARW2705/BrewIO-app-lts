@@ -1,0 +1,25 @@
+<form [formGroup]="yeastForm">
+  <!-- Ingredient Type Choice Select -->
+  <app-form-select  *ngIf="yeastFormOptions"
+                    [compareWithFn]="compareWithFn"
+                    [control]="yeastForm.controls['type']"
+                    controlName="type"
+                    formName="ingredient"
+                    label="select yeast"
+                    [options]="yeastFormOptions"
+                    [shouldRequire]="true">
+  </app-form-select>
+  <!-- Yeast Quantity Input -->
+  <app-form-input [control]="yeastForm.controls['quantity']"
+                  controlName="quantity"
+                  formName="ingredient"
+                  label="Quantity (packs/vials)"
+                  [overrideTitleCase]="true"
+                  [shouldRequire]="true"
+                  type="number">
+  </app-form-input>
+  <!-- Starter Required Toggle -->
+  <app-form-toggle  [control]="yeastForm.controls['requiresStarter']"
+                    toggleName="starter">
+  </app-form-toggle>
+</form>
