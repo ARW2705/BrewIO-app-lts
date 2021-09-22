@@ -1,0 +1,46 @@
+<form [formGroup]="grainForm">
+  <!-- Ingredient Type Choice Select -->
+  <app-form-select  *ngIf="grainFormOptions"
+                    [compareWithFn]="compareWithFn"
+                    [control]="grainForm.controls['type']"
+                    controlName="type"
+                    formName="ingredient"
+                    label="select grains"
+                    [options]="grainFormOptions"
+                    [shouldRequire]="true">
+  </app-form-select>
+  <!-- Grain Bulk Quantity -->
+  <app-form-input #quantityField
+                  (ionBlurEvent)="checkCompanionInput()"
+                  (ionChangeEvent)="checkCompanionInput()"
+                  [control]="grainForm.controls['quantity']"
+                  controlName="quantity"
+                  formName="ingredient"
+                  [label]="'Quantity' + ' (' + (units !== null ? units.weightLarge.shortName : '') + ')'"
+                  [overrideTitleCase]="true"
+                  [shouldRequire]="true"
+                  type="number">
+  </app-form-input>
+  <ng-container *ngIf="!requiresConversionLarge">
+    <!-- Grain Fine Quantity -->
+    <app-form-input #subQuantityField
+                    (ionBlurEvent)="checkCompanionInput()"
+                    (ionChangeEvent)="checkCompanionInput()"
+                    [control]="grainForm.controls['subQuantity']"
+                    controlName="subQuantity"
+                    formName="ingredient"
+                    [label]="'Quantity' + ' (' + (units !== null ? units.weightSmall.shortName : '') + ')'"
+                    [overrideTitleCase]="true"
+                    [shouldRequire]="true"
+                    type="number">
+    </app-form-input>
+  </ng-container>
+  <!-- Grain Mill Setting -->
+  <app-form-input [control]="grainForm.controls['mill']"
+                  controlName="mill"
+                  formName="ingredient"
+                  label="mill setting"
+                  [shouldRequire]="false"
+                  type="number">
+  </app-form-input>
+</form>
