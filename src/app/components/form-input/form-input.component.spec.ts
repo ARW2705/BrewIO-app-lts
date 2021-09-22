@@ -77,6 +77,17 @@ describe('FormInputComponent', (): void => {
   });
 
   test('should assign changes to component', (): void => {
+    component.control = null;
+    component.controlName = null;
+    component.formName = null;
+    component.label = null;
+    component.shouldAutocapitalize = null;
+    component.shouldAutocomplete = null;
+    component.shouldAutocorrect = null;
+    component.shouldRequire = null;
+    component.shouldSpellcheck = null;
+    component.type = null;
+
     fixture.detectChanges();
 
     const control: FormControl = new FormControl();
@@ -87,13 +98,13 @@ describe('FormInputComponent', (): void => {
     const shouldSpellcheck: boolean = true;
     const type: string = 'text';
     const changes: FormInputChanges = {
-      control             : control,
-      shouldAutocapitalize: shouldAutocapitalize,
-      shouldAutocomplete  : shouldAutocomplete,
-      shouldAutocorrect   : shouldAutocorrect,
-      shouldRequire       : shouldRequire,
-      shouldSpellcheck    : shouldSpellcheck,
-      type                : type
+      control,
+      shouldAutocapitalize,
+      shouldAutocomplete,
+      shouldAutocorrect,
+      shouldRequire,
+      shouldSpellcheck,
+      type
     };
     component.assignFormChanges(changes);
     expect(component.control).toStrictEqual(control);
@@ -137,14 +148,31 @@ describe('FormInputComponent', (): void => {
     const changeSpy: jest.SpyInstance = jest.spyOn(component.ionChangeEvent, 'emit');
     component.checkForErrors = jest.fn();
     const checkSpy: jest.SpyInstance = jest.spyOn(component, 'checkForErrors');
+    component.rectifyInputType = jest.fn();
+    const recitfySpy: jest.SpyInstance = jest.spyOn(component, 'rectifyInputType');
     const event: CustomEvent = new CustomEvent('test');
     component.showError = true;
 
     fixture.detectChanges();
 
+    component.type = 'string';
     component.onInputChange(event);
     expect(changeSpy).toHaveBeenCalledWith(event);
     expect(checkSpy).toHaveBeenCalled();
+    component.type = 'number';
+    component.onInputChange(event);
+    expect(recitfySpy).toHaveBeenCalled();
+  });
+
+  test('should rectify input type', (): void => {
+    fixture.detectChanges();
+
+    component.control.setValue('1');
+    component.rectifyInputType();
+    expect(typeof component.control.value).toMatch('number');
+    component.control.setValue('a');
+    component.rectifyInputType();
+    expect(typeof component.control.value).toMatch('string');
   });
 
   test('should render the template without an error', (): void => {

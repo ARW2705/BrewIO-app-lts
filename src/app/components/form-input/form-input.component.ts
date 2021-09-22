@@ -19,13 +19,13 @@ export class FormInputComponent implements OnChanges {
   @Input() controlName: string = null;
   @Input() formName: string = null;
   @Input() label: string = null;
-  @Input() overrideTitleCase: boolean = false;
+  @Input() overrideTitleCase: boolean = null;
   @Input() shouldAutocapitalize: boolean = null;
   @Input() shouldAutocomplete: boolean = null;
   @Input() shouldAutocorrect: boolean = null;
   @Input() shouldRequire: boolean = null;
   @Input() shouldSpellcheck: boolean = null;
-  @Input() type: string;
+  @Input() type: string = null;
   @Output() ionBlurEvent: EventEmitter<CustomEvent> = new EventEmitter<CustomEvent>();
   @Output() ionChangeEvent: EventEmitter<CustomEvent> = new EventEmitter<CustomEvent>();
   controlErrors: object = null;
@@ -37,6 +37,7 @@ export class FormInputComponent implements OnChanges {
     this.assignFormChanges(
       this.formAttributeService.handleFormChange('input', this.control, changes)
     );
+    this.checkForErrors();
   }
 
   /**
@@ -48,7 +49,7 @@ export class FormInputComponent implements OnChanges {
    */
   assignFormChanges(formChanges: FormChanges): void {
     for (const key in formChanges) {
-      if (this.hasOwnProperty(key)) {
+      if (this.hasOwnProperty(key) && this[key] === null) {
         this[key] = formChanges[key];
       }
     }
@@ -87,7 +88,25 @@ export class FormInputComponent implements OnChanges {
     if (this.showError) {
       this.checkForErrors();
     }
+    if (this.type.toLowerCase() === 'number') {
+      this.rectifyInputType();
+    }
     this.ionChangeEvent.emit(event);
+  }
+
+  /**
+   * Rectify the input value to its appropriate type
+   * Angular currently stores inputs of type "number" as type "string" and requires parsing
+   *   Open Issue: https://github.com/angular/angular/issues/13243
+   *
+   * @param: none
+   * @return: none
+   */
+  rectifyInputType(): void {
+    const parsed: number = parseFloat(this.control.value.toString());
+    if (!isNaN(parsed)) {
+      this.control.setValue(parsed);
+    }
   }
 
 }
