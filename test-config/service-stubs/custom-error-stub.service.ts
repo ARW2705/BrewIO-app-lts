@@ -18,7 +18,9 @@ export class CustomErrorStub extends Error {
 
 }
 
-@Injectable()
+@Injectable({
+  providedIn: 'root'
+})
 export class CustomErrorServiceStub {
   public getCustomError() { }
   public getCustomErrorReport() { }

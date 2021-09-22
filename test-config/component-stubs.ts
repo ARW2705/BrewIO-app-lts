@@ -4,6 +4,7 @@ export { InventoryFormPageStub } from './component-stubs/inventory-form-stub.com
 export { LoginPageStub } from './component-stubs/login-stub.component';
 export { SignupPageStub } from './component-stubs/signup-stub.component';
 export { TimerComponentStub } from './component-stubs/timer-stub.component';
+export { FormInputComponentStub } from './component-stubs/form-input-stub.component';
 export { FriendsComponentStub } from './component-stubs/friends-stub.component';
 export { ProfileComponentStub } from './component-stubs/profile-stub.component';
 export { ConfirmationPageStub } from './component-stubs/confirmation-stub.page';

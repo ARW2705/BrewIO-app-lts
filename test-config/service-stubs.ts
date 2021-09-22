@@ -16,6 +16,7 @@ export { InventoryServiceStub } from './service-stubs/inventory-stub.service';
 export { LibraryServiceStub } from './service-stubs/library-stub.service';
 export { LocalNotificationServiceStub } from './service-stubs/local-notification-stub.service';
 export { LoggingServiceStub } from './service-stubs/logging-stub.service';
+export { ModalServiceStub } from './service-stubs/modal-stub.service';
 export { HttpErrorServiceStub } from './service-stubs/http-error-stub.service';
 export { PreferencesServiceStub } from './service-stubs/preferences-stub.service';
 export { ProcessServiceStub } from './service-stubs/process-stub.service';

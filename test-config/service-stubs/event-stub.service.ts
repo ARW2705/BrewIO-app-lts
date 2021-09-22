@@ -6,7 +6,9 @@ import { Observable } from 'rxjs';
 import { EventSubscriber } from '../../src/app/shared/interfaces';
 
 
-@Injectable()
+@Injectable({
+  providedIn: 'root'
+})
 export class EventServiceStub {
   subscribers: EventSubscriber = {};
   public register(...options: any[]): any {

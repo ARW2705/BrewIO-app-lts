@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 
-@Injectable()
+@Injectable({
+  providedIn: 'root'
+})
 export class FileServiceStub {
   public convertCordovaFileToJSFile(...args) { }
   public convertFileEntrytoCordovaFile(...args) { }

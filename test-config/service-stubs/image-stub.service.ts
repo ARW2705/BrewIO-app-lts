@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 
-@Injectable()
+@Injectable({
+  providedIn: 'root'
+})
 export class ImageServiceStub {
   public copyImageToLocalTmpDir(...options) {}
   public deleteLocalImage(...options) {}
