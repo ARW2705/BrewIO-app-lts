@@ -1,0 +1,23 @@
+<div *ngIf="control">
+  <ion-item [ngClass]="{
+    'item-valid': !controlErrors && control.valid,
+    'item-error': controlErrors
+  }">
+    <ion-label position="floating">
+      {{ overrideTitleCase ? label : (label | titlecase ) }}
+    </ion-label>
+    <ion-textarea (ionBlur)="onInputBlur($event)"
+                  (ionChange)="onInputChange($event)"
+                  [autocapitalize]="shouldAutocapitalize ? 'on' : 'off'"
+                  [formControl]="control"
+                  [required]="shouldRequire ? true : false"
+                  [rows]="rows"
+                  [spellcheck]="!!shouldSpellcheck">
+    </ion-textarea>
+  </ion-item>
+  <app-form-error *ngIf="showError"
+                  [formName]="formName"
+                  [controlName]="controlName"
+                  [controlErrors]="controlErrors">
+  </app-form-error>
+</div>

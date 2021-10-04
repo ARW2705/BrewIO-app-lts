@@ -1,0 +1,28 @@
+<div *ngIf="control">
+  <ion-item [ngClass]="{
+    'item-valid': !controlErrors && control.valid,
+    'item-error': controlErrors
+  }">
+    <ion-label  [ngClass]="{ 'required': shouldRequire }"
+                [position]="labelPosition">
+      {{ overrideTitleCase ? label : (label | titlecase ) }}
+    </ion-label>
+    <ion-select (ionCancel)="ionCancel($event)"
+                (ionChange)="ionChange($event)"
+                [cancelText]="dismissText"
+                [compareWith]="compareWithFn"
+                [formControl]="control"
+                [interfaceOptions]="selectOptions"
+                [okText]="confirmText">
+      <ion-select-option  *ngFor="let option of options"
+                          [value]="option.value">
+        {{ option.label }}
+      </ion-select-option>
+    </ion-select>
+  </ion-item>
+  <app-form-error *ngIf="showError"
+                  [controlErrors]="controlErrors"
+                  [controlName]="controlName"
+                  [formName]="formName">
+  </app-form-error>
+</div>

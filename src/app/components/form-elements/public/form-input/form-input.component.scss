@@ -1,0 +1,29 @@
+:host {
+  width: 100%;
+}
+
+.item-error {
+  border-bottom: 2px solid var(--ion-color-danger);
+}
+
+.item-valid {
+  border-bottom: 2px solid var(--ion-color-primary);
+}
+
+div {
+  /* Display */
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+ion-item {
+  /* Display */
+  --inner-padding-start: 0;
+  --padding-start: 0;
+
+  /* Color */
+  border-bottom: 2px solid var(--ion-color-light);
+  --highlight-color-valid: transparent;
+  --highlight-color-invalid: transparent;
+  --highlight-color-focused: transparent;
+}

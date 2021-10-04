@@ -1,0 +1,10 @@
+<div *ngIf="control">
+  <ion-item>
+    <ion-label>
+      {{ overrideTitleCase ? label : (label | titlecase) }}
+    </ion-label>
+    <ion-checkbox (ionChange)="onCheckBoxChange($event)"
+                  [formControl]="control">
+    </ion-checkbox>
+  </ion-item>
+</div>

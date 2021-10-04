@@ -1,0 +1,26 @@
+div {
+  /* Display */
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+ion-button {
+  /* Display */
+  height: 96%;
+  margin: 0;
+}
+
+ion-item {
+  /* Display */
+  --inner-padding-start: 0;
+  --inner-padding-end: 0;
+  --padding-start: 0;
+  --padding-end: 0;
+
+  /* Color */
+  border-bottom: 2px solid var(--ion-color-light);
+}
+
+ion-label {
+  margin: 5% 0;
+}
