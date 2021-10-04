@@ -1,0 +1,32 @@
+<ion-item-group *ngIf="ingredients.length">
+
+  <ion-item-divider>
+    <span>{{ title | titlecase }}</span>
+  </ion-item-divider>
+
+  <ion-grid class="ion-no-padding">
+    <ion-row  *ngFor="let ingredient of ingredients; index as i"
+              class="ingredient-row ion-justify-content-between ion-align-items-center">
+      <ion-col size="7">
+        {{ ingredientNames[i] }}
+      </ion-col>
+      <ion-col  *ngIf="ingredientType === 'grainType'"
+                size="4">
+        {{ ingredient.quantity | unitConversion:'weightLarge':true:refreshPipes }}
+      </ion-col>
+      <ion-col  *ngIf="ingredientType === 'hopsType'"
+                size="4">
+        {{ ingredient.quantity | unitConversion:'weightSmall':true:refreshPipes }}
+      </ion-col>
+      <ion-col  *ngIf="ingredientType === 'yeastType'"
+                size="4">
+        {{ ingredient.quantity }}
+      </ion-col>
+      <ion-col  *ngIf="ingredientType === 'otherType'"
+                size="4">
+        {{ ingredient.type }}
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+</ion-item-group>

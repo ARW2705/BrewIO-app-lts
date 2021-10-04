@@ -1,0 +1,22 @@
+#container {
+  /* Display */
+  width: 100%;
+}
+
+
+.list-border {
+  /* Display */
+  border: 2px solid var(--ion-color-primary);
+  border-radius: 5px;
+}
+
+.recipe-group-label {
+  /* Display */
+  display: block;
+  width: 100%;
+  margin: 13px 0;
+
+  /* Text */
+  font-size: 1.25rem;
+  text-align: center;
+}

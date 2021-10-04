@@ -1,0 +1,14 @@
+<div id="container">
+  <ion-label class="recipe-group-label">
+    Yeast
+  </ion-label>
+  <ion-list lines="none"
+            class="ion-no-padding list-border">
+    <ng-container *ngFor="let yeast of yeastBatch; index as i; last as isLast">
+      <app-yeast-batch-item (openIngredientFormButtonEvent)="openIngredientFormModal(yeast)"
+                            [yeast]="yeast"
+                            [isLast]="isLast">
+      </app-yeast-batch-item>
+    </ng-container>
+  </ion-list>
+</div>
