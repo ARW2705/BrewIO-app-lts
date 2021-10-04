@@ -1,0 +1,37 @@
+<ion-grid class="ion-no-padding">
+  <ion-row *ngIf="controls">
+    <header class="form-section-header">Supplier Details</header>
+
+    <section>
+      <!-- Item supplier name -->
+      <app-form-input [control]="controls.supplierName"
+                      controlName="supplierName"
+                      formName="inventory"
+                      label="supplier name"
+                      [shouldRequire]="true"
+                      type="text">
+      </app-form-input>
+      <!-- Item supplier website url [optional] -->
+      <app-form-input [control]="controls.supplierURL"
+                      controlName="supplierURL"
+                      formName="inventory"
+                      label="Supplier Website URL"
+                      [overrideTitleCase]="true"
+                      type="text">
+      </app-form-input>
+      <!-- Item supplier label image -->
+      <app-form-image (imageModalEvent)="onImageSelection('supplierLabelImage', $event)"
+                      [image]="supplierLabelImage"
+                      label="supplier label image">
+      </app-form-image>
+      <!-- Item source type -->
+      <app-form-select  [control]="controls.sourceType"
+                        controlName="sourceType"
+                        formName="inventory"
+                        label="select item source"
+                        [options]="sourceOptions"
+                        [shouldRequire]="true">
+      </app-form-select>
+    </section>
+  </ion-row>
+</ion-grid>

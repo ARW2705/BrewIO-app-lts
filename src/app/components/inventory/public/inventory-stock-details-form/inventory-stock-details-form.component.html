@@ -1,0 +1,56 @@
+<ion-grid class="ion-no-padding">
+  <ion-row *ngIf="controls">
+    <!-- Stock Details Section -->
+    <header class="form-section-header">Inventory Stock Details</header>
+
+    <section>
+      <!-- Item stock type -->
+      <app-form-select  (ionBlurEvent)="updateStockSelect()"
+                        (ionChangeEvent)="updateStockSelect()"
+                        [compareWithFn]="compareWithFn"
+                        [control]="controls.stockType"
+                        controlName="stockType"
+                        formName="inventory"
+                        label="select stock type"
+                        [options]="stockTypeOptions"
+                        [shouldRequire]="true">
+      </app-form-select>
+      <!-- Initial Quantity -->
+      <div class="quantity-field-container">
+        <app-form-input [control]="controls.initialQuantity"
+                        controlName="initialQuantity"
+                        formName="inventory"
+                        [label]="'initial quantity' + ' ' + quantityHint"
+                        [shouldRequire]="true"
+                        type="number">
+        </app-form-input>
+        <ion-button *ngIf="allowHelper"
+                    aria-label="open quantity helper modal"
+                    color="primary"
+                    slot="end"
+                    (click)="openQuantityHelperModal('initialQuantity')"
+                    class="form-button modal-button">
+          <ion-icon name="open-outline"></ion-icon>
+        </ion-button>
+      </div>
+      <!-- Current Quantity -->
+      <div class="quantity-field-container">
+        <app-form-input [control]="controls.currentQuantity"
+                        controlName="currentQuantity"
+                        formName="inventory"
+                        [label]="'current quantity' + ' ' + quantityHint"
+                        [shouldRequire]="true"
+                        type="number">
+        </app-form-input>
+        <ion-button *ngIf="allowHelper"
+                    aria-label="open quantity helper modal"
+                    color="primary"
+                    slot="end"
+                    (click)="openQuantityHelperModal('currentQuantity')"
+                    class="form-button modal-button">
+          <ion-icon name="open-outline"></ion-icon>
+        </ion-button>
+      </div>
+    </section>
+  </ion-row>
+</ion-grid>

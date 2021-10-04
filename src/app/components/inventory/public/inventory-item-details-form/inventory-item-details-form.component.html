@@ -1,0 +1,70 @@
+<ion-grid class="ion-no-padding">
+  <ion-row>
+    <header class="form-section-header">Item Details</header>
+  </ion-row>
+  <ion-row *ngIf="controls">
+    <!-- Item Details Section -->
+    <section>
+      <!-- Item name -->
+      <app-form-input [control]="controls.itemName"
+                      controlName="itemName"
+                      formName="inventory"
+                      label="item name"
+                      [shouldRequire]="true"
+                      type="text">
+      </app-form-input>
+      <!-- Item additional name [optional] -->
+      <app-form-input [control]="controls.itemSubname"
+                      controlName="itemSubname"
+                      formName="inventory"
+                      label="item additional name"
+                      type="text">
+      </app-form-input>
+      <!-- Item label image -->
+      <app-form-image (imageModalEvent)="onImageSelection($event)"
+                      [image]="itemLabelImage"
+                      label="item label image">
+      </app-form-image>
+      <!-- Item description [optional] -->
+      <app-form-text-area [control]="controls.description"
+                          controlName="description"
+                          formName="inventory"
+                          label="description">
+      </app-form-text-area>
+      <!-- Item Style -->
+      <app-form-select  [compareWithFn]="compareWithFn"
+                        [control]="controls.itemStyleId"
+                        controlName="itemStyleId"
+                        formName="inventory"
+                        label="select style"
+                        [options]="styleOptions"
+                        [shouldRequire]="true">
+      </app-form-select>
+      <!-- Item ABV -->
+      <app-form-input [control]="controls.itemABV"
+                      controlName="itemABV"
+                      formName="inventory"
+                      label="ABV"
+                      [overrideTitleCase]="true"
+                      [shouldRequire]="true"
+                      type="number">
+      </app-form-input>
+      <!-- Item IBU -->
+      <app-form-input [control]="controls.itemIBU"
+                      controlName="itemIBU"
+                      formName="inventory"
+                      label="IBU"
+                      [overrideTitleCase]="true"
+                      type="number">
+      </app-form-input>
+      <!-- Item SRM -->
+      <app-form-input [control]="controls.itemSRM"
+                      controlName="itemSRM"
+                      formName="inventory"
+                      label="SRM"
+                      [overrideTitleCase]="true"
+                      type="number">
+      </app-form-input>
+    </section>
+  </ion-row>
+</ion-grid>

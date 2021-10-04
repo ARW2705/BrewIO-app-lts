@@ -4,15 +4,14 @@ import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 /* Page imports */
-import { ImageFormPageModule } from '../../pages/forms/image-form/image-form.module';
-import { QuantityHelperPageModule } from '../../pages/quantity-helper/quantity-helper.module';
+import { ImageFormPageModule } from '../../../../pages/forms/image-form/image-form.module';
+import { QuantityHelperPageModule } from '../../../../pages/quantity-helper/quantity-helper.module';
 
 /* Component imports */
-import { AccordionComponentModule } from '../accordion/accordion.module';
-import { FormSelectComponentModule } from '../form-select/form-select.module';
-import { InventoryItemComponentModule } from '../inventory-item/inventory-item.module';
-import { InventorySliderComponentModule } from '../inventory-slider/inventory-slider.module';
-import { LoadingSpinnerComponentModule } from '../loading-spinner/loading-spinner.module';
+import { FormSelectComponentModule } from '../../../form-elements/public';
+import { AccordionComponentModule, LoadingSpinnerComponentModule } from '../../../shared/public';
+import { InventoryItemComponentModule } from '../../private/inventory-item/inventory-item.module';
+import { InventorySliderComponentModule } from '../../private/inventory-slider/inventory-slider.module';
 import { InventoryComponent } from './inventory.component';
 
 

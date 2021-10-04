@@ -49,7 +49,8 @@
             </app-inventory-slider>
             <app-accordion [expanded]="itemIndex === i">
               <app-inventory-item (imageErrorEvent)="onImageError(item, $event)"
-                                  [item]="item">
+                                  [item]="item"
+                                  [refreshPipes]="refreshPipes">
               </app-inventory-item>
             </app-accordion>
           </ng-container>

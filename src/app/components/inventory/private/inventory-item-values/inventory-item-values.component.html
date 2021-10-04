@@ -1,0 +1,63 @@
+<ion-grid class="ion-no-padding">
+  <ion-row>
+    <!-- Left column field names -->
+    <ion-col class="ion-no-padding">
+      <ion-row>
+        Stock
+      </ion-row>
+      <ion-row>
+        Type
+      </ion-row>
+      <ion-row>
+        ABV
+      </ion-row>
+      <ion-row *ngIf="item.optionalItemData.itemIBU">
+        IBU
+      </ion-row>
+      <ion-row *ngIf="item.optionalItemData.itemSRM">
+        SRM
+      </ion-row>
+      <ion-row>
+        Added
+      </ion-row>
+    </ion-col>
+    <!-- Right column field values -->
+    <ion-col class="ion-no-padding">
+      <ion-row [ngStyle]="{ color: item.optionalItemData.remainingColor || '#f4f4f4' }">
+        {{ item | formatStock:'quantity':refreshPipes }}
+      </ion-row>
+      <ion-row>
+        {{ item | formatStock:'type':refreshPipes }}
+      </ion-row>
+      <ion-row [ngClass]="{
+        'abv-low': item.itemABV < 5,
+        'abv-mid': item.itemABV >= 5 && item.itemABV < 7,
+        'abv-high': item.itemABV >= 7 && item.itemABV < 10,
+        'abv-ultra': item.itemABV >= 10
+      }">
+        {{ item.itemABV | truncate:1 }}%
+      </ion-row>
+      <ion-row  *ngIf="item.optionalItemData.itemIBU"
+                [ngClass]="{
+                  'ibu-low': item.optionalItemData.itemIBU < 20,
+                  'ibu-mid': item.optionalItemData.itemIBU >= 20 && item.optionalItemData.itemIBU < 60,
+                  'ibu-high': item.optionalItemData.itemIBU >= 60 && item.optionalItemData.itemIBU < 100,
+                  'ibu-ultra': item.optionalItemData.itemIBU >= 100
+                }">
+        {{ item.optionalItemData.itemIBU | round }}
+      </ion-row>
+      <ion-row *ngIf="item.optionalItemData.itemSRM">
+        <span class="srm-text">
+          {{ item.optionalItemData.itemSRM | round }}
+        </span>
+        <ion-icon name="pint"
+                  [ngStyle]="{ color: item.optionalItemData.srmColor || '#f4f4f4' }"
+                  class="pint-icon">
+        </ion-icon>
+      </ion-row>
+      <ion-row>
+        {{ item.createdAt | date:'MMM/yy' }}
+      </ion-row>
+    </ion-col>
+  </ion-row>
+</ion-grid>

@@ -5,19 +5,19 @@ import { from, Subject } from 'rxjs';
 import { finalize, take, takeUntil } from 'rxjs/operators';
 
 /* Interface imports */
-import { Batch, ErrorReport, FormSelectOption, Image, InventoryItem } from '../../shared/interfaces';
+import { Batch, ErrorReport, FormSelectOption, Image, InventoryItem } from '../../../../shared/interfaces';
 
 /* Default imports */
-import { defaultImage } from '../../shared/defaults';
+import { defaultImage } from '../../../../shared/defaults';
 
 /* Component imports */
-import { AccordionComponent } from '../../components/accordion/accordion.component';
+import { AccordionComponent } from '../../../shared/public';
 
 /* Page imports */
-import { InventoryFormPage, QuantityHelperPage } from '../../pages/pages';
+import { InventoryFormPage, QuantityHelperPage } from '../../../../pages/pages';
 
 /* Service imports */
-import { AnimationsService, ErrorReportingService, EventService, ImageService, InventoryService, ProcessService, ToastService } from '../../services/services';
+import { AnimationsService, ErrorReportingService, EventService, ImageService, InventoryService, ProcessService, ToastService } from '../../../../services/services';
 
 
 @Component({

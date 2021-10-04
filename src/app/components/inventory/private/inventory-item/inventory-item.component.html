@@ -1,0 +1,30 @@
+<ion-card class="inventory-card">
+
+  <ion-card-header>
+    {{ item.itemStyleName }}
+  </ion-card-header>
+
+  <ion-card-content>
+    <ion-grid>
+      <ion-row class="item-details">
+
+        <ion-col  size="7"
+                  class="ion-no-padding">
+          <app-inventory-item-values  [item]="item"
+                                      [refreshPipes]="refreshPipes">
+          </app-inventory-item-values>
+        </ion-col>
+        <ion-col size="5">
+          <app-inventory-item-images  [item]="item"
+                                      (imageErrorEvent)="onImageError($event)">
+          </app-inventory-item-images>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <app-inventory-item-description [item]="item">
+        </app-inventory-item-description>
+      </ion-row>
+    </ion-grid>
+  </ion-card-content>
+
+</ion-card>
