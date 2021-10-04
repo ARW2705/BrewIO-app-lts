@@ -1,0 +1,23 @@
+<form [formGroup]="manualForm">
+  <!-- Name -->
+  <app-form-input [control]="manualForm.controls.name"
+                  controlName="name"
+                  formName="process"
+                  label="name"
+                  [shouldRequire]="true"
+                  type="text">
+  </app-form-input>
+  <!-- Expected Duration -->
+  <app-form-input [control]="manualForm.controls.expectedDuration"
+                  controlName="expectedDuration"
+                  formName="process"
+                  label="expected duration"
+                  type="number">
+  </app-form-input>
+  <!-- Description -->
+  <app-form-text-area [control]="manualForm.controls.description"
+                      controlName="description"
+                      formName="process"
+                      label="description">
+  </app-form-text-area>
+</form>

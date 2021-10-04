@@ -1,0 +1,14 @@
+.month-header {
+  /* Color */
+  color: var(--ion-color-light);
+
+  /* Text */
+  font-size: 12vw;
+  text-align: center;
+}
+
+.toggle-container {
+  ion-col {
+    margin: 5% 0;
+  }
+}

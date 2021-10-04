@@ -1,0 +1,35 @@
+<ion-grid   *ngIf="calendarProcess"
+            class="ion-no-padding">
+  <ion-row>
+    <app-process-header (toggleShowDescriptionEvent)="toggleShowDescription()"
+                        [headerText]="calendarProcess.name"
+                        [isPreview]="isPreview">
+    </app-process-header>
+  </ion-row>
+  <ion-row *ngIf="isPreview">
+    <app-process-preview-content [process]="calendarProcess">
+    </app-process-preview-content>
+  </ion-row>
+  <ion-row  *ngIf="!isPreview"
+            class="calendar-view">
+    <ion-row>
+      <app-process-description  *ngIf="showDescription"
+                                [description]="calendarProcess.description"
+                                isDropDown="true">
+      </app-process-description>
+    </ion-row>
+    <ion-row>
+      <app-process-calendar-alerts  *ngIf="calendarProcess['startDatetime'] !== undefined"
+                                    (changeDateEvent)="changeDate()"
+                                    [alerts]="alerts"
+                                    [closestAlert]="closestAlert">
+      </app-process-calendar-alerts>
+    </ion-row>
+    <ion-row>
+      <app-calendar #calendar
+                    *ngIf="!isPreview && calendarProcess['startDatetime'] === undefined"
+                    [calendarProcess]="calendarProcess">
+      </app-calendar>
+    </ion-row>
+  </ion-row>
+</ion-grid>
