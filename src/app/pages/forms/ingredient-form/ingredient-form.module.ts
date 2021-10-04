@@ -5,11 +5,9 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { FormButtonsComponentModule } from '../../../components/form-buttons/form-buttons.module';
-import { FormInputComponentModule } from '../../../components/form-input/form-input.module';
-import { FormSelectComponentModule } from '../../../components/form-select/form-select.module';
-import { FormToggleComponentModule } from '../../../components/form-toggle/form-toggle.module';
-import { HeaderComponentModule } from '../../../components/header/header.module';
+import { FormButtonsComponentModule } from '../../../components/form-elements/public';
+import { GrainFormComponentModule, HopsFormComponentModule, OtherIngredientsFormComponentModule, YeastFormComponentModule } from '../../../components/ingredient/public';
+import { DeleteButtonComponentModule, HeaderComponentModule } from '../../../components/shared/public';
 
 /* Page imports */
 import { IngredientFormPage } from './ingredient-form.page';
@@ -18,20 +16,17 @@ import { IngredientFormPage } from './ingredient-form.page';
 @NgModule({
   imports: [
     CommonModule,
+    DeleteButtonComponentModule,
     FormButtonsComponentModule,
-    FormInputComponentModule,
-    FormSelectComponentModule,
     FormsModule,
-    FormToggleComponentModule,
+    GrainFormComponentModule,
     HeaderComponentModule,
+    HopsFormComponentModule,
     IonicModule,
-    ReactiveFormsModule
+    OtherIngredientsFormComponentModule,
+    ReactiveFormsModule,
+    YeastFormComponentModule
   ],
-  declarations: [
-    IngredientFormPage
-  ],
-  entryComponents: [
-    IngredientFormPage
-  ]
+  declarations: [ IngredientFormPage ]
 })
 export class IngredientFormPageModule {}

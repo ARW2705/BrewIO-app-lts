@@ -3,165 +3,52 @@
 </app-header>
 
 <ion-content class="sub-page">
-  <ng-container *ngIf="ingredientForm">
 
-    <p class="form-info required">Required fields</p>
+  <p class="form-info required">Required fields</p>
+  <!-- Grain Form -->
+  <app-grain-form *ngIf="ingredientType === 'grains'"
+                  #form
+                  (formStatusEvent)="setFormValidity($event)"
+                  [grainFormOptions]="ingredientOptions"
+                  [units]="units"
+                  [update]="update">
+  </app-grain-form>
+  <!-- Hops Form -->
+  <app-hops-form  *ngIf="ingredientType === 'hops'"
+                  #form
+                  (formStatusEvent)="setFormValidity($event)"
+                  [hopsFormOptions]="ingredientOptions"
+                  [units]="units"
+                  [update]="update">
+  </app-hops-form>
+  <!-- Yeast Form -->
+  <app-yeast-form *ngIf="ingredientType === 'yeast'"
+                  #form
+                  (formStatusEvent)="setFormValidity($event)"
+                  [yeastFormOptions]="ingredientOptions"
+                  [units]="units"
+                  [update]="update">
+  </app-yeast-form>
+  <!-- Other Ingredients Form -->
+  <app-other-ingredients-form *ngIf="ingredientType === 'otherIngredients'"
+                              #form
+                              (formStatusEvent)="setFormValidity($event)"
+                              [units]="units"
+                              [update]="update">
+  </app-other-ingredients-form>
+  <!-- Form and Delete Buttons -->
+  <ion-grid>
+    <ion-row>
+      <app-form-buttons (cancelEvent)="dismiss()"
+                        (submitEvent)="onSubmit()"
+                        [isSubmitDisabled]="!isFormValid">
+      </app-form-buttons>
+    </ion-row>
+    <ion-row>
+      <app-delete-button  *ngIf="formType === 'update'"
+                          (deleteEvent)="onDeletion()">
+      </app-delete-button>
+    </ion-row>
+  </ion-grid>
 
-    <form [formGroup]="ingredientForm">
-      <!-- Ingredient Type Choice Select -->
-      <app-form-select  *ngIf="ingredientLibrary"
-                        [compareWithFn]="compareWithFn"
-                        [control]="ingredientForm.controls['type']"
-                        controlName="type"
-                        formName="ingredient"
-                        [label]="'select' + ' ' + ingredientType"
-                        [options]="ingredientOptions"
-                        [shouldRequire]="true">
-      </app-form-select>
-
-      <!-- GRAIN BILL SPECIFIC -->
-      <ng-container *ngIf="ingredientType === 'grains'">
-        <!-- Grain Bulk Quantity -->
-        <app-form-input #quantityField
-                        (ionBlurEvent)="checkCompanionInput()"
-                        (ionChangeEvent)="checkCompanionInput()"
-                        [control]="ingredientForm.controls['quantity']"
-                        controlName="quantity"
-                        formName="ingredient"
-                        [label]="'Quantity' + ' (' + (units !== null ? units.weightLarge.shortName : '') + ')'"
-                        [overrideTitleCase]="true"
-                        [shouldRequire]="true"
-                        type="number">
-        </app-form-input>
-        <ng-container *ngIf="hasSubQuantity">
-          <!-- Grain Fine Quantity -->
-          <app-form-input #subQuantityField
-                          (ionBlurEvent)="checkCompanionInput()"
-                          (ionChangeEvent)="checkCompanionInput()"
-                          [control]="ingredientForm.controls['subQuantity']"
-                          controlName="subQuantity"
-                          formName="ingredient"
-                          [label]="'Quantity' + ' (' + (units !== null ? units.weightSmall.shortName : '') + ')'"
-                          [overrideTitleCase]="true"
-                          [shouldRequire]="true"
-                          type="number">
-          </app-form-input>
-        </ng-container>
-        <!-- Grain Mill Setting -->
-        <app-form-input [control]="ingredientForm.controls['mill']"
-                        controlName="mill"
-                        formName="ingredient"
-                        label="mill setting"
-                        [shouldRequire]="false"
-                        type="number">
-        </app-form-input>
-      </ng-container>
-
-      <!-- HOPS SCHEDULE SPECIFIC -->
-      <ng-container *ngIf="ingredientType === 'hops'">
-        <!-- Hops Quantity Input -->
-        <app-form-input [control]="ingredientForm.controls['subQuantity']"
-                        controlName="subQuantity"
-                        formName="ingredient"
-                        [label]="'quantity' + ' (' + (units !== null ? units.weightSmall.shortName : '') + ')'"
-                        [shouldRequire]="true"
-                        type="number">
-        </app-form-input>
-        <!-- Hops Addition Time -->
-        <app-form-input [control]="ingredientForm.controls['duration']"
-                        controlName="duration"
-                        formName="ingredient"
-                        label="boil time (minutes)"
-                        [shouldRequire]="true"
-                        type="number">
-        </app-form-input>
-        <!-- Select for Dry Hopping -->
-        <app-form-toggle  (toggleEvent)="onDryHopChange($event)"
-                          [control]="ingredientForm.controls['dryHop']"
-                          toggleName="dry hop">
-        </app-form-toggle>
-      </ng-container>
-
-      <!-- YEAST BATCH SPECIFIC -->
-      <ng-container *ngIf="ingredientType === 'yeast'">
-        <!-- Yeast Quantity Input -->
-        <app-form-input [control]="ingredientForm.controls['quantity']"
-                        controlName="quantity"
-                        formName="ingredient"
-                        label="Quantity (packs/vials)"
-                        [overrideTitleCase]="true"
-                        [shouldRequire]="true"
-                        type="number">
-        </app-form-input>
-        <!-- Starter Required Toggle -->
-        <app-form-toggle  [control]="ingredientForm.controls['requiresStarter']"
-                          toggleName="starter">
-        </app-form-toggle>
-      </ng-container>
-
-      <!-- OTHER INGREDIENTS -->
-      <ng-container *ngIf="ingredientType === 'otherIngredients'">
-        <!-- Ingredient Name -->
-        <app-form-input [control]="ingredientForm.controls['name']"
-                        controlName="name"
-                        formName="ingredient"
-                        label="name"
-                        [shouldRequire]="true"
-                        type="text">
-        </app-form-input>
-        <!-- Ingredient Type -->
-        <app-form-input [control]="ingredientForm.controls['type']"
-                        controlName="type"
-                        formName="ingredient"
-                        label="type"
-                        [shouldRequire]="true"
-                        type="text">
-        </app-form-input>
-        <!-- Ingredient Quantity -->
-        <app-form-input [control]="ingredientForm.controls['quantity']"
-                        controlName="quantity"
-                        formName="ingredient"
-                        label="quantity"
-                        [shouldRequire]="true"
-                        type="number">
-        </app-form-input>
-        <!-- Ingredient Unit Type -->
-        <app-form-input [control]="ingredientForm.controls['units']"
-                        controlName="units"
-                        formName="ingredient"
-                        label="units"
-                        [shouldRequire]="true"
-                        type="text">
-        </app-form-input>
-        <!-- Ingredient Description -->
-        <app-form-input [control]="ingredientForm.controls['description']"
-                        controlName="description"
-                        formName="ingredient"
-                        label="description"
-                        [shouldRequire]="true"
-                        type="text">
-        </app-form-input>
-      </ng-container>
-
-      <!-- Button container -->
-      <ion-grid>
-        <ion-row>
-          <app-form-buttons (cancelEvent)="dismiss()"
-                            (submitEvent)="onSubmit()"
-                            [isSubmitDisabled]="!ingredientForm || !ingredientForm.valid">
-          </app-form-buttons>
-        </ion-row>
-        <!-- Form remove button -->
-        <ion-row *ngIf="formType === 'update'">
-          <ion-col>
-            <ion-button color="danger"
-                        (click)="onDeletion()"
-                        class="form-button">
-              Delete
-            </ion-button>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
-    </form>
-  </ng-container>
 </ion-content>
