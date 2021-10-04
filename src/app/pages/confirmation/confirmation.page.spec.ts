@@ -66,9 +66,8 @@ describe('ConfirmationPage', (): void => {
 
     const message: HTMLElement = fixture.nativeElement.querySelector('span');
     expect(message.textContent).toMatch('test message');
-    const buttons: NodeList = fixture.nativeElement.querySelectorAll('ion-button');
-    expect(buttons.item(0).textContent).toMatch('Cancel');
-    expect(buttons.item(1).textContent).toMatch('Confirm');
+    const buttons: HTMLElement = fixture.nativeElement.querySelector('app-form-buttons');
+    expect(buttons).toBeDefined();
     const subMessage: HTMLElement = fixture.nativeElement.querySelector('#sub-message');
     expect(subMessage.textContent).toMatch('test sub message');
   });

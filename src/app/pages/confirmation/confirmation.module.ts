@@ -7,8 +7,8 @@ import { IonicModule } from '@ionic/angular';
 import { ConfirmationPage } from './confirmation.page';
 
 /* Component imporst */
-import { FormButtonsComponentModule } from '../../components/form-buttons/form-buttons.module';
-import { HeaderComponentModule } from '../../components/header/header.module';
+import { FormButtonsComponentModule } from '../../components/form-elements/public';
+import { HeaderComponentModule } from '../../components/shared/public';
 
 
 @NgModule({
