@@ -1,13 +1,13 @@
 /* Module imports */
 import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
-import { LoadingController, ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular';
 import { finalize } from 'rxjs/operators';
 
 /* Interface imports */
 import { Image } from '../../../shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService, ImageService } from '../../../services/services';
+import { ErrorReportingService, ImageService, LoadingService } from '../../../services/services';
 
 
 @Component({
@@ -24,7 +24,7 @@ export class ImageFormPage implements OnInit {
     public cdRef: ChangeDetectorRef,
     public errorReporter: ErrorReportingService,
     public imageService: ImageService,
-    public loadingCtrl: LoadingController,
+    public loadingService: LoadingService,
     public modalCtrl: ModalController
   ) {
     this.onBackClick = this.dismiss.bind(this);
@@ -39,7 +39,7 @@ export class ImageFormPage implements OnInit {
   /**
    * Call ModalController dismiss with no return data
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   dismiss(): void {
@@ -49,16 +49,11 @@ export class ImageFormPage implements OnInit {
   /**
    * Open device image gallery
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   async openGallery(): Promise<void> {
-    const loading: HTMLIonLoadingElement = await this.loadingCtrl.create({
-      cssClass: 'loading-custom',
-      spinner: 'lines'
-    });
-
-    await loading.present();
+    const loading: HTMLIonLoadingElement = await this.loadingService.createLoader();
 
     this.imageService.importImage()
       .pipe(finalize(() => loading.dismiss()))
@@ -74,7 +69,7 @@ export class ImageFormPage implements OnInit {
   /**
    * Call ModalController dismiss with image data
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   selectPhoto(): void {

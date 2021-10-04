@@ -5,23 +5,19 @@
 <ion-content>
   <ion-grid>
     <ion-row>
-      <ion-col>
-        <ion-button (click)="openGallery()">
-          Open Gallery
-        </ion-button>
-      </ion-col>
+      <ion-button (click)="openGallery()">
+        Open Gallery
+      </ion-button>
     </ion-row>
     <ion-row *ngIf="image">
       <img  [src]="image.url"
             alt="Selected image"/>
     </ion-row>
     <ion-row>
-      <ion-col>
-        <ion-button (click)="selectPhoto()"
-                    [disabled]="!image">
-          Select Photo
-        </ion-button>
-      </ion-col>
+      <ion-button (click)="selectPhoto()"
+                  [disabled]="!image">
+        Select Photo
+      </ion-button>
     </ion-row>
   </ion-grid>
 </ion-content>
