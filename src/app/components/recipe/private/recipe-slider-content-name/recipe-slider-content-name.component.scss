@@ -1,0 +1,14 @@
+.master-summary-header {
+  ion-row {
+    /* Display */
+    width: 100%;
+    
+    /* Text */
+    font-size: 8vw;
+  }
+
+  ion-row:last-child {
+    /* Text */
+    font-size: 6.5vw;
+  }
+}

@@ -1,0 +1,27 @@
+.delete-button {
+  /* Color */
+  color: var(--ion-color-dark);
+}
+
+.recipe-master-item {
+  /* Display */
+  margin: 8px 0;
+}
+
+.sliding-button-container {
+  /* Display */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  /* Children */
+  ion-icon {
+    /* Text */
+    font-size: 1.5rem;
+  }
+
+  span {
+    /* Text */
+    font-size: 1rem;
+  }
+}
