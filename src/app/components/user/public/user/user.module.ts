@@ -1,13 +1,13 @@
 /* Module imports */
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
+import { AccordionComponentModule } from '../../../shared/accordion/accordion.module';
+import { FriendsComponentModule } from '../../private/friends/friends.module';
+import { ProfileComponentModule } from '../../private/profile/profile.module';
 import { UserComponent } from './user.component';
-import { AccordionComponentModule } from '../accordion/accordion.module';
-import { FriendsComponentModule } from '../friends/friends.module';
-import { ProfileComponentModule } from '../profile/profile.module';
 
 @NgModule({
   imports: [

@@ -5,11 +5,11 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 /* Page imports */
-import { LoginPage } from '../../pages/forms/login/login.page';
-import { SignupPage } from '../../pages/forms/signup/signup.page';
+import { LoginPage } from '../../../../pages/forms/login/login.page';
+import { SignupPage } from '../../../../pages/forms/signup/signup.page';
 
 /* Service imports */
-import { UserService } from '../../services/user/user.service';
+import { UserService } from '../../../../services/user/user.service';
 
 
 @Component({
