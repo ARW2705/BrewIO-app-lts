@@ -1,6 +1,6 @@
 /* Module imports */
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
@@ -8,8 +8,7 @@ import { IonicModule } from '@ionic/angular';
 import { ErrorReportPage } from './error-report.page';
 
 /* Component imports */
-import { AccordionComponentModule } from '../../components/accordion/accordion.module';
-import { HeaderComponentModule } from '../../components/header/header.module';
+import { AccordionComponentModule, HeaderComponentModule } from '../../components/shared/public';
 
 
 @NgModule({
