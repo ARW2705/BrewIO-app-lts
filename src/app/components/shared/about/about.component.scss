@@ -1,0 +1,54 @@
+#app-description {
+  /* Display */
+  margin-bottom: 15px;
+
+  /* Color */
+  color: var(--ion-color-light);
+
+  /* Text*/
+  font-size: 1.35rem;
+  text-align: center;
+}
+
+a {
+  text-decoration: none;
+}
+
+ion-card {
+  background-color: var(--ion-color-medium-shade);
+}
+
+ion-card-content {
+  font-size: 2rem;
+}
+
+ion-card-header {
+  /* Display */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  /* Color */
+  color: var(--ion-color-light);
+
+  /* Children */
+  h2 {
+    font-size: 3rem;
+  }
+
+  ion-icon {
+    /* Display */
+    padding-right: 5%;
+
+    /* Text */
+    font-size: 3rem;
+  }
+}
+
+ion-col {
+  /* Color */
+  color: var(--ion-color-secondary-tint);
+
+  /* Text */
+  text-align: center;
+}

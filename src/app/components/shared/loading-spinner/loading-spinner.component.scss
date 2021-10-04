@@ -1,0 +1,25 @@
+:host {
+  width: 100%;
+}
+
+.spinner-container {
+  /* Display */
+  display: flex;
+  flex-direction: column;
+
+  /* Children */
+  ion-spinner {
+    margin: auto;
+    width: 25vw;
+    height: 25vw;
+  }
+
+  span {
+    /* Display */
+    margin: 0 0 5%;
+
+    /* Text*/
+    font-size: 1.75rem;
+    text-align: center;
+  }
+}

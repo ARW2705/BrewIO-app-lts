@@ -1,0 +1,106 @@
+.header-button {
+  /* Display */
+  min-height: 40px;
+  height: 40px;
+}
+
+.back-button {
+  /* Display */
+  min-height: 40px;
+  height: 40px;
+  overflow: hidden;
+  margin: 0;
+  --padding-end: 0;
+  --padding-bottom: 0;
+  --padding-start: 0;
+  --padding-top: 0;
+
+  /* Color */
+  --background: transparent;
+  --box-shadow: none;
+
+  /* Text */
+  font-size: 1.5rem;
+}
+
+.back-button-container {
+  /* Display */
+  flex: 0;
+}
+
+.header-title {
+  /* Display */
+  overflow: hidden;
+}
+
+.login-button {
+  /* Display */
+  flex: 0;
+
+  /* Children */
+  ion-button {
+    /* Text */
+    font-size: 0.1rem;
+  }
+
+  ion-icon {
+    /* Text */
+    font-size: 2.5rem;
+  }
+}
+
+.login-header-text {
+  /* Display */
+  flex: 0;
+
+  /* Text */
+  white-space: nowrap;
+
+  /* Children */
+  p {
+    /* Display */
+    margin: 0;
+
+    /* Color */
+    color: var(--ion-color-light);
+
+    /* Text */
+    font-size: 4.5vw;
+    text-align: center;
+  }
+
+  p:nth-child(2) {
+    /* Text */
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+
+ion-grid {
+  /* Display */
+  display: flex;
+  min-height: 66px;
+}
+
+ion-header {
+  /* Display */
+  min-height: 66px;
+
+  /* Color */
+  background-color: var(--ion-color-dark-tint);
+}
+
+ion-row {
+  /* Display */
+  width: 100%;
+}
+
+ion-title {
+  /* Display */
+  padding: 0;
+
+  /* Text */
+  font-size: 7.5vw;
+  text-align: left;
+}

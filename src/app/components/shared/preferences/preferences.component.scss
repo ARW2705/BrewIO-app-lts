@@ -1,0 +1,21 @@
+#preference-form {
+  padding: 10px;
+}
+
+
+.item {
+  /* Display */
+  margin: 10px 0;
+
+  /* Text */
+  font-size: 6vw;
+}
+
+
+ion-item {
+  /* Display */
+  --padding-start: 0;
+
+  /* Color */
+  --border-color: var(--ion-color-light);
+}

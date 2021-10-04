@@ -1,0 +1,28 @@
+<div>
+  <ion-card>
+
+    <ion-card-header>
+      <ion-icon name="beer"></ion-icon>
+      <h2>BrewIO</h2>
+    </ion-card-header>
+
+    <ion-card-content>
+      <ion-grid>
+        <!-- App Description -->
+        <ion-row>
+          <p id="app-description">{{ appDescription }}</p>
+        </ion-row>
+        <!-- App Versions -->
+        <ion-row class="ion-justify-content-center">
+          <ion-col size="12">App Version: {{ appVersion }}</ion-col>
+          <ion-col size="12">API Version: {{ apiVersion }}</ion-col>
+        </ion-row>
+        <!-- App Links -->
+        <ion-row class="ion-justify-content-center">
+          <a [href]="githubURL">GitHub</a>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+
+  </ion-card>
+</div>
