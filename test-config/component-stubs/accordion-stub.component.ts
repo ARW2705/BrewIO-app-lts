@@ -2,7 +2,7 @@
 import { Component, Input } from '@angular/core';
 
 /* Component imports */
-import { AccordionComponent } from '../../src/app/components/accordion/accordion.component';
+import { AccordionComponent } from '../../src/app/components/shared/accordion/accordion.component';
 
 @Component({
   selector: 'accordion',

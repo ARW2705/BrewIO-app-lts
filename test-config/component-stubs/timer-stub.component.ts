@@ -5,7 +5,7 @@ import { Component, Input } from '@angular/core';
 import { Timer } from '../../src/app/shared/interfaces';
 
 /* Component imports */
-import { TimerComponent } from '../../src/app/components/timer/timer.component';
+import { TimerComponent } from '../../src/app/components/process/private/timer/timer.component';
 
 @Component({
   selector: 'timer',

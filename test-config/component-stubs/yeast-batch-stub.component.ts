@@ -5,7 +5,7 @@ import { Component, Input } from '@angular/core';
 import { YeastBatch } from '../../src/app/shared/interfaces';
 
 /* Component imports */
-import { YeastBatchComponent } from '../../src/app/components/yeast-batch/yeast-batch.component';
+import { YeastBatchComponent } from '../../src/app/components/ingredient/public/yeast-batch/yeast-batch.component';
 
 @Component({
   selector: 'yeast-batch',

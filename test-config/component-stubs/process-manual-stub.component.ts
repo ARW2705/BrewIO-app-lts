@@ -5,7 +5,7 @@ import { Component, Input } from '@angular/core';
 import { ManualProcess } from '../../src/app/shared/interfaces';
 
 /* Component imports */
-import { ProcessManualComponent } from '../../src/app/components/process-manual/process-manual.component';
+import { ProcessManualComponent } from '../../src/app/components/process/public/process-manual/process-manual.component';
 
 @Component({
   selector: 'process-manual',

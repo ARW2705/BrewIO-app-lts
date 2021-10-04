@@ -12,7 +12,7 @@ import { Alert, CalendarProcess } from '../../src/app/shared/interfaces';
 import { IdService } from '../../src/app/services/services';
 
 /* Component imports */
-import { ProcessCalendarComponent } from '../../src/app/components/process-calendar/process-calendar.component';
+import { ProcessCalendarComponent } from '../../src/app/components/process/public/process-calendar/process-calendar.component';
 
 
 @Component({

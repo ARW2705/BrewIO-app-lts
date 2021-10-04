@@ -5,7 +5,7 @@ import { Component, Input } from '@angular/core';
 import { Process } from '../../src/app/shared/interfaces';
 
 /* Component imports */
-import { ProcessListComponent } from '../../src/app/components/process-list/process-list.component';
+import { ProcessListComponent } from '../../src/app/components/process/public/process-list/process-list.component';
 
 @Component({
   selector: 'process-list',

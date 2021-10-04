@@ -5,7 +5,7 @@ import { Component, Input } from '@angular/core';
 import { RecipeVariant } from '../../src/app/shared/interfaces';
 
 /* Component imports */
-import { IngredientListComponent } from '../../src/app/components/ingredient-list/ingredient-list.component';
+import { IngredientListComponent } from '../../src/app/components/ingredient/public/ingredient-list/ingredient-list.component';
 
 @Component({
   selector: 'ingredient-list',

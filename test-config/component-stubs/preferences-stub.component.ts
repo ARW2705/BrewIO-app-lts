@@ -2,7 +2,7 @@
 import { Component } from '@angular/core';
 
 /* Component imports */
-import { PreferencesComponent } from '../../src/app/components/preferences/preferences.component';
+import { PreferencesComponent } from '../../src/app/components/shared/preferences/preferences.component';
 
 @Component({
   selector: 'preferences',

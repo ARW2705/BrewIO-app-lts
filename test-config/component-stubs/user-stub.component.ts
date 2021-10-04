@@ -2,7 +2,7 @@
 import { Component } from '@angular/core';
 
 /* Component imports */
-import { UserComponent } from '../../src/app/components/user/user.component';
+import { UserComponent } from '../../src/app/components/user/public/user/user.component';
 
 @Component({
   selector: 'user',

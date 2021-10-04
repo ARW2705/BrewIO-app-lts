@@ -6,7 +6,7 @@ import { Subject } from 'rxjs';
 import { Batch } from '../../src/app/shared/interfaces';
 
 /* Component imports */
-import { ActiveBatchListComponent } from '../../src/app/components/active-batch-list/active-batch-list.component';
+import { ActiveBatchListComponent } from '../../src/app/components/batch/public/active-batch-list/active-batch-list.component';
 
 @Component({
   selector: 'app-active-batch-list',

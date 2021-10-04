@@ -5,7 +5,7 @@ import { Component, Input } from '@angular/core';
 import { TimerProcess } from '../../src/app/shared/interfaces';
 
 /* Component imports */
-import { ProcessTimerComponent } from '../../src/app/components/process-timer/process-timer.component';
+import { ProcessTimerComponent } from '../../src/app/components/process/public/process-timer/process-timer.component';
 
 @Component({
   selector: 'process-timer',

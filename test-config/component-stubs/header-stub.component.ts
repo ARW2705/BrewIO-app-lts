@@ -6,7 +6,7 @@ import { Subject } from 'rxjs';
 import { User } from '../../src/app/shared/interfaces';
 
 /* Component imports */
-import { HeaderComponent } from '../../src/app/components/header/header.component';
+import { HeaderComponent } from '../../src/app/components/shared/header/header.component';
 
 @Component({
   selector: 'app-header',

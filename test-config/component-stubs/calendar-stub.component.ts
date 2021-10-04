@@ -11,7 +11,7 @@ import { CalendarDate, CalendarProcess } from '../../src/app/shared/interfaces';
 import { CalendarService, IdService } from '../../src/app/services/services';
 
 /* Component imports */
-import { CalendarComponent } from '../../src/app/components/calendar/calendar.component';
+import { CalendarComponent } from '../../src/app/components/process/private/calendar/calendar.component';
 
 @Component({
   selector: 'calendar',

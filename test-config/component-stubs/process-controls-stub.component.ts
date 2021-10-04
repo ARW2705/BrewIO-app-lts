@@ -2,7 +2,7 @@
 import { Component, Input } from '@angular/core';
 
 /* Component imports */
-import { ProcessControlsComponent } from '../../src/app/components/process-controls/process-controls.component';
+import { ProcessControlsComponent } from '../../src/app/components/process/public/process-controls/process-controls.component';
 
 @Component({
   selector: 'process-controls',

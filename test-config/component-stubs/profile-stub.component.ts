@@ -2,7 +2,7 @@
 import { Component } from '@angular/core';
 
 /* Component imports */
-import { ProfileComponent } from '../../src/app/components/profile/profile.component';
+import { ProfileComponent } from '../../src/app/components/user/private/profile/profile.component';
 
 @Component({
   selector: 'calendar',

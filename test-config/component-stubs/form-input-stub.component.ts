@@ -9,7 +9,7 @@ import { FormAttributeServiceStub } from '../service-stubs';
 import { FormAttributeService } from '../../src/app/services/services';
 
 /* Component imports */
-import { FormInputComponent } from '../../src/app/components/form-input/form-input.component';
+import { FormInputComponent } from '../../src/app/components/form-elements/public/form-input/form-input.component';
 
 @Component({
   selector: 'app-form-input',

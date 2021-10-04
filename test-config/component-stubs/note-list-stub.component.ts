@@ -6,7 +6,7 @@ import { ModalController } from '@ionic/angular';
 import { ErrorReportingService, RecipeService, ToastService } from '../../src/app/services/services';
 
 /* Component imports */
-import { NoteListComponent } from '../../src/app/components/note-list/note-list.component';
+import { NoteListComponent } from '../../src/app/components/shared/note-list/note-list.component';
 
 @Component({
   selector: 'note-list',

@@ -14,6 +14,7 @@ export { IdServiceStub } from './service-stubs/id-stub.service';
 export { ImageServiceStub } from './service-stubs/image-stub.service';
 export { InventoryServiceStub } from './service-stubs/inventory-stub.service';
 export { LibraryServiceStub } from './service-stubs/library-stub.service';
+export { LoadingServiceStub } from './service-stubs/loading-stub.service';
 export { LocalNotificationServiceStub } from './service-stubs/local-notification-stub.service';
 export { LoggingServiceStub } from './service-stubs/logging-stub.service';
 export { ModalServiceStub } from './service-stubs/modal-stub.service';

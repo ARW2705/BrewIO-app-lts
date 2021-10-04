@@ -5,7 +5,7 @@ import { Component, Input } from '@angular/core';
 import { HopsSchedule, RecipeVariant } from '../../src/app/shared/interfaces';
 
 /* Component imports */
-import { HopsScheduleComponent } from '../../src/app/components/hops-schedule/hops-schedule.component';
+import { HopsScheduleComponent } from '../../src/app/components/ingredient/public/hops-schedule/hops-schedule.component';
 
 @Component({
   selector: 'hops-schedule',
