@@ -1,11 +1,12 @@
 /* Module imports */
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { HeaderComponentModule } from '../../../components/header/header.module';
+import { FormButtonsComponentModule, FormCheckboxComponentModule, FormInputComponentModule } from '../../../components/form-elements/public';
+import { HeaderComponentModule } from '../../../components/shared/public';
 
 /* Page imports */
 import { LoginPage } from './login.page';
@@ -14,9 +15,12 @@ import { LoginPage } from './login.page';
 @NgModule({
   imports: [
     CommonModule,
-    IonicModule,
-    HeaderComponentModule,
+    FormButtonsComponentModule,
+    FormCheckboxComponentModule,
+    FormInputComponentModule,
     FormsModule,
+    HeaderComponentModule,
+    IonicModule,
     ReactiveFormsModule
   ],
   declarations: [

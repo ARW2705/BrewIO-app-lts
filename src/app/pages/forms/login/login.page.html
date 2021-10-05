@@ -4,112 +4,41 @@
 </app-header>
 
 <ion-content class="sub-page">
-
   <ng-container *ngIf="loginForm">
-
-    <p class="form-info required">
-      Required fields
-    </p>
+    <p class="form-info required">Required fields</p>
 
     <form [formGroup]="loginForm">
-
       <!-- Username Input -->
-      <ion-item>
-
-        <ion-label  class="required"
-                    position="floating">
-          Username
-        </ion-label>
-
-        <ion-input  formControlName="username"
-                    type="text"
-                    autocomplete="off"
-                    autocorrect="off"
-                    autocapitalize="off"
-                    required="true"
-                    spellcheck="false">
-        </ion-input>
-
-      </ion-item>
-
+      <app-form-input [control]="loginForm.controls.username"
+                      controlName="username"
+                      formName="login"
+                      label="username"
+                      [shouldRequire]="true"
+                      type="text">
+      </app-form-input>
       <!-- Password Input -->
-      <ion-item>
-
-        <ion-label  class="required"
-                    position="floating">
-          Password
-        </ion-label>
-
-        <ion-input  formControlName="password"
-                    [type]="showPassword ? 'text' : 'password'"
-                    autocomplete="off"
-                    autocorrect="off"
-                    autocapitalize="off"
-                    required="true"
-                    spellcheck="false">
-        </ion-input>
-
-      </ion-item>
-
+      <app-form-input [control]="loginForm.controls.password"
+                      controlName="password"
+                      formName="login"
+                      label="password"
+                      [shouldRequire]="true"
+                      [type]="passwordType">
+      </app-form-input>
       <!-- Toggle display password in plain text -->
-      <ion-item>
-
-        <ion-label>
-          Show Password
-        </ion-label>
-
-        <ion-checkbox (ionChange)="togglePasswordVisible()"></ion-checkbox>
-
-      </ion-item>
-
+      <app-form-checkbox  (ionCheckboxEvent)="togglePasswordVisible($event)"
+                          label="show password">
+      </app-form-checkbox>
       <!-- Set to remember user in storage -->
-      <ion-item>
-
-        <ion-label>
-          Remember Me
-        </ion-label>
-
-        <ion-checkbox formControlName="remember"></ion-checkbox>
-
-      </ion-item>
-
+      <app-form-checkbox  [control]="loginForm.controls['remember']"
+                          label="remember me">
+      </app-form-checkbox>
     </form>
-
     <!-- Form Buttons -->
-    <ion-grid>
-
-      <ion-row>
-
-        <!-- Form cancel button -->
-        <ion-col>
-
-          <ion-button color="primary"
-                      (click)="dismiss()"
-                      class="form-button"
-                      [disabled]="awaitingResponse">
-            Cancel
-          </ion-button>
-
-        </ion-col>
-
-        <!-- Log in submit button -->
-        <ion-col>
-
-          <ion-button color="primary"
-                      (click)="onSubmit()"
-                      class="form-button"
-                      [disabled]="!loginForm.valid || awaitingResponse">
-            Log In
-          </ion-button>
-
-        </ion-col>
-
-      </ion-row>
-
-    </ion-grid>
-
+    <app-form-buttons (cancelEvent)="dismiss()"
+                      (submitEvent)="onSubmit()"
+                      [isSubmitDisabled]="!loginForm.valid || awaitingResponse">
+    </app-form-buttons>
   </ng-container>
-
   <ng-container *ngIf="!loginForm">
     Login Form Failed
   </ng-container>
