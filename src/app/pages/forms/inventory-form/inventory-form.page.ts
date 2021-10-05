@@ -1,25 +1,21 @@
 /* Module imports */
 import { Component, Input, OnInit } from '@angular/core';
-import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { LoadingController, ModalController } from '@ionic/angular';
-import { forkJoin, from, Observable, of } from 'rxjs';
+import { forkJoin, Observable, of } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
 /* Contants imports */
-import { OPTIONAL_INVENTORY_DATA_KEYS, PINT, STOCK_TYPES } from '../../../shared/constants';
+import { DESCRIPTION_MAX_LENGTH, NAME_MAX_LENGTH, NAME_MIN_LENGTH, URL_MAX_LENGTH } from '../../../shared/constants';
 
 /* Default imports */
 import { defaultImage } from '../../../shared/defaults';
 
 /* Interface imports */
-import { Author, Batch, FormSelectOption, Image, InventoryItem, StockType, Style } from '../../../shared/interfaces';
-
-/* Page imports */
-import { QuantityHelperPage } from '../../quantity-helper/quantity-helper.page';
-import { ImageFormPage } from '../image-form/image-form.page';
+import { Author, Batch, FormSelectOption, Image, InventoryItem, Style } from '../../../shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService, IdService, ImageService, LibraryService, RecipeService, ToastService, UtilityService } from '../../../services/services';
+import { ErrorReportingService, IdService, LibraryService, RecipeService } from '../../../services/services';
 
 
 @Component({
@@ -31,35 +27,20 @@ export class InventoryFormPage implements OnInit {
   @Input() isRequired: boolean = false;
   @Input() options: { item?: InventoryItem, batch?: Batch };
   _defaultImage: Image = defaultImage();
-  allowHelper: boolean = false;
   author: Author = null;
   batch: Batch = null;
-  compareWithFn: (o1: any, o2: any) => boolean;
   inventoryForm: FormGroup = null;
-  item: InventoryItem = null;
+  isFormValid: boolean = false;
+  itemDetailControls: { [key: string]: FormControl } = null;
   itemLabelImage: Image = this._defaultImage;
-  numericFieldKeys: string[] = [
-    'initialQuantity',
-    'currentQuantity',
-    'itemABV',
-    'itemIBU',
-    'itemSRM'
-  ];
   onBackClick: () => void;
-  quantityHint: string = '';
-  selectOptions: object = { cssClass: 'select-popover' };
-  sourceOptions: FormSelectOption[] = [
-    { label: 'My Recipe'        , value: 'self'  },
-    { label: 'Other User Recipe', value: 'other' },
-    { label: 'Third Party'      , value: 'third' }
-  ];
-  sourceTouched: boolean = false;
-  stockTouched: boolean = false;
-  stockTypeOptions: FormSelectOption[] = [];
-  styles: Style[] = null;
-  styleSelection: Style;
-  styleTouched: boolean = false;
+  selectedSource: string = null;
+  selectedStockTypeName: string = null;
+  selectedStyle: Style = null;
+  stockDetailControls: { [key: string]: FormControl } = null;
   styleOptions: FormSelectOption[] = [];
+  styles: Style[] = null;
+  supplierDetailControls: { [key: string]: FormControl } = null;
   supplierLabelImage: Image = this._defaultImage;
   title: string = '';
 
@@ -67,60 +48,65 @@ export class InventoryFormPage implements OnInit {
     public errorReporter: ErrorReportingService,
     public formBuilder: FormBuilder,
     public idService: IdService,
-    public imageService: ImageService,
     public libraryService: LibraryService,
     public loadingCtrl: LoadingController,
     public modalCtrl: ModalController,
-    public recipeService: RecipeService,
-    public toastService: ToastService,
-    public utilService: UtilityService
-  ) {
-    this.compareWithFn = this.utilService.compareWith.bind(this);
-  }
+    public recipeService: RecipeService
+  ) {}
 
   /***** Lifecycle Hooks *****/
 
-  ngOnInit() {
-    console.log('inventory form init');
-
+  ngOnInit(): void {
     let searchId: string = '';
     if (this.options.batch) {
       searchId = this.options.batch.recipeMasterId;
     }
 
-    forkJoin(
-      this.getStyleLibrary(),
-      this.getAuthor(searchId)
-    )
-    .pipe(finalize(async (): Promise<void> => {
-      const hasOverlay: boolean = !!await this.loadingCtrl.getTop();
-      if (hasOverlay) {
-        await this.loadingCtrl.dismiss();
-      }
-    }))
-    .subscribe(
-      ([styles, author]): void => {
-        this.onBackClick = this.isRequired ? undefined : this.dismiss.bind(this);
-        this.styles = styles;
-        this.buildFormSelectOptions();
-        this.author = author;
-        this.initForm();
-      },
-      (error: any): void => {
-        this.errorReporter.handleUnhandledError(error);
-      }
-    );
+    forkJoin(this.libraryService.getStyleLibrary(), this.getAuthor(searchId))
+      .pipe(finalize(this.dismissLoadingIfHasOverlayFn()))
+      .subscribe(
+        ([styles, author]): void => {
+          this.onBackClick = this.isRequired ? undefined : this.dismiss.bind(this);
+          this.styles = styles;
+          this.author = author;
+          this.initForm();
+        },
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
+      );
   }
 
   /***** End Lifecycle Hooks *****/
 
 
-  /***** Initializations *****/
+  /***** Form Methods *****/
 
+  /**
+   * Add given from controls to inventory form
+   *
+   * @param: controls - object containing form controls
+   * @param: [item] - optional given inventory item to use as default form values
+   * @return: none
+   */
+  addFormControls(controls: { [key: string]: FormControl }, item?: InventoryItem): void {
+    if (this.inventoryForm) {
+      for (const key in controls) {
+        if (controls.hasOwnProperty(key)) {
+          this.inventoryForm.addControl(key, controls[key]);
+          if (item && item.hasOwnProperty(key)) {
+            this.inventoryForm.controls[key].setValue(item[key]);
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Build form select options
+   *
+   * @param: none
+   * @return: none
+   */
   buildFormSelectOptions(): void {
-    this.stockTypeOptions = STOCK_TYPES.map((stockType: StockType): FormSelectOption => {
-      return { label: stockType.name, value: stockType.name };
-    });
     if (this.styles) {
       this.styleOptions = this.styles.map((style: Style): FormSelectOption => {
         return { label: style.name, value: style };
@@ -129,9 +115,144 @@ export class InventoryFormPage implements OnInit {
   }
 
   /**
+   * Initialize the form
+   *
+   * @param: none
+   * @return: none
+   */
+  initForm(): void {
+    this.inventoryForm = new FormGroup({});
+    this.buildFormSelectOptions();
+    const item: InventoryItem = this.options.item;
+    const batch: Batch = this.options.batch;
+    this.title = 'New Item';
+
+    if (batch) {
+      this.batch = batch;
+      this.initStockDetailControls();
+    } else {
+      if (item) {
+        this.selectedStyle = this.styles.find((style: Style): boolean => {
+          return this.idService.hasId(style, item.itemStyleId);
+        });
+        this.selectedSource = item.sourceType;
+        this.selectedStockTypeName = item.stockType;
+        this.title = 'Update Item';
+      }
+      this.initItemDetailControls(item);
+      this.initStockDetailControls(item);
+      this.initSupplierDetailControls(item);
+    }
+  }
+
+  /**
+   * Create item details form section controls
+   *
+   * @param: [item] - optional given inventory item to use as default form values
+   * @return: none
+   */
+  initItemDetailControls(item?: InventoryItem): void {
+    const itemDetailControls: { [key: string]: FormControl } = {
+      itemName:    new FormControl(''  , [Validators.required, Validators.minLength(NAME_MIN_LENGTH), Validators.maxLength(NAME_MAX_LENGTH)]),
+      itemSubname: new FormControl(''  , [Validators.minLength(NAME_MIN_LENGTH), Validators.maxLength(NAME_MAX_LENGTH)]                     ),
+      description: new FormControl(''  , [Validators.maxLength(DESCRIPTION_MAX_LENGTH)]                                                     ),
+      itemStyleId: new FormControl(''  , [Validators.required]                                                                              ),
+      itemABV:     new FormControl(null, [Validators.required, Validators.min(0)]                                                           ),
+      itemIBU:     new FormControl(null, [Validators.min(0)]                                                                                ),
+      itemSRM:     new FormControl(null, [Validators.min(0)]                                                                                )
+    };
+    this.itemDetailControls = itemDetailControls;
+    this.addFormControls(itemDetailControls, item);
+  }
+
+  /**
+   * Create stock details form seciton controls
+   *
+   * @param: [item] - optional given inventory item to use as default form values
+   * @return: none
+   */
+  initStockDetailControls(item?: InventoryItem): void {
+    const stockDetailControls: { [key: string]: FormControl } = {
+      stockType:       new FormControl(''  , [Validators.required]                   ),
+      initialQuantity: new FormControl(null, [Validators.min(1), Validators.required]),
+      currentQuantity: new FormControl(null, [Validators.min(0), Validators.required])
+    };
+    this.stockDetailControls = stockDetailControls;
+    this.addFormControls(stockDetailControls, item);
+  }
+
+  /**
+   * Create supplier details form section controls
+   *
+   * @param: [item] - optional given inventory item to use as default form values
+   * @return: none
+   */
+  initSupplierDetailControls(item?: InventoryItem): void {
+    const supplierDetailControls: { [key: string]: FormControl } = {
+      supplierName: new FormControl('', [Validators.required, Validators.minLength(NAME_MIN_LENGTH), Validators.maxLength(NAME_MAX_LENGTH)]),
+      supplierURL:  new FormControl('', [Validators.maxLength(URL_MAX_LENGTH)]                                                             ),
+      sourceType:   new FormControl('', [Validators.required]                                                                              )
+    };
+    this.supplierDetailControls = supplierDetailControls;
+    this.addFormControls(supplierDetailControls, item);
+  }
+
+  /**
+   * Format the form values and call ViewController dismiss with those values
+   *
+   * @param: none
+   * @return: none
+   */
+  onSubmit(): void {
+    const formValues: object = this.inventoryForm.value;
+    let style: Style = formValues['itemStyleId'];
+    if (!style) {
+      style = this.styles.find((_style: Style): boolean => {
+        return this.idService.hasId(_style, this.batch.annotations.styleId);
+      });
+    }
+    formValues['itemStyleId'] = style._id;
+    formValues['itemStyleName'] = style.name;
+    formValues['itemLabelImage'] = this.itemLabelImage;
+    formValues['supplierLabelImage'] = this.supplierLabelImage;
+    this.modalCtrl.dismiss(formValues);
+  }
+
+  /***** End Form Methods *****/
+
+
+  /***** Other Methods *****/
+
+  /**
+   * Call ModalController dismiss method with no return data
+   *
+   * @param: none
+   * @return: none
+   */
+  dismiss(): void {
+    this.modalCtrl.dismiss();
+  }
+
+  /**
+   * Get a loading controller dismiss handler that dismisses only if an overlay is present
+   * avoids throwing error on dismiss if there is no overlay
+   *
+   * @param: none
+   * @return: Loading dismiss handling function
+   */
+  dismissLoadingIfHasOverlayFn(): () => Promise<void> {
+    return async (): Promise<void> => {
+      const hasOverlay: boolean = !!await this.loadingCtrl.getTop();
+      if (hasOverlay) {
+        await this.loadingCtrl.dismiss();
+      }
+    };
+  }
+
+  /**
    * Get recipe author prior to form generation
    *
-   * @params: searchId - recipe master id to use in search
+   * @param: searchId - recipe master id to use in search
    *
    * @return: observable of style library
    */
@@ -143,437 +264,19 @@ export class InventoryFormPage implements OnInit {
   }
 
   /**
-   * Get styles library prior to form generation
+   * Set given image according to its image type (i.e. 'itemLabelImage' or 'supplierLabelImage')
    *
-   * @params: none
-   *
-   * @return: observable of style library
-   */
-  getStyleLibrary(): Observable<Style[]> {
-    return this.libraryService.getStyleLibrary();
-  }
-
-  /**
-   * Initialize the form depending on whether an item, batch, or nothing was
-   * passed to component as an option
-   *
-   * @params: none
+   * @param: imageData - object containing image type and the image to set
    * @return: none
    */
-  initForm(): void {
-    const item: InventoryItem = this.options.item;
-    const batch: Batch = this.options.batch;
-    let title = 'New Item';
-
-    if (item) {
-      // Populate form with given item values as an update
-      this.item = item;
-      title = 'Update Item';
-      this.itemLabelImage = item.optionalItemData.itemLabelImage || this._defaultImage;
-      this.supplierLabelImage = item.optionalItemData.supplierLabelImage || this._defaultImage;
-      this.initFormWithItem();
-    } else if (batch) {
-      // Populate form fields for initial new item with a batch as a base
-      this.batch = batch;
-      this.supplierLabelImage = this.author.breweryLabelImage || this._defaultImage;
-      this.itemLabelImage = this.batch.contextInfo.recipeImage || this._defaultImage;
-      this.initFormWithBatch();
-    } else {
-      // Populate form fields for new item with no previous references
-      this.initFormGeneric();
-    }
-
-    this.title = title;
-  }
-
-  /***** End Initializations *****/
-
-
-  /***** IonSelect Functions *****/
-
-  /**
-   * Set source ion-select touched property based on whether it has a value
-   *
-   * @params: none
-   * @return: none
-   */
-  onSourceSelect(): void {
-    this.sourceTouched = !this.inventoryForm.controls.sourceType.value;
-  }
-
-  /**
-   * Set style ion-select touched property based on whether it has a value
-   *
-   * @params: none
-   * @return: none
-   */
-  onStyleSelect(): void {
-    this.styleTouched = !this.inventoryForm.controls.itemStyleId.value;
-  }
-
-  /**
-   * Set stock ion-select touched property based on whether it has a value
-   *
-   * @params: none
-   * @return: none
-   */
-  onStockSelect(): void {
-    this.stockTouched = !this.inventoryForm.controls.stockType.value;
-    this.updateQuantityHint();
-  }
-
-  /***** End IonSelect Functions *****/
-
-
-  /***** Form Handler methods *****/
-
-  /**
-   * Convert ion-input numeric strings to numbers
-   *
-   * @params: none
-   *
-   * @return: converted form values
-   */
-  convertFormValuesToNumbers(): object {
-    const formValues: object = this.inventoryForm.value;
-    this.numericFieldKeys.forEach((key: string): void => {
-      if (formValues.hasOwnProperty(key)) {
-        formValues[key] = parseFloat(formValues[key]);
-      }
-    });
-    return formValues;
-  }
-
-  /**
-   * Initialize the form using given batch values as form values
-   *
-   * @params: none
-   * @return: none
-   */
-  initFormWithBatch(): void {
-    this.inventoryForm = this.formBuilder.group({
-      description: ['', [Validators.maxLength(500)]],
-      initialQuantity: ['', [Validators.required]],
-      stockType: ['', [Validators.required]]
-    });
-  }
-
-  /**
-   * Initialize the form with default values
-   *
-   * @params: none
-   * @return: none
-   */
-  initFormGeneric(): void {
-    this.inventoryForm = this.formBuilder.group({
-      description: ['', [Validators.maxLength(500)]],
-      initialQuantity: [null, [Validators.required, Validators.min(1)]],
-      itemABV: [null, [Validators.required, Validators.min(0)]],
-      itemIBU: [null, [Validators.min(0)]],
-      itemName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
-      itemSRM: [null, [Validators.min(0)]],
-      itemStyleId: [null, [Validators.required]],
-      itemSubname: ['', [Validators.minLength(2), Validators.maxLength(50)]],
-      sourceType: ['', [Validators.required]],
-      stockType: ['', [Validators.required]],
-      supplierName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
-      supplierURL: ['', [Validators.maxLength(2000)]]
-    });
-  }
-
-  /**
-   * Initialize the form using given item values as form values
-   *
-   * @params: none
-   * @return: none
-   */
-  initFormWithItem(): void {
-    this.inventoryForm = this.formBuilder.group({
-      currentQuantity: [this.item.currentQuantity, [Validators.required]],
-      description: [this.item.description, [Validators.maxLength(500)]],
-      initialQuantity: [this.item.initialQuantity, [Validators.required, Validators.min(1)]],
-      itemABV: [this.item.itemABV, [Validators.required, Validators.min(0)]],
-      itemName: [
-        this.item.itemName,
-        [Validators.required, Validators.minLength(2), Validators.maxLength(50)]
-      ],
-      itemStyleId: [null, [Validators.required]],
-      sourceType: [this.item.sourceType, [Validators.required]],
-      stockType: [this.item.stockType, [Validators.required]],
-      supplierName: [
-        this.item.supplierName,
-        [Validators.required, Validators.minLength(2), Validators.maxLength(50)]
-      ]
-    });
-    this.initSelectionControl();
-    this.initOptionalFieldControls();
-    this.updateQuantityHint();
-  }
-
-  /**
-   * Create controls for any optional fields present
-   *
-   * @params: none
-   * @return: none
-   */
-  initOptionalFieldControls(): void {
-    OPTIONAL_INVENTORY_DATA_KEYS.forEach((optionalKey: string): void => {
-      if (this.requiresOptionalFieldControl(optionalKey)) {
-        const addValue: any = this.item.optionalItemData[optionalKey];
-        this.inventoryForm.addControl(
-          optionalKey,
-          new FormControl(addValue !== undefined ? addValue : '')
-        );
-      }
-    });
-  }
-
-  /**
-   * Populate ion-selects with currently chosen option
-   *
-   * @params: none
-   * @return: none
-   */
-  initSelectionControl(): void {
-    this.styleSelection = this.styles.find((style: Style): boolean => {
-      return this.idService.hasId(style, this.item.itemStyleId);
-    });
-
-    this.inventoryForm.controls.itemStyleId.setValue(this.styleSelection);
-  }
-
-  /**
-   * Format the form values and call ViewController dismiss with those values
-   *
-   * @params: none
-   * @return: none
-   */
-  onSubmit(): void {
-    const formValues: object = this.convertFormValuesToNumbers();
-    const style: Style = formValues['itemStyleId'] !== undefined
-      ? formValues['itemStyleId']
-      : this.styles.find((_style: Style): boolean => this.idService.hasId(_style, this.batch.annotations.styleId));
-    formValues['itemStyleId'] = style._id;
-    formValues['itemStyleName'] = style.name;
-    formValues['itemLabelImage'] = this.itemLabelImage;
-    formValues['supplierLabelImage'] = this.supplierLabelImage;
-    this.modalCtrl.dismiss(formValues);
-  }
-
-  /**
-   * Check if optional item data has given key
-   *
-   * @params: optionalKey - object property to check for
-   *
-   * @return: true if key exists in optionalItemData and is not 'batchId'
-   */
-  requiresOptionalFieldControl(optionalKey: string): boolean {
-    return optionalKey !== 'batchId' && this.item.optionalItemData.hasOwnProperty(optionalKey);
-  }
-
-  /***** End Form Handler Methods *****/
-
-
-  /***** Modal Methods *****/
-
-  /**
-   * Call ModalController dismiss method with no return data
-   *
-   * @params: none
-   * @return: none
-   */
-  dismiss(): void {
-    this.modalCtrl.dismiss();
-  }
-
-  /**
-   * Get modal options object
-   *
-   * @params: quantityType - name of the  type of quantity; either 'initialQuantity' or 'currentQuantity'
-   * @params: quantityValue - current value to import to modal
-   *
-   * @return: modal options object
-   */
-  getQuanityHelperModalOptions(quantityType: string, quantityValue: number): object {
-    return {
-      headerText: `select ${quantityType.split('Q')[0]} quantity`,
-      quantity: quantityValue
-    };
-  }
-
-  /**
-   * Get quantity helper modal error handler
-   *
-   * @params: none
-   *
-   * @return: error handler function
-   */
-  onQuantityHelperModalError(): (error: string) => void {
-    return (error: string): void => {
-      console.log('modal dismiss error', error);
-      this.toastService.presentErrorToast('Error selecting quantity');
-    };
-  }
-
-  /**
-   * Get quantity helper modal success handler
-   *
-   * @params: control - form control to update
-   *
-   * @return: success handler function
-   */
-  onQuantityHelperModalSuccess(control: AbstractControl): (data: object) => void {
-    return (data: object): void => {
-      const _data: number = data['data'];
-      console.log('on dismiss', _data);
-      if (!isNaN(_data)) {
-        control.setValue(_data);
-      }
-    };
-  }
-
-  /**
-   * Open quantity helper modal
-   *
-   * @params: quantityType - name of the  type of quantity; either 'initialQuantity' or 'currentQuantity'
-   *
-   * @return: none
-   */
-  async openQuantityHelperModal(quantityType: string): Promise<void> {
-    const quantityControl: AbstractControl = this.inventoryForm.controls[quantityType];
-    if (!quantityControl) {
-      console.log('Invalid quantity type', quantityType);
-      this.toastService.presentErrorToast('Error: invalid quantity type');
-      return;
-    }
-
-    const modal: HTMLIonModalElement = await this.modalCtrl.create({
-      component: QuantityHelperPage,
-      componentProps: this.getQuanityHelperModalOptions(quantityType, quantityControl.value)
-    });
-
-    from(modal.onDidDismiss())
-      .subscribe(
-        this.onQuantityHelperModalSuccess(quantityControl),
-        this.onQuantityHelperModalError()
-      );
-
-    await modal.present();
-  }
-
-  /**
-   * Get modal options object
-   *
-   * @params: quantityType - name of the  type of quantity; either 'initialQuantity' or 'currentQuantity'
-   * @params: quantityValue - current value to import to modal
-   *
-   * @return: modal options object
-   */
-  getImageModalOptions(imageType: string): object {
-    let options: { image: Image } = null;
-    if (imageType === 'item' && !this.imageService.hasDefaultImage(this.itemLabelImage)) {
-      options = { image: this.itemLabelImage };
-    } else if (imageType === 'supplier' && !this.imageService.hasDefaultImage(this.supplierLabelImage)) {
-      options = { image: this.supplierLabelImage };
-    }
-    return options;
-  }
-
-  /**
-   * Get image modal error handler
-   *
-   * @params: none
-   *
-   * @return: error handler function
-   */
-  onImageModalError(): (error: string) => void {
-    return (error: string): void => {
-      console.log('modal dismiss error', error);
-      this.toastService.presentErrorToast('Error selecting image');
-    };
-  }
-
-  /**
-   * Get image modal success handler
-   *
-   * @params: imageType - the image type to update; either 'item' or 'supplier'
-   *
-   * @return: success handler function
-   */
-  onImageModalSuccess(imageType: string): (data: object) => void {
-    return (data: object): void => {
-      const _data: Image = data['data'];
-      if (imageType === 'item' && _data) {
-        this.itemLabelImage = _data;
-      } else if (imageType === 'supplier' && _data) {
-        this.supplierLabelImage = _data;
-      }
-    };
-  }
-
-  /**
-   * Open image selection modal
-   *
-   * @params: imageType - assign image to this item property
-   *
-   * @return: none
-   */
-  async openImageModal(imageType: string): Promise<void> {
-    const modal: HTMLIonModalElement = await this.modalCtrl.create({
-      component: ImageFormPage,
-      componentProps: this.getImageModalOptions(imageType)
-    });
-
-    from(modal.onDidDismiss())
-      .subscribe(
-        this.onImageModalSuccess(imageType),
-        this.onImageModalError()
-      );
-
-    await modal.present();
-  }
-
-  /***** End Modal Methods *****/
-
-
-  /***** Other *****/
-
-  /**
-   * Replace a particular image with a new image
-   *
-   * @param: imageType - identifier of which image should be replaced
-   * @param: image - the new image to apply
-   *
-   * @return: none
-   */
-  onImageSelection(imageType: string, image: Image): void {
-    if (imageType === 'itemLabelImage') {
-      this.itemLabelImage = image;
+  onImageSelection(imageData: { imageType: string, image: Image }): void {
+    if (imageData.imageType === 'itemLabelImage') {
+      this.itemLabelImage = imageData.image;
+    } else if (imageData.imageType === 'supplierLabelImage') {
+      this.supplierLabelImage = imageData.image;
     }
   }
 
-  /**
-   * Set quantity helper modal button display and hint based on stock type;
-   * Quantity helper button and hint should be visible if stock type is capacity based (eg 'keg')
-   *
-   * @params: none
-   * @return: none
-   */
-  updateQuantityHint(): void {
-    let stockTypeFormValue: string = this.inventoryForm.controls.stockType.value;
-    if (stockTypeFormValue) {
-      stockTypeFormValue = stockTypeFormValue.toLowerCase();
-    }
-
-    if (stockTypeFormValue === 'keg' || stockTypeFormValue === 'growler') {
-      this.allowHelper = true;
-      this.quantityHint = `(${PINT.longName}s)`;
-    } else {
-      this.allowHelper = false;
-      this.quantityHint = '';
-    }
-  }
-
-  /***** End Other *****/
+  /***** End Other Methods *****/
 
 }

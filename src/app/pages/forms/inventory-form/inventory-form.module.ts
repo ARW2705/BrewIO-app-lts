@@ -5,12 +5,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { FormErrorComponentModule } from '../../../components/form-error/form-error.module';
-import { FormImageComponentModule } from '../../../components/form-image/form-image.module';
-import { FormInputComponentModule } from '../../../components/form-input/form-input.module';
-import { FormSelectComponentModule } from '../../../components/form-select/form-select.module';
-import { FormTextAreaComponentModule } from '../../../components/form-text-area/form-text-area.module';
-import { HeaderComponentModule } from '../../../components/header/header.module';
+import { InventoryItemDetailsFormComponentModule, InventoryStockDetailsFormComponentModule, InventorySupplierDetailsFormComponentModule } from '../../../components/inventory/public';
+import { HeaderComponentModule } from '../../../components/shared/public';
 
 /* Page imports */
 import { QuantityHelperPageModule } from '../../quantity-helper/quantity-helper.module';
@@ -20,13 +16,11 @@ import { InventoryFormPage } from './inventory-form.page';
 @NgModule({
   imports: [
     CommonModule,
-    FormErrorComponentModule,
-    FormImageComponentModule,
-    FormInputComponentModule,
-    FormSelectComponentModule,
-    FormTextAreaComponentModule,
     FormsModule,
     HeaderComponentModule,
+    InventoryItemDetailsFormComponentModule,
+    InventoryStockDetailsFormComponentModule,
+    InventorySupplierDetailsFormComponentModule,
     IonicModule,
     QuantityHelperPageModule,
     ReactiveFormsModule

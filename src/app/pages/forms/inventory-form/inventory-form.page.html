@@ -4,175 +4,34 @@
 </app-header>
 
 <ion-content class="sub-page">
-  <ng-container *ngIf="inventoryForm">
 
+  <section>
     <p class="form-info required">Required fields</p>
 
-    <form [formGroup]="inventoryForm">
-      <header class="form-section-header">Item Details</header>
-      <!-- Item Details Section -->
-      <section>
-        <!-- Item name -->
-        <app-form-input *ngIf="batch === null"
-                        [control]="inventoryForm.controls['itemName']"
-                        controlName="itemName"
-                        formName="inventory"
-                        label="item name"
-                        [shouldRequire]="true"
-                        type="text">
-        </app-form-input>
-        <!-- Item additional name [optional] -->
-        <app-form-input *ngIf="batch === null && inventoryForm.controls.itemSubname !== undefined"
-                        [control]="inventoryForm.controls['itemSubname']"
-                        controlName="itemSubname"
-                        formName="inventory"
-                        label="item additional name"
-                        type="text">
-        </app-form-input>
-        <!-- Item label image -->
-        <app-form-image (imageModalEvent)="onImageSelection('itemLabelImage', $event)"
-                        [image]="itemLabelImage"
-                        label="item label image">
-        </app-form-image>
-        <!-- Item description [optional] -->
-        <app-form-text-area [control]="inventoryForm.controls['description']"
-                            controlName="description"
-                            formName="inventory"
-                            label="description">
-        </app-form-text-area>
-        <!-- Item Style -->
-        <app-form-select  *ngIf="batch === null && styles !== null"
-                          [compareWithFn]="compareWithFn"
-                          [control]="inventoryForm.controls['itemStyleId']"
-                          controlName="itemStyleId"
-                          formName="inventory"
-                          label="select style"
-                          [options]="styleOptions"
-                          [shouldRequire]="true">
-        </app-form-select>
-        <!-- Item ABV -->
-        <app-form-input *ngIf="batch === null"
-                        [control]="inventoryForm.controls['itemABV']"
-                        controlName="itemABV"
-                        formName="inventory"
-                        label="ABV"
-                        [shouldRequire]="true"
-                        type="number">
-        </app-form-input>
-        <!-- Item IBU -->
-        <app-form-input *ngIf="batch === null && inventoryForm.controls.itemIBU !== undefined"
-                        [control]="inventoryForm.controls['itemIBU']"
-                        controlName="itemIBU"
-                        formName="inventory"
-                        label="IBU"
-                        type="number">
-        </app-form-input>
-        <!-- Item SRM -->
-        <app-form-input *ngIf="batch === null && inventoryForm.controls.itemSRM !== undefined"
-                        [control]="inventoryForm.controls['itemSRM']"
-                        controlName="itemSRM"
-                        formName="inventory"
-                        label="SRM"
-                        type="number">
-        </app-form-input>
-      </section>
-      <!-- END Item Details Section -->
+    <form *ngIf="inventoryForm"
+          [formGroup]="inventoryForm">
 
+      <app-inventory-item-details-form  *ngIf="itemDetailControls"
+                                        (imageSelectionEvent)="onImageSelection($event)"
+                                        [controls]="itemDetailControls"
+                                        [image]="itemLabelImage"
+                                        [selectedStyle]="selectedStyle"
+                                        [styleOptions]="styleOptions">
+      </app-inventory-item-details-form>
 
-      <!-- Supplier Info Section -->
-      <header class="form-section-header">Supplier Details</header>
+      <app-inventory-supplier-details-form  *ngIf="supplierDetailControls"
+                                            (imageSelectionEvent)="onImageSelection($event)"
+                                            [controls]="supplierDetailControls"
+                                            [image]="supplierLabelImage"
+                                            [selectedSource]="selectedSource">
+      </app-inventory-supplier-details-form>
 
-      <section>
-        <!-- Item supplier name -->
-        <app-form-input *ngIf="batch === null"
-                        [control]="inventoryForm.controls['supplierName']"
-                        controlName="supplierName"
-                        formName="inventory"
-                        label="supplier name"
-                        [shouldRequire]="true"
-                        type="text">
-        </app-form-input>
-        <!-- Item supplier website url [optional] -->
-        <app-form-input *ngIf="batch === null && inventoryForm.controls.supplierURL !== undefined"
-                        [control]="inventoryForm.controls['supplierURL']"
-                        controlName="supplierURL"
-                        formName="inventory"
-                        label="supplier website URL"
-                        type="text">
-        </app-form-input>
-        <!-- Item supplier label image -->
-        <app-form-image (imageModalEvent)="onImageSelection('supplierLabelImage', $event)"
-                        [image]="supplierLabelImage"
-                        label="supplier label image">
-        </app-form-image>
-        <!-- Item source type -->
-        <app-form-select  *ngIf="batch === null"
-                          [control]="inventoryForm.controls['sourceType']"
-                          controlName="sourceType"
-                          formName="inventory"
-                          label="select item source"
-                          [options]="sourceOptions"
-                          [shouldRequire]="true">
-        </app-form-select>
-      </section>
-      <!-- END Supplier Info Section -->
+      <app-inventory-stock-details-form [controls]="stockDetailControls"
+                                        [selectedStockTypeName]="selectedStockTypeName">
+      </app-inventory-stock-details-form>
 
-
-      <!-- Stock Details Section -->
-      <header class="form-section-header">Inventory Stock Details</header>
-
-      <section>
-        <!-- Item stock type -->
-        <app-form-select  (ionBlurEvent)="onStockSelect()"
-                          (ionChangeEvent)="onStockSelect()"
-                          [compareWithFn]="compareWithFn"
-                          [control]="inventoryForm.controls['stockType']"
-                          controlName="stockType"
-                          formName="inventory"
-                          label="select stock type"
-                          [options]="stockTypeOptions"
-                          [shouldRequire]="true">
-        </app-form-select>
-        <!-- Initial Quantity -->
-        <div class="quantity-field-container">
-          <app-form-input [control]="inventoryForm.controls['initialQuantity']"
-                          controlName="initialQuantity"
-                          formName="inventory"
-                          [label]="'initial quantity' + ' ' + quantityHint"
-                          [shouldRequire]="true"
-                          type="number">
-          </app-form-input>
-          <ion-button *ngIf="allowHelper"
-                      color="primary"
-                      slot="end"
-                      (click)="openQuantityHelperModal('initialQuantity')"
-                      class="form-button modal-button">
-
-            <ion-icon name="open-outline"></ion-icon>
-          </ion-button>
-        </div>
-        <!-- Current Quantity -->
-        <div  *ngIf="item !== null"
-              class="quantity-field-container">
-          <app-form-input [control]="inventoryForm.controls['currentQuantity']"
-                          controlName="currentQuantity"
-                          formName="inventory"
-                          [label]="'current quantity' + ' ' + quantityHint"
-                          [shouldRequire]="true"
-                          type="number">
-          </app-form-input>
-          <ion-button *ngIf="allowHelper"
-                      color="primary"
-                      slot="end"
-                      (click)="openQuantityHelperModal('currentQuantity')"
-                      class="form-button modal-button">
-
-            <ion-icon name="open-outline"></ion-icon>
-          </ion-button>
-        </div>
-      </section>
     </form>
-  </ng-container>
+  </section>
 
   <ion-grid>
     <ion-row>
