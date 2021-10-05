@@ -2,7 +2,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { IonicModule, ModalController } from '@ionic/angular';
-import { FormsModule, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, FormControl, ReactiveFormsModule } from '@angular/forms';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../../test-config/configure-test-bed';
@@ -20,10 +20,10 @@ import { NoteFormPage } from './note-form.page';
 
 
 describe('NoteFormPage', (): void => {
-  let fixture: ComponentFixture<NoteFormPage>;
-  let noteFormPage: NoteFormPage;
-  let originalOnInit: any;
   configureTestBed();
+  let fixture: ComponentFixture<NoteFormPage>;
+  let page: NoteFormPage;
+  let originalOnInit: any;
 
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
@@ -49,75 +49,60 @@ describe('NoteFormPage', (): void => {
 
   beforeEach((): void => {
     fixture = TestBed.createComponent(NoteFormPage);
-    noteFormPage = fixture.componentInstance;
-    originalOnInit = noteFormPage.ngOnInit;
-    noteFormPage.ngOnInit = jest
-      .fn();
-    noteFormPage.modalCtrl.dismiss = jest
-      .fn();
+    page = fixture.componentInstance;
+    originalOnInit = page.ngOnInit;
+    page.ngOnInit = jest.fn();
+    page.modalCtrl.dismiss = jest.fn();
   });
 
   test('should create the component', (): void => {
     fixture.detectChanges();
 
-    expect(noteFormPage).toBeDefined();
+    expect(page).toBeDefined();
   });
 
   test('should init the component', (): void => {
-    noteFormPage.ngOnInit = originalOnInit;
-
-    noteFormPage.noteType = 'master';
-    noteFormPage.toUpdate = 'test note';
-
-    noteFormPage.utilService.toTitleCase = jest
-      .fn()
+    page.ngOnInit = originalOnInit;
+    page.noteType = 'master';
+    page.toUpdate = 'test note';
+    page.utilService.toTitleCase = jest.fn()
       .mockReturnValue('Master Note');
 
     fixture.detectChanges();
 
-    expect(noteFormPage.title).toMatch('Master Note');
-    expect(noteFormPage.note.value).toMatch('test note');
+    expect(page.title).toMatch('Master Note');
+    expect(page.note.value).toMatch('test note');
   });
 
   test('should dismiss modal with no data', (): void => {
-    noteFormPage.modalCtrl.dismiss = jest
-      .fn();
-
-    const dismissSpy: jest.SpyInstance = jest.spyOn(noteFormPage.modalCtrl, 'dismiss');
+    page.modalCtrl.dismiss = jest.fn();
+    const dismissSpy: jest.SpyInstance = jest.spyOn(page.modalCtrl, 'dismiss');
 
     fixture.detectChanges();
 
-    noteFormPage.dismiss();
-
+    page.dismiss();
     expect(dismissSpy).toHaveBeenCalled();
   });
 
   test('should handle note deletion modal dismiss', (): void => {
-    noteFormPage.modalCtrl.dismiss = jest
-      .fn();
-
-    const dismissSpy: jest.SpyInstance = jest.spyOn(noteFormPage.modalCtrl, 'dismiss');
+    page.modalCtrl.dismiss = jest.fn();
+    const dismissSpy: jest.SpyInstance = jest.spyOn(page.modalCtrl, 'dismiss');
 
     fixture.detectChanges();
 
-    noteFormPage.onDelete();
-
+    page.onDelete();
     expect(dismissSpy).toHaveBeenCalledWith({ method: 'delete' });
   });
 
   test('should handle note submission', (): void => {
-    noteFormPage.note = new FormControl('test note');
-    noteFormPage.formMethod = 'create';
-
-    noteFormPage.modalCtrl.dismiss = jest
-      .fn();
-
-    const dismissSpy: jest.SpyInstance = jest.spyOn(noteFormPage.modalCtrl, 'dismiss');
+    page.note = new FormControl('test note');
+    page.formMethod = 'create';
+    page.modalCtrl.dismiss = jest.fn();
+    const dismissSpy: jest.SpyInstance = jest.spyOn(page.modalCtrl, 'dismiss');
 
     fixture.detectChanges();
 
-    noteFormPage.onSubmit();
-
+    page.onSubmit();
     expect(dismissSpy).toHaveBeenCalledWith({
       method: 'create',
       note: 'test note'
@@ -125,28 +110,31 @@ describe('NoteFormPage', (): void => {
   });
 
   test('should render template with note form', (): void => {
-    noteFormPage.note = new FormControl('test note');
-    noteFormPage.formMethod = 'update';
+    page.note = new FormControl('test note');
+    page.formMethod = 'update';
 
     fixture.detectChanges();
 
-    const textarea: HTMLElement = fixture.nativeElement.querySelector('ion-textarea');
-    expect(textarea['value']).toMatch('test note');
-
-    const buttons: NodeList = fixture.nativeElement.querySelectorAll('ion-button');
-    expect(buttons.item(0).textContent).toMatch('Cancel');
-    expect(buttons.item(1).textContent).toMatch('Submit');
-    expect(buttons.item(2).textContent).toMatch('Delete');
+    const textarea: HTMLElement = fixture.nativeElement.querySelector('app-form-text-area');
+    expect(textarea.getAttribute('controlName')).toMatch('note');
+    const formButtons: HTMLElement = fixture.nativeElement.querySelector('app-form-buttons');
+    expect(formButtons).toBeTruthy();
+    const deleteButton: HTMLElement = fixture.nativeElement.querySelector('app-delete-button');
+    expect(deleteButton).toBeTruthy();
   });
 
-  test('should render template with note form error', (): void => {
-    noteFormPage.note = new FormControl(Array(501).fill('a').join(''), [Validators.maxLength(500)]);
-    noteFormPage.formMethod = 'update';
+  test('should render template with delete button removed', (): void => {
+    page.note = new FormControl('');
+    page.formMethod = 'create';
 
     fixture.detectChanges();
 
-    const formError: HTMLElement = fixture.nativeElement.querySelector('.form-error');
-    expect(formError.textContent).toMatch('Please limit notes to 500 characters');
+    const textarea: HTMLElement = fixture.nativeElement.querySelector('app-form-text-area');
+    expect(textarea.getAttribute('controlName')).toMatch('note');
+    const formButtons: HTMLElement = fixture.nativeElement.querySelector('app-form-buttons');
+    expect(formButtons).toBeTruthy();
+    const deleteButton: HTMLElement = fixture.nativeElement.querySelector('app-delete-button');
+    expect(deleteButton).toBeNull();
   });
 
 });

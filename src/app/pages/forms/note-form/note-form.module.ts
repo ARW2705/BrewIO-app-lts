@@ -1,11 +1,12 @@
 /* Module imports */
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { HeaderComponentModule } from '../../../components/header/header.module';
+import { FormButtonsComponentModule, FormTextAreaComponentModule } from '../../../components/form-elements/public';
+import { DeleteButtonComponentModule, HeaderComponentModule } from '../../../components/shared/public';
 
 /* Page imports */
 import { NoteFormPage } from './note-form.page';
@@ -14,10 +15,13 @@ import { NoteFormPage } from './note-form.page';
 @NgModule({
   imports: [
     CommonModule,
+    DeleteButtonComponentModule,
+    FormButtonsComponentModule,
+    FormTextAreaComponentModule,
     FormsModule,
-    ReactiveFormsModule,
+    HeaderComponentModule,
     IonicModule,
-    HeaderComponentModule
+    ReactiveFormsModule
   ],
   declarations: [
     NoteFormPage

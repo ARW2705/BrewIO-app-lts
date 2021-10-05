@@ -1,14 +1,17 @@
 /* Module imports */
 import { Component, Input, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
 import { FormControl, Validators } from '@angular/forms';
+import { ModalController } from '@ionic/angular';
+
+/* Constant imports */
+import { DESCRIPTION_MAX_LENGTH } from '../../../shared/constants';
 
 /* Service imports */
 import { UtilityService } from '../../../services/services';
 
 
 @Component({
-  selector: 'page-note-form',
+  selector: 'app-page-note-form',
   templateUrl: './note-form.page.html',
   styleUrls: ['./note-form.page.scss']
 })
@@ -31,7 +34,7 @@ export class NoteFormPage implements OnInit {
 
   ngOnInit() {
     this.title = `${this.utilService.toTitleCase(this.noteType)} Note`;
-    this.note = new FormControl(this.toUpdate, [Validators.maxLength(500)]);
+    this.note = new FormControl(this.toUpdate, [Validators.maxLength(DESCRIPTION_MAX_LENGTH)]);
   }
 
   /***** End Lifecycle Hooks *****/
@@ -42,7 +45,7 @@ export class NoteFormPage implements OnInit {
   /**
    * Call ModalController dismiss method with no additional data
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   dismiss(): void {
@@ -52,7 +55,7 @@ export class NoteFormPage implements OnInit {
   /**
    * Call ModalController dismiss method with deletion flag
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   onDelete(): void {
@@ -62,7 +65,7 @@ export class NoteFormPage implements OnInit {
   /**
    * Call ModalController dismiss method with form data
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   onSubmit(): void {
