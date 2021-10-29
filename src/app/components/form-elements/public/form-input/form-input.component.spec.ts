@@ -132,15 +132,19 @@ describe('FormInputComponent', (): void => {
     component.ionBlurEvent.emit = jest.fn();
     const blurSpy: jest.SpyInstance = jest.spyOn(component.ionBlurEvent, 'emit');
     component.checkForErrors = jest.fn();
+    component.rectifyInputType = jest.fn();
     const checkSpy: jest.SpyInstance = jest.spyOn(component, 'checkForErrors');
+    const recitfySpy: jest.SpyInstance = jest.spyOn(component, 'rectifyInputType');
     const event: CustomEvent = new CustomEvent('test');
     component.showError = true;
 
     fixture.detectChanges();
 
+    component.type = 'number';
     component.onInputBlur(event);
     expect(blurSpy).toHaveBeenCalledWith(event);
     expect(checkSpy).toHaveBeenCalled();
+    expect(recitfySpy).toHaveBeenCalled();
   });
 
   test('should handle input change event', (): void => {
@@ -148,8 +152,6 @@ describe('FormInputComponent', (): void => {
     const changeSpy: jest.SpyInstance = jest.spyOn(component.ionChangeEvent, 'emit');
     component.checkForErrors = jest.fn();
     const checkSpy: jest.SpyInstance = jest.spyOn(component, 'checkForErrors');
-    component.rectifyInputType = jest.fn();
-    const recitfySpy: jest.SpyInstance = jest.spyOn(component, 'rectifyInputType');
     const event: CustomEvent = new CustomEvent('test');
     component.showError = true;
 
@@ -161,7 +163,6 @@ describe('FormInputComponent', (): void => {
     expect(checkSpy).toHaveBeenCalled();
     component.type = 'number';
     component.onInputChange(event);
-    expect(recitfySpy).toHaveBeenCalled();
   });
 
   test('should rectify input type', (): void => {

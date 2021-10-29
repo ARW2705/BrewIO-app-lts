@@ -74,6 +74,9 @@ export class FormInputComponent implements OnChanges {
    */
   onInputBlur(event: CustomEvent): void {
     this.checkForErrors();
+    if (this.type.toLowerCase() === 'number') {
+      this.rectifyInputType();
+    }
     this.ionBlurEvent.emit(event);
   }
 
@@ -87,9 +90,6 @@ export class FormInputComponent implements OnChanges {
   onInputChange(event: CustomEvent): void {
     if (this.showError) {
       this.checkForErrors();
-    }
-    if (this.type.toLowerCase() === 'number') {
-      this.rectifyInputType();
     }
     this.ionChangeEvent.emit(event);
   }
