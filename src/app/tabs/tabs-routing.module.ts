@@ -28,14 +28,14 @@ const routes: Routes = [
           .then((m) => m.RecipeDetailPageModule)
       },
       {
+        path: 'recipe-form',
+        loadChildren: () => import('../components/recipe/public')
+          .then((m) => m.RecipeFormComponentModule)
+      },
+      {
         path: 'extras',
         loadChildren: () => import('../pages/extras/extras.module')
           .then((m) => m.ExtrasPageModule)
-      },
-      {
-        path: 'recipe-form',
-        loadChildren: () => import('../pages/forms/recipe-form/recipe-form.module')
-          .then((m) => m.RecipeFormPageModule)
       },
       {
         path: '',
