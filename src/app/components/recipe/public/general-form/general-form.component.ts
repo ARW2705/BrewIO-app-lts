@@ -5,24 +5,24 @@ import { ActivatedRoute } from '@angular/router';
 import { IonSelect, ModalController } from '@ionic/angular';
 
 /* Constant imports */
-import { DURATION_MAX, EFFICIENCY_MAX, NAME_MAX_LENGTH, NAME_MIN_LENGTH, VOLUME_MAX } from '../../../shared/constants';
+import { DURATION_MAX, EFFICIENCY_MAX, NAME_MAX_LENGTH, NAME_MIN_LENGTH, VOLUME_MAX } from '../../../../shared/constants';
 
 /* Default imports */
-import { defaultImage } from '../../../shared/defaults';
+import { defaultImage } from '../../../../shared/defaults';
 
 /* Interface imports */
-import { FormSelectOption, Image, SelectedUnits, Style } from '../../../shared/interfaces';
+import { FormSelectOption, Image, SelectedUnits, Style } from '../../../../shared/interfaces';
 
 /* Service imports */
-import { CalculationsService, PreferencesService, UtilityService } from '../../../services/services';
+import { CalculationsService, PreferencesService, UtilityService } from '../../../../services/services';
 
 
 @Component({
-  selector: 'app-page-general-form',
-  templateUrl: './general-form.page.html',
-  styleUrls: ['./general-form.page.scss']
+  selector: 'app-general-form',
+  templateUrl: './general-form.component.html',
+  styleUrls: ['./general-form.component.scss']
 })
-export class GeneralFormPage implements OnInit {
+export class GeneralFormComponent implements OnInit {
   @Input() docMethod: string;
   @Input() formType: string;
   @Input() styles: Style[];

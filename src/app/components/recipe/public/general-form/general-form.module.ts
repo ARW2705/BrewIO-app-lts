@@ -5,11 +5,11 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 /* Page imports */
-import { GeneralFormPage } from './general-form.page';
+import { GeneralFormComponent } from './general-form.component';
 
 /* Component imports */
-import { FormButtonsComponentModule, FormImageComponentModule, FormInputComponentModule, FormSelectComponentModule, FormToggleComponentModule } from '../../../components/form-elements/public';
-import { HeaderComponentModule } from '../../../components/shared/public';
+import { FormButtonsComponentModule, FormImageComponentModule, FormInputComponentModule, FormSelectComponentModule, FormToggleComponentModule } from '../../../form-elements/public';
+import { HeaderComponentModule } from '../../../shared/public';
 
 
 @NgModule({
@@ -25,6 +25,6 @@ import { HeaderComponentModule } from '../../../components/shared/public';
     IonicModule,
     HeaderComponentModule
   ],
-  declarations: [GeneralFormPage]
+  declarations: [GeneralFormComponent]
 })
-export class GeneralFormPageModule {}
+export class GeneralFormComponentModule {}

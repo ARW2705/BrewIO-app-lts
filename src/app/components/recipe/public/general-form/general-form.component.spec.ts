@@ -6,31 +6,31 @@ import { IonicModule, ModalController } from '@ionic/angular';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockEnglishUnits, mockMetricUnits, mockImage, mockStyles } from '../../../../../test-config/mock-models';
-import { CalculationsServiceStub, PreferencesServiceStub, UtilityServiceStub } from '../../../../../test-config/service-stubs';
-import { HeaderComponentStub } from '../../../../../test-config/component-stubs';
-import { ModalControllerStub } from '../../../../../test-config/ionic-stubs';
+import { mockEnglishUnits, mockMetricUnits, mockImage, mockStyles } from '../../../../../../test-config/mock-models';
+import { CalculationsServiceStub, PreferencesServiceStub, UtilityServiceStub } from '../../../../../../test-config/service-stubs';
+import { HeaderComponentStub } from '../../../../../../test-config/component-stubs';
+import { ModalControllerStub } from '../../../../../../test-config/ionic-stubs';
 
 /* Default imports */
-import { defaultImage } from '../../../shared/defaults';
+import { defaultImage } from '../../../../shared/defaults';
 
 /* Interface imports */
-import { FormSelectOption, Image, SelectedUnits, Style } from '../../../shared/interfaces';
+import { FormSelectOption, Image, SelectedUnits, Style } from '../../../../shared/interfaces';
 
 /* Service imports */
-import { CalculationsService, PreferencesService, UtilityService } from '../../../services/services';
+import { CalculationsService, PreferencesService, UtilityService } from '../../../../services/services';
 
 /* Page imports */
-import { GeneralFormPage } from './general-form.page';
+import { GeneralFormComponent } from './general-form.component';
 
 
-describe('GeneralFormPage', (): void => {
+describe('GeneralFormComponent', (): void => {
   configureTestBed();
-  let fixture: ComponentFixture<GeneralFormPage>;
-  let page: GeneralFormPage;
+  let fixture: ComponentFixture<GeneralFormComponent>;
+  let page: GeneralFormComponent;
   let originalOnInit: any;
   const initDefaultForm: (isMaster: boolean) => FormGroup = (isMaster: boolean): FormGroup => {
     const form: FormGroup = new FormGroup({
@@ -56,7 +56,7 @@ describe('GeneralFormPage', (): void => {
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
       declarations: [
-        GeneralFormPage,
+        GeneralFormComponent,
         HeaderComponentStub,
       ],
       imports: [
@@ -78,7 +78,7 @@ describe('GeneralFormPage', (): void => {
   .catch(done.fail));
 
   beforeEach((): void => {
-    fixture = TestBed.createComponent(GeneralFormPage);
+    fixture = TestBed.createComponent(GeneralFormComponent);
     page = fixture.componentInstance;
     originalOnInit = page.ngOnInit;
     page.ngOnInit = jest.fn();
