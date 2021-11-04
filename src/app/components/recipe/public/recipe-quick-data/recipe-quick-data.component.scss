@@ -1,3 +1,7 @@
+:host {
+  width: 100%;
+}
+
 #calculated-values {
   /* Display */
   margin-bottom: 15px;
@@ -5,11 +9,22 @@
   /* Children */
   ion-col {
     /* Text */
-    font-size: 1rem;
+    font-size: 1.2rem;
   }
 
   ion-grid {
     /* Display */
     padding: 0;
+  }
+}
+
+#values-header {
+  /* Display */
+  width: 100%;
+  border-bottom: 1px solid var(--ion-color-light);
+
+  /* Children */
+  ion-col {
+    font-size: 1.5rem;
   }
 }

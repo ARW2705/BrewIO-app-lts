@@ -1,6 +1,16 @@
 <div  *ngIf="variant && style"
       id="calculated-values">
   <ion-grid>
+    <ion-row>
+      <ion-row id="values-header">
+        <ion-col class="col-left col-header">
+          Recipe
+        </ion-col>
+        <ion-col class="col-right col-header">
+          Style
+        </ion-col>
+      </ion-row>
+    </ion-row>
     <!-- Original Gravity -->
     <ion-row>
       <!-- Calculated original gravity -->
