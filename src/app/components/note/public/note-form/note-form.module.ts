@@ -5,11 +5,11 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { FormButtonsComponentModule, FormTextAreaComponentModule } from '../../../components/form-elements/public';
-import { DeleteButtonComponentModule, HeaderComponentModule } from '../../../components/shared/public';
+import { FormButtonsComponentModule, FormTextAreaComponentModule } from '../../../form-elements/public';
+import { DeleteButtonComponentModule, HeaderComponentModule } from '../../../shared/public';
 
 /* Page imports */
-import { NoteFormPage } from './note-form.page';
+import { NoteFormComponent } from './note-form.component';
 
 
 @NgModule({
@@ -24,7 +24,7 @@ import { NoteFormPage } from './note-form.page';
     ReactiveFormsModule
   ],
   declarations: [
-    NoteFormPage
+    NoteFormComponent
   ]
 })
-export class NoteFormPageModule {}
+export class NoteFormComponentModule {}

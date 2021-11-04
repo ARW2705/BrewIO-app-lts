@@ -4,18 +4,18 @@ import { FormControl, Validators } from '@angular/forms';
 import { ModalController } from '@ionic/angular';
 
 /* Constant imports */
-import { DESCRIPTION_MAX_LENGTH } from '../../../shared/constants';
+import { DESCRIPTION_MAX_LENGTH } from '../../../../shared/constants';
 
 /* Service imports */
-import { UtilityService } from '../../../services/services';
+import { UtilityService } from '../../../../services/services';
 
 
 @Component({
-  selector: 'app-page-note-form',
-  templateUrl: './note-form.page.html',
-  styleUrls: ['./note-form.page.scss']
+  selector: 'app-note-form',
+  templateUrl: './note-form.component.html',
+  styleUrls: ['./note-form.component.scss']
 })
-export class NoteFormPage implements OnInit {
+export class NoteFormComponent implements OnInit {
   @Input() formMethod: string;
   @Input() noteType: string;
   @Input() toUpdate: string;

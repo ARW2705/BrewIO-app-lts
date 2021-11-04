@@ -1,0 +1,16 @@
+<ion-grid class="ion-no-padding">
+  <ion-row>
+    <ion-button color="primary"
+                (click)="openNoteModal()"
+                class="form-button"
+                [disabled]="isAddButtonDisabled">
+      ADD {{ noteType === 'master' ? 'RECIPE': 'VARIANT' }} NOTE
+    </ion-button>
+  </ion-row>
+  <ion-row>
+    <app-note-list  (openNoteModalEvent)="openNoteModal($event)"
+                    [noteType]="noteType"
+                    [notes]="notes">
+    </app-note-list>
+  </ion-row>
+</ion-grid>
