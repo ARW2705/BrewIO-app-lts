@@ -64,7 +64,7 @@ export class OtherIngredientsFormComponent implements AfterViewInit, OnDestroy, 
    * @params: none
    * @return: formatted form values object
    */
-  getFormResult(): object {
+  getFormResult(): OtherIngredients {
     const formValues: object = this.otherIngredientsForm.value;
     return {
       description: formValues['description'],
