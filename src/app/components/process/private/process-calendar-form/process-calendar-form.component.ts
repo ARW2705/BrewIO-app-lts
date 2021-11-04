@@ -47,13 +47,15 @@ export class ProcessCalendarFormComponent implements AfterViewInit, OnInit {
   }
 
   /**
-   * Get the timer form's values
+   * Get the calendar form's values
    *
    * @param: none
-   * @return: timer form values as object
+   * @return: calendar form values as object
    */
-  getFormResult(): object {
-    return this.calendarForm.value;
+  getFormResult(): CalendarProcess {
+    const formResult: object = this.calendarForm.value;
+    Object.assign(formResult, { type: 'calendar' });
+    return <CalendarProcess>formResult;
   }
 
   /**
