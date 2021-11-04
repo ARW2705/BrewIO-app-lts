@@ -47,13 +47,15 @@ export class ProcessManualFormComponent implements AfterViewInit, OnInit {
   }
 
   /**
-   * Get the timer form's values
+   * Get the manual form's values
    *
    * @param: none
-   * @return: timer form values as object
+   * @return: manual form values as object
    */
-  getFormResult(): object {
-    return this.manualForm.value;
+  getFormResult(): ManualProcess {
+    const formResult: object = this.manualForm.value;
+    Object.assign(formResult, { type: 'manual' });
+    return <ManualProcess>formResult;
   }
 
   /**
