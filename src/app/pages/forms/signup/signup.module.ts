@@ -1,25 +1,28 @@
 /* Module imports */
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
+/* Component imports */
+import { FormButtonsComponentModule, FormCheckboxComponentModule, FormImageComponentModule, FormInputComponentModule } from '../../../components/form-elements/public';
+import { HeaderComponentModule } from '../../../components/shared/public';
+
 /* Page imports */
 import { SignupPage } from './signup.page';
-
-/* Component imports */
-import { HeaderComponentModule } from '../../../components/header/header.module';
-import { FormErrorComponentModule } from '../../../components/form-error/form-error.module';
 
 
 @NgModule({
   imports: [
     CommonModule,
+    FormButtonsComponentModule,
+    FormCheckboxComponentModule,
+    FormImageComponentModule,
+    FormInputComponentModule,
     FormsModule,
-    ReactiveFormsModule,
-    IonicModule,
     HeaderComponentModule,
-    FormErrorComponentModule
+    IonicModule,
+    ReactiveFormsModule
   ],
   declarations: [
     SignupPage

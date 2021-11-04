@@ -1,9 +1,11 @@
 /* Module imports */
 import { Component, Input, OnInit } from '@angular/core';
-import { LoadingController, ModalController } from '@ionic/angular';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { from } from 'rxjs';
+import { ModalController } from '@ionic/angular';
 import { finalize } from 'rxjs/operators';
+
+/* Constant imports */
+import { NAME_MAX_LENGTH, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, USERNAME_MAX_LENGTH, USERNAME_MIN_LENGTH } from '../../../shared/constants';
 
 /* Default imports */
 import { defaultImage } from '../../../shared/defaults';
@@ -11,11 +13,8 @@ import { defaultImage } from '../../../shared/defaults';
 /* Interface imports */
 import { Image, User } from '../../../shared/interfaces';
 
-/* Page */
-import { ImageFormPage } from '../image-form/image-form.page';
-
 /* Service imports */
-import { ErrorReportingService, FormValidationService, ImageService, ToastService, UserService } from '../../../services/services';
+import { ErrorReportingService, FormValidationService, LoadingService, ToastService, UserService } from '../../../services/services';
 
 
 @Component({
@@ -28,16 +27,15 @@ export class SignupPage implements OnInit {
   awaitingResponse: boolean = false;
   defaultImage: Image = defaultImage();
   breweryLabelImage: Image = this.defaultImage;
-  userImage: Image = this.defaultImage;
-  showPassword: boolean = false;
+  passwordType: string = 'password';
   signupForm: FormGroup = null;
+  userImage: Image = this.defaultImage;
 
   constructor(
     public formBuilder: FormBuilder,
     public errorReporter: ErrorReportingService,
     public formValidator: FormValidationService,
-    public imageService: ImageService,
-    public loadingCtrl: LoadingController,
+    public loadingService: LoadingService,
     public modalCtrl: ModalController,
     public toastService: ToastService,
     public userService: UserService
@@ -73,101 +71,30 @@ export class SignupPage implements OnInit {
    */
   initForm(): void {
     this.signupForm = this.formBuilder.group({
-      username: [
-        '',
-        [
-          Validators.minLength(6),
-          Validators.maxLength(20),
-          Validators.required
-        ]
-      ],
-      password: [
-        '',
-        [
-          Validators.minLength(12),
-          Validators.maxLength(30),
-          Validators.required,
-          this.formValidator.passwordPattern()
-        ]
-      ],
-      passwordConfirmation: ['', [Validators.required]],
-      email: ['', [Validators.email, Validators.required]],
-      firstname: ['', [Validators.maxLength(50)]],
-      lastname: ['', [Validators.maxLength(50)]]
+      username            : ['', [Validators.minLength(USERNAME_MIN_LENGTH), Validators.maxLength(USERNAME_MAX_LENGTH), Validators.required]                                      ],
+      password            : ['', [Validators.minLength(PASSWORD_MIN_LENGTH), Validators.maxLength(PASSWORD_MAX_LENGTH), Validators.required, this.formValidator.passwordPattern()]],
+      passwordConfirmation: ['', [Validators.required]                                                                                                                            ],
+      email               : ['', [Validators.email, Validators.required]                                                                                                          ],
+      firstname           : ['', [Validators.maxLength(NAME_MAX_LENGTH)]                                                                                                          ],
+      lastname            : ['', [Validators.maxLength(NAME_MAX_LENGTH)]                                                                                                          ]
     }, {
       validator: this.formValidator.passwordMatch()
     });
   }
 
   /**
-   * Generate options for image modal
+   * Handle result from form-image modal
    *
-   * @params: imageType - the image type as either 'user' or 'brewery'
-   *
-   * @return: options object
-   */
-  getImageModalOptions(imageType: string): object {
-    let options: { image: Image } = null;
-    if (imageType === 'user' && !this.imageService.hasDefaultImage(this.userImage)) {
-      options = { image: this.userImage };
-    } else if (imageType === 'brewery' && !this.imageService.hasDefaultImage(this.breweryLabelImage)) {
-      options = { image: this.breweryLabelImage };
-    }
-    return options;
-  }
-
-  /**
-   * Get image modal error handler
-   *
-   * @params: none
-   *
-   * @return: error handler function
-   */
-  onImageModalError(): (error: string) => void {
-    return (error: string): void => {
-      console.log('modal dismiss error', error);
-      this.toastService.presentErrorToast('Error selecting image');
-    };
-  }
-
-  /**
-   * Get image modal error handler
-   *
-   * @params: none
-   *
-   * @return: error handler function
-   */
-  onImageModalSuccess(imageType: string): (data: object) => void {
-    return (data: object): void => {
-      const _data: Image = data['data'];
-      if (imageType === 'user' && _data) {
-        this.userImage = _data;
-      } else if (imageType === 'brewery' && _data) {
-        this.breweryLabelImage = _data;
-      }
-    };
-  }
-
-  /**
-   * Open image selection modal
-   *
-   * @params: imageType - identifies image as either userImage or breweryLabelImage
-   *
+   * @param: image - the returned image
+   * @param: imageType - identifier to determine which image should be updated
    * @return: none
    */
-  async openImageModal(imageType: string): Promise<void> {
-    const modal: HTMLIonModalElement = await this.modalCtrl.create({
-      component: ImageFormPage,
-      componentProps: this.getImageModalOptions(imageType)
-    });
-
-    from(modal.onDidDismiss())
-      .subscribe(
-        this.onImageModalSuccess(imageType),
-        this.onImageModalError()
-      );
-
-    await modal.present();
+  imageModalDismiss(image: Image, imageType: string): void {
+    if (imageType === 'userImage' && image) {
+      this.userImage = image;
+    } else if (imageType === 'breweryLabelImage' && image) {
+      this.breweryLabelImage = image;
+    }
   }
 
   /**
@@ -179,13 +106,7 @@ export class SignupPage implements OnInit {
   async onSubmit(): Promise<void> {
     this.awaitingResponse = true;
 
-    const loading: HTMLIonLoadingElement = await this.loadingCtrl.create({
-      cssClass: 'loading-custom',
-      spinner: 'lines'
-    });
-
-    await loading.present();
-
+    const loading: HTMLIonLoadingElement = await this.loadingService.createLoader();
     const newUser: object = this.signupForm.value;
     newUser['userImage'] = this.userImage;
     newUser['breweryLabelImage'] = this.breweryLabelImage;
@@ -197,7 +118,12 @@ export class SignupPage implements OnInit {
       }))
       .subscribe(
         (): void => {
-          this.toastService.presentToast('Sign up complete!', 1500, 'middle', 'toast-bright');
+          this.toastService.presentToast(
+            'Sign up complete!',
+            this.toastService.mediumDuration,
+            'middle',
+            'toast-bright'
+          );
           this.dismiss();
         },
         (error: any): void => this.errorReporter.handleUnhandledError(error)
@@ -207,11 +133,15 @@ export class SignupPage implements OnInit {
   /**
    * Toggle whether password is in plain text or hidden
    *
-   * @params: none
+   * @params: showPassword - true if password input type should be 'text'; false for 'password'
    * @return: none
    */
-  togglePasswordVisible(): void {
-    this.showPassword = !this.showPassword;
+  togglePasswordVisible(showPassword: boolean): void {
+    if (showPassword) {
+      this.passwordType = 'text';
+    } else {
+      this.passwordType = 'password';
+    }
   }
 
 }
