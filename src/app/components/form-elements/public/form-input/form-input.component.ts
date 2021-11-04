@@ -103,9 +103,11 @@ export class FormInputComponent implements OnChanges {
    * @return: none
    */
   rectifyInputType(): void {
-    const parsed: number = parseFloat(this.control.value.toString());
-    if (!isNaN(parsed)) {
-      this.control.setValue(parsed);
+    if (this.control.value) {
+      const parsed: number = parseFloat(this.control.value.toString());
+      if (!isNaN(parsed)) {
+        this.control.setValue(parsed);
+      }
     }
   }
 
