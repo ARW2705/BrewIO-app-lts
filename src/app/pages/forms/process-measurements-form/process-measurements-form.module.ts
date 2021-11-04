@@ -1,12 +1,12 @@
 /* Module imports */
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { HeaderComponentModule } from '../../../components/header/header.module';
-import { FormErrorComponentModule } from '../../../components/form-error/form-error.module';
+import { FormButtonsComponentModule, FormInputComponentModule } from '../../../components/form-elements/public';
+import { HeaderComponentModule } from '../../../components/shared/public';
 
 /* Page imports */
 import { ProcessMeasurementsFormPage } from './process-measurements-form.page';
@@ -16,10 +16,11 @@ import { ProcessMeasurementsFormPage } from './process-measurements-form.page';
   imports: [
     CommonModule,
     FormsModule,
+    FormButtonsComponentModule,
+    FormInputComponentModule,
     ReactiveFormsModule,
     IonicModule,
-    HeaderComponentModule,
-    FormErrorComponentModule
+    HeaderComponentModule
   ],
   declarations: [
     ProcessMeasurementsFormPage

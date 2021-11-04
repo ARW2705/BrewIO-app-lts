@@ -1,7 +1,7 @@
 /* Module imports */
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { LoadingController, ModalController } from '@ionic/angular';
 import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { LoadingController, ModalController } from '@ionic/angular';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -13,7 +13,7 @@ import { CalculationsService, FormValidationService, PreferencesService, Utility
 
 
 @Component({
-  selector: 'page-process-measurements-form',
+  selector: 'app-page-process-measurements-form',
   templateUrl: './process-measurements-form.page.html',
   styleUrls: ['./process-measurements-form.page.scss']
 })
@@ -163,8 +163,7 @@ export class ProcessMeasurementsFormPage implements OnInit, OnDestroy {
    */
   formatVolumeValues(formValues: object): void {
     if (this.requiresVolumeConversion) {
-      formValues['batchVolume'] = this.calculator
-        .convertVolume(formValues['batchVolume'], true, true);
+      formValues['batchVolume'] = this.calculator.convertVolume(formValues['batchVolume'], true, true);
     }
   }
 
