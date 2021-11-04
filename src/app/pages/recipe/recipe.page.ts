@@ -9,7 +9,7 @@ import { finalize, map, takeUntil } from 'rxjs/operators';
 import { RecipeMaster, RecipeVariant } from '../../shared/interfaces';
 
 /* Component imports */
-import { RecipeSliderComponent } from '../../components/recipe-slider/recipe-slider.component';
+import { RecipeSliderComponent } from '../../components/recipe/public';
 
 /* Page imports */
 import { ConfirmationPage } from '../confirmation/confirmation.page';
