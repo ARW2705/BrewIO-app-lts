@@ -85,7 +85,7 @@ export class HopsFormComponent implements AfterViewInit, OnDestroy, OnInit {
    * @params: none
    * @return: formatted form values object
    */
-  getFormResult(): object {
+  getFormResult(): HopsSchedule {
     const formValues: object = this.hopsForm.value;
     let quantity: number = formValues['quantity'] || 0;
     if (this.requiresConversionSmall) {
