@@ -1,15 +1,14 @@
 /* Module imports */
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { AccordionComponentModule } from '../../components/accordion/accordion.module';
-import { HeaderComponentModule } from '../../components/header/header.module';
-import { IngredientListComponentModule } from '../../components/ingredient-list/ingredient-list.module';
-import { NoteListComponentModule } from '../../components/note-list/note-list.module';
+import { IngredientListComponentModule } from '../../components/ingredient/public';
+import { NoteContainerComponentModule } from '../../components/note/public';
+import { AccordionComponentModule, HeaderComponentModule } from '../../components/shared/public';
 
 /* Page imports */
 import { ConfirmationPageModule } from '../confirmation/confirmation.module';
@@ -27,11 +26,11 @@ import { RoundPipeModule, TruncatePipeModule, UnitConversionPipeModule } from '.
     RoundPipeModule,
     TruncatePipeModule,
     UnitConversionPipeModule,
+    NoteContainerComponentModule,
     HeaderComponentModule,
     AccordionComponentModule,
     ConfirmationPageModule,
     IngredientListComponentModule,
-    NoteListComponentModule,
     RouterModule.forChild([{path: '', component: RecipeDetailPage}])
   ],
   declarations: [

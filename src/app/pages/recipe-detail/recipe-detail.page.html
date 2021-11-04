@@ -31,7 +31,7 @@
         <ion-button color="primary"
                     (click)="navToRecipeForm('master')"
                     class="form-button">
-          Update Shared Values
+          UPDATE SHARED VALUES
         </ion-button>
 
       </ion-row>
@@ -42,7 +42,7 @@
         <ion-button color="primary"
                     (click)="navToRecipeForm('variant')"
                     class="form-button">
-          Add New Variant
+          ADD NEW VARIANT
         </ion-button>
 
       </ion-row>
@@ -59,7 +59,7 @@
             <ion-button color="primary"
                         (click)="expandNote()"
                         class="form-button">
-              Shared Notes
+              {{ showNotes ? "HIDE" : "EXPAND" }} SHARED NOTES
             </ion-button>
 
           </ion-row>
@@ -72,24 +72,11 @@
           <app-accordion  [expanded]="showNotes"
                           #noteContainerScrollLandmark>
 
-            <div  *ngIf="!recipeMaster.notes.length"
-                  id="empty-notes">
-
-              <span>Notes Empty</span>
-
-              <ion-button color="primary"
-                          (click)="navToRecipeForm('master')"
-                          class="form-button">
-                Add A Note
-              </ion-button>
-
-            </div>
-
-            <app-note-list  *ngIf="recipeMaster.notes.length"
-                            [recipeMasterId]="recipeMaster.cid"
-                            [notes]="recipeMaster.notes"
-                            #noteList>
-            </app-note-list>
+            <app-note-container (noteUpdateEvent)="onNoteUpdate($event)"
+                                [isAddButtonDisabled]="false"
+                                noteType="master"
+                                [notes]="recipeMaster.notes">
+            </app-note-container>
 
           </app-accordion>
 

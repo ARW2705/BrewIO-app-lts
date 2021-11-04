@@ -12,7 +12,7 @@ import { RecipeMaster, RecipeVariant } from '../../shared/interfaces';
 import { CustomError } from '../../shared/types';
 
 /* Component imports */
-import { AccordionComponent } from '../../components/accordion/accordion.component';
+import { AccordionComponent } from '../../components/shared/public';
 
 /* Page imports */
 import { ConfirmationPage } from '../confirmation/confirmation.page';
@@ -269,6 +269,20 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
         1000
       );
     }
+  }
+
+  /**
+   * Handle notes update event
+   *
+   * @param: notesUpdate - the current notes array to apply
+   * @return: none
+   */
+  onNoteUpdate(notesUpdate: string[]): void {
+    this.recipeService.updateRecipeMasterById(this.recipeMasterId, { notes: notesUpdate })
+      .subscribe(
+        (): void => {}, // no further actions required
+        (error: Error): void => this.errorReporter.handleUnhandledError(error)
+      );
   }
 
   /***** End notes *****/
