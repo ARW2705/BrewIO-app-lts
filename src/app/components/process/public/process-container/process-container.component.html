@@ -1,0 +1,17 @@
+<ion-grid class="ion-no-padding">
+  <!-- Add process step button -->
+  <ion-row>
+    <ion-button color="primary"
+                (click)="openProcessActionSheet()"
+                class="form-button"
+                [disabled]="isAddButtonDisabled">
+      ADD PROCESS
+    </ion-button>
+  </ion-row>
+  <ion-row *ngIf="variant.processSchedule.length">
+    <app-process-list (openProcessModalEvent)="openProcessModalHelper($event)"
+                      (reorderEvent)="onReorder($event)"
+                      [schedule]="variant.processSchedule">
+    </app-process-list>
+  </ion-row>
+</ion-grid>
