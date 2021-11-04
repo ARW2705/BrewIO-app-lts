@@ -1,0 +1,41 @@
+<app-header [title]="title"
+            [overrideBackButton]="onBackClick">
+</app-header>
+
+<ion-content class="sub-page">
+
+  <p class="form-info required">Required fields</p>
+  <!-- Calendar Step Form -->
+  <app-process-calendar-form  *ngIf="processType === 'calendar'"
+                              #form
+                              (formStatusEvent)="setFormValidity($event)"
+                              [update]="update">
+  </app-process-calendar-form>
+  <!-- Manual Step Form -->
+  <app-process-manual-form  *ngIf="processType === 'manual'"
+                            #form
+                            (formStatusEvent)="setFormValidity($event)"
+                            [update]="update">
+  </app-process-manual-form>
+  <!-- Timer Step Form -->
+  <app-process-timer-form *ngIf="processType === 'timer'"
+                          #form
+                          (formStatusEvent)="setFormValidity($event)"
+                          [update]="update">
+  </app-process-timer-form>
+  <!-- Form and Delete Buttons -->
+  <ion-grid class="ion-no-padding">
+    <ion-row>
+      <app-form-buttons (cancelEvent)="dismiss()"
+                        (submitEvent)="onSubmit()"
+                        [isSubmitDisabled]="!isFormValid">
+      </app-form-buttons>
+    </ion-row>
+    <ion-row>
+      <app-delete-button  *ngIf="formType === 'update'"
+                          (deleteEvent)="onDeletion()">
+      </app-delete-button>
+    </ion-row>
+  </ion-grid>
+
+</ion-content>
