@@ -12,7 +12,7 @@ import { Alert, Batch, BatchProcess, PrimaryValues, Process, TimerProcess } from
 import { CustomError } from '../../shared/types';
 
 /* Component imports */
-import { ProcessCalendarComponent } from '../../components/process-calendar/process-calendar.component';
+import { ProcessCalendarComponent } from '../../components/process/public';
 
 /* Page imports */
 import { ProcessMeasurementsFormPage } from '../forms/process-measurements-form/process-measurements-form.page';

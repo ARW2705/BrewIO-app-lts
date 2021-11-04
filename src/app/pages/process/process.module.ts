@@ -1,19 +1,16 @@
 /* Module imports */
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { HeaderComponentModule } from '../../components/header/header.module';
-import { ProcessCalendarComponentModule } from '../../components/process-calendar/process-calendar.module';
-import { ProcessControlsComponentModule } from '../../components/process-controls/process-controls.module';
-import { ProcessManualComponentModule } from '../../components/process-manual/process-manual.module';
-import { ProcessTimerComponentModule } from '../../components/process-timer/process-timer.module';
+import { ProcessCalendarComponentModule, ProcessControlsComponentModule, ProcessManualComponentModule, ProcessTimerComponentModule } from '../../components/process/public';
+import { HeaderComponentModule } from '../../components/shared/public';
 
 /* Page imports */
-import { ProcessPage } from './process.page';
 import { ProcessMeasurementsFormPageModule } from '../forms/process-measurements-form/process-measurements-form.module';
+import { ProcessPage } from './process.page';
 
 
 @NgModule({
