@@ -22,7 +22,7 @@ import { ToastService } from '../../services/toast/toast.service';
 import { UserService } from '../../services/user/user.service';
 
 /* Component imports */
-import { AccordionComponent } from '../../components/accordion/accordion.component';
+import { AccordionComponent } from '../../components/components';
 
 /* Page imports */
 import { HomePage } from './home.page';
