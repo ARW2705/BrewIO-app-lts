@@ -1,0 +1,54 @@
+<app-header [title]="title"
+            [overrideBackButton]="onBackClick">
+</app-header>
+
+<ion-content class="sub-page">
+
+  <p class="form-info required">Required fields</p>
+  <!-- Grain Form -->
+  <app-grain-form *ngIf="ingredientType === 'grains'"
+                  #form
+                  (formStatusEvent)="setFormValidity($event)"
+                  [grainFormOptions]="ingredientOptions"
+                  [units]="units"
+                  [update]="update">
+  </app-grain-form>
+  <!-- Hops Form -->
+  <app-hops-form  *ngIf="ingredientType === 'hops'"
+                  #form
+                  (formStatusEvent)="setFormValidity($event)"
+                  [hopsFormOptions]="ingredientOptions"
+                  [units]="units"
+                  [update]="update">
+  </app-hops-form>
+  <!-- Yeast Form -->
+  <app-yeast-form *ngIf="ingredientType === 'yeast'"
+                  #form
+                  (formStatusEvent)="setFormValidity($event)"
+                  [yeastFormOptions]="ingredientOptions"
+                  [units]="units"
+                  [update]="update">
+  </app-yeast-form>
+  <!-- Other Ingredients Form -->
+  <app-other-ingredients-form *ngIf="ingredientType === 'otherIngredients'"
+                              #form
+                              (formStatusEvent)="setFormValidity($event)"
+                              [units]="units"
+                              [update]="update">
+  </app-other-ingredients-form>
+  <!-- Form and Delete Buttons -->
+  <ion-grid>
+    <ion-row>
+      <app-form-buttons (cancelEvent)="dismiss()"
+                        (submitEvent)="onSubmit()"
+                        [isSubmitDisabled]="!isFormValid">
+      </app-form-buttons>
+    </ion-row>
+    <ion-row>
+      <app-delete-button  *ngIf="formType === 'update'"
+                          (deleteEvent)="onDeletion()">
+      </app-delete-button>
+    </ion-row>
+  </ion-grid>
+
+</ion-content>
