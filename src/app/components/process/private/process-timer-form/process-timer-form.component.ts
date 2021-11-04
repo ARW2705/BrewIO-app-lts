@@ -54,8 +54,10 @@ export class ProcessTimerFormComponent implements AfterViewInit, OnInit {
    * @param: none
    * @return: timer form values as object
    */
-  getFormResult(): object {
-    return this.timerForm.value;
+  getFormResult(): TimerProcess {
+    const formResult: object = this.timerForm.value;
+    Object.assign(formResult, { type: 'timer' });
+    return <TimerProcess>formResult;
   }
 
   /**
