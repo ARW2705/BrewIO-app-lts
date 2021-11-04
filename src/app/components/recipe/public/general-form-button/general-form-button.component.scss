@@ -1,0 +1,27 @@
+:host {
+  width: 100%;
+}
+
+button {
+  /* Display */
+  width: 100%;
+  border-radius: 10px;
+  box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.6);
+  -webkit-box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.6);
+
+  /* Color */
+  background-color: var(--ion-color-primary);
+
+  /* Children */
+  ion-row {
+    padding: 5px 0;
+  }
+
+  ion-row:first-child {
+    font-size: 1.75rem;
+  }
+
+  ion-row:last-child {
+    font-size: 1.35rem;
+  }
+}
