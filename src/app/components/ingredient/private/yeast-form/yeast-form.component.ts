@@ -71,7 +71,7 @@ export class YeastFormComponent implements AfterViewInit, OnDestroy, OnInit {
    * @params: none
    * @return: formatted form values object
    */
-  getFormResult(): object {
+  getFormResult(): YeastBatch {
     const formValues: object = this.yeastForm.value;
     return {
       quantity       : formValues['quantity'] || 0,
