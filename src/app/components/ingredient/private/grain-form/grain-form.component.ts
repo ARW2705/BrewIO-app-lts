@@ -54,6 +54,7 @@ export class GrainFormComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   ngAfterViewInit(): void {
+    console.log('listening for grain form changes');
     this.grainForm.statusChanges
       .pipe(takeUntil(this.destroy$))
       .subscribe((status: string): void => this.formStatusEvent.emit(status === 'VALID'));
@@ -115,7 +116,7 @@ export class GrainFormComponent implements AfterViewInit, OnDestroy, OnInit {
    * @params: none
    * @return: formatted form values object
    */
-  getFormResult(): object {
+  getFormResult(): GrainBill {
     const formValues: object = this.grainForm.value;
     return {
       grainType: formValues['type'],
