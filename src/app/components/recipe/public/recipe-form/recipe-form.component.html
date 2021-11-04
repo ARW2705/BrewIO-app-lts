@@ -1,0 +1,62 @@
+<app-header [title]="title"
+            [rootURL]="previousRoute">
+</app-header>
+
+<ion-content [scrollEvents]="true">
+  <ng-container *ngIf="isLoaded">
+    <ion-grid id="form-container">
+
+      <ion-row>
+        <app-general-form-button  (generalFormEvent)="handleGeneralFormEvent($event)"
+                                  [formType]="formType"
+                                  [docMethod]="docMethod"
+                                  [isGeneralFormComplete]="isGeneralFormComplete"
+                                  [master]="master"
+                                  [variant]="variant">
+        </app-general-form-button>
+      </ion-row>
+
+      <ion-row>
+        <app-recipe-quick-data  [variant]="variant"
+                                [style]="master.style">
+        </app-recipe-quick-data>
+      </ion-row>
+
+      <ion-row>
+        <app-ingredients-container  *ngIf="!(formType === 'master' && docMethod === 'update')"
+                                    (ingredientUpdateEvent)="handleIngredientUpdate($event)"
+                                    [isAddButtonDisabled]="!isGeneralFormComplete"
+                                    [variant]="variant"
+                                    [refresh]="refreshIngredients">
+        </app-ingredients-container>
+      </ion-row>
+
+      <ion-row>
+        <app-process-container  *ngIf="!(formType === 'master' && docMethod === 'update')"
+                                (processUpdateEvent)="handleProcessUpdate($event)"
+                                (reorderEvent)="onReorder($event)"
+                                [isAddButtonDisabled]="!isGeneralFormComplete"
+                                [variant]="variant">
+        </app-process-container>
+      </ion-row>
+
+      <ion-row>
+        <app-note-container (noteUpdateEvent)="handleNoteUpdate($event)"
+                            [isAddButtonDisabled]="!isGeneralFormComplete"
+                            [noteType]="formType"
+                            [notes]="formType === 'master'? master.notes : variant.notes">
+        </app-note-container>
+      </ion-row>
+
+      <ion-row>
+        <ion-button color="primary"
+                    (click)="onSubmit()"
+                    class="form-button"
+                    [disabled]="!isGeneralFormComplete">
+          SAVE
+        </ion-button>
+      </ion-row>
+
+    </ion-grid>
+  </ng-container>
+</ion-content>
