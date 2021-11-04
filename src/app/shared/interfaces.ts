@@ -33,6 +33,8 @@ export { ImageRequestFormData } from './interfaces/image-request-formdata.interf
 export { ImageRequestMetadata } from './interfaces/image-request-metadata.interface';
 export { Image } from './interfaces/image.interface';
 export { Ingredient } from './interfaces/ingredient.interface';
+export { IngredientUpdate } from './interfaces/ingredient-update.interface';
+export { IngredientUpdateEvent } from './interfaces/ingredient-update-event.interface';
 export { InventoryItem } from './interfaces/inventory-item.interface';
 export { LibraryStorage } from './interfaces/library.interface';
 export { LoginCredentials } from './interfaces/login-credentials.interface';
@@ -42,6 +44,8 @@ export { OtherIngredients } from './interfaces/other-ingredients.interface';
 export { PrimaryValues } from './interfaces/primary-values.interface';
 export { Process } from './interfaces/process.interface';
 export { ProgressCircleSettings } from './interfaces/progress-circle.interface';
+export { ProcessUpdate } from './interfaces/process-update.interface';
+export { ProcessUpdateEvent } from './interfaces/process-update-event.interface';
 export { RecipeMaster } from './interfaces/recipe-master.interface';
 export { RecipeVariant } from './interfaces/recipe-variant.interface';
 export { SelectedUnits } from './interfaces/selected-units.interface';

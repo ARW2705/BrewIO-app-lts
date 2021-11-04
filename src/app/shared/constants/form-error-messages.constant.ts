@@ -126,6 +126,14 @@ export const FORM_ERROR_MESSAGES: object = {
       min: 'Please enter a non-negative SRM'
     }
   },
+  login: {
+    username: {
+      required: 'Please enter a username'
+    },
+    password: {
+      required: 'Please enter a password'
+    }
+  },
   process: {
     name: {
       required: 'Please enter a step name',
