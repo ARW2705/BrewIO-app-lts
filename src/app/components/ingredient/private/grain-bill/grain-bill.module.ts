@@ -4,7 +4,7 @@ import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { GrainBillItemComponentModule } from '../../private/grain-bill-item/grain-bill-item.module';
+import { GrainBillItemComponentModule } from '../grain-bill-item/grain-bill-item.module';
 import { GrainBillComponent } from './grain-bill.component';
 
 
