@@ -1540,15 +1540,19 @@ export class RecipeService {
    */
   isSafeRecipeMaster(recipe: any): boolean {
     if (!this.typeGuard.hasValidProperties(recipe, RecipeMasterGuardMetadata)) {
+      console.error('recipe master base properties are invalid', recipe);
       return false;
     }
     if (recipe.labelImage && !this.imageService.isSafeImage(recipe.labelImage)) {
+      console.error('recipe master label image is invalid', recipe.labelImage);
       return false;
     }
     if (!this.libraryService.isSafeStyle(recipe.style)) {
+      console.error('recipe master style is invalid', recipe.style);
       return false;
     }
     if (!recipe.variants.every((variant: RecipeVariant): boolean => this.isSafeRecipeVariant(variant))) {
+      console.error('recipe master has an invalid variant', recipe.variants);
       return false;
     }
     return true;
@@ -1563,21 +1567,27 @@ export class RecipeService {
    */
   isSafeRecipeVariant(recipe: any): boolean {
     if (!this.typeGuard.hasValidProperties(recipe, RecipeVariantGuardMetadata)) {
+      console.error('recipe variant base properties invalid', recipe);
       return false;
     }
     if (!this.isSafeGrainBillCollection(recipe.grains)) {
+      console.error('recipe variant grain bill invalid', recipe.grains);
       return false;
     }
     if (!this.isSafeHopsScheduleCollection(recipe.hops)) {
+      console.error('recipe variant hops schedule invalid', recipe.hops);
       return false;
     }
     if (!this.isSafeYeastBatchCollection(recipe.yeast)) {
+      console.error('recipe variant yeast batch invalid', recipe.yeast);
       return false;
     }
     if (!this.isSafeOtherIngredientsCollection(recipe.otherIngredients)) {
+      console.error('recipe variant other ingredients invalid', recipe.otherIngredients);
       return false;
     }
     if (!this.isSafeProcessSchedule(recipe.processSchedule)) {
+      console.error('recipe variant process schedule invalid', recipe.processSchedule);
       return false;
     }
     return true;
