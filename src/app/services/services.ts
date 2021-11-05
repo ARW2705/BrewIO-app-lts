@@ -19,6 +19,7 @@ export * from './id/id.service';
 export * from './image/image.service';
 export * from './inventory/inventory.service';
 export * from './library/library.service';
+export * from './loading/loading.service';
 export * from './local-notification/local-notification.service';
 export * from './logging/logging.service';
 export * from './modal/modal.service';
