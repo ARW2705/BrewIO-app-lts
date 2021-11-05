@@ -8,7 +8,7 @@ import { catchError, finalize, map, mergeMap, take, tap } from 'rxjs/operators';
 import { API_VERSION, BASE_URL } from '../../shared/constants';
 
 /* Interface imports */
-import { Alert, Batch, BatchAnnotations, BatchContext, BatchProcess, CalendarMetadata, CalendarProcess, PrimaryValues, Process, RecipeMaster, RecipeVariant, SyncData, SyncError, SyncMetadata, SyncRequests, SyncResponse, User } from '../../shared/interfaces';
+import { Alert, Batch, BatchAnnotations, BatchContext, BatchProcess, CalendarMetadata, CalendarProcess, HopsSchedule, PrimaryValues, Process, RecipeMaster, RecipeVariant, SelectedUnits, SyncData, SyncError, SyncMetadata, SyncRequests, SyncResponse, TimerProcess, User } from '../../shared/interfaces';
 
 /* Type guard imports */
 import { AlertGuardMetadata, BatchGuardMetadata, BatchContextGuardMetadata, BatchAnnotationsGuardMetadata, BatchProcessGuardMetadata, PrimaryValuesGuardMetadata } from '../../shared/type-guard-metadata';
@@ -24,6 +24,7 @@ import { EventService } from '../event/event.service';
 import { HttpErrorService } from '../http-error/http-error.service';
 import { IdService } from '../id/id.service';
 import { LibraryService } from '../library/library.service';
+import { PreferencesService } from '../preferences/preferences.service';
 import { RecipeService } from '../recipe/recipe.service';
 import { StorageService } from '../storage/storage.service';
 import { SyncService } from '../sync/sync.service';
@@ -45,7 +46,7 @@ export class ProcessService {
   syncErrors: SyncError[] = [];
 
   constructor(
-    public calculationService: CalculationsService,
+    public calculator: CalculationsService,
     public connectionService: ConnectionService,
     public errorReporter: ErrorReportingService,
     public event: EventService,
@@ -53,6 +54,7 @@ export class ProcessService {
     public httpError: HttpErrorService,
     public idService: IdService,
     public libraryService: LibraryService,
+    public preferenceService: PreferencesService,
     public recipeService: RecipeService,
     public storageService: StorageService,
     public syncService: SyncService,
@@ -270,14 +272,14 @@ export class ProcessService {
       const batch$: BehaviorSubject<Batch> = this.getBatchById(batchId);
       const batch: Batch = batch$.value;
 
-      update.ABV = this.calculationService.getABV(update.originalGravity, update.finalGravity);
-      update.IBU = this.calculationService.calculateTotalIBU(
+      update.ABV = this.calculator.getABV(update.originalGravity, update.finalGravity);
+      update.IBU = this.calculator.calculateTotalIBU(
         batch.contextInfo.hops,
         update.originalGravity,
         update.batchVolume,
         batch.contextInfo.boilVolume
       );
-      update.SRM = this.calculationService.calculateTotalSRM(
+      update.SRM = this.calculator.calculateTotalSRM(
         batch.contextInfo.grains,
         update.batchVolume
       );
@@ -965,6 +967,163 @@ export class ProcessService {
   }
 
   /***** End utility methods *****/
+
+
+  /***** Component helper methods *****/
+
+  /**
+   * Generate timer process steps for boil step; update duration on form update
+   *
+   * @param: processSchedule - a recipe variant's process schedule
+   * @param: boilDuration - boil duration time in minutes
+   * @param: hopsSchedule - a recipe variant's hops schedue
+   * @return: none
+   */
+  autoSetBoilDuration(
+    processSchedule: Process[],
+    boilDuration: number,
+    hopsSchedule: HopsSchedule[]
+  ): Process[] {
+    const boilIndex: number = this.getProcessIndex(processSchedule, 'name', 'Boil');
+
+    if (boilIndex === -1) {
+      processSchedule.push(<TimerProcess>{
+        cid: this.idService.getNewId(),
+        type: 'timer',
+        name: 'Boil',
+        description: 'Boil wort',
+        duration: boilDuration,
+        concurrent: false,
+        splitInterval: 1
+      });
+    } else {
+      const boilStep: TimerProcess = <TimerProcess>processSchedule[boilIndex];
+      if (boilStep.duration !== boilDuration) {
+        boilStep.duration = boilDuration;
+        return this.autoSetHopsAdditions(processSchedule, boilDuration, hopsSchedule);
+      }
+    }
+    return processSchedule;
+  }
+
+  /**
+   * Generate timer process steps for each hops addition (that is not a dry-hop)
+   *
+   * @param: processSchedule - a recipe variant's process schedule
+   * @param: boilDuration - boil duration time in minutes
+   * @param: hopsSchedule - a recipe variant's hops schedue
+   * @return: none
+   */
+  autoSetHopsAdditions(
+    processSchedule: Process[],
+    boilDuration: number,
+    hopsSchedule: HopsSchedule[]
+  ): Process[] {
+    const currentBoilIndex: number = this.getProcessIndex(processSchedule, 'name', 'Boil');
+
+    if (currentBoilIndex !== -1) {
+      // remove existing hops timers
+      const preFilteredProcessSchedule: Process[] = processSchedule
+        .filter((process: Process): boolean => {
+          return !process.name.match(/^(Add).*(hops)$/);
+        });
+      // get steps before first hops addition
+      const updatedBoilIndex: number = this.getProcessIndex(preFilteredProcessSchedule, 'name', 'Boil');
+      const preAdditionSchedule: Process[] = preFilteredProcessSchedule.splice(0, updatedBoilIndex);
+      // get new hops addition process steps
+      const hopsProcesses: Process[] = this.generateHopsProcesses(hopsSchedule, boilDuration);
+      // recombine process schedule
+      const newProcessSchedule: Process[] = preAdditionSchedule
+        .concat(hopsProcesses)
+        .concat(preFilteredProcessSchedule);
+
+      // set boil step timer as concurrent is timers were added
+      const finalBoilIndex: number = updatedBoilIndex + hopsProcesses.length;
+      (<TimerProcess>newProcessSchedule[finalBoilIndex]).concurrent = !!hopsProcesses.length;
+      return newProcessSchedule;
+    }
+    return processSchedule;
+  }
+
+  /**
+   * Generate timer process steps for mash step; update duration on form update
+   *
+   * @param: processSchedule - a recipe variant's process schedule
+   * @param: mashDuration - mash duration time in minutes
+   * @return: none
+   */
+  autoSetMashDuration(processSchedule: Process[], mashDuration: number): void {
+    const mashIndex: number = this.getProcessIndex(processSchedule, 'name', 'Mash');
+
+    if (mashIndex === -1) {
+      processSchedule.push(<TimerProcess>{
+        cid: this.idService.getNewId(),
+        type: 'timer',
+        name: 'Mash',
+        description: 'Mash grains',
+        duration: mashDuration,
+        concurrent: false,
+        splitInterval: 1
+      });
+    } else {
+      (<TimerProcess>processSchedule[mashIndex]).duration = mashDuration;
+    }
+  }
+
+  /**
+   * Format a hops addition step description
+   *
+   * @param: hops - a recipe variant's hops schedule
+   * @return: a description for a new hops process timer step
+   */
+  formatHopsDescription(hops: HopsSchedule): string {
+    const units: SelectedUnits = this.preferenceService.getSelectedUnits();
+    let hopsQuantity: number = hops.quantity;
+    if (this.calculator.requiresConversion('weightSmall', units)) {
+      hopsQuantity = this.calculator.convertWeight(hops.quantity, false, false);
+    }
+    const twoPlaces: number = 2;
+    hopsQuantity = this.utilService.roundToDecimalPlace(hopsQuantity, twoPlaces);
+    return `Hops addition: ${hopsQuantity}${units.weightSmall.shortName}`;
+  }
+
+  /**
+   * Create an array of concurrent timer processes for each hops addition
+   *
+   * @param: hopsSchedule - a recipe variant's hops schedule
+   * @param: boilDuration - a recipe variant's set boil duration
+   * @return: array of concurrent timer processes
+   */
+  generateHopsProcesses(hopsSchedule: HopsSchedule[], boilDuration: number): Process[] {
+    return hopsSchedule
+      .filter((hops: HopsSchedule): boolean => !hops.dryHop)
+      .sort((h1: HopsSchedule, h2: HopsSchedule): number => h2.duration - h1.duration)
+      .map((hopsAddition: HopsSchedule): TimerProcess => {
+        return {
+          cid: this.idService.getNewId(),
+          type: 'timer',
+          name: `Add ${hopsAddition.hopsType.name} hops`,
+          concurrent: true,
+          description: this.formatHopsDescription(hopsAddition),
+          duration: boilDuration - hopsAddition.duration,
+          splitInterval: 1
+        };
+      });
+  }
+
+  /**
+   * Get a process step index from a given process schedule
+   *
+   * @param: processSchedule - the process schedule to search
+   * @param: searchField - the process attribute name to comare with search term
+   * @param: searchTerm - the search term to match against a given search field value
+   * @return: the index number of the found process or -1 if not found
+   */
+  getProcessIndex(processSchedule: Process[], searchField: string, searchTerm: string): number {
+    return processSchedule.findIndex((process: Process): boolean => process[searchField] === searchTerm);
+  }
+
+  /***** End Component helper methods *****/
 
 
   /***** Storage methods *****/
