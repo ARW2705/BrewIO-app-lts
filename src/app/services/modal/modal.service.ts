@@ -27,10 +27,7 @@ export class ModalService {
    * @return: function that handles an overlay event
    */
   defaultSuccessHandler<T>(): (event: OverlayEventDetail<T>) => Observable<T> {
-    return (event: OverlayEventDetail<T>): Observable<T> => {
-      console.log('handling event', event);
-      return of(event.data);
-    };
+    return (event: OverlayEventDetail<T>): Observable<T> => of(event.data);
   }
 
   /**
@@ -68,7 +65,7 @@ export class ModalService {
    */
   async openModalHelper<M>(component: any, componentProps: object): Promise<OverlayEventDetail<M>> {
     const modal: HTMLIonModalElement = await this.modalCtrl.create({ component, componentProps });
-    modal.present();
+    await modal.present();
     return modal.onDidDismiss<M>();
   }
 }
