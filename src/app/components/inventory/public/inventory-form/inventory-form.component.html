@@ -42,11 +42,11 @@
           Cancel
         </ion-button>
       </ion-col>
-      <ion-col>
+      <ion-col *ngIf="inventoryForm">
         <ion-button color="primary"
                     (click)="onSubmit()"
                     class="form-button"
-                    [disabled]="!inventoryForm || !inventoryForm.valid">
+                    [disabled]="!inventoryForm.valid">
           Submit
         </ion-button>
       </ion-col>

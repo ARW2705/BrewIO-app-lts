@@ -6,36 +6,36 @@ import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { forkJoin, of, throwError } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockAuthor, mockBatch, mockInventoryItem, mockImage, mockStyles } from '../../../../../test-config/mock-models';
-import { ErrorReportingServiceStub, IdServiceStub, LibraryServiceStub, RecipeServiceStub } from '../../../../../test-config/service-stubs';
-import { LoadingControllerStub, ModalControllerStub } from '../../../../../test-config/ionic-stubs';
+import { mockAuthor, mockBatch, mockInventoryItem, mockImage, mockStyles } from '../../../../../../test-config/mock-models';
+import { ErrorReportingServiceStub, IdServiceStub, LibraryServiceStub, RecipeServiceStub } from '../../../../../../test-config/service-stubs';
+import { LoadingControllerStub, ModalControllerStub } from '../../../../../../test-config/ionic-stubs';
 
 /* Default imports */
-import { defaultImage } from '../../../shared/defaults';
+import { defaultImage } from '../../../../shared/defaults';
 
 /* Interface imports */
-import { Author, Batch, Image, InventoryItem, Style } from '../../../shared/interfaces';
+import { Author, Batch, Image, InventoryItem, Style } from '../../../../shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService, IdService, LibraryService, RecipeService } from '../../../services/services';
+import { ErrorReportingService, IdService, LibraryService, RecipeService } from '../../../../services/services';
 
 /* Page imports */
-import { InventoryFormPage } from './inventory-form.page';
+import { InventoryFormComponent } from './inventory-form.component';
 
 
-describe('InventoryFormPage', (): void => {
+describe('InventoryFormComponent', (): void => {
   configureTestBed();
-  let fixture: ComponentFixture<InventoryFormPage>;
-  let page: InventoryFormPage;
+  let fixture: ComponentFixture<InventoryFormComponent>;
+  let component: InventoryFormComponent;
   let originalOnInit: any;
 
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
       declarations: [
-        InventoryFormPage
+        InventoryFormComponent
       ],
       imports: [
         IonicModule,
@@ -57,20 +57,20 @@ describe('InventoryFormPage', (): void => {
   .catch(done.fail));
 
   beforeEach((): void => {
-    fixture = TestBed.createComponent(InventoryFormPage);
-    page = fixture.componentInstance;
-    originalOnInit = page.ngOnInit;
-    page.ngOnInit = jest.fn();
-    page.loadingCtrl.dismiss = jest.fn();
-    page.modalCtrl.dismiss = jest.fn();
-    page.idService.hasId = jest.fn()
+    fixture = TestBed.createComponent(InventoryFormComponent);
+    component = fixture.componentInstance;
+    originalOnInit = component.ngOnInit;
+    component.ngOnInit = jest.fn();
+    component.loadingCtrl.dismiss = jest.fn();
+    component.modalCtrl.dismiss = jest.fn();
+    component.idService.hasId = jest.fn()
       .mockImplementation((style: Style, id: string): boolean => style._id === id);
   });
 
   test('should create the component', (): void => {
     fixture.detectChanges();
 
-    expect(page).toBeDefined();
+    expect(component).toBeDefined();
   });
 
   describe('Lifecycle', (): void => {
@@ -79,28 +79,28 @@ describe('InventoryFormPage', (): void => {
       const _mockAuthor: Author = mockAuthor();
       const _mockStyles: Style[] = mockStyles();
       const _mockBatch: Batch = mockBatch();
-      page.ngOnInit = originalOnInit;
-      page.options = { batch: _mockBatch };
-      page.isRequired = true;
-      page.libraryService.getStyleLibrary = jest.fn()
+      component.ngOnInit = originalOnInit;
+      component.options = { batch: _mockBatch };
+      component.isRequired = true;
+      component.libraryService.getStyleLibrary = jest.fn()
         .mockReturnValue(of(_mockStyles));
-      page.getAuthor = jest.fn()
+      component.getAuthor = jest.fn()
         .mockReturnValue(of(_mockAuthor));
-      page.initForm = jest.fn();
+      component.initForm = jest.fn();
       let hasDismissBeenCalled: boolean = false;
-      page.dismissLoadingIfHasOverlayFn = jest.fn()
+      component.dismissLoadingIfHasOverlayFn = jest.fn()
         .mockReturnValue((): void => { hasDismissBeenCalled = true; });
-      const getSpy: jest.SpyInstance = jest.spyOn(page, 'getAuthor');
-      const initSpy: jest.SpyInstance = jest.spyOn(page, 'initForm');
+      const getSpy: jest.SpyInstance = jest.spyOn(component, 'getAuthor');
+      const initSpy: jest.SpyInstance = jest.spyOn(component, 'initForm');
 
       fixture.detectChanges();
 
       setTimeout((): void => {
         expect(getSpy).toHaveBeenCalledWith(_mockBatch.recipeMasterId);
         expect(initSpy).toHaveBeenCalled();
-        expect(page.styles).toStrictEqual(_mockStyles);
-        expect(page.author).toStrictEqual(_mockAuthor);
-        expect(page.onBackClick).toBeUndefined();
+        expect(component.styles).toStrictEqual(_mockStyles);
+        expect(component.author).toStrictEqual(_mockAuthor);
+        expect(component.onBackClick).toBeUndefined();
         expect(hasDismissBeenCalled).toBe(true);
         done();
       }, 10);
@@ -109,20 +109,20 @@ describe('InventoryFormPage', (): void => {
     test('should get error on component init', (done: jest.DoneCallback): void => {
       const _mockError: Error = new Error('test-error');
       const _mockAuthor: Author = mockAuthor();
-      page.options = {};
-      page.ngOnInit = originalOnInit;
-      page.libraryService.getStyleLibrary = jest.fn()
+      component.options = {};
+      component.ngOnInit = originalOnInit;
+      component.libraryService.getStyleLibrary = jest.fn()
         .mockReturnValue(throwError(_mockError));
-      page.getAuthor = jest.fn()
+      component.getAuthor = jest.fn()
         .mockReturnValue(of(_mockAuthor));
-      page.dismiss = jest.fn();
-      page.dismiss.bind = jest.fn()
-        .mockImplementation((page: InventoryFormPage): () => void => page.dismiss);
+      component.dismiss = jest.fn();
+      component.dismiss.bind = jest.fn()
+        .mockImplementation((component: InventoryFormComponent): () => void => component.dismiss);
       let hasDismissBeenCalled: boolean = false;
-      page.dismissLoadingIfHasOverlayFn = jest.fn()
+      component.dismissLoadingIfHasOverlayFn = jest.fn()
         .mockReturnValue((): void => { hasDismissBeenCalled = true; });
-      page.errorReporter.handleUnhandledError = jest.fn();
-      const errorSpy: jest.SpyInstance = jest.spyOn(page.errorReporter, 'handleUnhandledError');
+      component.errorReporter.handleUnhandledError = jest.fn();
+      const errorSpy: jest.SpyInstance = jest.spyOn(component.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
@@ -140,7 +140,7 @@ describe('InventoryFormPage', (): void => {
 
     test('should add form controls to the inventory form with default values', (): void => {
       const formGroup: FormGroup = new FormGroup({});
-      page.inventoryForm = formGroup;
+      component.inventoryForm = formGroup;
       const testControls: { [key: string]: FormControl } = {
         itemName: new FormControl(),
         description: new FormControl()
@@ -148,14 +148,14 @@ describe('InventoryFormPage', (): void => {
 
       fixture.detectChanges();
 
-      page.addFormControls(testControls);
-      expect(page.inventoryForm.controls.itemName).toBeTruthy();
-      expect(page.inventoryForm.controls.description).toBeTruthy();
+      component.addFormControls(testControls);
+      expect(component.inventoryForm.controls.itemName).toBeTruthy();
+      expect(component.inventoryForm.controls.description).toBeTruthy();
     });
 
     test('should add form controls to the inventory form with values from given item', (): void => {
       const formGroup: FormGroup = new FormGroup({});
-      page.inventoryForm = formGroup;
+      component.inventoryForm = formGroup;
       const testControls: { [key: string]: FormControl } = {
         itemName: new FormControl(),
         description: new FormControl()
@@ -164,154 +164,154 @@ describe('InventoryFormPage', (): void => {
 
       fixture.detectChanges();
 
-      page.addFormControls(testControls, _mockInventoryItem);
-      expect(page.inventoryForm.controls.itemName).toBeTruthy();
-      expect(page.inventoryForm.controls.description).toBeTruthy();
-      expect(page.inventoryForm.value.itemName).toMatch(_mockInventoryItem.itemName);
-      expect(page.inventoryForm.value.description).toMatch(_mockInventoryItem.description);
+      component.addFormControls(testControls, _mockInventoryItem);
+      expect(component.inventoryForm.controls.itemName).toBeTruthy();
+      expect(component.inventoryForm.controls.description).toBeTruthy();
+      expect(component.inventoryForm.value.itemName).toMatch(_mockInventoryItem.itemName);
+      expect(component.inventoryForm.value.description).toMatch(_mockInventoryItem.description);
     });
 
     test('should build form select options', (): void => {
       fixture.detectChanges();
 
-      page.buildFormSelectOptions();
-      expect(page.styleOptions).toStrictEqual([]);
+      component.buildFormSelectOptions();
+      expect(component.styleOptions).toStrictEqual([]);
       const _mockStyles: Style[] = mockStyles();
-      page.styles = _mockStyles;
+      component.styles = _mockStyles;
 
       fixture.detectChanges();
 
-      expect(page.styleOptions).toStrictEqual([]);
-      page.buildFormSelectOptions();
-      const optionsLength: number = page.styleOptions.length;
-      const stylesLength: number = page.styles.length;
+      expect(component.styleOptions).toStrictEqual([]);
+      component.buildFormSelectOptions();
+      const optionsLength: number = component.styleOptions.length;
+      const stylesLength: number = component.styles.length;
       expect(optionsLength).toEqual(stylesLength);
       const testStyle: Style = _mockStyles[stylesLength / 2];
-      expect(page.styleOptions[optionsLength / 2]).toStrictEqual({
+      expect(component.styleOptions[optionsLength / 2]).toStrictEqual({
         label: testStyle.name,
         value: testStyle
       });
     });
 
     test('should init the base form', (): void => {
-      page.options = {};
-      page.buildFormSelectOptions = jest.fn();
-      page.initStockDetailControls = jest.fn();
-      page.initItemDetailControls = jest.fn();
-      page.initSupplierDetailControls = jest.fn();
+      component.options = {};
+      component.buildFormSelectOptions = jest.fn();
+      component.initStockDetailControls = jest.fn();
+      component.initItemDetailControls = jest.fn();
+      component.initSupplierDetailControls = jest.fn();
       const _mockStyles: Style[] = mockStyles();
-      page.styles = _mockStyles;
+      component.styles = _mockStyles;
       const _mockBatch: Batch = mockBatch();
       _mockBatch._id = _mockStyles[1]._id;
-      const buildSpy: jest.SpyInstance = jest.spyOn(page, 'buildFormSelectOptions');
-      const itemSpy: jest.SpyInstance = jest.spyOn(page, 'initItemDetailControls');
-      const stockSpy: jest.SpyInstance = jest.spyOn(page, 'initStockDetailControls');
-      const supplierSpy: jest.SpyInstance = jest.spyOn(page, 'initSupplierDetailControls');
+      const buildSpy: jest.SpyInstance = jest.spyOn(component, 'buildFormSelectOptions');
+      const itemSpy: jest.SpyInstance = jest.spyOn(component, 'initItemDetailControls');
+      const stockSpy: jest.SpyInstance = jest.spyOn(component, 'initStockDetailControls');
+      const supplierSpy: jest.SpyInstance = jest.spyOn(component, 'initSupplierDetailControls');
 
       fixture.detectChanges();
 
       // default with no given batch or item
-      page.initForm();
+      component.initForm();
       expect(buildSpy).toHaveBeenCalled();
-      expect(page.inventoryForm).toBeTruthy();
+      expect(component.inventoryForm).toBeTruthy();
       expect(itemSpy).toHaveBeenCalledWith(undefined);
       expect(stockSpy).toHaveBeenCalledWith(undefined);
       expect(supplierSpy).toHaveBeenCalledWith(undefined);
       // with item
       const _mockInventoryItem: InventoryItem = mockInventoryItem();
       _mockInventoryItem.itemStyleId = _mockStyles[1]._id;
-      page.options = { item: _mockInventoryItem };
-      page.initForm();
-      expect(page.selectedStyle).toStrictEqual(_mockStyles[1]);
+      component.options = { item: _mockInventoryItem };
+      component.initForm();
+      expect(component.selectedStyle).toStrictEqual(_mockStyles[1]);
       expect(itemSpy).toHaveBeenNthCalledWith(2, _mockInventoryItem);
       expect(stockSpy).toHaveBeenNthCalledWith(2, _mockInventoryItem);
       expect(supplierSpy).toHaveBeenNthCalledWith(2, _mockInventoryItem);
       // with batch
-      page.options = { batch: _mockBatch };
-      page.initForm();
+      component.options = { batch: _mockBatch };
+      component.initForm();
       expect(stockSpy).toHaveBeenCalledTimes(3);
       expect(itemSpy).toHaveBeenCalledTimes(2);
       expect(supplierSpy).toHaveBeenCalledTimes(2);
     });
 
     test('should init item details form controls', (): void => {
-      page.addFormControls = jest.fn();
-      const addSpy: jest.SpyInstance = jest.spyOn(page, 'addFormControls');
+      component.addFormControls = jest.fn();
+      const addSpy: jest.SpyInstance = jest.spyOn(component, 'addFormControls');
 
       fixture.detectChanges();
 
-      page.initItemDetailControls();
-      expect(addSpy).toHaveBeenCalledWith(page.itemDetailControls, undefined);
-      expect(page.itemDetailControls).not.toBeNull();
-      expect(page.itemDetailControls.itemName).toBeTruthy();
-      expect(page.itemDetailControls.itemName.value.length).toEqual(0);
-      expect(page.itemDetailControls.itemSubname).toBeTruthy();
-      expect(page.itemDetailControls.itemSubname.value.length).toEqual(0);
-      expect(page.itemDetailControls.description).toBeTruthy();
-      expect(page.itemDetailControls.description.value.length).toEqual(0);
-      expect(page.itemDetailControls.itemStyleId).toBeTruthy();
-      expect(page.itemDetailControls.itemStyleId.value.length).toEqual(0);
-      expect(page.itemDetailControls.itemABV).toBeTruthy();
-      expect(page.itemDetailControls.itemABV.value).toBeNull();
-      expect(page.itemDetailControls.itemIBU).toBeTruthy();
-      expect(page.itemDetailControls.itemIBU.value).toBeNull();
-      expect(page.itemDetailControls.itemSRM).toBeTruthy();
-      expect(page.itemDetailControls.itemSRM.value).toBeNull();
+      component.initItemDetailControls();
+      expect(addSpy).toHaveBeenCalledWith(component.itemDetailControls, undefined);
+      expect(component.itemDetailControls).not.toBeNull();
+      expect(component.itemDetailControls.itemName).toBeTruthy();
+      expect(component.itemDetailControls.itemName.value.length).toEqual(0);
+      expect(component.itemDetailControls.itemSubname).toBeTruthy();
+      expect(component.itemDetailControls.itemSubname.value.length).toEqual(0);
+      expect(component.itemDetailControls.description).toBeTruthy();
+      expect(component.itemDetailControls.description.value.length).toEqual(0);
+      expect(component.itemDetailControls.itemStyleId).toBeTruthy();
+      expect(component.itemDetailControls.itemStyleId.value.length).toEqual(0);
+      expect(component.itemDetailControls.itemABV).toBeTruthy();
+      expect(component.itemDetailControls.itemABV.value).toBeNull();
+      expect(component.itemDetailControls.itemIBU).toBeTruthy();
+      expect(component.itemDetailControls.itemIBU.value).toBeNull();
+      expect(component.itemDetailControls.itemSRM).toBeTruthy();
+      expect(component.itemDetailControls.itemSRM.value).toBeNull();
     });
 
     test('should init stock details form controls', (): void => {
-      page.addFormControls = jest.fn();
-      const addSpy: jest.SpyInstance = jest.spyOn(page, 'addFormControls');
+      component.addFormControls = jest.fn();
+      const addSpy: jest.SpyInstance = jest.spyOn(component, 'addFormControls');
 
       fixture.detectChanges();
 
-      page.initStockDetailControls();
-      expect(addSpy).toHaveBeenCalledWith(page.stockDetailControls, undefined);
-      expect(page.stockDetailControls).not.toBeNull();
-      expect(page.stockDetailControls.stockType).toBeTruthy();
-      expect(page.stockDetailControls.stockType.value.length).toEqual(0);
-      expect(page.stockDetailControls.initialQuantity).toBeTruthy();
-      expect(page.stockDetailControls.initialQuantity.value).toBeNull();
-      expect(page.stockDetailControls.currentQuantity).toBeTruthy();
-      expect(page.stockDetailControls.currentQuantity.value).toBeNull();
+      component.initStockDetailControls();
+      expect(addSpy).toHaveBeenCalledWith(component.stockDetailControls, undefined);
+      expect(component.stockDetailControls).not.toBeNull();
+      expect(component.stockDetailControls.stockType).toBeTruthy();
+      expect(component.stockDetailControls.stockType.value.length).toEqual(0);
+      expect(component.stockDetailControls.initialQuantity).toBeTruthy();
+      expect(component.stockDetailControls.initialQuantity.value).toBeNull();
+      expect(component.stockDetailControls.currentQuantity).toBeTruthy();
+      expect(component.stockDetailControls.currentQuantity.value).toBeNull();
     });
 
     test('should init supplier details form controls', (): void => {
-      page.addFormControls = jest.fn();
-      const addSpy: jest.SpyInstance = jest.spyOn(page, 'addFormControls');
+      component.addFormControls = jest.fn();
+      const addSpy: jest.SpyInstance = jest.spyOn(component, 'addFormControls');
 
       fixture.detectChanges();
 
-      page.initSupplierDetailControls();
-      expect(addSpy).toHaveBeenCalledWith(page.supplierDetailControls, undefined);
-      expect(page.supplierDetailControls).not.toBeNull();
-      expect(page.supplierDetailControls.supplierName).toBeTruthy();
-      expect(page.supplierDetailControls.supplierName.value.length).toEqual(0);
-      expect(page.supplierDetailControls.supplierURL).toBeTruthy();
-      expect(page.supplierDetailControls.supplierURL.value.length).toEqual(0);
-      expect(page.supplierDetailControls.sourceType).toBeTruthy();
-      expect(page.supplierDetailControls.sourceType.value.length).toEqual(0);
+      component.initSupplierDetailControls();
+      expect(addSpy).toHaveBeenCalledWith(component.supplierDetailControls, undefined);
+      expect(component.supplierDetailControls).not.toBeNull();
+      expect(component.supplierDetailControls.supplierName).toBeTruthy();
+      expect(component.supplierDetailControls.supplierName.value.length).toEqual(0);
+      expect(component.supplierDetailControls.supplierURL).toBeTruthy();
+      expect(component.supplierDetailControls.supplierURL.value.length).toEqual(0);
+      expect(component.supplierDetailControls.sourceType).toBeTruthy();
+      expect(component.supplierDetailControls.sourceType.value.length).toEqual(0);
     });
 
     test('should submit the form', (): void => {
       const _mockStyles: Style[] = mockStyles();
-      page.styles = _mockStyles;
+      component.styles = _mockStyles;
       const styleIndex: number = _mockStyles.length / 2;
       const formGroup: FormGroup = new FormGroup({
         itemStyleId: new FormControl(_mockStyles[styleIndex]),
         itemStyleName: new FormControl(_mockStyles[styleIndex])
       });
-      page.inventoryForm = formGroup;
+      component.inventoryForm = formGroup;
       const _mockImage1: Image = mockImage();
       _mockImage1.url = 'test-url-1';
-      page.itemLabelImage = _mockImage1;
+      component.itemLabelImage = _mockImage1;
       const _mockImage2: Image = mockImage();
       _mockImage2.url = 'test-url-2';
-      page.supplierLabelImage = _mockImage2;
-      const dismissSpy: jest.SpyInstance = jest.spyOn(page.modalCtrl, 'dismiss');
+      component.supplierLabelImage = _mockImage2;
+      const dismissSpy: jest.SpyInstance = jest.spyOn(component.modalCtrl, 'dismiss');
 
       fixture.detectChanges();
-      page.onSubmit();
+      component.onSubmit();
       expect(dismissSpy).toHaveBeenCalledWith({
         itemStyleId: _mockStyles[styleIndex]._id,
         itemStyleName: _mockStyles[styleIndex].name,
@@ -322,23 +322,23 @@ describe('InventoryFormPage', (): void => {
 
     test('should submit the form using a batch to find the style', (): void => {
       const _mockStyles: Style[] = mockStyles();
-      page.styles = _mockStyles;
+      component.styles = _mockStyles;
       const styleIndex: number = _mockStyles.length / 2;
       const _mockBatch: Batch = mockBatch();
       _mockBatch.annotations.styleId = _mockStyles[styleIndex]._id;
-      page.batch = _mockBatch;
+      component.batch = _mockBatch;
       const formGroup: FormGroup = new FormGroup({});
-      page.inventoryForm = formGroup;
+      component.inventoryForm = formGroup;
       const _mockImage1: Image = mockImage();
       _mockImage1.url = 'test-url-1';
-      page.itemLabelImage = _mockImage1;
+      component.itemLabelImage = _mockImage1;
       const _mockImage2: Image = mockImage();
       _mockImage2.url = 'test-url-2';
-      page.supplierLabelImage = _mockImage2;
-      const dismissSpy: jest.SpyInstance = jest.spyOn(page.modalCtrl, 'dismiss');
+      component.supplierLabelImage = _mockImage2;
+      const dismissSpy: jest.SpyInstance = jest.spyOn(component.modalCtrl, 'dismiss');
 
       fixture.detectChanges();
-      page.onSubmit();
+      component.onSubmit();
       expect(dismissSpy).toHaveBeenCalledWith({
         itemStyleId: _mockStyles[styleIndex]._id,
         itemStyleName: _mockStyles[styleIndex].name,
@@ -353,25 +353,25 @@ describe('InventoryFormPage', (): void => {
   describe('Other Methods', (): void => {
 
     test('should dismiss the modal with no data', (): void => {
-      const dismissSpy: jest.SpyInstance = jest.spyOn(page.modalCtrl, 'dismiss');
+      const dismissSpy: jest.SpyInstance = jest.spyOn(component.modalCtrl, 'dismiss');
 
       fixture.detectChanges();
 
-      page.dismiss();
+      component.dismiss();
       expect(dismissSpy).toHaveBeenCalled();
     });
 
     test('should get loading dismiss handler function', (done: jest.DoneCallback): void => {
-      page.loadingCtrl.getTop = jest.fn()
+      component.loadingCtrl.getTop = jest.fn()
         .mockReturnValueOnce(true)
         .mockReturnValueOnce(false);
-      const getSpy: jest.SpyInstance = jest.spyOn(page.loadingCtrl, 'getTop');
-      const dismissSpy: jest.SpyInstance = jest.spyOn(page.loadingCtrl, 'dismiss');
+      const getSpy: jest.SpyInstance = jest.spyOn(component.loadingCtrl, 'getTop');
+      const dismissSpy: jest.SpyInstance = jest.spyOn(component.loadingCtrl, 'dismiss');
 
       fixture.detectChanges();
 
-      const dismissFn1: () => Promise<void> = page.dismissLoadingIfHasOverlayFn();
-      const dismissFn2: () => Promise<void> = page.dismissLoadingIfHasOverlayFn();
+      const dismissFn1: () => Promise<void> = component.dismissLoadingIfHasOverlayFn();
+      const dismissFn2: () => Promise<void> = component.dismissLoadingIfHasOverlayFn();
       Promise.all([dismissFn1(), dismissFn2()])
         .then((): void => {
           expect(getSpy).toHaveBeenCalledTimes(2);
@@ -387,12 +387,12 @@ describe('InventoryFormPage', (): void => {
 
     test('should get author', (done: jest.DoneCallback): void => {
       const _mockAuthor: Author = mockAuthor();
-      page.recipeService.getPublicAuthorByRecipeId = jest.fn()
+      component.recipeService.getPublicAuthorByRecipeId = jest.fn()
         .mockReturnValue(of(_mockAuthor));
 
       fixture.detectChanges();
 
-      forkJoin([page.getAuthor(''), page.getAuthor('test')])
+      forkJoin([component.getAuthor(''), component.getAuthor('test')])
         .subscribe(
           (results: Author[]): void => {
             expect(results[0]).toBeNull();
@@ -416,20 +416,20 @@ describe('InventoryFormPage', (): void => {
 
       fixture.detectChanges();
 
-      expect(page.itemLabelImage).toStrictEqual(_defaultImage);
-      expect(page.supplierLabelImage).toStrictEqual(_defaultImage);
+      expect(component.itemLabelImage).toStrictEqual(_defaultImage);
+      expect(component.supplierLabelImage).toStrictEqual(_defaultImage);
       // invalid image type - no changes
-      page.onImageSelection({ imageType: 'invalid', image: null });
-      expect(page.itemLabelImage).toStrictEqual(_defaultImage);
-      expect(page.supplierLabelImage).toStrictEqual(_defaultImage);
+      component.onImageSelection({ imageType: 'invalid', image: null });
+      expect(component.itemLabelImage).toStrictEqual(_defaultImage);
+      expect(component.supplierLabelImage).toStrictEqual(_defaultImage);
       // item update
-      page.onImageSelection({ imageType: 'itemLabelImage', image: _mockImage1 });
-      expect(page.itemLabelImage).toStrictEqual(_mockImage1);
-      expect(page.supplierLabelImage).toStrictEqual(_defaultImage);
+      component.onImageSelection({ imageType: 'itemLabelImage', image: _mockImage1 });
+      expect(component.itemLabelImage).toStrictEqual(_mockImage1);
+      expect(component.supplierLabelImage).toStrictEqual(_defaultImage);
       // supplier update
-      page.onImageSelection({ imageType: 'supplierLabelImage', image: _mockImage2 });
-      expect(page.itemLabelImage).toStrictEqual(_mockImage1);
-      expect(page.supplierLabelImage).toStrictEqual(_mockImage2);
+      component.onImageSelection({ imageType: 'supplierLabelImage', image: _mockImage2 });
+      expect(component.itemLabelImage).toStrictEqual(_mockImage1);
+      expect(component.supplierLabelImage).toStrictEqual(_mockImage2);
     });
 
   });
@@ -439,18 +439,18 @@ describe('InventoryFormPage', (): void => {
     const _mockStyles: Style[] = mockStyles();
 
     beforeEach((): void => {
-      page.ngOnInit = originalOnInit;
-      page.libraryService.getStyleLibrary = jest.fn()
+      component.ngOnInit = originalOnInit;
+      component.libraryService.getStyleLibrary = jest.fn()
         .mockReturnValue(of(_mockStyles));
-      page.getAuthor = jest.fn()
+      component.getAuthor = jest.fn()
         .mockReturnValue(of(null));
-      page.dismissLoadingIfHasOverlayFn = jest.fn()
+      component.dismissLoadingIfHasOverlayFn = jest.fn()
         .mockReturnValue(() => {});
-      page.inventoryForm = new FormGroup({});
+      component.inventoryForm = new FormGroup({});
     });
 
     test('should render the template for a generic form (expect all fields)', (): void => {
-      page.options = {};
+      component.options = {};
 
       fixture.detectChanges();
 
@@ -463,7 +463,7 @@ describe('InventoryFormPage', (): void => {
     });
 
     test('should render the template for a batch form (stock only)', (): void => {
-      page.options = { batch: mockBatch() };
+      component.options = { batch: mockBatch() };
 
       fixture.detectChanges();
 
@@ -476,10 +476,10 @@ describe('InventoryFormPage', (): void => {
     });
 
     test('should render the template for an item form (expect all fields with selections)', (): void => {
-      page.styles = _mockStyles;
+      component.styles = _mockStyles;
       const _mockInventoryItem: InventoryItem = mockInventoryItem();
       _mockInventoryItem.itemStyleId = _mockStyles[0]._id;
-      page.options = { item: _mockInventoryItem };
+      component.options = { item: _mockInventoryItem };
 
       fixture.detectChanges();
 

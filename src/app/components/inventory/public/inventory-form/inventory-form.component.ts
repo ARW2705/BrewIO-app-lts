@@ -6,24 +6,24 @@ import { forkJoin, Observable, of } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
 /* Contants imports */
-import { DESCRIPTION_MAX_LENGTH, NAME_MAX_LENGTH, NAME_MIN_LENGTH, URL_MAX_LENGTH } from '../../../shared/constants';
+import { DESCRIPTION_MAX_LENGTH, NAME_MAX_LENGTH, NAME_MIN_LENGTH, URL_MAX_LENGTH } from '../../../../shared/constants';
 
 /* Default imports */
-import { defaultImage } from '../../../shared/defaults';
+import { defaultImage } from '../../../../shared/defaults';
 
 /* Interface imports */
-import { Author, Batch, FormSelectOption, Image, InventoryItem, Style } from '../../../shared/interfaces';
+import { Author, Batch, FormSelectOption, Image, InventoryItem, Style } from '../../../../shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService, IdService, LibraryService, RecipeService } from '../../../services/services';
+import { ErrorReportingService, IdService, LibraryService, RecipeService } from '../../../../services/services';
 
 
 @Component({
-  selector: 'app-page-inventory-form',
-  templateUrl: './inventory-form.page.html',
-  styleUrls: ['./inventory-form.page.scss']
+  selector: 'app-inventory-form',
+  templateUrl: './inventory-form.component.html',
+  styleUrls: ['./inventory-form.component.scss']
 })
-export class InventoryFormPage implements OnInit {
+export class InventoryFormComponent implements OnInit {
   @Input() isRequired: boolean = false;
   @Input() options: { item?: InventoryItem, batch?: Batch };
   _defaultImage: Image = defaultImage();
