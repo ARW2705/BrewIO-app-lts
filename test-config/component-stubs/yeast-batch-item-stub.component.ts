@@ -5,16 +5,16 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { YeastBatch } from '../../src/app/shared/interfaces';
 
 /* Component imports */
-import { YeastBatchComponent } from '../../src/app/components/ingredient/private/yeast-batch/yeast-batch.component';
+import { YeastBatchItemComponent } from '../../src/app/components/ingredient/private/yeast-batch-item/yeast-batch-item.component';
 
 @Component({
-  selector: 'app-yeast-batch',
+  selector: 'app-yeast-batch-item',
   template: '',
   providers: [
-    { provide: YeastBatchComponent, useClass: YeastBatchComponentStub }
+    { provide: YeastBatchItemComponent, useClass: YeastBatchItemComponentStub }
   ]
 })
-export class YeastBatchComponentStub {
+export class YeastBatchItemComponentStub {
   @Input() yeastBatch: YeastBatch[];
   @Output() openIngredientFormEvent: EventEmitter<YeastBatch> = new EventEmitter<YeastBatch>();
 }

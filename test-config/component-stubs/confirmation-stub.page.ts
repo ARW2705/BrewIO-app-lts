@@ -2,16 +2,16 @@
 import { Component, Input } from '@angular/core';
 
 /* Component imports */
-import { ConfirmationPage } from '../../src/app/pages/confirmation/confirmation.page';
+import { ConfirmationComponent } from '../../src/app/components/shared/confirmation/confirmation.component';
 
 @Component({
   selector: 'calendar',
   template: '',
   providers: [
-    { provide: ConfirmationPage, useClass: ConfirmationPageStub }
+    { provide: ConfirmationComponent, useClass: ConfirmationComponentStub }
   ]
 })
-export class ConfirmationPageStub {
+export class ConfirmationComponentStub {
   @Input() message: string = '';
   @Input() subMessage: string = null;
 }

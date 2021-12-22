@@ -5,7 +5,7 @@ import { Component, Input } from '@angular/core';
 import { RecipeVariant, Style } from '../../src/app/shared/interfaces';
 
 /* Component imports */
-import { RecipeQuickDataComponent } from '../../src/app/components/recipe/public/recipe-quick-data/recipe-quick-data.component';
+import { RecipeQuickDataComponent } from '../../src/app/components/recipe/private/recipe-quick-data/recipe-quick-data.component';
 
 @Component({
   selector: 'recipe-quick-data',

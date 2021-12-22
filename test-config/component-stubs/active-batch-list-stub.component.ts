@@ -18,6 +18,8 @@ import { ActiveBatchListComponent } from '../../src/app/components/batch/public/
 export class ActiveBatchListComponentStub {
   @Input() enterDuration: number;
   @Input() rootURL: string;
+  @Input() shown: boolean = false;
   activeBatchesList: Batch[] = [];
   destroy$: Subject<boolean> = new Subject<boolean>();
+  topLevelContentContainer: HTMLElement = null;
 }

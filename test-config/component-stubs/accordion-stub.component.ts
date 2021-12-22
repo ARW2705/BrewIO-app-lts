@@ -5,7 +5,7 @@ import { Component, Input } from '@angular/core';
 import { AccordionComponent } from '../../src/app/components/shared/accordion/accordion.component';
 
 @Component({
-  selector: 'accordion',
+  selector: 'app-accordion',
   template: '',
   providers: [
     { provide: AccordionComponent, useClass: AccordionComponentStub }

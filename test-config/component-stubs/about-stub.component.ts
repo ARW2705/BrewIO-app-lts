@@ -5,7 +5,7 @@ import { Component } from '@angular/core';
 import { AboutComponent } from '../../src/app/components/shared/about/about.component';
 
 @Component({
-  selector: 'about',
+  selector: 'app-about',
   template: '',
   providers: [
     { provide: AboutComponent, useClass: AboutComponentStub }

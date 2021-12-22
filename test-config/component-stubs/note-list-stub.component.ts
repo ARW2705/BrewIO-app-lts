@@ -1,15 +1,15 @@
 /* Module imports */
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 
 /* Service imports */
 import { ErrorReportingService, RecipeService, ToastService } from '../../src/app/services/services';
 
 /* Component imports */
-import { NoteListComponent } from '../../src/app/components/shared/note-list/note-list.component';
+import { NoteListComponent } from '../../src/app/components/note/private/note-list/note-list.component';
 
 @Component({
-  selector: 'note-list',
+  selector: 'app-note-list',
   template: '',
   providers: [
     { provide: NoteListComponent, useClass: NoteListComponentStub }

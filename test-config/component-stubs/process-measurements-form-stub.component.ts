@@ -2,13 +2,13 @@
 import { Component } from '@angular/core';
 
 /* Page imports */
-import { ProcessMeasurementsFormPage } from '../../src/app/pages/forms/process-measurements-form/process-measurements-form.page';
+import { ProcessMeasurementsFormComponent } from '../../src/app/components/process/public/process-measurements-form/process-measurements-form.component';
 
 @Component({
-  selector: 'page-process-measurements-form',
+  selector: 'app-process-measurements-form',
   template: '',
   providers: [
-    { provide: ProcessMeasurementsFormPage, useClass: ProcessMeasurementsFormPageStub }
+    { provide: ProcessMeasurementsFormComponent, useClass: ProcessMeasurementsFormComponentStub }
   ]
 })
-export class ProcessMeasurementsFormPageStub {}
+export class ProcessMeasurementsFormComponentStub {}

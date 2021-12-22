@@ -5,10 +5,10 @@ import { Component, Input } from '@angular/core';
 import { GrainBill } from '../../src/app/shared/interfaces';
 
 /* Component imports */
-import { GrainBillComponent } from '../../src/app/components/ingredient/public/grain-bill/grain-bill.component';
+import { GrainBillComponent } from '../../src/app/components/ingredient/private/grain-bill/grain-bill.component';
 
 @Component({
-  selector: 'grain-bill',
+  selector: 'app-grain-bill',
   template: '',
   providers: [
     { provide: GrainBillComponent, useClass: GrainBillComponentStub }

@@ -8,7 +8,7 @@ import { RecipeVariant } from '../../src/app/shared/interfaces';
 import { IngredientListComponent } from '../../src/app/components/ingredient/public/ingredient-list/ingredient-list.component';
 
 @Component({
-  selector: 'ingredient-list',
+  selector: 'app-ingredient-list',
   template: '',
   providers: [
     { provide: IngredientListComponent, useClass: IngredientListComponentStub }
@@ -17,4 +17,5 @@ import { IngredientListComponent } from '../../src/app/components/ingredient/pub
 export class IngredientListComponentStub {
   @Input() recipeVariant: RecipeVariant = null;
   @Input() refreshPipes: boolean = false;
+  hasIngredients: boolean = false;
 }
