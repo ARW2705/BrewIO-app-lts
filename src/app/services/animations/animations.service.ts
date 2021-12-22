@@ -1,7 +1,7 @@
 /* Module imports */
 import { Injectable, Renderer2 } from '@angular/core';
 import { Animation, AnimationController } from '@ionic/angular';
-import { Observable, Observer, forkJoin, throwError } from 'rxjs';
+import { forkJoin, Observable, Observer, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 /* Servic eimports */
@@ -38,13 +38,9 @@ export class AnimationsService {
    * @return: configured animation
    */
   collapse(element: HTMLElement, options?: object): Animation {
-    let direction: number = -50;
     let duration: number = 250;
 
     if (options) {
-      if (options.hasOwnProperty('direction')) {
-        direction = options['direction'];
-      }
       if (options.hasOwnProperty('duration')) {
         duration = options['duration'];
       }
@@ -53,8 +49,7 @@ export class AnimationsService {
     return this.animationCtrl.create()
       .addElement(element)
       .duration(duration)
-      .fromTo('transform', 'translateY(0%)', `translateY(${direction}%)`)
-      .fromTo('height', 'auto', 0)
+      .fromTo('maxHeight', '100vh', 0)
       .fromTo('opacity', 1, 0);
   }
 
@@ -67,13 +62,9 @@ export class AnimationsService {
    * @return: configured animation
    */
   expand(element: HTMLElement, options?: object): Animation {
-    let direction: number = -50;
     let duration: number = 250;
 
     if (options) {
-      if (options.hasOwnProperty('direction')) {
-        direction = options['direction'];
-      }
       if (options.hasOwnProperty('duration')) {
         duration = options['duration'];
       }
@@ -83,8 +74,7 @@ export class AnimationsService {
       .addElement(element)
       .duration(duration)
       .easing('ease-in')
-      .fromTo('transform', `translateY(${direction}%)`, 'translateY(0%)')
-      .fromTo('height', 0, 'auto')
+      .fromTo('maxHeight', 0, '100vh')
       .fromTo('opacity', 0, 1);
   }
 
@@ -285,7 +275,6 @@ export class AnimationsService {
       .from(ionItems)
       .map((node: Node): HTMLElement => <HTMLElement>node);
     let showCount: number = this.getAboveFoldCount(containerElement, ionItemElems[0]);
-
     if (showCount === -1) {
       showCount = ionItems.length / 2;
     }
@@ -358,7 +347,6 @@ export class AnimationsService {
     slideDistance: number = 0,
     offsetDelay: number = 0
   ): Observable<null[]> {
-    console.log('sliding distance', slideDistance);
     let animationQueue: Observable<null>[];
     try {
       const slidingElements: HTMLElement[] = this.getSlidingElements(containerElement, parentElement);
@@ -374,11 +362,6 @@ export class AnimationsService {
 
     return forkJoin(animationQueue)
       .pipe(catchError(this.errorReporter.handleGenericCatchError(this.getAnimationError())));
-  }
-
-  getAnimationError(): Error {
-    const message: string = 'An error occurred playing sliding hint animations';
-    return new CustomError('AnimationError', message, 4, message);
   }
 
   /**
@@ -414,6 +397,17 @@ export class AnimationsService {
   /***** Animation Errors *****/
 
   /**
+   * Generate a custom animation error
+   *
+   * @param: none
+   * @return: custom animation error
+   */
+  getAnimationError(): CustomError {
+    const message: string = 'An error occurred playing sliding hint animations';
+    return new CustomError('AnimationError', message, this.errorReporter.lowSeverity, message);
+  }
+
+  /**
    * Report an animation error when containing element is not found
    *
    * @param: none
@@ -423,7 +417,7 @@ export class AnimationsService {
     const message: string = 'Cannot find content container';
     this.errorReporter.setErrorReport(
       this.errorReporter.getCustomReportFromError(
-        new CustomError('AnimationError', message, this.errorReporter.lowestSeverity, message)
+        new CustomError('AnimationError', message, this.errorReporter.lowSeverity, message)
       )
     );
   }
