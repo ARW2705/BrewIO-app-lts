@@ -5,17 +5,14 @@ import { ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-confirmation',
-  templateUrl: './confirmation.page.html',
-  styleUrls: ['./confirmation.page.scss'],
+  templateUrl: './confirmation.component.html',
+  styleUrls: ['./confirmation.component.scss'],
 })
-export class ConfirmationPage {
+export class ConfirmationComponent {
   @Input() message: string;
   @Input() subMessage: string;
-  onBackClick: () => void;
 
-  constructor(public modalCtrl: ModalController) {
-    this.onBackClick = this.submit.bind(this, false);
-  }
+  constructor(public modalCtrl: ModalController) {}
 
   /**
    * Confirm by calling modal controller dismiss

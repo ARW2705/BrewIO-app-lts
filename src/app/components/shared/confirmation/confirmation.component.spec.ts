@@ -4,23 +4,23 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '../../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { ModalControllerStub } from '../../../../test-config/ionic-stubs';
+import { ModalControllerStub } from '../../../../../test-config/ionic-stubs';
 
 /* Page imports */
-import { ConfirmationPage } from './confirmation.page';
+import { ConfirmationComponent } from './confirmation.component';
 
 
-describe('ConfirmationPage', (): void => {
+describe('ConfirmationComponent', (): void => {
   configureTestBed();
-  let fixture: ComponentFixture<ConfirmationPage>;
-  let page: ConfirmationPage;
+  let fixture: ComponentFixture<ConfirmationComponent>;
+  let component: ConfirmationComponent;
 
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
-      declarations: [ ConfirmationPage ],
+      declarations: [ ConfirmationComponent ],
       providers: [
         { provide: ModalController, useClass: ModalControllerStub }
       ],
@@ -32,35 +32,29 @@ describe('ConfirmationPage', (): void => {
   .catch(done.fail));
 
   beforeEach((): void => {
-    fixture = TestBed.createComponent(ConfirmationPage);
-    page = fixture.componentInstance;
+    fixture = TestBed.createComponent(ConfirmationComponent);
+    component = fixture.componentInstance;
   });
 
   test('should create the component', (): void => {
     fixture.detectChanges();
 
-    expect(page).toBeDefined();
-  });
-
-  test('should assign back click handler', (): void => {
-    fixture.detectChanges();
-
-    expect(page.onBackClick).toBeDefined();
+    expect(component).toBeDefined();
   });
 
   test('should dismiss the modal with a result', (): void => {
-    page.modalCtrl.dismiss = jest.fn();
-    const dismissSpy: jest.SpyInstance = jest.spyOn(page.modalCtrl, 'dismiss');
+    component.modalCtrl.dismiss = jest.fn();
+    const dismissSpy: jest.SpyInstance = jest.spyOn(component.modalCtrl, 'dismiss');
 
     fixture.detectChanges();
 
-    page.submit(true);
+    component.submit(true);
     expect(dismissSpy).toHaveBeenCalledWith(true);
   });
 
   test('should render the template', (): void => {
-    page.message = 'test message';
-    page.subMessage = 'test sub message';
+    component.message = 'test message';
+    component.subMessage = 'test sub message';
 
     fixture.detectChanges();
 
