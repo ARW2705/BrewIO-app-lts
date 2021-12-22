@@ -1,8 +1,8 @@
 /* Module imports */
 import { Injectable } from '@angular/core';
-import { Platform } from '@ionic/angular';
 import { Network } from '@ionic-native/network/ngx';
-import { Observable, EMPTY } from 'rxjs';
+import { Platform } from '@ionic/angular';
+import { EMPTY, Observable } from 'rxjs';
 
 
 @Injectable({
@@ -36,7 +36,6 @@ export class ConnectionService {
    * Check if device is connected to a network
    *
    * @param: none
-   *
    * @return: true if connected to a network
    */
   isConnected(): boolean {
@@ -47,7 +46,6 @@ export class ConnectionService {
    * Get listener for network on connect event
    *
    * @param: none
-   *
    * @return: observable of network connection listener
    */
   listenForConnection(): Observable<any> {
@@ -81,7 +79,6 @@ export class ConnectionService {
    * Toggle offline mode
    *
    * @param: offline - true if offline mode should be active
-   *
    * @return: none
    */
   setOfflineMode(offline: boolean): void {

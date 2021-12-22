@@ -17,9 +17,9 @@ import { ConnectionService } from './connection.service';
 describe('Connection Provider', (): void => {
 
   describe('Connection in dev mode', (): void => {
-    let injector: TestBed;
-    let connectionService: ConnectionService;
     configureTestBed();
+    let injector: TestBed;
+    let service: ConnectionService;
 
     beforeAll(async((): void => {
       TestBed.configureTestingModule({
@@ -33,29 +33,29 @@ describe('Connection Provider', (): void => {
 
     beforeEach((): void => {
       injector = getTestBed();
-      connectionService = injector.get(ConnectionService);
+      service = injector.get(ConnectionService);
     });
 
     test('should create the service', () => {
-      expect(connectionService).toBeDefined();
+      expect(service).toBeDefined();
     });
 
     test('should start connection in dev mode', (): void => {
-      expect(connectionService.connection).toBe(true);
-    }); // end 'should start conneciton in dev mode' test
+      expect(service.connection).toBe(true);
+    });
 
     test('should activate offline mode', (): void => {
-      expect(connectionService.connection).toBe(true);
-      connectionService.setOfflineMode(true);
-      expect(connectionService.connection).toBe(false);
-    }); // end 'should activate offline mode' test
+      expect(service.connection).toBe(true);
+      service.setOfflineMode(true);
+      expect(service.connection).toBe(false);
+    });
 
     test('should get the connection status', (): void => {
-      expect(connectionService.isConnected()).toBe(true);
-    }); // end 'should get the connection status' test
+      expect(service.isConnected()).toBe(true);
+    });
 
     test('should get empty network listener in dev mode', (done: jest.DoneCallback): void => {
-      connectionService.listenForConnection()
+      service.listenForConnection()
         .subscribe(
           (results: any): void => {
             console.log('Should not get any results', results);
@@ -69,18 +69,16 @@ describe('Connection Provider', (): void => {
         );
     });
 
-  }); // end 'Connection in dev mode' section
+  });
 
   describe('Connection in device mode', (): void => {
-    let injector: TestBed;
-    let connectionService: ConnectionService;
-    let consoleSpy: jest.SpyInstance;
     configureTestBed();
+    let injector: TestBed;
+    let service: ConnectionService;
+    let consoleSpy: jest.SpyInstance;
 
     beforeAll(async((): void => {
       TestBed.configureTestingModule({
-        declarations: [],
-        imports: [],
         providers: [
           ConnectionService,
           { provide: Platform, useClass: PlatformCordovaStub },
@@ -92,44 +90,41 @@ describe('Connection Provider', (): void => {
     beforeEach((): void => {
       injector = getTestBed();
       consoleSpy = jest.spyOn(console, 'log');
-      connectionService = injector.get(ConnectionService);
+      service = injector.get(ConnectionService);
     });
 
     test('should start in cordova', (): void => {
-      const connectSpy: jest.SpyInstance = jest.spyOn(connectionService.network, 'onConnect');
-      const disconnSpy: jest.SpyInstance = jest.spyOn(connectionService.network, 'onDisconnect');
+      const connectSpy: jest.SpyInstance = jest.spyOn(service.network, 'onConnect');
+      const disconnSpy: jest.SpyInstance = jest.spyOn(service.network, 'onDisconnect');
 
-      connectionService.monitor();
+      service.monitor();
 
       expect(consoleSpy.mock.calls[0][0]).toMatch('Begin monitoring');
       expect(connectSpy).toHaveBeenCalled();
       expect(disconnSpy).toHaveBeenCalledWith();
-    }); // end 'should start in cordova' test
+    });
 
     test('should get connection event in cordova', (done: jest.DoneCallback): void => {
       setTimeout((): void => {
         const callCount: number = consoleSpy.mock.calls.length;
         expect(consoleSpy.mock.calls[callCount - 1][0]).toMatch('network connection');
-        expect(connectionService.connection).toBe(true);
+        expect(service.connection).toBe(true);
         done();
       }, 10);
-    }); // end 'should get connection event in cordova' test
+    });
 
     test('should get disconnect event in cordova', (done: jest.DoneCallback): void => {
       setTimeout((): void => {
         const callCount: number = consoleSpy.mock.calls.length;
         expect(consoleSpy.mock.calls[callCount - 1][0]).toMatch('network disconnected');
-        expect(connectionService.connection).toBe(false);
+        expect(service.connection).toBe(false);
         done();
       }, 40);
-    }); // end 'should get disconnect event in cordova' test
+    });
 
     test('should get empty network listener in dev mode', (done: jest.DoneCallback): void => {
-      connectionService.network.onConnect = jest
-        .fn()
-        .mockReturnValue(of(null));
-
-      connectionService.listenForConnection()
+      service.network.onConnect = jest.fn().mockReturnValue(of(null));
+      service.listenForConnection()
         .subscribe(
           (): void => done(),
           (errors: any): void => {
@@ -139,6 +134,6 @@ describe('Connection Provider', (): void => {
         );
     });
 
-  }); // end 'Connection in device mode' section
+  });
 
 });
