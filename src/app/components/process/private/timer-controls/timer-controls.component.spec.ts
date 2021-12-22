@@ -53,7 +53,6 @@ describe('TimerControlsComponent', (): void => {
 
   test('should create the component', (): void => {
     fixture.detectChanges();
-
     expect(component).toBeDefined();
   });
 
@@ -161,7 +160,7 @@ describe('TimerControlsComponent', (): void => {
 
       fixture.detectChanges();
 
-      const buttons: NodeList = global.document.querySelectorAll('app-timer-button');
+      const buttons: NodeList = fixture.nativeElement.querySelectorAll('app-timer-button');
       expect(buttons.length).toEqual(4);
       expect(buttons.item(0)['buttonText']).toMatch('Start All');
       expect(buttons.item(1)['buttonText']).toMatch('Stop All');
