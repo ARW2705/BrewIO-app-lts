@@ -1,8 +1,7 @@
 /* Module imports */
-import { ComponentFixture, getTestBed, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
-import { IonicModule, ModalController } from '@ionic/angular';
+import { BehaviorSubject, forkJoin, Observable, of, Subject, throwError } from 'rxjs';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ActivatedRoute } from '@angular/router';
 
@@ -10,52 +9,45 @@ import { ActivatedRoute } from '@angular/router';
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockBatch, mockAlert, mockAlertPresent, mockAlertFuture } from '../../../../test-config/mock-models';
-import { ErrorReportingServiceStub, EventServiceStub, IdServiceStub, ProcessServiceStub, TimerServiceStub, ToastServiceStub, UserServiceStub } from '../../../../test-config/service-stubs';
-import { HeaderComponentStub, ProcessCalendarComponentStub, ProcessManualComponentStub, ProcessTimerComponentStub, ProcessMeasurementsFormPageStub, ProcessControlsComponentStub } from '../../../../test-config/component-stubs';
-import { ModalControllerStub, ModalStub, ActivatedRouteStub } from '../../../../test-config/ionic-stubs';
+import { mockBatch, mockAlert, mockCalendarProcess, mockCalendarMetadata, mockTimerProcess } from '../../../../test-config/mock-models';
+import { CalendarAlertServiceStub, CalendarServiceStub, ErrorReportingServiceStub, EventServiceStub, IdServiceStub, ModalServiceStub,  ProcessServiceStub, TimerServiceStub, ToastServiceStub, UserServiceStub } from '../../../../test-config/service-stubs';
+import { ActivatedRouteStub } from '../../../../test-config/ionic-stubs';
+
+/* Type imports */
+import { CustomError } from '../../shared/types';
 
 /* Interface imports */
-import { Alert, Batch, CalendarProcess, Process } from '../../shared/interfaces';
+import { Alert, Batch, CalendarMetadata, CalendarProcess, Process, TimerProcess } from '../../shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService, EventService, IdService, ProcessService, TimerService, ToastService, UserService } from '../../services/services';
+import { CalendarAlertService, CalendarService, ErrorReportingService, EventService, IdService, ModalService, ProcessService, TimerService, ToastService, UserService } from '../../services/services';
+
+/* Component imports */
+import { ProcessCalendarComponent, ProcessMeasurementsFormComponent } from '../../components/process/public';
 
 /* Page imports */
 import { ProcessPage } from './process.page';
-import { ProcessMeasurementsFormPage } from '../forms/process-measurements-form/process-measurements-form.page';
 
 
 describe('ProcessPage', (): void => {
-  let fixture: ComponentFixture<ProcessPage>;
-  let processPage: ProcessPage;
-  let injector: TestBed;
-  let originalOnInit: any;
-  let originalOnDestroy: any;
-  let originalQuery: any;
   configureTestBed();
+  let fixture: ComponentFixture<ProcessPage>;
+  let page: ProcessPage;
+  let originalOnInit: () => void;
+  let originalOnDestroy: () => void;
 
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
-      declarations: [
-        ProcessPage,
-        HeaderComponentStub,
-        ProcessCalendarComponentStub,
-        ProcessManualComponentStub,
-        ProcessTimerComponentStub,
-        ProcessMeasurementsFormPageStub,
-        ProcessControlsComponentStub
-      ],
-      imports: [
-        IonicModule,
-        RouterTestingModule
-      ],
+      declarations: [ ProcessPage ],
+      imports: [ RouterTestingModule ],
       providers: [
         { provide: ActivatedRoute, useClass: ActivatedRouteStub },
-        { provide: ModalController, useClass: ModalControllerStub },
+        { provide: CalendarAlertService, useClass: CalendarAlertServiceStub },
+        { provide: CalendarService, useClass: CalendarServiceStub },
         { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: EventService, useClass: EventServiceStub },
         { provide: IdService, useClass: IdServiceStub },
+        { provide: ModalService, useClass: ModalServiceStub },
         { provide: ProcessService, useClass: ProcessServiceStub },
         { provide: TimerService, useClass: TimerServiceStub },
         { provide: ToastService, useClass: ToastServiceStub },
@@ -70,81 +62,57 @@ describe('ProcessPage', (): void => {
 
   beforeEach((): void => {
     fixture = TestBed.createComponent(ProcessPage);
-    processPage = fixture.componentInstance;
-    originalOnInit = processPage.ngOnInit;
-    originalOnDestroy = processPage.ngOnDestroy;
-    originalQuery = global.document.querySelector;
-    processPage.ngOnInit = jest
-      .fn();
-    processPage.ngOnDestroy = jest
-      .fn();
-    processPage.toastService.presentToast = jest
-      .fn();
-    processPage.toastService.presentErrorToast = jest
-      .fn();
-    processPage.errorReporter.handleUnhandledError = jest
-      .fn();
-    processPage.errorReporter.handleGenericCatchError = jest
-      .fn()
+    page = fixture.componentInstance;
+    originalOnInit = page.ngOnInit;
+    originalOnDestroy = page.ngOnDestroy;
+    page.ngOnInit = jest.fn();
+    page.ngOnDestroy = jest.fn();
+    page.toastService.presentToast = jest.fn();
+    page.toastService.presentErrorToast = jest.fn();
+    page.toastService.shortDuration = 1000;
+    page.toastService.mediumDuration = 1500;
+    page.errorReporter.handleUnhandledError = jest.fn();
+    page.errorReporter.handleGenericCatchError = jest.fn()
       .mockImplementation((): (error: any) => Observable<never> => {
         return (error: any): Observable<never> => throwError(error);
       });
-    injector = getTestBed();
-  });
-
-  afterEach((): void => {
-    global.document.querySelector = originalQuery;
+    const _mockBatch: Batch = mockBatch();
+    page.selectedBatch = _mockBatch;
+    const currentProcess: Process = _mockBatch.process.schedule[_mockBatch.process.currentStep];
+    page.stepType = currentProcess.type;
+    page.stepData = currentProcess;
   });
 
   test('should create the component', (): void => {
     fixture.detectChanges();
-
-    expect(processPage).toBeDefined();
+    expect(page).toBeTruthy();
   });
 
   describe('Lifecycle', (): void => {
 
     test('should init the component', (done: jest.DoneCallback): void => {
-      processPage.ngOnInit = originalOnInit;
-
-      processPage.listenForRouteChanges = jest
-        .fn();
-
-      processPage.event.register = jest
-        .fn()
-        .mockReturnValue(of({}));
-
-      processPage.changeDateEventHandler = jest
-        .fn();
-
-      processPage.idService.getId = jest
-        .fn()
-        .mockReturnValue('');
-
-      const changeSpy: jest.SpyInstance = jest.spyOn(processPage, 'changeDateEventHandler');
+      page.ngOnInit = originalOnInit;
+      page.listenForRouteChanges = jest.fn();
+      const listenSpy: jest.SpyInstance = jest.spyOn(page, 'listenForRouteChanges');
 
       fixture.detectChanges();
 
       setTimeout((): void => {
-        expect(changeSpy).toHaveBeenCalled();
+        expect(listenSpy).toHaveBeenCalled();
         done();
       }, 10);
     });
 
     test('should handle destroying the component', (): void => {
-      processPage.ngOnDestroy = originalOnDestroy;
-
-      processPage.event.unregister = jest
-        .fn();
-
-      const nextSpy: jest.SpyInstance = jest.spyOn(processPage.destroy$, 'next');
-      const completeSpy: jest.SpyInstance = jest.spyOn(processPage.destroy$, 'complete');
-      const unregisterSpy: jest.SpyInstance = jest.spyOn(processPage.event, 'unregister');
+      page.ngOnDestroy = originalOnDestroy;
+      page.event.unregister = jest.fn();
+      const nextSpy: jest.SpyInstance = jest.spyOn(page.destroy$, 'next');
+      const completeSpy: jest.SpyInstance = jest.spyOn(page.destroy$, 'complete');
+      const unregisterSpy: jest.SpyInstance = jest.spyOn(page.event, 'unregister');
 
       fixture.detectChanges();
 
-      processPage.ngOnDestroy();
-
+      page.ngOnDestroy();
       expect(nextSpy).toHaveBeenCalledWith(true);
       expect(completeSpy).toHaveBeenCalled();
       expect(unregisterSpy).toHaveBeenCalledWith('change-date');
@@ -153,60 +121,312 @@ describe('ProcessPage', (): void => {
   });
 
 
-  describe('Batch Initialization', (): void => {
+  describe('Batch Progress', (): void => {
 
-    test('should listen for changes of selected batch on continuation', (done: jest.DoneCallback): void => {
+    test('should advance batch progress', (done: jest.DoneCallback): void => {
       const _mockBatch: Batch = mockBatch();
-      const _mockBatch$: BehaviorSubject<Batch> = new BehaviorSubject<Batch>(_mockBatch);
-
-      processPage.selectedBatch$ = _mockBatch$;
-
-      processPage.timerService.addBatchTimer = jest
-        .fn();
-
-      processPage.goToActiveStep = jest
-        .fn();
-
-      processPage.idService.getId = jest
-        .fn()
-        .mockReturnValue('');
-
-      const gotoSpy: jest.SpyInstance = jest.spyOn(processPage, 'goToActiveStep');
+      page.selectedBatch = _mockBatch;
+      page.processService.updateBatch = jest.fn()
+        .mockReturnValue(of(null));
+      page.updateView = jest.fn();
+      const updateSpy: jest.SpyInstance = jest.spyOn(page, 'updateView');
 
       fixture.detectChanges();
 
-      processPage.listenForBatchChanges(true);
-
+      const nextIndex: number = 5;
+      page.advanceBatch(nextIndex);
       setTimeout((): void => {
-        expect(gotoSpy).toHaveBeenCalled();
+        expect(page.selectedBatch.process.currentStep).toEqual(nextIndex);
+        expect(page.viewStepIndex).toEqual(nextIndex);
+        expect(updateSpy).toHaveBeenCalled();
         done();
       }, 10);
     });
 
-    test('should listen for changes of selected batch on start', (done: jest.DoneCallback): void => {
-      const _mockBatch: Batch = mockBatch();
-      const _mockBatch$: BehaviorSubject<Batch> = new BehaviorSubject<Batch>(_mockBatch);
-
-      processPage.selectedBatch$ = _mockBatch$;
-
-      processPage.timerService.addBatchTimer = jest
-        .fn();
-
-      processPage.updateViewData = jest
-        .fn();
-
-      processPage.idService.getId = jest
-        .fn()
-        .mockReturnValue('');
-
-      const viewSpy: jest.SpyInstance = jest.spyOn(processPage, 'updateViewData');
+    test('should catch error advancing batch progress', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+      page.processService.updateBatch = jest.fn()
+        .mockReturnValue(throwError(_mockError));
+      const errorSpy: jest.SpyInstance = jest.spyOn(page.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
-      processPage.listenForBatchChanges(false);
-
+      page.advanceBatch(0);
       setTimeout((): void => {
-        expect(viewSpy).toHaveBeenCalled();
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
+        done();
+      }, 10);
+    });
+
+    test('should complete a step', (): void => {
+      page.getStep = jest.fn()
+        .mockReturnValueOnce(-1)
+        .mockReturnValueOnce(0);
+      page.endBatch = jest.fn();
+      const endSpy: jest.SpyInstance = jest.spyOn(page, 'endBatch');
+      page.advanceBatch = jest.fn();
+      const advanceSpy: jest.SpyInstance = jest.spyOn(page, 'advanceBatch');
+
+      fixture.detectChanges();
+
+      page.completeStep();
+      expect(endSpy).toHaveBeenCalled();
+      expect(advanceSpy).not.toHaveBeenCalled();
+      page.completeStep();
+      expect(advanceSpy).toHaveBeenCalledWith(0);
+    });
+
+    test('should continue batch', (): void => {
+      const _mockBatch: Batch = mockBatch();
+      const _mockBatch$: BehaviorSubject<Batch> = new BehaviorSubject<Batch>(_mockBatch);
+      page.processService.getBatchById = jest.fn()
+        .mockReturnValueOnce(undefined)
+        .mockReturnValueOnce(_mockBatch$);
+      page.listenForBatchChanges = jest.fn();
+      const listenSpy: jest.SpyInstance = jest.spyOn(page, 'listenForBatchChanges');
+      page.errorReporter.setErrorReportFromCustomError = jest.fn();
+      const _mockError: Error = new Error('test-error');
+      page.getMissingError = jest.fn()
+        .mockReturnValue(_mockError);
+      const errorSpy: jest.SpyInstance = jest.spyOn(page.errorReporter, 'setErrorReportFromCustomError');
+
+      fixture.detectChanges();
+
+      page.continueBatch('test-id');
+      expect(errorSpy).toHaveBeenCalledWith(_mockError);
+      page.continueBatch('test-id');
+      expect(listenSpy).toHaveBeenCalledWith(true);
+    });
+
+    test('should end a batch', (done: jest.DoneCallback): void => {
+      const _mockBatch: Batch = mockBatch()
+      page.selectedBatch = _mockBatch;
+      page.timerService.removeBatchTimer = jest.fn();
+      const timerSpy: jest.SpyInstance = jest.spyOn(page.timerService, 'removeBatchTimer');
+      page.openMeasurementFormModal = jest.fn();
+      const modalSpy: jest.SpyInstance = jest.spyOn(page, 'openMeasurementFormModal');
+      page.idService.getId = jest.fn()
+        .mockReturnValue('test-id');
+      const idSpy: jest.SpyInstance = jest.spyOn(page.idService, 'getId');
+      page.processService.endBatchById = jest.fn()
+        .mockReturnValue(of(null));
+      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+
+      fixture.detectChanges();
+
+      page.endBatch();
+      setTimeout((): void => {
+        expect(timerSpy).toHaveBeenCalledWith(_mockBatch.cid);
+        expect(modalSpy).toHaveBeenCalledWith(true);
+        expect(idSpy).toHaveBeenCalledWith(_mockBatch);
+        expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('batch completed');
+        done();
+      }, 10);
+    });
+
+    test('should catch error on end batch', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+      page.timerService.removeBatchTimer = jest.fn();
+      page.openMeasurementFormModal = jest.fn();
+      page.processService.endBatchById = jest.fn()
+        .mockReturnValue(throwError(_mockError));
+      page.errorReporter.handleUnhandledError = jest.fn();
+      const errorSpy: jest.SpyInstance = jest.spyOn(page.errorReporter, 'handleUnhandledError');
+
+      fixture.detectChanges();
+
+      page.endBatch();
+      setTimeout((): void => {
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
+        done();
+      }, 10);
+    });
+
+    test('should handle batch change', (): void => {
+      const _mockBatch: Batch = mockBatch();
+      page.selectedBatch = _mockBatch;
+      const _mockBatchChange: Batch = mockBatch();
+      _mockBatchChange.cid += '1';
+      page.timerService.addBatchTimer = jest.fn();
+      const timerSpy: jest.SpyInstance = jest.spyOn(page.timerService, 'addBatchTimer');
+      page.goToActiveStep = jest.fn();
+      const gotoSpy: jest.SpyInstance = jest.spyOn(page, 'goToActiveStep');
+      page.updateView = jest.fn();
+      const updateSpy: jest.SpyInstance = jest.spyOn(page, 'updateView');
+
+      fixture.detectChanges();
+
+      page.handleBatchChange(_mockBatchChange, true);
+      expect(timerSpy).toHaveBeenCalledWith(_mockBatchChange);
+      expect(page.selectedBatch).toStrictEqual(_mockBatchChange);
+      expect(gotoSpy).toHaveBeenCalled();
+      page.selectedBatch = _mockBatch;
+      page.handleBatchChange(_mockBatchChange, false);
+      expect(page.selectedBatch).toStrictEqual(_mockBatchChange);
+      expect(updateSpy).toHaveBeenCalled();
+    });
+
+    test('should start a new batch', (done: jest.DoneCallback): void => {
+      page.viewStepIndex = 10;
+      page.atViewEnd = true;
+      const _mockBatch: Batch = mockBatch();
+      page.processService.startNewBatch = jest.fn()
+        .mockReturnValue(of(_mockBatch));
+      const startSpy: jest.SpyInstance = jest.spyOn(page.processService, 'startNewBatch');
+      page.idService.getId = jest.fn()
+        .mockReturnValue('test-id');
+      const _mockBatch$: BehaviorSubject<Batch> = new BehaviorSubject<Batch>(_mockBatch);
+      page.processService.getBatchById = jest.fn()
+        .mockReturnValue(_mockBatch$);
+      page.listenForBatchChanges = jest.fn();
+      const listenSpy: jest.SpyInstance = jest.spyOn(page, 'listenForBatchChanges');
+      const _mockConfig: { [key: string]: any } = {
+        requestedUserId: 'user-id',
+        recipeMasterId: 'master-id',
+        recipeVariantId: 'variant-id'
+      };
+
+      fixture.detectChanges();
+
+      page.startNewBatch(_mockConfig);
+      setTimeout((): void => {
+        expect(page.viewStepIndex).toEqual(0);
+        expect(page.atViewEnd).toBe(false);
+        expect(page.selectedBatch$).toStrictEqual(_mockBatch$);
+        expect(startSpy).toHaveBeenCalledWith(_mockConfig.requestedUserId, _mockConfig.recipeMasterId, _mockConfig.recipeVariantId);
+        expect(listenSpy).toHaveBeenCalledWith(false);
+        done();
+      }, 10);
+    });
+
+    test('should handle error on batch start', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+      page.processService.startNewBatch = jest.fn()
+        .mockReturnValue(throwError(_mockError));
+      page.errorReporter.handleGenericCatchError = jest.fn()
+        .mockImplementation((): (error: Error) => Observable<never> => {
+          return (error: Error): Observable<never> => throwError(error);
+        });
+      const errorSpy: jest.SpyInstance = jest.spyOn(page.errorReporter, 'handleUnhandledError');
+
+      fixture.detectChanges();
+
+      page.startNewBatch({});
+      setTimeout((): void => {
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
+        done();
+      }, 10);
+    });
+
+    test('should throw error on batch start if generated batch cannot be found', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+      page.getMissingError = jest.fn()
+        .mockReturnValue(_mockError);
+      page.processService.startNewBatch = jest.fn()
+        .mockReturnValue(of(null));
+      page.processService.getBatchById = jest.fn()
+        .mockReturnValue(undefined);
+      page.errorReporter.handleGenericCatchError = jest.fn()
+        .mockImplementation((): (error: Error) => Observable<never> => {
+          return (error: Error): Observable<never> => throwError(error);
+        });
+      const errorSpy: jest.SpyInstance = jest.spyOn(page.errorReporter, 'handleUnhandledError');
+
+      fixture.detectChanges();
+
+      page.startNewBatch({});
+      setTimeout((): void => {
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
+        done();
+      }, 10);
+    });
+
+  });
+
+
+  describe('Calendar Methods', (): void => {
+
+    test('should handle change date event', (): void => {
+      const _mockBatch: Batch = mockBatch();
+      page.selectedBatch = _mockBatch;
+      page.stopCalendarInProgress = jest.fn();
+      const stopSpy: jest.SpyInstance = jest.spyOn(page, 'stopCalendarInProgress');
+      page.calendarAlertService.clearAlertsForCurrentStep = jest.fn();
+      const alertSpy: jest.SpyInstance = jest.spyOn(page.calendarAlertService, 'clearAlertsForCurrentStep');
+      const toastSpy: jest.SpyInstance = jest.spyOn(page.toastService, 'presentToast');
+
+      fixture.detectChanges();
+
+      page.changeDateEventHandler();
+      expect(stopSpy).toHaveBeenCalledWith(_mockBatch.process.currentStep);
+      expect(alertSpy).toHaveBeenCalledWith(_mockBatch.process);
+      expect(toastSpy).toHaveBeenCalledWith(
+        'Select New Dates',
+        page.toastService.mediumDuration,
+        'middle'
+      );
+    });
+
+    test('should check if a calendar has been started', (): void => {
+      const _mockBatch: Batch = mockBatch();
+      page.selectedBatch = _mockBatch;
+      page.calendarService.hasCalendarStarted = jest.fn()
+        .mockReturnValue(false);
+      const calendarSpy: jest.SpyInstance = jest.spyOn(page.calendarService, 'hasCalendarStarted');
+
+      fixture.detectChanges();
+
+      page.hasCalendarStarted()
+      expect(calendarSpy).toHaveBeenCalledWith(_mockBatch);
+    });
+
+    test('should start a calendar step', (): void => {
+      const _mockBatch: Batch = mockBatch();
+      page.selectedBatch = _mockBatch;
+      page.calendarService.startCalendar = jest.fn();
+      const startSpy: jest.SpyInstance = jest.spyOn(page.calendarService, 'startCalendar');
+
+      fixture.detectChanges();
+
+      const _mockCalendarMetadata: CalendarMetadata = mockCalendarMetadata();
+      const calRef: ProcessCalendarComponent = ({ getSelectedCalendarData: (): CalendarMetadata => _mockCalendarMetadata } as unknown) as ProcessCalendarComponent;
+      page.calendarRef = calRef;
+      page.startCalendar();
+      expect(startSpy).toHaveBeenCalledWith(_mockBatch, _mockCalendarMetadata);
+    });
+
+    test('should stop a calendar in progress', (): void => {
+      const _mockBatch: Batch = mockBatch();
+      const _mockCalendarProcess: CalendarProcess = mockCalendarProcess();
+      _mockCalendarProcess.startDatetime = 'test';
+      _mockBatch.process.schedule.push(_mockCalendarProcess);
+      page.selectedBatch = _mockBatch;
+      page.isCalendarInProgress = true;
+
+      fixture.detectChanges();
+
+      page.stopCalendarInProgress(_mockBatch.process.schedule.length - 1);
+      expect(_mockCalendarProcess.hasOwnProperty('startDatetime')).toBe(false);
+      expect(page.isCalendarInProgress).toBe(false);
+    });
+
+  });
+
+
+  describe('Listeners', (): void => {
+
+    test('should listen for batch changes', (done: jest.DoneCallback): void => {
+      const _mockBatch: Batch = mockBatch();
+      const _mockBatch$: BehaviorSubject<Batch> = new BehaviorSubject<Batch>(_mockBatch);
+      page.selectedBatch$ = _mockBatch$;
+      page.handleBatchChange = jest.fn();
+      const handleSpy: jest.SpyInstance = jest.spyOn(page, 'handleBatchChange');
+
+      fixture.detectChanges();
+
+      page.listenForBatchChanges(true);
+      setTimeout((): void => {
+        expect(handleSpy).toHaveBeenCalledWith(_mockBatch, true);
         done();
       }, 10);
     });
@@ -214,786 +434,155 @@ describe('ProcessPage', (): void => {
     test('should handle error on batch change', (done: jest.DoneCallback): void => {
       const _mockBatch: Batch = mockBatch();
       const _mockBatch$: BehaviorSubject<Batch> = new BehaviorSubject<Batch>(_mockBatch);
+      page.selectedBatch$ = _mockBatch$;
+      page.handleBatchChange = jest.fn();
       const _mockError: Error = new Error('test-error');
-
-      processPage.selectedBatch$ = _mockBatch$;
-
-      processPage.timerService.addBatchTimer = jest
-        .fn();
-
-      processPage.goToActiveStep = jest
-        .fn();
-
-      processPage.idService.getId = jest
-        .fn()
-        .mockReturnValue('');
-
-      const errorSpy: jest.SpyInstance = jest.spyOn(processPage.errorReporter, 'handleUnhandledError');
+      const errorSpy: jest.SpyInstance = jest.spyOn(page.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
-      processPage.listenForBatchChanges(true);
-
+      page.listenForBatchChanges(true);
       _mockBatch$.error(_mockError);
-
       setTimeout((): void => {
         expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
     });
 
-    test('should listen for route changes on batch continuation', (done: jest.DoneCallback): void => {
-      const _mockBatch: Batch = mockBatch();
-
-      processPage.router.getCurrentNavigation = jest
-        .fn()
-        .mockReturnValue({
-          extras: {
-            state: {
-              rootURL: 'rootURL',
-              requestedUserId: _mockBatch.owner,
-              recipeMasterId: _mockBatch.recipeMasterId,
-              recipeVariantId: _mockBatch.recipeVariantId,
-              selectedBatchId: _mockBatch.cid
-            }
-          }
-        });
-
-      processPage.continueBatch = jest
-        .fn();
-
-      const continueSpy: jest.SpyInstance = jest.spyOn(processPage, 'continueBatch');
+    test('should listen for route changes on start', (done: jest.DoneCallback): void => {
+      const configDataWithId: { [key: string]: any } = {};
+      const _mockParams: any = new Subject<any>();
+      page.route.queryParams = _mockParams;
+      page.handleRouteChange = jest.fn()
+        .mockReturnValue(of(configDataWithId));
+      const handleSpy: jest.SpyInstance = jest.spyOn(page, 'handleRouteChange');
+      page.startNewBatch = jest.fn();
+      const startSpy: jest.SpyInstance = jest.spyOn(page, 'startNewBatch');
 
       fixture.detectChanges();
 
-      processPage.listenForRouteChanges();
-
+      page.listenForRouteChanges();
+      _mockParams.next(configDataWithId);
       setTimeout((): void => {
-        expect(continueSpy).toHaveBeenCalled();
+        expect(handleSpy).toHaveBeenCalled();
+        expect(startSpy).toHaveBeenCalledWith({});
         done();
       }, 10);
     });
 
-    test('should listen for route changes on batch continuation', (done: jest.DoneCallback): void => {
-      const _mockBatch: Batch = mockBatch();
-
-      processPage.router.getCurrentNavigation = jest
-        .fn()
-        .mockReturnValue({
-          extras: {
-            state: {
-              rootURL: 'rootURL',
-              requestedUserId: _mockBatch.owner,
-              recipeMasterId: _mockBatch.recipeMasterId,
-              recipeVariantId: _mockBatch.recipeVariantId,
-              selectedBatchId: undefined
-            }
-          }
-        });
-
-      processPage.startNewBatch = jest
-        .fn();
-
-      const startSpy: jest.SpyInstance = jest.spyOn(processPage, 'startNewBatch');
+    test('should listen for route changes on continuation', (done: jest.DoneCallback): void => {
+      const configDataWithId: { [key: string]: any } = { selectedBatchId: 'test-id' };
+      const _mockParams: any = new Subject<any>();
+      page.route.queryParams = _mockParams;
+      page.handleRouteChange = jest.fn()
+        .mockReturnValue(of(configDataWithId));
+      const handleSpy: jest.SpyInstance = jest.spyOn(page, 'handleRouteChange');
+      page.continueBatch = jest.fn();
+      const continueSpy: jest.SpyInstance = jest.spyOn(page, 'continueBatch');
 
       fixture.detectChanges();
 
-      processPage.listenForRouteChanges();
-
+      page.listenForRouteChanges();
+      _mockParams.next(configDataWithId);
       setTimeout((): void => {
-        expect(startSpy).toHaveBeenCalled();
+        expect(handleSpy).toHaveBeenCalled();
+        expect(continueSpy).toHaveBeenCalledWith('test-id');
         done();
       }, 10);
     });
 
-    test('should handle an error on route change', (done: jest.DoneCallback): void => {
+    test('should handle error on route change error', (done: jest.DoneCallback): void => {
+      const _mockParams: any = new Subject<any>();
+      page.route.queryParams = _mockParams;
+      const handleSpy: jest.SpyInstance = jest.spyOn(page.errorReporter, 'handleGenericCatchError');
+      const errorSpy: jest.SpyInstance = jest.spyOn(page.errorReporter, 'handleUnhandledError');
+
+      fixture.detectChanges();
+
+      page.listenForRouteChanges();
       const _mockError: Error = new Error('test-error');
-
-      processPage.route.queryParams = throwError(_mockError);
-
-      const errorSpy: jest.SpyInstance = jest.spyOn(processPage.errorReporter, 'handleUnhandledError');
-
-      fixture.detectChanges();
-
-      processPage.listenForRouteChanges();
-
+      _mockParams.error(_mockError);
       setTimeout((): void => {
+        expect(handleSpy).toHaveBeenCalled();
         expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
     });
 
-    test('should handle error from nav data on route change', (done: jest.DoneCallback): void => {
-      const _mockError: Error = new Error('test-error');
+  });
 
-      processPage.router.getCurrentNavigation = jest
-        .fn()
-        .mockImplementation((): void => { throw _mockError; });
 
-      const errorSpy: jest.SpyInstance = jest.spyOn(processPage.errorReporter, 'handleUnhandledError');
+  describe('Modals', (): void => {
 
-      fixture.detectChanges();
-
-      processPage.listenForRouteChanges();
-
-      setTimeout((): void => {
-        expect(errorSpy).toHaveBeenCalledWith(_mockError);
-        done();
-      }, 10);
-    });
-
-    test('should start a new batch', (done: jest.DoneCallback): void => {
+    test('should get measurement form modal dismiss handler', (done: jest.DoneCallback): void => {
       const _mockBatch: Batch = mockBatch();
-      const _mockBatch$: BehaviorSubject<Batch> = new BehaviorSubject<Batch>(_mockBatch);
-
-      processPage.processService.startNewBatch = jest
-        .fn()
+      page.processService.updateMeasuredValues = jest.fn()
         .mockReturnValue(of(_mockBatch));
-
-      processPage.processService.getBatchById = jest
-        .fn()
-        .mockReturnValue(_mockBatch$);
-
-      processPage.listenForBatchChanges = jest
-        .fn();
-
-      processPage.idService.getId = jest
-        .fn()
-        .mockReturnValue('');
-
-      const listenSpy: jest.SpyInstance = jest.spyOn(processPage, 'listenForBatchChanges');
+      const updateSpy: jest.SpyInstance = jest.spyOn(page.processService, 'updateMeasuredValues');
 
       fixture.detectChanges();
 
-      processPage.startNewBatch();
-
-      setTimeout((): void => {
-        expect(listenSpy).toHaveBeenCalledWith(false);
-        done();
-      }, 10);
-    });
-
-    test('should handle error when starting a new batch', (done: jest.DoneCallback): void => {
-      const _mockError: Error = new Error('test-error');
-
-      processPage.processService.startNewBatch = jest
-        .fn()
-        .mockReturnValue(throwError(_mockError));
-
-      const errorSpy: jest.SpyInstance = jest.spyOn(processPage.errorReporter, 'handleUnhandledError');
-
-      fixture.detectChanges();
-
-      processPage.startNewBatch();
-
-      setTimeout((): void => {
-        expect(errorSpy).toHaveBeenCalledWith(_mockError);
-        done();
-      }, 10);
-    });
-
-    test('should handle error when starting a new batch and unable to find stored batch', (done: jest.DoneCallback): void => {
-      const _mockBatch: Batch = mockBatch();
-
-      processPage.processService.startNewBatch = jest
-        .fn()
-        .mockReturnValue(of(_mockBatch));
-
-      processPage.processService.getBatchById = jest
-        .fn()
-        .mockReturnValue(undefined);
-
-      processPage.idService.getId = jest
-        .fn()
-        .mockReturnValue('');
-
-      processPage.errorReporter.handleGenericCatchError = jest
-        .fn()
-        .mockImplementation((): (error: any) => Observable<never> => {
-          return (error: any): Observable<never> => {
-            expect(error.message).toMatch('An error occurred trying to start a new batch: new batch not found');
-            return throwError(null);
-          };
-        });
-
-      const errorSpy: jest.SpyInstance = jest.spyOn(processPage.errorReporter, 'handleUnhandledError');
-
-      fixture.detectChanges();
-
-      processPage.startNewBatch();
-
-      setTimeout((): void => {
-        expect(errorSpy).toHaveBeenCalledWith(null);
-        done();
-      }, 10);
-    });
-
-    test('should continue a batch', (): void => {
-      const _mockBatch: Batch = mockBatch();
-      const _mockBatch$: BehaviorSubject<Batch> = new BehaviorSubject<Batch>(_mockBatch);
-
-      processPage.processService.getBatchById = jest
-        .fn()
-        .mockReturnValue(_mockBatch$);
-
-      processPage.listenForBatchChanges = jest
-        .fn();
-
-      const listenSpy: jest.SpyInstance = jest.spyOn(processPage, 'listenForBatchChanges');
-
-      fixture.detectChanges();
-
-      processPage.continueBatch();
-
-      expect(listenSpy).toHaveBeenCalled();
-    });
-
-    test('should handle error continuing a batch', (): void => {
-      processPage.processService.getBatchById = jest
-        .fn()
-        .mockReturnValue(undefined);
-
-      const toastSpy: jest.SpyInstance = jest.spyOn(processPage.toastService, 'presentErrorToast');
-
-      fixture.detectChanges();
-
-      processPage.continueBatch();
-
-      expect(toastSpy).toHaveBeenCalledWith(
-        'Internal error: Batch not found',
-        processPage.navigateToRoot
+      const handler: any = page.onMeasurementFormModalDismiss(false);
+      forkJoin([
+        handler({ data: true }),
+        handler({})
+      ])
+      .subscribe(
+        ([batch, expectNull]: Batch[]): void => {
+          expect(batch).toStrictEqual(_mockBatch);
+          expect(expectNull).toBeNull();
+          expect(updateSpy).toHaveBeenCalled();
+          done();
+        },
+        (error: any): void => {
+          console.log('should not get an error', error);
+          expect(true).toBe(false);
+        }
       );
     });
 
-  });
-
-
-  describe('Child Component Functions', (): void => {
-
-    test('should get all alerts', (): void => {
+    test('should open measurement form modal', (done: jest.DoneCallback): void => {
       const _mockBatch: Batch = mockBatch();
-      const _mockAlertPresent: Alert = mockAlertPresent();
-      const _mockAlertFuture: Alert = mockAlertFuture();
-      const _mockAlertOther: Alert = mockAlert();
-
-      _mockAlertPresent.title = _mockBatch.process.schedule[_mockBatch.process.currentStep].name;
-      _mockAlertFuture.title = _mockBatch.process.schedule[_mockBatch.process.currentStep].name;
-      _mockAlertOther.title = Date.now().toString();
-
-      _mockBatch.process.alerts = [
-        _mockAlertPresent,
-        _mockAlertFuture,
-        _mockAlertOther
-      ];
-
-      processPage.selectedBatch = _mockBatch;
-
-      fixture.detectChanges();
-
-      const alerts: Alert[] = processPage.getAlerts();
-
-      expect(alerts.length).toEqual(2);
-      expect(alerts[0]).toStrictEqual(_mockAlertPresent);
-      expect(alerts[1]).toStrictEqual(_mockAlertFuture);
-    });
-
-    test('should get timer step data', (): void => {
-      const _mockBatch: Batch = mockBatch();
-
-      const singleTimerIndex: number = 10;
-      const concurrentTimerStartIndex: number = 2;
-
-      processPage.selectedBatch = _mockBatch;
-
-      processPage.viewStepIndex = singleTimerIndex;
-
-      fixture.detectChanges();
-
-      const singleTimerStep: Process[] = processPage.getTimerStepData();
-
-      expect(singleTimerStep.length).toEqual(1);
-      expect(singleTimerStep[0]).toStrictEqual(_mockBatch.process.schedule[singleTimerIndex]);
-
-      processPage.viewStepIndex = concurrentTimerStartIndex;
-
-      fixture.detectChanges();
-
-      const concurrentTimerSteps: Process[] = processPage.getTimerStepData();
-
-      expect(concurrentTimerSteps.length).toEqual(2);
-      expect(concurrentTimerSteps[0]).toStrictEqual(_mockBatch.process.schedule[concurrentTimerStartIndex]);
-      expect(concurrentTimerSteps[1]).toStrictEqual(_mockBatch.process.schedule[concurrentTimerStartIndex + 1]);
-    });
-
-    test('should handle child component control action call', (): void => {
-      processPage.changeStep = jest
-        .fn();
-
-      processPage.controlActions['changeStep'] = processPage.changeStep;
-
-      fixture.detectChanges();
-
-      const changeSpy: jest.SpyInstance = jest.spyOn(processPage, 'changeStep');
-
-      processPage.onControlActionHandler('changeStep', 'next');
-
-      expect(changeSpy).toHaveBeenCalledWith('next');
-    });
-
-    test('should handle an error from a child component control action call', (): void => {
-      const _mockError: Error = new Error('test-error');
-
-      processPage.changeStep = jest
-        .fn()
-        .mockImplementation((): void => { throw _mockError; });
-
-      processPage.controlActions['changeStep'] = processPage.changeStep;
-
-      fixture.detectChanges();
-
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
-
-      processPage.onControlActionHandler('changeStep', 'next');
-
-      const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
-      expect(consoleCalls[0]).toMatch('Control action error');
-      expect(consoleCalls[1]).toMatch('changeStep');
-      expect(consoleCalls[2]).toStrictEqual(_mockError);
-    });
-
-  });
-
-
-  describe('View Navigation', (): void => {
-
-    test('should advance batch current step', (done: jest.DoneCallback): void => {
-      const _mockBatch: Batch = mockBatch();
-      _mockBatch.process.currentStep = 0;
-
-      processPage.selectedBatch = _mockBatch;
-      processPage.viewStepIndex = 0;
-      processPage.updateViewData = jest
-        .fn();
-
-      processPage.processService.updateBatch = jest
-        .fn()
+      page.selectedBatch = _mockBatch;
+      page.modalService.openModal = jest.fn()
         .mockReturnValue(of(_mockBatch));
-
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+      const modalSpy: jest.SpyInstance = jest.spyOn(page.modalService, 'openModal');
+      page.onMeasurementFormModalDismiss = jest.fn()
+        .mockReturnValue(null);
+      const dismissSpy: jest.SpyInstance = jest.spyOn(page, 'onMeasurementFormModalDismiss');
+      const toastSpy: jest.SpyInstance = jest.spyOn(page.toastService, 'presentToast');
+      page.navToInventory = jest.fn();
+      const navSpy: jest.SpyInstance = jest.spyOn(page, 'navToInventory');
 
       fixture.detectChanges();
 
-      processPage.advanceBatch(1);
-
+      page.openMeasurementFormModal(true);
       setTimeout((): void => {
-        expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('batch increment step');
+        expect(modalSpy).toHaveBeenCalledWith(
+          ProcessMeasurementsFormComponent,
+          { areAllRequired: true, batch: _mockBatch },
+          null
+        );
+        expect(dismissSpy).toHaveBeenCalled();
+        expect(navSpy).toHaveBeenCalledWith(_mockBatch);
+        expect(toastSpy).toHaveBeenCalledWith(
+          'Measured Values Updated',
+          page.toastService.shortDuration,
+          'bottom'
+        );
         done();
       }, 10);
     });
 
-    test('should handle an error updating batch on advance batch', (done: jest.DoneCallback): void => {
-      const _mockBatch: Batch = mockBatch();
+    test('should handle measurement form error', (done: jest.DoneCallback): void => {
       const _mockError: Error = new Error('test-error');
-
-      processPage.selectedBatch = _mockBatch;
-      processPage.viewStepIndex = 0;
-      processPage.updateViewData = jest
-        .fn();
-
-      processPage.processService.updateBatch = jest
-        .fn()
+      page.modalService.openModal = jest.fn()
         .mockReturnValue(throwError(_mockError));
-
-      const errorSpy: jest.SpyInstance = jest.spyOn(processPage.errorReporter, 'handleUnhandledError');
-
-      fixture.detectChanges();
-
-      processPage.advanceBatch(1);
-
-      setTimeout((): void => {
-        expect(errorSpy).toHaveBeenCalledWith(_mockError);
-        done();
-      }, 10);
-    });
-
-    test('should change step in given direction', (): void => {
-      processPage.getStep = jest
-        .fn()
-        .mockReturnValueOnce(1)
-        .mockReturnValueOnce(-1);
-
-      processPage.updateViewData = jest
-        .fn();
-
-      processPage.viewStepIndex = 0;
-
-      const getSpy: jest.SpyInstance = jest.spyOn(processPage, 'getStep');
+      const errorSpy: jest.SpyInstance = jest.spyOn(page.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
-      processPage.changeStep('next');
-      expect(getSpy).toHaveBeenCalledWith(false, 'next');
-      expect(processPage.viewStepIndex).toEqual(1);
-
-      processPage.changeStep('prev');
-      expect(getSpy).toHaveBeenCalledWith(false, 'prev');
-      expect(processPage.viewStepIndex).toEqual(1);
-    });
-
-    test('should complete a step', (): void => {
-      processPage.getStep = jest
-        .fn()
-        .mockReturnValueOnce(1)
-        .mockReturnValueOnce(-1);
-
-      processPage.endBatch = jest
-        .fn();
-
-      processPage.advanceBatch = jest
-        .fn();
-
-      const endSpy: jest.SpyInstance = jest.spyOn(processPage, 'endBatch');
-      const advanceSpy: jest.SpyInstance = jest.spyOn(processPage, 'advanceBatch');
-
-      fixture.detectChanges();
-
-      processPage.completeStep();
-
-      expect(endSpy).not.toHaveBeenCalled();
-      expect(advanceSpy).toHaveBeenCalledWith(1);
-
-      processPage.completeStep();
-
-      expect(endSpy).toHaveBeenCalled();
-      expect(advanceSpy).toHaveBeenCalledTimes(1);
-    });
-
-    test('should end a batch', (done: jest.DoneCallback): void => {
-      const _mockBatch: Batch = mockBatch();
-
-      processPage.selectedBatch = _mockBatch;
-
-      processPage.timerService.removeBatchTimer = jest
-        .fn();
-
-      processPage.openMeasurementFormModal = jest
-        .fn();
-
-      processPage.processService.endBatchById = jest
-        .fn()
-        .mockReturnValue(of({}));
-
-      processPage.idService.getId = jest
-        .fn()
-        .mockReturnValue(_mockBatch._id);
-
-      const removeSpy: jest.SpyInstance = jest.spyOn(processPage.timerService, 'removeBatchTimer');
-      const openSpy: jest.SpyInstance = jest.spyOn(processPage, 'openMeasurementFormModal');
-      const endSpy: jest.SpyInstance = jest.spyOn(processPage.processService, 'endBatchById');
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
-
-      fixture.detectChanges();
-
-      processPage.endBatch();
-
-      setTimeout((): void => {
-        expect(removeSpy).toHaveBeenCalledWith(_mockBatch.cid);
-        expect(openSpy).toHaveBeenCalledWith(true);
-        expect(endSpy).toHaveBeenCalledWith(_mockBatch._id);
-        expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('batch completed');
-        done();
-      }, 10);
-    });
-
-    test('should handle error on end batch', (done: jest.DoneCallback): void => {
-      const _mockBatch: Batch = mockBatch();
-      const _mockError: Error = new Error('test-error');
-
-      processPage.selectedBatch = _mockBatch;
-
-      processPage.timerService.removeBatchTimer = jest
-        .fn();
-
-      processPage.openMeasurementFormModal = jest
-        .fn();
-
-      processPage.processService.endBatchById = jest
-        .fn()
-        .mockReturnValue(throwError(_mockError));
-
-      processPage.idService.getId = jest
-        .fn()
-        .mockReturnValue('');
-
-      const errorSpy: jest.SpyInstance = jest.spyOn(processPage.errorReporter, 'handleUnhandledError');
-
-      fixture.detectChanges();
-
-      processPage.endBatch();
-
-      setTimeout((): void => {
-        expect(errorSpy).toHaveBeenCalledWith(_mockError);
-        done();
-      }, 10);
-    });
-
-    test('should get next step index after concurrent timer block', (): void => {
-      const _mockBatch: Batch = mockBatch();
-
-      processPage.selectedBatch = _mockBatch;
-
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
-
-      fixture.detectChanges();
-
-      // indicies 2 and 3 are concurrent
-      const skipTo4: number = processPage.getIndexAfterSkippingConcurrent('next', 2);
-      expect(skipTo4).toEqual(4);
-      const skipTo2: number = processPage.getIndexAfterSkippingConcurrent('prev', 4);
-      expect(skipTo2).toEqual(2);
-      const noSkipNext: number = processPage.getIndexAfterSkippingConcurrent('next', 0);
-      expect(noSkipNext).toEqual(0);
-      const noSkipPrev: number = processPage.getIndexAfterSkippingConcurrent('prev', 1);
-      expect(noSkipPrev).toEqual(1);
-      const invalid: number = processPage.getIndexAfterSkippingConcurrent('other', 1);
-      expect(invalid).toEqual(-1);
-      const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
-      expect(consoleCalls[0]).toMatch('Step direction error');
-      expect(consoleCalls[1]).toMatch('other');
-    });
-
-    test('should get the next step in a given direction', (): void => {
-      const _mockBatch: Batch = mockBatch();
-      _mockBatch.process.currentStep = 2;
-
-      processPage.selectedBatch = _mockBatch;
-      processPage.viewStepIndex = 0;
-
-      processPage.getIndexAfterSkippingConcurrent = jest
-        .fn()
-        .mockImplementation((direction: string, index: number): number => index);
-
-      fixture.detectChanges();
-
-      const getNextConcurrent: number = processPage.getStep(true, 'next');
-      expect(getNextConcurrent).toEqual(2);
-
-      const getNextNonConcurrent: number = processPage.getStep(false, 'next');
-      expect(getNextNonConcurrent).toEqual(1);
-
-      processPage.selectedBatch.process.currentStep = 3;
-      processPage.viewStepIndex = 1;
-
-      const getPrevConcurrent: number = processPage.getStep(true, 'prev');
-      expect(getPrevConcurrent).toEqual(3);
-
-      const getPrevNonConcurrent: number = processPage.getStep(false, 'prev');
-      expect(getPrevNonConcurrent).toEqual(0);
-
-      processPage.selectedBatch.process.currentStep = processPage.selectedBatch.process.schedule.length - 1;
-      processPage.viewStepIndex = 0;
-
-      const getNextFromEnd: number = processPage.getStep(true, 'next');
-      expect(getNextFromEnd).toEqual(-1);
-
-      const getPrevFromStart: number = processPage.getStep(false, 'prev');
-      expect(getPrevFromStart).toEqual(-1);
-
-      const invalidDirection: number = processPage.getStep(true, 'other');
-      expect(invalidDirection).toEqual(-1);
-    });
-
-    test('should go to active step', (): void => {
-      const _mockBatch: Batch = mockBatch();
-      const midIndex: number = _mockBatch.process.schedule.length / 2;
-      _mockBatch.process.currentStep = midIndex;
-
-      processPage.selectedBatch = _mockBatch;
-
-      processPage.updateViewData = jest
-        .fn();
-
-      processPage.viewStepIndex = 0;
-
-      fixture.detectChanges();
-
-      processPage.goToActiveStep();
-
-      expect(processPage.viewStepIndex).toEqual(midIndex);
-    });
-
-    test('should update current view data', (): void => {
-      const _mockBatch: Batch = mockBatch();
-      const timerIndex: number = 10;
-      const timerStep: Process = _mockBatch.process.schedule[timerIndex];
-      _mockBatch.process.currentStep = 0;
-
-      processPage.selectedBatch = _mockBatch;
-      processPage.viewStepIndex = 0;
-
-      processPage.getTimerStepData = jest
-        .fn()
-        .mockReturnValue([timerStep]);
-
-      processPage.hasCalendarStarted = jest
-        .fn()
-        .mockReturnValue(false);
-
-      processPage.getAlerts = jest
-        .fn()
-        .mockReturnValue([]);
-
-      processPage.getIndexAfterSkippingConcurrent = jest
-        .fn();
-
-      fixture.detectChanges();
-
-      processPage.updateViewData();
-
-      expect(processPage.stepData).toStrictEqual(_mockBatch.process.schedule[0]);
-      expect(processPage.stepType).toMatch('manual');
-      expect(processPage.atViewStart).toBe(true);
-      expect(processPage.atViewEnd).toBe(false);
-
-      processPage.viewStepIndex = timerIndex;
-
-      processPage.updateViewData();
-
-      expect(processPage.stepData).toStrictEqual([_mockBatch.process.schedule[timerIndex]]);
-      expect(processPage.stepType).toMatch('timer');
-      expect(processPage.atViewStart).toBe(false);
-      expect(processPage.atViewEnd).toBe(false);
-    });
-
-  });
-
-
-  describe('Calendar Specific', (): void => {
-
-    test('should handle date change event', (): void => {
-      const _mockBatch: Batch = mockBatch();
-      const calendarIndex: number = _mockBatch.process.schedule.length - 2;
-      const calendarProcess: CalendarProcess = (<CalendarProcess>_mockBatch.process.schedule[calendarIndex]);
-
-      calendarProcess.startDatetime = (new Date()).toISOString();
-      _mockBatch.process.currentStep = calendarIndex;
-
-      processPage.selectedBatch = _mockBatch;
-
-      processPage.clearAlertsForCurrentStep = jest
-        .fn();
-
-      const toastSpy: jest.SpyInstance = jest.spyOn(processPage.toastService, 'presentToast');
-
-      fixture.detectChanges();
-
-      // expect(_mockBatch.process.schedule[calendarIndex].startDatetime).toBeDefined();
-      expect(calendarProcess.startDatetime).toBeDefined();
-
-      processPage.changeDateEventHandler();
-
-      // expect(_mockBatch.process.schedule[calendarIndex].startDatetime).toBeUndefined();
-      expect(calendarProcess.startDatetime).toBeUndefined();
-      expect(toastSpy).toHaveBeenCalledWith(
-        'Select new dates',
-        1500,
-        'middle'
-      );
-    });
-
-    test('should clear alerts for the current step', (): void => {
-      const _mockBatch: Batch = mockBatch();
-      const _mockAlertToClear: Alert = mockAlert();
-      _mockAlertToClear.title = _mockBatch.process.schedule[_mockBatch.process.currentStep].name;
-
-      const _mockAlertOther: Alert = mockAlert();
-      _mockAlertOther.title = 'other';
-
-      _mockBatch.process.alerts = [
-        _mockAlertOther,
-        _mockAlertToClear
-      ];
-
-      processPage.selectedBatch = _mockBatch;
-
-      fixture.detectChanges();
-
-      processPage.clearAlertsForCurrentStep();
-
-      expect(_mockBatch.process.alerts.length).toEqual(1);
-      expect(_mockBatch.process.alerts[0]).toStrictEqual(_mockAlertOther);
-    });
-
-    test('should check if calendar step has been started', (): void => {
-      const _mockBatch: Batch = mockBatch();
-      const calendarNotStartedIndex: number = 13;
-      const calendarStartedIndex: number = _mockBatch.process.schedule.length - 2;
-      const calendarProcess: CalendarProcess = <CalendarProcess>_mockBatch.process.schedule[calendarStartedIndex];
-
-      calendarProcess.startDatetime = (new Date()).toISOString();
-      _mockBatch.process.currentStep = calendarNotStartedIndex;
-
-      processPage.selectedBatch = _mockBatch;
-
-      fixture.detectChanges();
-
-      expect(processPage.hasCalendarStarted()).toBe(false);
-
-      processPage.selectedBatch.process.currentStep = calendarStartedIndex;
-
-      expect(processPage.hasCalendarStarted()).toBe(true);
-    });
-
-    test('should start a calendar step', (done: jest.DoneCallback): void => {
-      processPage.processService.updateStepById = jest
-        .fn()
-        .mockReturnValue(of(null));
-
-      processPage.idService.getId = jest
-        .fn()
-        .mockReturnValue('');
-
-      const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
-
-      fixture.detectChanges();
-
-      const _stubIdService: IdService = injector.get(IdService);
-      processPage.calendarRef = new ProcessCalendarComponentStub(_stubIdService);
-
-      processPage.calendarRef.startCalendar = jest
-        .fn();
-
-      processPage.startCalendar();
-
-      setTimeout((): void => {
-        expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('Started calendar');
-        done();
-      }, 10);
-    });
-
-    test('should handle error starting a calendar step', (done: jest.DoneCallback): void => {
-      const _mockError: Error = new Error('test-error');
-
-      processPage.processService.updateStepById = jest
-        .fn()
-        .mockReturnValue(throwError(_mockError));
-
-      processPage.idService.getId = jest
-        .fn()
-        .mockReturnValue('');
-
-      const errorSpy: jest.SpyInstance = jest.spyOn(processPage.errorReporter, 'handleUnhandledError');
-
-      fixture.detectChanges();
-
-      const _stubIdService: IdService = injector.get(IdService);
-      processPage.calendarRef = new ProcessCalendarComponentStub(_stubIdService);
-
-      processPage.calendarRef.startCalendar = jest
-        .fn();
-
-      processPage.startCalendar();
-
+      page.openMeasurementFormModal(true);
       setTimeout((): void => {
         expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
@@ -1005,18 +594,62 @@ describe('ProcessPage', (): void => {
 
   describe('Navigation', (): void => {
 
-    test('should nav to inventory', (): void => {
-      const _mockBatch: Batch = mockBatch();
-
-      processPage.router.navigate = jest
-        .fn();
-
-      const navSpy: jest.SpyInstance = jest.spyOn(processPage.router, 'navigate');
+    test('should handle route change', (done: jest.DoneCallback): void => {
+      const _mockConfigData: { [key: string]: any } = {
+        extras: {
+          state: {
+            rootURL: 'new-url'
+          }
+        }
+      };
+      page.rootURL = 'test-url';
+      page.router.getCurrentNavigation = jest.fn()
+        .mockReturnValue(_mockConfigData);
 
       fixture.detectChanges();
 
-      processPage.navToInventory(_mockBatch);
+      page.handleRouteChange()
+        .subscribe(
+          (configData: { [key: string]: any }): void => {
+            expect(configData).toStrictEqual(_mockConfigData.extras.state);
+            expect(page.rootURL).toMatch('new-url');
+            done();
+          },
+          (error: any): void => {
+            console.log('should not get error', error);
+            expect(true).toBe(false);
+          }
+        );
+    });
 
+    test('should handle route change error', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+      page.router.getCurrentNavigation = jest.fn()
+        .mockImplementation((): void => { throw _mockError; });
+
+      fixture.detectChanges();
+
+      page.handleRouteChange()
+        .subscribe(
+          (results: any): void => {
+            console.log('should not get results', results);
+            expect(true).toBe(false);
+          },
+          (error: Error): void => {
+            expect(error).toStrictEqual(_mockError);
+            done();
+          }
+        );
+    });
+
+    test('should navigate to inventory', (): void => {
+      const _mockBatch: Batch = mockBatch();
+      page.router.navigate = jest.fn();
+      const navSpy: jest.SpyInstance = jest.spyOn(page.router, 'navigate');
+
+      fixture.detectChanges();
+
+      page.navToInventory(_mockBatch);
       expect(navSpy).toHaveBeenCalledWith(
         ['tabs/extras'],
         {
@@ -1031,129 +664,217 @@ describe('ProcessPage', (): void => {
   });
 
 
-  describe('Modal', (): void => {
+  describe('View Navigation', (): void => {
 
-    test('should update batch on modal dismiss with update', (done: jest.DoneCallback): void => {
+    test('should change step', (): void => {
+      page.getStep = jest.fn()
+        .mockReturnValueOnce(1)
+        .mockReturnValueOnce(-1);
+      page.updateView = jest.fn();
+      const updateSpy: jest.SpyInstance = jest.spyOn(page, 'updateView');
+      page.viewStepIndex = 0;
+
+      fixture.detectChanges();
+
+      page.changeStep(true);
+      expect(page.viewStepIndex).toEqual(1);
+      expect(updateSpy).toHaveBeenCalled();
+      page.changeStep(true);
+      expect(page.viewStepIndex).toEqual(1);
+      expect(updateSpy).toHaveBeenCalledTimes(2);
+    });
+
+    test('should get index after skipping concurrent timers', (): void => {
       const _mockBatch: Batch = mockBatch();
-
-      processPage.selectedBatch = _mockBatch;
-
-      processPage.processService.updateMeasuredValues = jest
-        .fn()
-        .mockReturnValue(of(null));
-
-      const updateSpy: jest.SpyInstance = jest.spyOn(processPage.processService, 'updateMeasuredValues');
+      page.selectedBatch = _mockBatch;
+      page.timerService.getIndexSkippingConcurrent = jest.fn()
+        .mockReturnValue(10);
+      const timerSpy: jest.SpyInstance = jest.spyOn(page.timerService, 'getIndexSkippingConcurrent');
 
       fixture.detectChanges();
 
-      const handler: (data: object) => void = processPage.onMeasurementFormModalDismiss(true);
-      handler({ data: {} });
-
-      setTimeout((): void => {
-        expect(updateSpy).toHaveBeenCalledWith(
-          _mockBatch.cid,
-          {},
-          false
-        );
-        done();
-      }, 10);
+      page.getIndexSkippingConcurrent(true, 0);
+      expect(timerSpy).toHaveBeenCalledWith(true, 0, _mockBatch.process.schedule);
     });
 
-    test('should update batch on modal dismiss without update', (done: jest.DoneCallback): void => {
-      const updateSpy: jest.SpyInstance = jest.spyOn(processPage.processService, 'updateMeasuredValues');
-
-      fixture.detectChanges();
-
-      const handler: (data: object) => void = processPage.onMeasurementFormModalDismiss(true);
-      handler({});
-
-      setTimeout((): void => {
-        expect(updateSpy).not.toHaveBeenCalled();
-        done();
-      }, 10);
-    });
-
-    test('should handle measurement form modal error', (): void => {
-      const toastSpy: jest.SpyInstance = jest.spyOn(processPage.toastService, 'presentErrorToast');
-
-      fixture.detectChanges();
-
-      const handler: (error: string) => void = processPage.onMeasurementFormModalError();
-      handler('test-error');
-
-      expect(toastSpy).toHaveBeenCalledWith('Error updating batch');
-    });
-
-    test('should handle measurment form modal success', (): void => {
+    test('should get the next step index', (): void => {
       const _mockBatch: Batch = mockBatch();
-
-      const toastSpy: jest.SpyInstance = jest.spyOn(processPage.toastService, 'presentToast');
-      const navSpy: jest.SpyInstance = jest.spyOn(processPage, 'navToInventory');
+      const timerIndex: number = 2;
+      _mockBatch.process.schedule[timerIndex]['concurrent'] = true;
+      page.selectedBatch = _mockBatch;
+      page.getIndexSkippingConcurrent = jest.fn()
+        .mockReturnValue(10);
+      const getSpy: jest.SpyInstance = jest.spyOn(page, 'getIndexSkippingConcurrent');
 
       fixture.detectChanges();
 
-      const handler: (updated: Batch) => void = processPage.onMeasurementFormModalSuccess(true);
-      handler(_mockBatch);
-
-      expect(toastSpy).toHaveBeenCalledWith(
-        'Measured Values Updated',
-        1000,
-        'bottom'
-      );
-      expect(navSpy).toHaveBeenCalledWith(_mockBatch);
-
-      const emptyHandler: (updated: Batch) => void = processPage.onMeasurementFormModalSuccess(false);
-      emptyHandler(null);
-
-      expect(toastSpy).toHaveBeenCalledTimes(1);
-      expect(navSpy).toHaveBeenCalledTimes(1);
+      expect(page.getNextStep(timerIndex)).toEqual(10);
+      expect(getSpy).toHaveBeenCalledWith(true, timerIndex);
+      expect(page.getNextStep(0)).toEqual(1);
+      expect(page.getNextStep(_mockBatch.process.schedule.length)).toEqual(-1);
     });
 
-    test('should open measurement form modal', (done: jest.DoneCallback): void => {
+    test('should get the previous step index', (): void => {
       const _mockBatch: Batch = mockBatch();
-      const _stubModal: ModalStub = new ModalStub();
-
-      processPage.selectedBatch = _mockBatch;
-
-      processPage.modalCtrl.create = jest
-        .fn()
-        .mockReturnValue(Promise.resolve(_stubModal));
-
-      _stubModal.onDidDismiss = jest
-        .fn()
-        .mockReturnValue(Promise.resolve());
-
-      processPage.onMeasurementFormModalDismiss = jest
-        .fn()
-        .mockReturnValue(() => of(null));
-
-      processPage.onMeasurementFormModalError = jest
-        .fn();
-
-      processPage.onMeasurementFormModalSuccess = jest
-        .fn();
-
-      const createSpy: jest.SpyInstance = jest.spyOn(processPage.modalCtrl, 'create');
-      const successSpy: jest.SpyInstance = jest.spyOn(processPage, 'onMeasurementFormModalSuccess');
+      const timerIndex: number = 2;
+      _mockBatch.process.schedule[timerIndex]['concurrent'] = true;
+      page.selectedBatch = _mockBatch;
+      page.getIndexSkippingConcurrent = jest.fn()
+        .mockReturnValue(0);
+      const getSpy: jest.SpyInstance = jest.spyOn(page, 'getIndexSkippingConcurrent');
 
       fixture.detectChanges();
 
-      processPage.openMeasurementFormModal(true);
+      expect(page.getPreviousStep(timerIndex + 1)).toEqual(0);
+      expect(getSpy).toHaveBeenCalledWith(false, timerIndex + 1);
+      expect(page.getPreviousStep(10)).toEqual(9);
+      expect(page.getPreviousStep(-1)).toEqual(-1);
+    });
 
-      _stubModal.onDidDismiss();
+    test('should get step index', (): void => {
+      const _mockBatch: Batch = mockBatch();
+      page.selectedBatch = _mockBatch;
+      page.getNextStep = jest.fn()
+        .mockImplementation((index: number): number => index + 1);
+      const nextSpy: jest.SpyInstance = jest.spyOn(page, 'getNextStep');
+      page.getPreviousStep = jest.fn()
+        .mockImplementation((index: number): number => index - 1);
+      const previousSpy: jest.SpyInstance = jest.spyOn(page, 'getPreviousStep');
+      page.viewStepIndex = 1;
 
-      setTimeout((): void => {
-        expect(createSpy).toHaveBeenCalledWith({
-          component: ProcessMeasurementsFormPage,
-          componentProps: {
-            areAllRequired: true,
-            batch: _mockBatch
-          }
-        });
-        expect(successSpy).toHaveBeenCalledWith(true);
-        expect(processPage.hideButton).toBe(true);
-        done();
-      }, 10);
+      fixture.detectChanges();
+
+      expect(page.getStep(true, true)).toEqual(_mockBatch.process.currentStep + 1);
+      expect(nextSpy).toHaveBeenCalledWith(_mockBatch.process.currentStep);
+      expect(page.getStep(false, false)).toEqual(0);
+      expect(previousSpy).toHaveBeenCalledWith(1);
+    });
+
+    test('should go to active step', (): void => {
+      const _mockBatch: Batch = mockBatch();
+      page.selectedBatch = _mockBatch;
+      page.viewStepIndex = _mockBatch.process.currentStep + 1;
+      page.updateView = jest.fn();
+      const updateSpy: jest.SpyInstance = jest.spyOn(page, 'updateView');
+
+      fixture.detectChanges();
+
+      page.goToActiveStep();
+      expect(page.viewStepIndex).toEqual(_mockBatch.process.currentStep);
+      expect(updateSpy).toHaveBeenCalled();
+    });
+
+  });
+
+
+  describe('View Update', (): void => {
+
+    test('should update view', (): void => {
+      page.updateViewAlerts = jest.fn();
+      const alertSpy: jest.SpyInstance = jest.spyOn(page, 'updateViewAlerts');
+      page.updateViewStep = jest.fn();
+      const stepSpy: jest.SpyInstance = jest.spyOn(page, 'updateViewStep');
+      page.updateAtViewEnd = jest.fn();
+      const endSpy: jest.SpyInstance = jest.spyOn(page, 'updateAtViewEnd');
+
+      fixture.detectChanges();
+
+      page.updateView();
+      expect(alertSpy).toHaveBeenCalled();
+      expect(stepSpy).toHaveBeenCalled();
+      expect(endSpy).toHaveBeenCalled();
+    });
+
+    test('should update view alerts', (): void => {
+      const _mockAlert: Alert = mockAlert();
+      const _mockAlerts: Alert[] = [ _mockAlert, _mockAlert ];
+      page.calendarAlertService.getAlerts = jest.fn()
+        .mockReturnValue(_mockAlerts);
+      page.alerts = [];
+
+      fixture.detectChanges();
+
+      page.updateViewAlerts();
+      expect(page.alerts).toStrictEqual(_mockAlerts);
+    });
+
+    test('should update view end flag', (): void => {
+      const _mockBatch: Batch = mockBatch();
+      const endIndex: number = _mockBatch.process.schedule.length - 1;
+      page.selectedBatch = _mockBatch;
+      page.getIndexSkippingConcurrent = jest.fn()
+        .mockReturnValueOnce(1)
+        .mockReturnValueOnce(-1);
+      page.viewStepIndex = endIndex;
+      page.atViewEnd = false;
+
+      fixture.detectChanges();
+
+      page.updateAtViewEnd();
+      expect(page.atViewEnd).toBe(true);
+      page.viewStepIndex = 0;
+      page.updateAtViewEnd();
+      expect(page.atViewEnd).toBe(false);
+      page.updateAtViewEnd();
+      expect(page.atViewEnd).toBe(true);
+    });
+
+    test('should update view step', (): void => {
+      const _mockBatch: Batch = mockBatch();
+      const _mockTimerProcess: TimerProcess = mockTimerProcess();
+      page.selectedBatch = _mockBatch;
+      page.getTimerStepData = jest.fn()
+        .mockReturnValue(_mockTimerProcess);
+      page.hasCalendarStarted = jest.fn()
+        .mockReturnValue(true);
+      const timerIndex: number = 2;
+      const calendarIndex: number = 13;
+      page.viewStepIndex = timerIndex;
+      page.isCalendarInProgress = false;
+
+      fixture.detectChanges();
+
+      page.stepData = null;
+      page.stepType = '';
+      page.updateViewStep();
+      expect(page.stepData).toStrictEqual(_mockTimerProcess);
+      expect(page.stepType).toMatch('timer');
+      page.viewStepIndex = calendarIndex;
+      page.updateViewStep();
+      expect(page.stepData).toStrictEqual(_mockBatch.process.schedule[calendarIndex]);
+      expect(page.stepType).toMatch('calendar');
+      expect(page.isCalendarInProgress).toBe(true);
+    });
+
+  });
+
+
+  describe('Other Methods', (): void => {
+
+    test('should get batch missing error', (): void => {
+      fixture.detectChanges();
+
+      const missingErrorStart: CustomError = page.getMissingError('start');
+      expect(missingErrorStart.name).toMatch('BatchError');
+      expect(missingErrorStart.message).toMatch('An error occurred trying to start a batch: new batch not found');
+      const missingErrorContinue: CustomError = page.getMissingError('continue');
+      expect(missingErrorContinue.name).toMatch('BatchError');
+      expect(missingErrorContinue.message).toMatch('An error occurred trying to continue a batch: batch not found');
+    });
+
+    test('should get timer step data', (): void => {
+      const _mockTimerProcess: TimerProcess = mockTimerProcess();
+      page.timerService.getTimerStepData = jest.fn()
+        .mockReturnValue([_mockTimerProcess]);
+      const getSpy: jest.SpyInstance = jest.spyOn(page.timerService, 'getTimerStepData');
+      const _mockBatch: Batch = mockBatch();
+      page.selectedBatch = _mockBatch;
+      page.viewStepIndex = 0;
+
+      fixture.detectChanges();
+
+      expect(page.getTimerStepData()).toStrictEqual([_mockTimerProcess]);
+      expect(getSpy).toHaveBeenCalledWith(_mockBatch.process.schedule, 0);
     });
 
   });
@@ -1161,90 +882,87 @@ describe('ProcessPage', (): void => {
 
   describe('Render Template', (): void => {
 
-    test('should render the template with a manual step', (): void => {
-      const _mockBatch: Batch = mockBatch();
-      _mockBatch.process.currentStep = 0;
-      const manualProcess: Process = _mockBatch.process.schedule[0];
-
-      processPage.selectedBatch = _mockBatch;
-      processPage.stepData = manualProcess;
-      processPage.stepType = 'manual';
+    test('should render template with loading spinner', (): void => {
+      page.selectedBatch = null;
 
       fixture.detectChanges();
 
-      processPage.stepData = manualProcess;
-      processPage.stepType = 'manual';
-
-      const manualElem: HTMLElement = fixture.nativeElement.querySelector('process-manual');
-      const timerElem: HTMLElement = fixture.nativeElement.querySelector('process-timer');
-      const calendarElem: HTMLElement = fixture.nativeElement.querySelector('process-calendar');
-
-      expect(manualElem).not.toBeNull();
-      expect(manualElem.hasAttribute('ng-reflect-step-data')).toBe(true);
-      expect(timerElem).toBeNull();
-      expect(calendarElem).toBeNull();
+      const spinner: HTMLElement = fixture.nativeElement.querySelector('ion-spinner');
+      expect(spinner).toBeTruthy();
     });
 
-    test('should render the template with a timer step', (): void => {
+    test('should render the template with a manual process', (): void => {
       const _mockBatch: Batch = mockBatch();
-      _mockBatch.process.currentStep = 2;
-      const timerProcess: Process = _mockBatch.process.schedule[0];
-
-      processPage.selectedBatch = _mockBatch;
-      processPage.stepData = timerProcess;
-      processPage.stepType = 'timer';
+      const manualStepIndex: number = 0;
+      _mockBatch.process.currentStep = manualStepIndex;
+      page.selectedBatch = _mockBatch;
+      page.stepType = 'manual';
+      page.stepData = _mockBatch.process.schedule[manualStepIndex];
 
       fixture.detectChanges();
 
-      processPage.stepData = timerProcess;
-      processPage.stepType = 'timer';
-
-      const manualElem: HTMLElement = fixture.nativeElement.querySelector('process-manual');
-      const timerElem: HTMLElement = fixture.nativeElement.querySelector('process-timer');
-      const calendarElem: HTMLElement = fixture.nativeElement.querySelector('process-calendar');
-
-      expect(manualElem).toBeNull();
-      expect(timerElem).not.toBeNull();
-      expect(timerElem.hasAttribute('ng-reflect-batch-id')).toBe(true);
-      expect(calendarElem).toBeNull();
+      const process: HTMLElement = fixture.nativeElement.querySelector('app-process-manual');
+      expect(process['manualProcess']).toStrictEqual(_mockBatch.process.schedule[manualStepIndex]);
     });
 
-    test('should render the template with a calendar step', (): void => {
+    test('should render the template with a timer process', (): void => {
       const _mockBatch: Batch = mockBatch();
-      _mockBatch.process.currentStep = 13;
-      const calendarProcess: Process = _mockBatch.process.schedule[0];
-
-      processPage.selectedBatch = _mockBatch;
-      processPage.stepData = calendarProcess;
-      processPage.stepType = 'calendar';
+      const timerStepIndex: number = 2;
+      _mockBatch.process.currentStep = timerStepIndex;
+      page.selectedBatch = _mockBatch;
+      page.stepType = 'timer';
+      page.stepData = _mockBatch.process.schedule[timerStepIndex];
+      page.viewStepIndex = timerStepIndex;
 
       fixture.detectChanges();
 
-      processPage.stepData = calendarProcess;
-      processPage.stepType = 'calendar';
-
-      const manualElem: HTMLElement = fixture.nativeElement.querySelector('process-manual');
-      const timerElem: HTMLElement = fixture.nativeElement.querySelector('process-timer');
-      const calendarElem: HTMLElement = fixture.nativeElement.querySelector('process-calendar');
-
-      expect(manualElem).toBeNull();
-      expect(timerElem).toBeNull();
-      expect(calendarElem).not.toBeNull();
-      expect(calendarElem.hasAttribute('ng-reflect-alerts')).toBe(true);
+      const process: HTMLElement = fixture.nativeElement.querySelector('app-process-timer');
+      expect(process['timerProcess']).toStrictEqual(_mockBatch.process.schedule[timerStepIndex]);
+      expect(process['batchId']).toMatch(_mockBatch.cid);
+      expect(process['isPreview']).toBe(false);
     });
 
-    test('should render the template controls', (): void => {
+    test('should render the template with a calendar process', (): void => {
       const _mockBatch: Batch = mockBatch();
-
-      processPage.selectedBatch = _mockBatch;
+      const calendarStepIndex: number = 13;
+      _mockBatch.process.currentStep = calendarStepIndex;
+      page.selectedBatch = _mockBatch;
+      page.stepType = 'calendar';
+      page.stepData = _mockBatch.process.schedule[calendarStepIndex];
+      page.viewStepIndex = calendarStepIndex - 1;
+      const _mockAlert: Alert = mockAlert();
+      const _mockAlerts: Alert[] = [ _mockAlert, _mockAlert ];
+      page.alerts = _mockAlerts;
 
       fixture.detectChanges();
 
-      const controlElem: HTMLElement = fixture.nativeElement.querySelector('process-controls');
-      expect(controlElem).not.toBeNull();
-      expect(controlElem.hasAttribute('ng-reflect-on-current-step')).toBe(true);
+      const process: HTMLElement = fixture.nativeElement.querySelector('app-process-calendar');
+      expect(process['calendarProcess']).toStrictEqual(_mockBatch.process.schedule[calendarStepIndex]);
+      expect(process['alerts']).toStrictEqual(_mockAlerts);
+      expect(process['isPreview']).toBe(true);
     });
 
-  });
+    test('should render the template with process controls', (): void => {
+      const _mockBatch: Batch = mockBatch();
+      const manualStepIndex: number = 1;
+      _mockBatch.process.currentStep = manualStepIndex;
+      page.selectedBatch = _mockBatch;
+      page.stepType = '';
+      page.stepData = _mockBatch.process.schedule[manualStepIndex];
+      page.viewStepIndex = manualStepIndex;
+      page.isCalendarInProgress = false;
+      page.atViewEnd = false;
+
+      fixture.detectChanges();
+
+      const controls: HTMLElement = fixture.nativeElement.querySelector('app-process-controls');
+      expect(controls['atViewStart']).toBe(false);
+      expect(controls['atViewEnd']).toBe(false);
+      expect(controls['isCurrentStep']).toBe(true);
+      expect(controls['isCalendarStep']).toBe(false);
+      expect(controls['isCalendarInProgress']).toBe(false);
+    });
+
+  })
 
 });

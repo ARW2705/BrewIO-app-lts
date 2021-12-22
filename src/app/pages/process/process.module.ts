@@ -7,21 +7,20 @@ import { IonicModule } from '@ionic/angular';
 /* Component imports */
 import { ProcessCalendarComponentModule, ProcessControlsComponentModule, ProcessManualComponentModule, ProcessTimerComponentModule } from '../../components/process/public';
 import { HeaderComponentModule } from '../../components/shared/public';
+import { ErrorReportComponentModule } from '../../components/system/public/error-report/error-report.module';
 
-/* Page imports */
-import { ProcessMeasurementsFormPageModule } from '../forms/process-measurements-form/process-measurements-form.module';
 import { ProcessPage } from './process.page';
 
 
 @NgModule({
   imports: [
     CommonModule,
+    ErrorReportComponentModule,
     HeaderComponentModule,
     IonicModule,
     ProcessCalendarComponentModule,
     ProcessControlsComponentModule,
     ProcessManualComponentModule,
-    ProcessMeasurementsFormPageModule,
     ProcessTimerComponentModule,
     RouterModule.forChild([ { path: '', component: ProcessPage } ])
   ],

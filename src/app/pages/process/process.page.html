@@ -39,7 +39,7 @@
                       (startCalendarEvent)="startCalendar()"
                       [atViewStart]="viewStepIndex === 0"
                       [atViewEnd]="atViewEnd"
-                      [onCurrentStep]="selectedBatch.process.currentStep === viewStepIndex"
+                      [isCurrentStep]="selectedBatch.process.currentStep === viewStepIndex"
                       [isCalendarStep]="stepData && stepData.type === 'calendar'"
                       [isCalendarInProgress]="isCalendarInProgress">
 </app-process-controls>

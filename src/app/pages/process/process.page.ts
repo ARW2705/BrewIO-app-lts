@@ -12,10 +12,7 @@ import { Alert, Batch, BatchProcess, PrimaryValues, Process, TimerProcess } from
 import { CustomError } from '../../shared/types';
 
 /* Component imports */
-import { ProcessCalendarComponent } from '../../components/process/public';
-
-/* Page imports */
-import { ProcessMeasurementsFormPage } from '../forms/process-measurements-form/process-measurements-form.page';
+import { ProcessCalendarComponent, ProcessMeasurementsFormComponent } from '../../components/process/public';
 
 /* Service imports */
 import { CalendarAlertService, CalendarService, ErrorReportingService, EventService, IdService, ModalService, ProcessService, TimerService, ToastService, UserService } from '../../services/services';
@@ -74,6 +71,8 @@ export class ProcessPage implements OnInit, OnDestroy {
   /***** End Lifecycle Hooks *****/
 
 
+  /***** Batch Progress *****/
+
   /**
    * Advance the batch to the next step (blocks of concurrent timers have been skipped)
    *
@@ -88,35 +87,8 @@ export class ProcessPage implements OnInit, OnDestroy {
           this.viewStepIndex = nextIndex;
           this.updateView();
         },
-        (error: any): void => this.errorReporter.handleUnhandledError(error)
+        (error: Error): void => this.errorReporter.handleUnhandledError(error)
       );
-  }
-
-  /**
-   * Handle change date event from calendar child component
-   *
-   * @param: none
-   * @return: none
-   */
-  changeDateEventHandler(): void {
-    this.stopCalendarInProgress(this.selectedBatch.process.currentStep);
-    this.calendarAlertService.clearAlertsForCurrentStep(this.selectedBatch.process);
-    this.toastService.presentToast('Select new dates', this.toastService.mediumDuration, 'middle');
-  }
-
-  /**
-   * Change view index only, does not trigger step completion
-   *
-   * @param: isForward - true to advance forward; false to go back
-   * @return: none
-   */
-  changeStep(isForward: boolean): void {
-    const nextIndex: number = this.getStep(false, isForward);
-    if (nextIndex !== -1) {
-      this.viewStepIndex = nextIndex;
-    }
-
-    this.updateView();
   }
 
   /**
@@ -167,6 +139,251 @@ export class ProcessPage implements OnInit, OnDestroy {
   }
 
   /**
+   * Assign given Batch to page properties accordingly
+   *
+   * @param: batch - the Batch to use as a process
+   * @param: onContinue - true if continuing a batch; false to start a new batch
+   * @return: none
+   */
+  handleBatchChange(batch: Batch, onContinue: boolean): void {
+    this.selectedBatch = batch;
+    this.title = batch.contextInfo.recipeMasterName;
+    this.timerService.addBatchTimer(batch);
+    if (onContinue) {
+      this.goToActiveStep();
+    } else {
+      this.updateView();
+    }
+  }
+
+  /**
+   * Start a new batch from a recipe
+   *
+   * @param: none
+   * @return: none
+   */
+  startNewBatch(configData: { [key: string]: any }): void {
+    this.viewStepIndex = 0;
+    this.atViewEnd = false;
+    this.processService.startNewBatch(configData.requestedUserId, configData.recipeMasterId, configData.recipeVariantId)
+      .pipe(
+        mergeMap((newBatch: Batch): Observable<null> => {
+          this.selectedBatch$ = this.processService.getBatchById(this.idService.getId(newBatch));
+          return this.selectedBatch$ ? of(null) : throwError(this.getMissingError('start'));
+        }),
+        catchError(this.errorReporter.handleGenericCatchError())
+      )
+      .subscribe(
+        (): void => this.listenForBatchChanges(false),
+        (error: Error): void => this.errorReporter.handleUnhandledError(error)
+      );
+  }
+
+  /***** End Batch Progress *****/
+
+
+  /***** Calendar Methods *****/
+
+  /**
+   * Handle change date event from calendar child component
+   *
+   * @param: none
+   * @return: none
+   */
+  changeDateEventHandler(): void {
+    this.stopCalendarInProgress(this.selectedBatch.process.currentStep);
+    this.calendarAlertService.clearAlertsForCurrentStep(this.selectedBatch.process);
+    this.toastService.presentToast('Select New Dates', this.toastService.mediumDuration, 'middle');
+  }
+
+  /**
+   * Check if the current calendar is in progress; A calendar is
+   * considered in progress if the step has a startDatetime property
+   *
+   * @param: none
+   * @return: true if current step has a startDatetime property
+   */
+  hasCalendarStarted(): boolean {
+    return this.calendarService.hasCalendarStarted(this.selectedBatch);
+  }
+
+  /**
+   * Set the start of a calendar step
+   *
+   * @param: none
+   * @return: none
+   */
+  startCalendar(): void {
+    this.calendarService.startCalendar(this.selectedBatch, this.calendarRef.getSelectedCalendarData());
+  }
+
+  /**
+   * Stop calendar in progress status
+   *
+   * @param: stepIndex - the process schedule index containing an in progress calendar process
+   * @return: none
+   */
+  stopCalendarInProgress(stepIndex: number): void {
+    delete this.selectedBatch.process.schedule[stepIndex]['startDatetime'];
+    this.isCalendarInProgress = false;
+  }
+
+  /***** End Calendar Methods *****/
+
+
+  /***** Listeners *****/
+
+  /**
+   * Listen for changes in selected batch
+   *
+   * @param: none
+   * @return: none
+   */
+  listenForBatchChanges(onContinue: boolean): void {
+    this.selectedBatch$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(
+        (selectedBatch: Batch): void => this.handleBatchChange(selectedBatch, onContinue),
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
+      );
+  }
+
+  /**
+   * Listen for changes in route query params
+   *
+   * @param: none
+   * @return: none
+   */
+  listenForRouteChanges(): void {
+    this.route.queryParams
+      .pipe(
+        takeUntil(this.destroy$),
+        mergeMap((): Observable<{ [key: string]: any }> => this.handleRouteChange()),
+        catchError(this.errorReporter.handleGenericCatchError())
+      )
+      .subscribe(
+        (configData: { [key: string]: any }): void => {
+          if (configData.selectedBatchId) {
+            this.continueBatch(configData.selectedBatchId);
+          } else {
+            this.startNewBatch(configData);
+          }
+        },
+        (error: any): void => this.errorReporter.handleUnhandledError(error)
+      );
+  }
+
+  /***** End Listeners *****/
+
+
+  /***** Modal *****/
+
+  /**
+   * Handle measurement update on form dismiss
+   *
+   * @param: areAllRequired - true if measurements are final
+   * @return: handler function to update measured values of batch
+   */
+  onMeasurementFormModalDismiss(
+    areAllRequired: boolean
+  ): (event: OverlayEventDetail<PrimaryValues>) => Observable<Batch> {
+    return (event: OverlayEventDetail<PrimaryValues>): Observable<Batch> => {
+      if (event.data) {
+        return this.processService.updateMeasuredValues(
+          this.selectedBatch.cid,
+          event.data,
+          !areAllRequired
+        );
+      }
+
+      return of<Batch>(null);
+    };
+  }
+
+  /**
+   * Open measurement form modal
+   *
+   * @param: areAllRequired - true if a complete form is required
+   * @return: none
+   */
+  openMeasurementFormModal(areAllRequired: boolean): void {
+    this.modalService.openModal<PrimaryValues, Batch>(
+      ProcessMeasurementsFormComponent,
+      { areAllRequired, batch: this.selectedBatch },
+      this.onMeasurementFormModalDismiss(areAllRequired)
+    )
+    .subscribe(
+      (updatedBatch: Batch): void => {
+        this.hideButton = true;
+        if (updatedBatch) {
+          this.toastService.presentToast(
+            'Measured Values Updated',
+            this.toastService.shortDuration,
+            'bottom'
+          );
+        }
+
+        if (areAllRequired) {
+          this.navToInventory(updatedBatch);
+        }
+      },
+      (error: Error): void => this.errorReporter.handleUnhandledError(error)
+    );
+  }
+
+  /***** End Modal *****/
+
+
+  /***** Navigation *****/
+
+  /**
+   * Get router navigation properties and assign page properties accordingly
+   *
+   * @param: none
+   * @return: observable of null on successful init
+   */
+  handleRouteChange(): Observable<{ [key: string]: any }> {
+    try {
+      const nav: Navigation = this.router.getCurrentNavigation();
+      const configData: { [key: string]: any } = nav.extras.state;
+      this.rootURL = configData.rootURL;
+      return of(configData);
+    } catch (error) {
+      return throwError(error);
+    }
+  }
+
+  /**
+   * Navigate to inventory page with id of batch
+   *
+   * @param: [batch] - optional batch that inventory will use for base values
+   * @return: none
+   */
+  navToInventory(batch?: Batch): void {
+    this.router.navigate(['tabs/extras'], { state: { optionalData: batch, passTo: 'inventory' } });
+  }
+
+  /***** End Navigation *****/
+
+
+  /***** View Navigation *****/
+
+  /**
+   * Change view index only, does not trigger step completion
+   *
+   * @param: isForward - true to advance forward; false to go back
+   * @return: none
+   */
+  changeStep(isForward: boolean): void {
+    const nextIndex: number = this.getStep(false, isForward);
+    if (nextIndex !== -1) {
+      this.viewStepIndex = nextIndex;
+    }
+
+    this.updateView();
+  }
+
+  /**
    * Get the next index, treating adjacent concurrent timers as a single step
    *
    * @param: isForward - true to advance forward; false to go back
@@ -174,19 +391,11 @@ export class ProcessPage implements OnInit, OnDestroy {
    * @return: next index to use or -1 if at the beginning or end of schedule
    */
   getIndexSkippingConcurrent(isForward: boolean, startIndex: number): number {
-    const schedule: Process[] = this.selectedBatch.process.schedule;
-    return this.timerService.getIndexSkippingConcurrent(isForward, startIndex, schedule);
-  }
-
-  /**
-   * Get a custom error on missing batch
-   *
-   * @param: operationName - the name of the operation that threw the error
-   * @return: a new custom error
-   */
-  getMissingError(operationName: string): CustomError {
-    const message: string = `An error occurred trying to ${operationName} a batch:${operationName === 'start' ? 'new' : ''} batch not found`;
-    return new CustomError('BatchError', message, this.errorReporter.highSeverity, message);
+    return this.timerService.getIndexSkippingConcurrent(
+      isForward,
+      startIndex,
+      this.selectedBatch.process.schedule
+    );
   }
 
   /**
@@ -242,17 +451,6 @@ export class ProcessPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Get the timer process step starting at current view
-   * index and including neighbor concurrent timers
-   *
-   * @param: none
-   * @return: Array of timer processes
-   */
-  getTimerStepData(): TimerProcess[] {
-    return this.timerService.getTimerStepData(this.selectedBatch.process.schedule, this.viewStepIndex);
-  }
-
-  /**
    * Change view index to the currently active step and update view
    *
    * @param: none
@@ -263,195 +461,10 @@ export class ProcessPage implements OnInit, OnDestroy {
     this.updateView();
   }
 
-  /**
-   * Assign given Batch to page properties accordingly
-   *
-   * @param: batch - the Batch to use as a process
-   * @param: onContinue - true if continuing a batch; false to start a new batch
-   * @return: none
-   */
-  handleBatchChange(batch: Batch, onContinue: boolean): void {
-    this.selectedBatch = batch;
-    this.title = batch.contextInfo.recipeMasterName;
-    this.timerService.addBatchTimer(batch);
-    if (onContinue) {
-      this.goToActiveStep();
-    } else {
-      this.updateView();
-    }
-  }
+  /***** End View Navigation *****/
 
-  /**
-   * Get router navigation properties and assign page properties accordingly
-   *
-   * @param: none
-   * @return: observable of null on successful init
-   */
-  handleRouteChange(): Observable<{ [key: string]: any }> {
-    try {
-      const nav: Navigation = this.router.getCurrentNavigation();
-      const configData: { [key: string]: any } = nav.extras.state;
-      this.rootURL = configData.rootURL;
-      return of (configData);
-    } catch (error) {
-      return throwError(error);
-    }
-  }
 
-  /**
-   * Check if the current calendar is in progress; A calendar is
-   * considered in progress if the step has a startDatetime property
-   *
-   * @param: none
-   * @return: true if current step has a startDatetime property
-   */
-  hasCalendarStarted(): boolean {
-    return this.calendarService.hasCalendarStarted(this.selectedBatch);
-  }
-
-  /**
-   * Listen for changes in selected batch
-   *
-   * @param: none
-   * @return: none
-   */
-  listenForBatchChanges(onContinue: boolean): void {
-    this.selectedBatch$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(
-        (selectedBatch: Batch): void => this.handleBatchChange(selectedBatch, onContinue),
-        (error: any): void => this.errorReporter.handleUnhandledError(error)
-      );
-  }
-
-  /**
-   * Listen for changes in route query params
-   *
-   * @param: none
-   * @return: none
-   */
-  listenForRouteChanges(): void {
-    this.route.queryParams
-      .pipe(
-        takeUntil(this.destroy$),
-        mergeMap((): Observable<{ [key: string]: any }> => this.handleRouteChange()),
-        catchError(this.errorReporter.handleGenericCatchError())
-      )
-      .subscribe(
-        (configData: { [key: string]: any }): void => {
-          if (configData.selectedBatchId) {
-            this.continueBatch(configData.selectedBatchId);
-          } else {
-            this.startNewBatch(configData);
-          }
-        },
-        (error: any): void => this.errorReporter.handleUnhandledError(error)
-      );
-  }
-
-  /**
-   * Navigate to inventory page with id of batch
-   *
-   * @param: [batch] - optional batch that inventory will use for base values
-   * @return: none
-   */
-  navToInventory(batch?: Batch): void {
-    this.router.navigate(['tabs/extras'], { state: { optionalData: batch, passTo: 'inventory' } });
-  }
-
-  /**
-   * Handle measurement update on form dismiss
-   *
-   * @param: areAllRequired - true if measurements are final
-   * @return: handler function to update measured values of batch
-   */
-  onMeasurementFormModalDismiss(
-    areAllRequired: boolean
-  ): (event: OverlayEventDetail<PrimaryValues>) => Observable<Batch> {
-    return (event: OverlayEventDetail<PrimaryValues>): Observable<Batch> => {
-      if (event.data) {
-        return this.processService.updateMeasuredValues(
-          this.selectedBatch.cid,
-          event.data,
-          !areAllRequired
-        );
-      }
-
-      return of<Batch>(null);
-    };
-  }
-
-  /**
-   * Open measurement form modal
-   *
-   * @param: areAllRequired - true if a complete form is required
-   * @return: none
-   */
-  openMeasurementFormModal(areAllRequired: boolean): void {
-    this.modalService.openModal<PrimaryValues, Batch>(
-      ProcessMeasurementsFormPage,
-      { areAllRequired, batch: this.selectedBatch },
-      this.onMeasurementFormModalDismiss(areAllRequired)
-    )
-    .subscribe(
-      (updatedBatch: Batch): void => {
-        this.hideButton = true;
-        if (updatedBatch) {
-          const oneSecond: number = 1000;
-          this.toastService.presentToast('Measured Values Updated', oneSecond, 'bottom');
-        }
-
-        if (areAllRequired) {
-          this.navToInventory(updatedBatch);
-        }
-      },
-      (error: Error): void => this.errorReporter.handleUnhandledError(error)
-    );
-  }
-
-  /**
-   * Set the start of a calendar step
-   *
-   * @param: none
-   * @return: none
-   */
-  startCalendar(): void {
-    this.calendarService.startCalendar(this.selectedBatch, this.calendarRef.getSelectedCalendarData());
-  }
-
-  /**
-   * Start a new batch from a recipe
-   *
-   * @param: none
-   * @return: none
-   */
-  startNewBatch(configData: { [key: string]: any }): void {
-    this.viewStepIndex = 0;
-    this.atViewEnd = false;
-    this.processService.startNewBatch(configData.requestedUserId, configData.recipeMasterId, configData.recipeVariantId)
-      .pipe(
-        mergeMap((newBatch: Batch): Observable<null> => {
-          this.selectedBatch$ = this.processService.getBatchById(this.idService.getId(newBatch));
-          return this.selectedBatch$ ? of(null) : throwError(this.getMissingError('start'));
-        }),
-        catchError(this.errorReporter.handleGenericCatchError())
-      )
-      .subscribe(
-        (): void => this.listenForBatchChanges(false),
-        (error: any): void => this.errorReporter.handleUnhandledError(error)
-      );
-  }
-
-  /**
-   * Stop calendar in progress status
-   *
-   * @param: stepIndex - the process schedule index containing an in progress calendar process
-   * @return: none
-   */
-  stopCalendarInProgress(stepIndex: number): void {
-    delete this.selectedBatch.process.schedule[stepIndex]['startDatetime'];
-    this.isCalendarInProgress = false;
-  }
+  /***** View Update *****/
 
   /**
    * Set values to be displayed in current view
@@ -506,4 +519,32 @@ export class ProcessPage implements OnInit, OnDestroy {
     }
   }
 
+  /***** End View Update *****/
+
+
+  /***** Other *****/
+
+  /**
+   * Get a custom error on missing batch
+   *
+   * @param: operationName - the name of the operation that threw the error
+   * @return: a new custom error
+   */
+  getMissingError(operationName: string): CustomError {
+    const message: string = `An error occurred trying to ${operationName} a batch:${operationName === 'start' ? ' new' : ''} batch not found`;
+    return new CustomError('BatchError', message, this.errorReporter.highSeverity, message);
+  }
+
+  /**
+   * Get the timer process step starting at current view
+   * index and including neighbor concurrent timers
+   *
+   * @param: none
+   * @return: Array of timer processes
+   */
+  getTimerStepData(): TimerProcess[] {
+    return this.timerService.getTimerStepData(this.selectedBatch.process.schedule, this.viewStepIndex);
+  }
+
+  /***** End Other *****/
 }
