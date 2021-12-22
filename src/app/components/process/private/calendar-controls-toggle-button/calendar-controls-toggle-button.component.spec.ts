@@ -11,8 +11,8 @@ import { CalendarControlsToggleButtonComponent } from './calendar-controls-toggl
 
 describe('CalendarControlsToggleButtonComponent', () => {
   configureTestBed();
-  let component: CalendarControlsToggleButtonComponent;
   let fixture: ComponentFixture<CalendarControlsToggleButtonComponent>;
+  let component: CalendarControlsToggleButtonComponent;
 
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
@@ -31,7 +31,6 @@ describe('CalendarControlsToggleButtonComponent', () => {
 
   test('should create the component', (): void => {
     fixture.detectChanges();
-
     expect(component).toBeTruthy();
   });
 
@@ -51,7 +50,7 @@ describe('CalendarControlsToggleButtonComponent', () => {
 
     fixture.detectChanges();
 
-    const elem: HTMLElement = global.document.querySelector('ion-button');
+    const elem: HTMLElement = fixture.nativeElement.querySelector('ion-button');
     expect(elem.textContent).toMatch('test-text');
     expect(elem['color']).toMatch('primary');
   });
