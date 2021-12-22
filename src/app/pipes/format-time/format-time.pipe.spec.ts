@@ -1,12 +1,21 @@
 /* Pipe imports */
 import { FormatTimePipe } from './format-time.pipe';
 
+/* Mock imports */
+import { TimerServiceStub } from '../../../../test-config/service-stubs';
+
+/* Serivce imports */
+import { TimerService } from '../../services/services';
+
 
 describe('FormatTimePipe', (): void => {
   let formatPipe: FormatTimePipe;
 
   beforeEach((): void => {
-    formatPipe = new FormatTimePipe();
+    const timerServiceStub: TimerService = (new TimerServiceStub()) as TimerService;
+    timerServiceStub.getFormattedDurationString = jest.fn()
+      .mockImplementation((duration: number): string => duration.toString());
+    formatPipe = new FormatTimePipe(timerServiceStub);
   });
 
   test('should create the pipe', (): void => {
@@ -26,10 +35,7 @@ describe('FormatTimePipe', (): void => {
   });
 
   test('should format duration', (): void => {
-    expect(formatPipe.formatDuration(122)).toMatch('Duration: 2 hours 2 minutes');
-    expect(formatPipe.formatDuration(60)).toMatch('Duration: 1 hour');
-    expect(formatPipe.formatDuration(10)).toMatch('Duration: 10 minutes');
-    expect(formatPipe.formatDuration(1)).toMatch('Duration: 1 minute');
+    expect(formatPipe.formatDuration(122)).toMatch('122');
   });
 
 });
