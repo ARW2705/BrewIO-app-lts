@@ -1,7 +1,7 @@
 /* Module imports */
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, concat, of, throwError } from 'rxjs';
+import { BehaviorSubject, concat, Observable, of, throwError } from 'rxjs';
 import { catchError, finalize, map, mergeMap, take, tap } from 'rxjs/operators';
 
 /* Constants imports */
@@ -11,7 +11,7 @@ import { API_VERSION, BASE_URL } from '../../shared/constants';
 import { Alert, Batch, BatchAnnotations, BatchContext, BatchProcess, CalendarMetadata, CalendarProcess, HopsSchedule, PrimaryValues, Process, RecipeMaster, RecipeVariant, SelectedUnits, SyncData, SyncError, SyncMetadata, SyncRequests, SyncResponse, TimerProcess, User } from '../../shared/interfaces';
 
 /* Type guard imports */
-import { AlertGuardMetadata, BatchGuardMetadata, BatchContextGuardMetadata, BatchAnnotationsGuardMetadata, BatchProcessGuardMetadata, PrimaryValuesGuardMetadata } from '../../shared/type-guard-metadata';
+import { AlertGuardMetadata, BatchAnnotationsGuardMetadata, BatchContextGuardMetadata, BatchGuardMetadata, BatchProcessGuardMetadata, PrimaryValuesGuardMetadata } from '../../shared/type-guard-metadata';
 
 /* Type imports */
 import { CustomError } from '../../shared/types';
@@ -37,10 +37,8 @@ import { UtilityService } from '../utility/utility.service';
   providedIn: 'root'
 })
 export class ProcessService {
-  activeBatchList$: BehaviorSubject<BehaviorSubject<Batch>[]>
-    = new BehaviorSubject<BehaviorSubject<Batch>[]>([]);
-  archiveBatchList$: BehaviorSubject<BehaviorSubject<Batch>[]>
-    = new BehaviorSubject<BehaviorSubject<Batch>[]>([]);
+  activeBatchList$: BehaviorSubject<BehaviorSubject<Batch>[]> = new BehaviorSubject<BehaviorSubject<Batch>[]>([]);
+  archiveBatchList$: BehaviorSubject<BehaviorSubject<Batch>[]> = new BehaviorSubject<BehaviorSubject<Batch>[]>([]);
   syncArchiveRoute: string = '';
   syncBaseRoute: string = 'process/batch';
   syncErrors: SyncError[] = [];
@@ -72,8 +70,7 @@ export class ProcessService {
   /**
    * Fetch active and archive batches from server and populate memory
    *
-   * @params: none
-   *
+   * @param: none
    * @return: observable success requires no additional actions, using for error handling
    */
   initFromServer(): void {
@@ -107,7 +104,7 @@ export class ProcessService {
   /**
    * Load active and archive batches from storage
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   initFromStorage(): void {
@@ -139,7 +136,7 @@ export class ProcessService {
   /**
    * Get active and archived batches
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   initializeBatchLists(): void {
@@ -156,7 +153,7 @@ export class ProcessService {
   /**
    * Set up event listeners
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   registerEvents(): void {
@@ -174,8 +171,7 @@ export class ProcessService {
   /**
    * Complete a batch by marking it as archived
    *
-   * @params: batchId - batch id to update; batch must have server id to update database
-   *
+   * @param: batchId - batch id to update; batch must have server id to update database
    * @return: observable of ended batch
    */
   endBatchById(batchId: string): Observable<Batch> {
@@ -199,10 +195,9 @@ export class ProcessService {
   /**
    * Start a new batch process and add new batch to active list
    *
-   * @params: userId - client user's id
-   * @params: recipeMasterId - recipe master id that contains the recipe
-   * @params: recipeVariantId - recipe variant id to base batch on
-   *
+   * @param: userId - client user's id
+   * @param: recipeMasterId - recipe master id that contains the recipe
+   * @param: recipeVariantId - recipe variant id to base batch on
    * @return: observable of new batch
    */
   startNewBatch(userId: string, recipeMasterId: string, recipeVariantId: string): Observable<Batch> {
@@ -230,9 +225,8 @@ export class ProcessService {
   /**
    * Update a batch
    *
-   * @params: updatedBatch - batch with new values
-   * @params: isActive - true for active batch, false for archive batch; defaults to true
-   *
+   * @param: updatedBatch - batch with new values
+   * @param: isActive - true for active batch, false for archive batch; defaults to true
    * @return: Observable of updated batch
    */
   updateBatch(updatedBatch: Batch, isActive: boolean = true): Observable<Batch> {
@@ -261,17 +255,15 @@ export class ProcessService {
   /**
    * Update a batch's measured values in annotations
    *
-   * @params: batchId - id of the batch to update
-   * @params: update - primary values to apply to batch
-   * @params: isActive - true for active batch, false for archive batch
-   *
+   * @param: batchId - id of the batch to update
+   * @param: update - primary values to apply to batch
+   * @param: isActive - true for active batch, false for archive batch
    * @return: observable of updated batch
    */
   updateMeasuredValues(batchId: string, update: PrimaryValues, isActive: boolean): Observable<Batch> {
     try {
       const batch$: BehaviorSubject<Batch> = this.getBatchById(batchId);
       const batch: Batch = batch$.value;
-
       update.ABV = this.calculator.getABV(update.originalGravity, update.finalGravity);
       update.IBU = this.calculator.calculateTotalIBU(
         batch.contextInfo.hops,
@@ -283,9 +275,7 @@ export class ProcessService {
         batch.contextInfo.grains,
         update.batchVolume
       );
-
       batch.annotations.measuredValues = update;
-
       return this.updateBatch(batch, isActive);
     } catch (error) {
       console.log('Update measured values error', error);
@@ -296,9 +286,8 @@ export class ProcessService {
   /**
    * Update individual batch step
    *
-   * @params: batchId - batch id to update
-   * @params: stepUpdate - step update object to apply
-   *
+   * @param: batchId - batch id to update
+   * @param: stepUpdate - step update object to apply
    * @return: observable of updated batch
    */
   updateCalendarStep(batchId: string, calendarUpdate: CalendarMetadata): Observable<Batch> {
@@ -308,7 +297,6 @@ export class ProcessService {
       const processIndex: number = batch.process.schedule.findIndex((step: Process) => {
         return this.idService.hasId(step, calendarUpdate.id);
       });
-
       batch.process.alerts = batch.process.alerts.concat(calendarUpdate.alerts);
       const calendarProcess: CalendarProcess = <CalendarProcess>batch.process.schedule[processIndex];
       calendarProcess.startDatetime = calendarUpdate.startDatetime;
@@ -328,11 +316,10 @@ export class ProcessService {
   /**
    * Configure a background request while defining which error handling method to use
    *
-   * @params: syncMethod - the http method to apply
-   * @params: shouldResolveError - true if error should return the error response as an observable
+   * @param: syncMethod - the http method to apply
+   * @param: shouldResolveError - true if error should return the error response as an observable
    * or false if error should be handled as an error
-   * @params: batch - the batch to use in request
-   *
+   * @param: batch - the batch to use in request
    * @return: observable of batch or HttpErrorResponse
    */
   configureBackgroundRequest(
@@ -349,14 +336,12 @@ export class ProcessService {
   /**
    * Construct a server background request
    *
-   * @params: syncMethod - the http method: 'post' and 'patch' are valid
-   * @params: batch - the batch to base the request body
-   *
+   * @param: syncMethod - the http method: 'post' and 'patch' are valid
+   * @param: batch - the batch to base the request body
    * @return: observable of server request
    */
   getBackgroundRequest(syncMethod: string, batch: Batch): Observable<Batch> {
     let route: string = `${BASE_URL}/${API_VERSION}/process/`;
-
     if (syncMethod === 'post') {
       route += `user/${batch.owner}/master/${batch.recipeMasterId}/variant/${batch.recipeVariantId}`;
       return this.http.post<Batch>(route, batch);
@@ -365,16 +350,17 @@ export class ProcessService {
       return this.http.patch<Batch>(route, batch);
     } else {
       const message: string = `Invalid http method: ${syncMethod}`;
-      return throwError(new CustomError('HttpRequestError', message, 2, message));
+      return throwError(
+        new CustomError('HttpRequestError', message, this.errorReporter.highSeverity, message)
+      );
     }
   }
 
   /**
    * Update server in background
    *
-   * @params: syncMethod - the http method to apply
-   * @params: batch - the batch to base the request body
-   *
+   * @param: syncMethod - the http method to apply
+   * @param: batch - the batch to base the request body
    * @return: none
    */
   requestInBackground(syncMethod: string, batch: Batch): void {
@@ -384,7 +370,9 @@ export class ProcessService {
       syncRequest = this.getBackgroundRequest(syncMethod, batch);
     } else {
       const message: string = `Unknown sync type: ${syncMethod}`;
-      syncRequest = throwError(new CustomError('SyncError', message, 2, message));
+      syncRequest = throwError(
+        new CustomError('SyncError', message, this.errorReporter.highSeverity, message)
+      );
     }
 
     syncRequest
@@ -419,15 +407,14 @@ export class ProcessService {
   /**
    * Add a sync flag for a batch
    *
-   * @params: method - options: 'create', 'update', or 'delete'
-   * @params: docId - document id to apply sync
-   *
+   * @param: method - options: 'create', 'update', or 'delete'
+   * @param: docId - document id to apply sync
    * @return: none
    */
   addSyncFlag(method: string, docId: string): void {
     const syncFlag: SyncMetadata = {
-      method: method,
-      docId: docId,
+      docId,
+      method,
       docType: 'batch'
     };
 
@@ -437,7 +424,7 @@ export class ProcessService {
   /**
    * Clear all sync errors
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   dismissAllSyncErrors(): void {
@@ -447,8 +434,7 @@ export class ProcessService {
   /**
    * Clear a sync error at the given index
    *
-   * @params: index - error array index
-   *
+   * @param: index - error array index
    * @return: none
    */
   dismissSyncError(index: number): void {
@@ -458,8 +444,7 @@ export class ProcessService {
   /**
    * Construct sync requests based on stored sync flags
    *
-   * @params: none
-   *
+   * @param: none
    * @return: configured sync requests object
    */
   generateSyncRequests(): SyncRequests<Batch> {
@@ -527,9 +512,8 @@ export class ProcessService {
   /**
    * Process sync successes to update in memory batches
    *
-   * @params: syncedData - an array of successfully synced docs;
+   * @param: syncedData - an array of successfully synced docs;
    * deleted docs contain isDeleted flag - no further actions required for deletions
-   *
    * @return: none
    */
   processSyncSuccess(syncData: (Batch | SyncData<Batch>)[]): void {
@@ -556,8 +540,7 @@ export class ProcessService {
   /**
    * Process all sync flags on a connection event
    *
-   * @params: onLogin - true if calling at login, false on reconnect
-   *
+   * @param: onLogin - true if calling at login, false on reconnect
    * @return: none
    */
   syncOnConnection(onLogin: boolean): Observable<boolean> {
@@ -568,8 +551,7 @@ export class ProcessService {
 
     const syncRequests: SyncRequests<Batch> = this.generateSyncRequests();
     const errors: SyncError[] = syncRequests.syncErrors;
-    const requests: Observable<HttpErrorResponse | Batch | SyncData<Batch>>[]
-      = syncRequests.syncRequests;
+    const requests: Observable<HttpErrorResponse | Batch | SyncData<Batch>>[] = syncRequests.syncRequests;
 
     return this.syncService.sync('batch', requests)
       .pipe(
@@ -589,8 +571,8 @@ export class ProcessService {
   /**
    * Network reconnect event handler
    *
-   * @params: none
-   * @params: none
+   * @param: none
+   * @param: none
    */
   syncOnReconnect(): void {
     this.syncOnConnection(false)
@@ -603,7 +585,7 @@ export class ProcessService {
   /**
    * Post all stored batches to server
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   syncOnSignup(): void {
@@ -619,14 +601,18 @@ export class ProcessService {
 
       if (!recipe$ || this.idService.isMissingServerId(recipe$.value._id)) {
         const message: string = `Recipe with id ${batch$.value.recipeMasterId} not found`;
-        requests.push(throwError(new CustomError('SyncError', message, 2, message)));
+        requests.push(
+          throwError(new CustomError('SyncError', message, this.errorReporter.highSeverity, message))
+        );
         return;
       }
 
       const user$: BehaviorSubject<User> = this.userService.getUser();
       if (!user$ || !user$.value._id) {
         const message: string = 'User server id not found';
-        requests.push(throwError(new CustomError('SyncError', message, 2, message)));
+        requests.push(
+          throwError(new CustomError('SyncError', message, this.errorReporter.highSeverity, message))
+        );
         return;
       }
       const user: User = user$.value;
@@ -663,8 +649,7 @@ export class ProcessService {
   /**
    * Add a new batch to the list of active batches
    *
-   * @params: newBatch - the new batch to convert to a subject and add to list
-   *
+   * @param: newBatch - the new batch to convert to a subject and add to list
    * @return: Observable of the new batch
    */
   addBatchToActiveList(newBatch: Batch): Observable<Batch> {
@@ -680,8 +665,7 @@ export class ProcessService {
   /**
    * Change an active batch to an archive batch; update active/archive lists
    *
-   * @params: batchId - batch id to convert
-   *
+   * @param: batchId - batch id to convert
    * @return: none
    */
   archiveActiveBatch(batchId: string): Observable<Batch> {
@@ -711,8 +695,7 @@ export class ProcessService {
   /**
    * Check if able to send an http request
    *
-   * @params: [ids] - optional array of ids to check
-   *
+   * @param: [ids] - optional array of ids to check
    * @return: true if ids are valid, device is connected to network, and user logged in
    */
   canSendRequest(ids?: string[]): boolean {
@@ -727,8 +710,7 @@ export class ProcessService {
   /**
    * Clear active or archive list
    *
-   * @params: isActive - true for active batch list, false for archive batch list
-   *
+   * @param: isActive - true for active batch list, false for archive batch list
    * @return: none
    */
   clearBatchList(isActive: boolean): void {
@@ -743,7 +725,7 @@ export class ProcessService {
   /**
    * Clear all active and archive batches
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   clearAllBatchLists(): void {
@@ -754,8 +736,7 @@ export class ProcessService {
   /**
    * Emit a batch list change
    *
-   * @params: isActive - true if active batch list should be updated; false for archive
-   *
+   * @param: isActive - true if active batch list should be updated; false for archive
    * @return: none
    */
   emitBatchListUpdate(isActive: boolean): void {
@@ -766,10 +747,9 @@ export class ProcessService {
   /**
    * Create a batch using a recipe process schedule as template
    *
-   * @params: userId - the user's id
-   * @params: masterId - the recipe's master id
-   * @params: variantId - the recipe variant id from which to copy the schedule
-   *
+   * @param: userId - the user's id
+   * @param: masterId - the recipe's master id
+   * @param: variantId - the recipe variant id from which to copy the schedule
    * @return: Observable of new batch
    */
   generateBatchFromRecipe(userId: string, masterId: string, variantId: string): Observable<Batch> {
@@ -864,8 +844,7 @@ export class ProcessService {
   /**
    * Get a combined list of active and archive batches
    *
-   * @params: none
-   *
+   * @param: none
    * @return: array of batch behavior subjects
    */
   getAllBatchesList(): BehaviorSubject<Batch>[] {
@@ -875,8 +854,7 @@ export class ProcessService {
   /**
    * Search both active and archive lists and get a batch by its id
    *
-   * @params: batchId - id to search
-   *
+   * @param: batchId - id to search
    * @return: Batch behavior subject or undefined if not found
    */
   getBatchById(batchId: string): BehaviorSubject<Batch> {
@@ -896,8 +874,7 @@ export class ProcessService {
   /**
    * Get active or archive batch list subject
    *
-   * @params: isActive - true for active batch, false for archive batch
-   *
+   * @param: isActive - true for active batch, false for archive batch
    * @return: subject of array of batch subjects
    */
   getBatchList(isActive: boolean): BehaviorSubject<BehaviorSubject<Batch>[]> {
@@ -908,15 +885,14 @@ export class ProcessService {
    * Get a custom error for a missing batch
    *
    * @param: baseMessage - user accessible message
-   * @parma: additionalMessage - additional error message that is not shown to user
-   *
+   * @param: additionalMessage - additional error message that is not shown to user
    * @return: custom error
    */
   getMissingError(baseMessage: string, additionalMessage: string = ''): Error {
     return new CustomError(
       'BatchError',
       `${baseMessage} ${additionalMessage}`,
-      2,
+      this.errorReporter.highSeverity,
       baseMessage
     );
   }
@@ -926,8 +902,8 @@ export class ProcessService {
    * array of BehaviorSubjects of the respective batches; Combine with any
    * batch subjects already in the list that have an outstanding sync flag
    *
-   * @params: isActive - true for active batches, false for archive batches
-   * @params: batchList - array of batches
+   * @param: isActive - true for active batches, false for archive batches
+   * @param: batchList - array of batches
    *
    * @return: none
    */
@@ -938,9 +914,8 @@ export class ProcessService {
   /**
    * Remove a batch from a batch list
    *
-   * @params: isActive - true for active batch, false for archive batch
-   * @params: batchId - batch id to remove from list
-   *
+   * @param: isActive - true for active batch, false for archive batch
+   * @param: batchId - batch id to remove from list
    * @return: Observable of null, using for error throw/handling
    */
   removeBatchFromList(isActive: boolean, batchId: string): Observable<Batch> {
@@ -1131,8 +1106,7 @@ export class ProcessService {
   /**
    * Update active or archive batch storage
    *
-   * @params: isActive - true for active batches, false for archive batches
-   *
+   * @param: isActive - true for active batches, false for archive batches
    * @return: none
    */
   updateBatchStorage(isActive: boolean): void {
@@ -1157,7 +1131,6 @@ export class ProcessService {
    * Runtime check given Batch for type correctness; throws error on check failed
    *
    * @param: batch - the batch to check
-   *
    * @return: none
    */
   checkTypeSafety(batch: any): void {
@@ -1170,14 +1143,13 @@ export class ProcessService {
    * Get a custom error on unsafe batch type
    *
    * @param: thrownFor - the original error thrown
-   *
    * @return: new custom error
    */
   getUnsafeError(thrownFor: any): Error {
     return new CustomError(
       'BatchError',
       `Batch is invalid: got ${JSON.stringify(thrownFor, null, 2)}`,
-      2,
+      this.errorReporter.highSeverity,
       'An internal error occurred: invalid batch'
     );
   }
@@ -1186,7 +1158,6 @@ export class ProcessService {
    * Check if given alerts are valid by correctly implementing the Alert interface
    *
    * @param: alerts - expects an array of Alerts at runtime
-   *
    * @return: true if all alerts correctly implement Alert interface
    */
   isSafeAlerts(alerts: Alert[]): boolean {
@@ -1199,7 +1170,6 @@ export class ProcessService {
    * Check if given batch object is valid by correctly implementing the Batch interface
    *
    * @param: batch - expects a Batch at runtime
-   *
    * @return: true if given batch correctly implements Batch interface
    */
   isSafeBatch(batch: Batch): boolean {
@@ -1215,7 +1185,6 @@ export class ProcessService {
    * Check if given batch annotations object is valid by correctly implementing the BatchAnnotations interface
    *
    * @param: annotations - expects a BatchAnnotations at runtime
-   *
    * @return: true if given annotations correctly implements BatchAnnotations interface
    */
   isSafeBatchAnnotations(annotations: BatchAnnotations): boolean {
@@ -1230,7 +1199,6 @@ export class ProcessService {
    * Check if given batch context object is valid by correctly implementing the BatchContext interface
    *
    * @param: context - expects a BatchContext at runtime
-   *
    * @return: true if given context correctly implements BatchContext interface
    */
   isSafeBatchContext(context: BatchContext): boolean {
@@ -1247,7 +1215,6 @@ export class ProcessService {
    * Check if given batch process object is valid by correctly implementing the BatchProcess interface
    *
    * @param: batchProcess - expects a BatchProcess at runtime
-   *
    * @return: true if given annotations correctly implements BatchProcess interface
    */
   isSafeBatchProcess(batchProcess: BatchProcess): boolean {
@@ -1262,7 +1229,6 @@ export class ProcessService {
    * Check if given primary values object is valid by correctly implementing the PrimaryValues interface
    *
    * @param: values - expects a PrimaryValues at runtime
-   *
    * @return: true if given primary values correctly implements PrimaryValues interface
    */
   isSafePrimaryValues(values: PrimaryValues): boolean {
@@ -1274,9 +1240,8 @@ export class ProcessService {
    * as well as the appropriate extended interface defined by the type property
    *
    * @param: schedule - expects array of Process objects at runtime
-   *
    * @return: true if all processes within schedule implements the Process interface as well as their
-   *          individual extended interface
+   * individual extended interface
    */
   isSafeProcessSchedule(schedule: Process[]): boolean {
     return this.recipeService.isSafeProcessSchedule(schedule);
