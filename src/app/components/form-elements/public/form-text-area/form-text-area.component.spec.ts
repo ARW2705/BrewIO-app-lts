@@ -138,20 +138,20 @@ describe('FormTextAreaComponent', (): void => {
 
     fixture.detectChanges();
 
-    const label: HTMLElement = global.document.querySelector('ion-label');
+    const label: HTMLElement = fixture.nativeElement.querySelector('ion-label');
     expect(label.textContent).toMatch('Label');
-    const textarea: HTMLElement = global.document.querySelector('ion-textarea');
+    const textarea: HTMLElement = fixture.nativeElement.querySelector('ion-textarea');
     expect(textarea['autocapitalize']).toMatch('off');
     expect(textarea['formControl']).toBe(component.control);
     expect(textarea['spellcheck']).toBe(false);
-    const error: HTMLElement = global.document.querySelector('app-form-error');
+    const error: HTMLElement = fixture.nativeElement.querySelector('app-form-error');
     expect(error).toBeNull();
     component.overrideTitleCase = true;
     component.label = 'TEST';
 
     fixture.detectChanges();
 
-    const newLabel: HTMLElement = global.document.querySelector('ion-label');
+    const newLabel: HTMLElement = fixture.nativeElement.querySelector('ion-label');
     expect(newLabel.textContent).toMatch('TEST');
   });
 
@@ -165,7 +165,7 @@ describe('FormTextAreaComponent', (): void => {
 
     fixture.detectChanges();
 
-    const error: HTMLElement = global.document.querySelector('app-form-error');
+    const error: HTMLElement = fixture.nativeElement.querySelector('app-form-error');
     expect(error['formName']).toMatch('form');
     expect(error['controlName']).toMatch('control');
     expect(error['controlErrors']).toStrictEqual({ maxlength: true });
