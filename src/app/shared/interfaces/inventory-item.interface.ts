@@ -5,15 +5,15 @@ export interface InventoryItem {
   createdAt?: string;
   updatedAt?: string;
   cid: string;
-  supplierName: string;
-  stockType: string;
-  initialQuantity: number;
   currentQuantity: number;
   description: string;
+  initialQuantity: number;
+  itemABV: number;
   itemName: string;
   itemStyleId: string;
   itemStyleName: string;
-  itemABV: number;
-  sourceType: string;
   optionalItemData: OptionalItemData;
+  sourceType: string;
+  stockType: string;
+  supplierName: string;
 }
