@@ -16,23 +16,25 @@ export class IdService {
   /**
    * Get an id from an object, prioritizing _id
    *
-   * @params: obj - an object that may contain an id
-   *
+   * @param: obj - an object that may contain an id
    * @return: the id as a string else undefined
    */
   getId(obj: object): string {
-    if (!obj) return undefined;
-    if (obj['_id'] !== undefined) return obj['_id'];
-    if (obj['cid'] !== undefined) return obj['cid'];
+    if (!obj) {
+      return undefined;
+    } else if (obj['_id'] !== undefined) {
+      return obj['_id'];
+    } else if (obj['cid'] !== undefined) {
+      return obj['cid'];
+    }
     return undefined;
   }
 
   /**
    * Get the index of an array of objects that has a specific id string
    *
-   * @params: id - id string to search
-   * @params: arr - array of objects with an _id property
-   *
+   * @param: id - id string to search
+   * @param: arr - array of objects with an _id property
    * @return: index of object with matching id or -1 if none found
    */
   getIndexById(id: string, arr: object[]): number {
@@ -42,8 +44,7 @@ export class IdService {
   /**
    * Generate a new client side id that is numeric only
    *
-   * @params: none
-   *
+   * @param: none
    * @return: an id as a string of numbers
    */
   getNewId(): string {
@@ -55,23 +56,18 @@ export class IdService {
    * Server generated ids are 24 chars long, client generated are unix timestamps
    * in milliseconds
    *
-   * @params: id - id as a string
-   *
+   * @param: id - id as a string
    * @return: true if id contains no letters
    */
   hasDefaultIdType(id: string): boolean {
-    if (id === undefined) {
-      return true;
-    }
-    return this.defaultIdRegex.test(id);
+    return (id === undefined) ? true : this.defaultIdRegex.test(id);
   }
 
   /**
    * Check if object has search id either as _id or cid property
    *
-   * @params: obj - object in which to search
-   * @params: searchId - id to compare
-   *
+   * @param: obj - object in which to search
+   * @param: searchId - id to compare
    * @return: true if either obj _id or cid matches searchId
    */
   hasId(obj: object, searchId: string): boolean {
@@ -85,8 +81,7 @@ export class IdService {
   /**
    * Check if a server id has been set as '_id' property
    *
-   * @params: id - id as a string
-   *
+   * @param: id - id as a string
    * @return: true if id is undefined
    */
   isMissingServerId(id: string): boolean {
