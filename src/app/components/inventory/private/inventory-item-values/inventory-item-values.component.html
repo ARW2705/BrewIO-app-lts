@@ -2,24 +2,12 @@
   <ion-row>
     <!-- Left column field names -->
     <ion-col class="ion-no-padding">
-      <ion-row>
-        Stock
-      </ion-row>
-      <ion-row>
-        Type
-      </ion-row>
-      <ion-row>
-        ABV
-      </ion-row>
-      <ion-row *ngIf="item.optionalItemData.itemIBU">
-        IBU
-      </ion-row>
-      <ion-row *ngIf="item.optionalItemData.itemSRM">
-        SRM
-      </ion-row>
-      <ion-row>
-        Added
-      </ion-row>
+      <ion-row>Stock</ion-row>
+      <ion-row>Type</ion-row>
+      <ion-row>ABV</ion-row>
+      <ion-row *ngIf="item.optionalItemData.itemIBU">IBU</ion-row>
+      <ion-row *ngIf="item.optionalItemData.itemSRM">SRM</ion-row>
+      <ion-row>Added</ion-row>
     </ion-col>
     <!-- Right column field values -->
     <ion-col class="ion-no-padding">
