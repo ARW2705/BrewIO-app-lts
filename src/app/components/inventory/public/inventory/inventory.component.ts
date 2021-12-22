@@ -14,7 +14,8 @@ import { defaultImage } from '../../../../shared/defaults';
 import { AccordionComponent } from '../../../shared/public';
 
 /* Page imports */
-import { InventoryFormPage, QuantityHelperPage } from '../../../../pages/pages';
+import { QuantityHelperComponent } from '../../private/quantity-helper/quantity-helper.component';
+import { InventoryFormComponent } from '../inventory-form/inventory-form.component';
 
 /* Service imports */
 import { AnimationsService, ErrorReportingService, EventService, ImageService, InventoryService, ProcessService, ToastService } from '../../../../services/services';
@@ -354,7 +355,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
    */
   async openQuantityHelper(item: InventoryItem): Promise<void> {
     const modal: HTMLIonModalElement = await this.modalCtrl.create({
-      component: QuantityHelperPage,
+      component: QuantityHelperComponent,
       componentProps: {
         headerText: 'reduce quantity by',
         quantity: 1
@@ -420,7 +421,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
     options: { item?: InventoryItem, batch?: Batch }
   ): Promise<void> {
     const modal: HTMLIonModalElement = await this.modalCtrl.create({
-      component: InventoryFormPage,
+      component: InventoryFormComponent,
       componentProps: {
         options,
         isRequired: options.batch !== undefined

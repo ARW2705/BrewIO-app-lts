@@ -793,9 +793,12 @@ describe('InventoryComponent', (): void => {
       expect(listOptions).not.toBeNull();
       const list: HTMLElement = fixture.nativeElement.querySelector('#inventory-list');
       expect(list).not.toBeNull();
-      expect(list.childNodes.length).toEqual(component.displayList.length * 4 - 1);
       const sliders: NodeList = fixture.nativeElement.querySelectorAll('app-inventory-slider');
       expect(sliders.length).toEqual(2);
+      expect(sliders.item(0)['item']).toStrictEqual(_mockInventoryItem1);
+      expect(sliders.item(1)['item']).toStrictEqual(_mockInventoryItem2);
+      const acc = fixture.nativeElement.querySelectorAll('app-accordion');
+      expect(acc.length).toEqual(2);
     });
 
   });

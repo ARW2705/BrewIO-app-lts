@@ -3,15 +3,12 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
-/* Page imports */
-import { ImageFormPageModule } from '../../../../pages/forms/image-form/image-form.module';
-import { QuantityHelperPageModule } from '../../../../pages/quantity-helper/quantity-helper.module';
-
 /* Component imports */
 import { FormSelectComponentModule } from '../../../form-elements/public';
 import { AccordionComponentModule, LoadingSpinnerComponentModule } from '../../../shared/public';
 import { InventoryItemComponentModule } from '../../private/inventory-item/inventory-item.module';
 import { InventorySliderComponentModule } from '../../private/inventory-slider/inventory-slider.module';
+import { InventoryFormComponentModule } from '../inventory-form/inventory-form.module';
 import { InventoryComponent } from './inventory.component';
 
 
@@ -20,12 +17,11 @@ import { InventoryComponent } from './inventory.component';
     AccordionComponentModule,
     CommonModule,
     FormSelectComponentModule,
-    ImageFormPageModule,
+    InventoryFormComponentModule,
     InventoryItemComponentModule,
     InventorySliderComponentModule,
     IonicModule,
-    LoadingSpinnerComponentModule,
-    QuantityHelperPageModule
+    LoadingSpinnerComponentModule
   ],
   declarations: [
     InventoryComponent
