@@ -62,9 +62,9 @@ describe('YeastBatchItemComponent', (): void => {
 
     const button: HTMLElement = fixture.debugElement.query(By.css('button')).nativeElement;
     expect(button.classList).not.toContain('border-bottom-medium');
-    const icon: HTMLElement = global.document.querySelector('ion-icon');
+    const icon: HTMLElement = fixture.nativeElement.querySelector('ion-icon');
     expect(icon.getAttribute('name')).toMatch('create-outline');
-    const cols: NodeList = global.document.querySelectorAll('ion-col');
+    const cols: NodeList = fixture.nativeElement.querySelectorAll('ion-col');
     expect(cols.item(2).textContent).toMatch(_mockYeastBatch.yeastType.name);
     expect(cols.item(3).textContent).toMatch(_mockYeastBatch.quantity.toString());
     expect(cols.item(4).textContent.toLowerCase()).toMatch(_mockYeastBatch.yeastType.form);
