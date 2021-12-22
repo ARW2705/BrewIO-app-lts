@@ -45,11 +45,6 @@ export class IngredientFormComponent implements OnInit {
   /***** Lifecycle Hooks *****/
 
   ngOnInit(): void {
-    if (!this.ingredientType) {
-      this.dismissOnError('Missing ingredient type');
-      return;
-    }
-
     this.title = this.utilService.toTitleCase(this.ingredientType);
     this.units = this.preferenceService.getSelectedUnits();
     this.buildFormSelectOptions();
@@ -87,16 +82,6 @@ export class IngredientFormComponent implements OnInit {
    */
   dismiss(): void {
     this.modalCtrl.dismiss();
-  }
-
-  /**
-   * Dismiss form with error message
-   *
-   * @param: error - error message
-   * @return: none
-   */
-  dismissOnError(error: any): void {
-    this.modalCtrl.dismiss({ error });
   }
 
   /**
