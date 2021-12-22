@@ -15,9 +15,9 @@ import { ProgressCircleComponent } from './progress-circle.component';
 
 
 describe('ProgressCircleComponent', (): void => {
-  let fixture: ComponentFixture<ProgressCircleComponent>;
-  let circleCmp: ProgressCircleComponent;
   configureTestBed();
+  let fixture: ComponentFixture<ProgressCircleComponent>;
+  let component: ProgressCircleComponent;
 
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
@@ -30,20 +30,19 @@ describe('ProgressCircleComponent', (): void => {
 
   beforeEach((): void => {
     fixture = TestBed.createComponent(ProgressCircleComponent);
-    circleCmp = fixture.componentInstance;
+    component = fixture.componentInstance;
   });
 
   test('should create the component', (): void => {
     fixture.detectChanges();
-
-    expect(circleCmp).toBeDefined();
+    expect(component).toBeDefined();
   });
 
   test('should render a progress circle with no button', (): void => {
     const _mockProgressCircle: ProgressCircleSettings = mockProgressCircle();
 
-    circleCmp.settings = _mockProgressCircle;
-    circleCmp.showButton = false;
+    component.settings = _mockProgressCircle;
+    component.showButton = false;
 
     fixture.detectChanges();
 
@@ -79,9 +78,9 @@ describe('ProgressCircleComponent', (): void => {
   test('should render a progress circle with a button', (): void => {
     const _mockProgressCircle: ProgressCircleSettings = mockProgressCircle();
 
-    circleCmp.settings = _mockProgressCircle;
-    circleCmp.showButton = true;
-    circleCmp.chevronPath = 'M1 L2 3';
+    component.settings = _mockProgressCircle;
+    component.showButton = true;
+    component.chevronPath = 'M1 L2 3';
 
     fixture.detectChanges();
 
