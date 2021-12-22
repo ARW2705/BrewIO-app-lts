@@ -19,9 +19,9 @@ import { ErrorReportingService } from '../services';
 
 
 describe('FileService', (): void => {
-  let injector: TestBed;
-  let fileService: FileService;
   configureTestBed();
+  let injector: TestBed;
+  let service: FileService;
 
   beforeAll(async((): void => {
     TestBed.configureTestingModule({
@@ -38,27 +38,25 @@ describe('FileService', (): void => {
   beforeEach((): void => {
     jest.clearAllMocks();
     injector = getTestBed();
-    fileService = injector.get(FileService);
+    service = injector.get(FileService);
 
-    fileService.errorReporter.handleGenericCatchError = jest
-      .fn()
+    service.errorReporter.handleGenericCatchError = jest.fn()
       .mockImplementation((): (error: any) => Observable<never> => {
         return (error: any) => throwError(error);
       });
   });
 
   test('should create the service', (): void => {
-    expect(fileService).toBeDefined();
+    expect(service).toBeDefined();
   });
 
   test('should convert a cordova file to js file', (done: jest.DoneCallback): void => {
     const _mockArrayBuffer: ArrayBuffer = mockArrayBuffer(10);
     const _mockIFile: IFile = mockIFile('image/jpeg', 10);
-
     const readerSpy: jest.SpyInstance = jest.spyOn(global, 'FileReader')
       .mockImplementation(() => mockFileReader(_mockArrayBuffer, null));
 
-    fileService.convertCordovaFileToJSFile(_mockIFile)
+    service.convertCordovaFileToJSFile(_mockIFile)
       .subscribe(
         (result: string | ArrayBuffer): void => {
           expect(result['byteLength']).toEqual(10);
@@ -76,11 +74,10 @@ describe('FileService', (): void => {
   test('should get error converting a cordova file to js file', (done: jest.DoneCallback): void => {
     const _mockArrayBuffer: ArrayBuffer = mockArrayBuffer(10);
     const _mockIFile: IFile = mockIFile('image/jpeg', 10);
-
     const readerSpy: jest.SpyInstance = jest.spyOn(global, 'FileReader')
       .mockImplementation(() => mockFileReader(_mockArrayBuffer, 'got an error'));
 
-    fileService.convertCordovaFileToJSFile(_mockIFile)
+    service.convertCordovaFileToJSFile(_mockIFile)
       .subscribe(
         (result: string | ArrayBuffer): void => {
           console.log('Should not get a result', result);
@@ -101,7 +98,7 @@ describe('FileService', (): void => {
       file: (success: ((data: any) => void), fail: (() => void)) => success(_mockIFile)
     });
 
-    fileService.convertFileEntrytoCordovaFile(_mockFileEntry)
+    service.convertFileEntrytoCordovaFile(_mockFileEntry)
       .subscribe(
         (testFile: IFile): void => {
           expect(testFile).toStrictEqual(_mockIFile);
@@ -120,7 +117,7 @@ describe('FileService', (): void => {
       file: (success: (() => void), fail: ((error: any) => void)) => fail(_mockFileError)
     });
 
-    fileService.convertFileEntrytoCordovaFile(_mockFileEntry)
+    service.convertFileEntrytoCordovaFile(_mockFileEntry)
       .subscribe(
         (testFile: IFile): void => {
           console.log('Should not get result', testFile);
@@ -136,16 +133,10 @@ describe('FileService', (): void => {
   test('should copy a file to temp dir', (done: jest.DoneCallback): void => {
     const _mockEntry: Entry = mockEntry({});
     const _mockFileMetadata: Metadata = mockFileMetadata();
+    service.getMetadata = jest.fn().mockReturnValue(of(_mockFileMetadata));
+    service.file.copyFile = jest.fn().mockReturnValue(Promise.resolve(_mockEntry));
 
-    fileService.getMetadata = jest
-      .fn()
-      .mockReturnValue(of(_mockFileMetadata));
-
-    fileService.file.copyFile = jest
-      .fn()
-      .mockReturnValue(Promise.resolve(_mockEntry));
-
-    fileService.copyFileToLocalTmpDir('0', 'path', 'fileName', 'fileExt')
+    service.copyFileToLocalTmpDir('0', 'path', 'fileName', 'fileExt')
       .subscribe(
         ([entry, metadata]: [Entry, Metadata]): void => {
           expect(entry).toStrictEqual(_mockEntry);
@@ -164,12 +155,10 @@ describe('FileService', (): void => {
     const _mockFileEntry: FileEntry = mockFileEntry({
       remove: (success: ((data: any) => void), fail: (() => void)) => success(_mockIFile)
     });
-
-    fileService.file.resolveLocalFilesystemUrl = jest
-      .fn()
+    service.file.resolveLocalFilesystemUrl = jest.fn()
       .mockReturnValue(Promise.resolve(_mockFileEntry));
 
-    fileService.deleteLocalFile('path')
+    service.deleteLocalFile('path')
       .subscribe(
         (result: any): void => {
           expect(result).toBeNull();
@@ -188,11 +177,10 @@ describe('FileService', (): void => {
       remove: (success: (() => void), fail: ((error: any) => void)) => fail(_mockFileError)
     });
 
-    fileService.file.resolveLocalFilesystemUrl = jest
-      .fn()
+    service.file.resolveLocalFilesystemUrl = jest.fn()
       .mockReturnValue(Promise.resolve(_mockFileEntry));
 
-    fileService.deleteLocalFile('path')
+    service.deleteLocalFile('path')
       .subscribe(
         (result: any): void => {
           expect(result).toMatch('test-error');
@@ -209,20 +197,14 @@ describe('FileService', (): void => {
     const _mockArrayBuffer: ArrayBuffer = mockArrayBuffer(10);
     const _mockIFile: IFile = mockIFile('', 10);
     const _mockFileEntry: FileEntry = mockFileEntry({});
-
-    fileService.file.resolveLocalFilesystemUrl = jest
-      .fn()
+    service.file.resolveLocalFilesystemUrl = jest.fn()
       .mockReturnValue(Promise.resolve(_mockFileEntry));
-
-    fileService.convertFileEntrytoCordovaFile = jest
-      .fn()
+    service.convertFileEntrytoCordovaFile = jest.fn()
       .mockReturnValue(of(_mockIFile));
-
-    fileService.convertCordovaFileToJSFile = jest
-      .fn()
+    service.convertCordovaFileToJSFile = jest.fn()
       .mockReturnValue(of(_mockArrayBuffer));
 
-    fileService.getLocalFile('path')
+    service.getLocalFile('path')
       .subscribe(
         (results: string | ArrayBuffer): void => {
           expect(results['byteLength']).toEqual(10);
@@ -236,11 +218,9 @@ describe('FileService', (): void => {
   });
 
   test('should get local url', (): void => {
-    fileService.webview.convertFileSrc = jest
-      .fn()
-      .mockReturnValue('localurl');
+    service.webview.convertFileSrc = jest.fn().mockReturnValue('localurl');
 
-    expect(fileService.getLocalUrl('path')).toMatch('localurl');
+    expect(service.getLocalUrl('path')).toMatch('localurl');
   });
 
   test('should get metadata', (done: jest.DoneCallback): void => {
@@ -249,7 +229,7 @@ describe('FileService', (): void => {
       getMetadata: (success: ((data: any) => void), fail: (() => void)) => success(_mockFileMetadata)
     });
 
-    fileService.getMetadata(_mockEntry)
+    service.getMetadata(_mockEntry)
       .subscribe(
         (results: Metadata): void => {
           expect(results).toStrictEqual(_mockFileMetadata);
@@ -268,7 +248,7 @@ describe('FileService', (): void => {
       getMetadata: (success: (() => void), fail: ((error: any) => void)) => fail(_mockFileError)
     });
 
-    fileService.getMetadata(_mockEntry)
+    service.getMetadata(_mockEntry)
       .subscribe(
         (results: any): void => {
           console.log('Should not get a result', results);
@@ -282,15 +262,15 @@ describe('FileService', (): void => {
   });
 
   test('should get persistent local directory path', (): void => {
-    expect(fileService.getPersistentDirPath()).toMatch('data');
+    expect(service.getPersistentDirPath()).toMatch('data');
   });
 
   test('should get tmp local directory path', (): void => {
-    expect(fileService.getTmpDirPath()).toMatch('tmp');
+    expect(service.getTmpDirPath()).toMatch('tmp');
   });
 
   test('should resolve native path', (done: jest.DoneCallback): void => {
-    fileService.resolveNativePath('path')
+    service.resolveNativePath('path')
       .subscribe(
         (nativePath: string): void => {
           expect(nativePath).toMatch('native-path');

@@ -1,9 +1,9 @@
 /* Module imports */
 import { Injectable } from '@angular/core';
-import { File, FileEntry, Entry, IFile, FileError, Metadata } from '@ionic-native/file/ngx';
 import { FilePath } from '@ionic-native/file-path/ngx';
+import { Entry, File, FileEntry, FileError, IFile, Metadata } from '@ionic-native/file/ngx';
 import { WebView } from '@ionic-native/ionic-webview/ngx';
-import { Observable, Observer, forkJoin, from, of } from 'rxjs';
+import { forkJoin, from, Observable, Observer, of } from 'rxjs';
 import { catchError, mergeMap } from 'rxjs/operators';
 
 /* Service imports */
@@ -25,8 +25,7 @@ export class FileService {
   /**
    * Convert a cordova file to a js file
    *
-   * @params: file - input cordova file to convert
-   *
+   * @param: file - input cordova file to convert
    * @return: observable of js file buffer or error message
    */
   convertCordovaFileToJSFile(file: IFile): Observable<string | ArrayBuffer> {
@@ -50,8 +49,7 @@ export class FileService {
   /**
    * Convert a file entry to a cordova file
    *
-   * @params: fileEntry - input device file to convert
-   *
+   * @param: fileEntry - input device file to convert
    * @return: observable of cordova input file or file error
    */
   convertFileEntrytoCordovaFile(fileEntry: FileEntry): Observable<IFile | FileError> {
@@ -73,11 +71,10 @@ export class FileService {
   /**
    * Copy image file from device image gallery to local temporary directory
    *
-   * @params: cid - client id of file to be used as new filename
-   * @params: path - local directory path
-   * @params: fileName - gallery image file name
-   * @params: fileExt - file extension to be saved as
-   *
+   * @param: cid - client id of file to be used as new filename
+   * @param: path - local directory path
+   * @param: fileName - gallery image file name
+   * @param: fileExt - file extension to be saved as
    * @return: observable of array with file entry and metadata
    */
   copyFileToLocalTmpDir(
@@ -98,8 +95,7 @@ export class FileService {
   /**
    * Delete a local file at given path
    *
-   * @params: path - file's path
-   *
+   * @param: path - file's path
    * @return: observable of null on success
    */
   deleteLocalFile(path: string): Observable<string> {
@@ -127,8 +123,7 @@ export class FileService {
   /**
    * Get a device file
    *
-   * @params: path - file path to load
-   *
+   * @param: path - file path to load
    * @return: file buffer or error message
    */
   getLocalFile(path: string): Observable<string | ArrayBuffer> {
@@ -147,8 +142,7 @@ export class FileService {
   /**
    * Get device local path as url
    *
-   * @params: path - file path to convert
-   *
+   * @param: path - file path to convert
    * @return: url version of file path
    */
   getLocalUrl(path: string): string {
@@ -158,8 +152,7 @@ export class FileService {
   /**
    * Get file entry metadata
    *
-   * @params: entry - file entry to query
-   *
+   * @param: entry - file entry to query
    * @return: observable of metadata
    */
   getMetadata(entry: Entry): Observable<Metadata> {
@@ -181,7 +174,7 @@ export class FileService {
   /**
    * Get the device's local persistent file directory
    *
-   * @params: none
+   * @param: none
    *
    * @return: device's persistent directory
    */
@@ -192,8 +185,7 @@ export class FileService {
   /**
    * Get the device's local temporary file directory
    *
-   * @params: none
-   *
+   * @param: none
    * @return: device's temporary directory
    */
   getTmpDirPath(): string {
@@ -203,8 +195,7 @@ export class FileService {
   /**
    * Get a file's full device path
    *
-   * @params: path - search file path
-   *
+   * @param: path - search file path
    * @return: device's native path
    */
   resolveNativePath(path: string): Observable<string> {
