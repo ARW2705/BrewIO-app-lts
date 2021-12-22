@@ -117,7 +117,8 @@ describe('ProcessTimerFormComponent', (): void => {
       description: 'description',
       duration: 9,
       concurrent: true,
-      splitInterval: 2
+      splitInterval: 2,
+      type: 'timer'
     });
   });
 
