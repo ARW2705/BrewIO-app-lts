@@ -1,11 +1,14 @@
 /* Module imports */
 import { Injectable } from '@angular/core';
 import { Storage } from '@ionic/storage';
-import { Observable, from, of, throwError } from 'rxjs';
+import { from, Observable, of, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
+/* Constant imports */
+import { MODERATE_SEVERITY } from '../../shared/constants';
+
 /* Interface imports */
-import { Batch, ErrorReport, LibraryStorage, InventoryItem, RecipeMaster, SelectedUnits, SyncMetadata, User } from '../../shared/interfaces';
+import { Batch, ErrorReport, InventoryItem, LibraryStorage, RecipeMaster, SelectedUnits, SyncMetadata, User } from '../../shared/interfaces';
 
 /* Type imports */
 import { CustomError } from '../../shared/types';
@@ -34,8 +37,7 @@ export class StorageService {
   /**
    * Get all active or archive batches from storage
    *
-   * @params: isActive - true for active batches, false for archive batches
-   *
+   * @param: isActive - true for active batches, false for archive batches
    * @return: Observable of array of active batches
    */
   getBatches(isActive: boolean): Observable<Batch[]> {
@@ -57,8 +59,7 @@ export class StorageService {
   /**
    * Remove active or archive batches from storage
    *
-   * @params: isActive - true for active batches, false for archive batches
-   *
+   * @param: isActive - true for active batches, false for archive batches
    * @return: none
    */
   removeBatches(isActive: boolean): void {
@@ -73,9 +74,8 @@ export class StorageService {
   /**
    * Store list of active or archive batches
    *
-   * @params: isActive - true for active batches, false for archive batches
-   * @params: batchList - list of all active batches
-   *
+   * @param: isActive - true for active batches, false for archive batches
+   * @param: batchList - list of all active batches
    * @return: Observable of storage set response
    */
   setBatches(isActive: boolean, batchList: Batch[]): Observable<any> {
@@ -101,8 +101,7 @@ export class StorageService {
   /**
    * Get all error reports from storage
    *
-   * @params: none
-   *
+   * @param: none
    * @return: Observable of array of error reports
    */
   getErrorReports(): Observable<ErrorReport[]> {
@@ -124,7 +123,7 @@ export class StorageService {
   /**
    * Remove error reports from storage
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   removeErrorReports(): void {
@@ -139,8 +138,7 @@ export class StorageService {
   /**
    * Store list of error reports
    *
-   * @params: none
-   *
+   * @param: none
    * @return: Observable of storage set response
    */
   setErrorReports(errorReports: ErrorReport[]): Observable<any> {
@@ -161,8 +159,7 @@ export class StorageService {
   /**
    * Get inventory from storage
    *
-   * @params: none
-   *
+   * @param: none
    * @return: Observable of array of inventory items
    */
   getInventory(): Observable<InventoryItem[]> {
@@ -184,7 +181,7 @@ export class StorageService {
   /**
    * Remove inventory from storage
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   removeInventory(): void {
@@ -199,8 +196,7 @@ export class StorageService {
   /**
    * Store inventory
    *
-   * @params: inventory - array of items in inventory
-   *
+   * @param: inventory - array of items in inventory
    * @return: Observable of storage set response
    */
   setInventory(inventory: InventoryItem[]): Observable<any> {
@@ -221,8 +217,7 @@ export class StorageService {
   /**
    * Get all ingredient/style libraries from storage
    *
-   * @params: none
-   *
+   * @param: none
    * @return: Observable of object with each library type
    */
   getLibrary(): Observable<LibraryStorage> {
@@ -232,9 +227,9 @@ export class StorageService {
           if (libraries === null) {
             return {
               grains: [],
-              hops:   [],
-              yeast:  [],
-              style:  []
+              hops  : [],
+              yeast : [],
+              style : []
             };
           }
           return JSON.parse(libraries);
@@ -249,8 +244,7 @@ export class StorageService {
   /**
    * Store ingredient libraries
    *
-   * @params: library - object containing libraries of each type
-   *
+   * @param: library - object containing libraries of each type
    * @return: Observable of storage set response
    */
   setLibrary(library: LibraryStorage): Observable<any> {
@@ -271,8 +265,7 @@ export class StorageService {
   /**
    * Get all recipe masters from storage
    *
-   * @params: none
-   *
+   * @param: none
    * @return: Observable of array of recipe masters
    */
   getRecipes(): Observable<RecipeMaster[]> {
@@ -294,7 +287,7 @@ export class StorageService {
   /**
    * Remove all recipe masters from storage
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   removeRecipes(): void {
@@ -309,8 +302,7 @@ export class StorageService {
   /**
    * Store recipe masters
    *
-   * @params: recipeMasterList - array of recipe masters
-   *
+   * @param: recipeMasterList - array of recipe masters
    * @return: Observable of storage set response
    */
   setRecipes(recipeMasterList: RecipeMaster[]): Observable<any> {
@@ -331,8 +323,7 @@ export class StorageService {
   /**
    * Get all sync flags from storage
    *
-   * @params: none
-   *
+   * @param: none
    * @return: Observable of array of sync metadata
    */
   getSyncFlags(): Observable<SyncMetadata[]> {
@@ -354,7 +345,7 @@ export class StorageService {
   /**
    * Remove all sync flags from storage
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   removeSyncFlags(): void {
@@ -369,8 +360,7 @@ export class StorageService {
   /**
    * Store sync flags for given type
    *
-   * @params: flags - array of sync flags to store
-   *
+   * @param: flags - array of sync flags to store
    * @return: Observable of storage response
    */
   setSyncFlags(flags: SyncMetadata[]): Observable<any> {
@@ -391,8 +381,7 @@ export class StorageService {
   /**
    * Get user data and credentials; if an error is encountered, return an offline user
    *
-   * @params: none
-   *
+   * @param: none
    * @return: Observable of user data
    */
   getUser(): Observable<User> {
@@ -420,7 +409,7 @@ export class StorageService {
   /**
    * Remove user data from storage
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   removeUser(): void {
@@ -435,8 +424,7 @@ export class StorageService {
   /**
    * Store user data and credentials
    *
-   * @params: user - user profile and credentials
-   *
+   * @param: user - user profile and credentials
    * @return: Observable of storage set response
    */
   setUser(user: User): Observable<any> {
@@ -459,14 +447,13 @@ export class StorageService {
    *
    * @param: baseMessage - additional error message
    * @param: error - the error thrown
-   *
    * @return: a new custom error
    */
   getCustomError(baseMessage: string, error: Error): CustomError {
     return new CustomError(
       'StorageError',
       `${baseMessage}: ${error.message}`,
-      3,
+      MODERATE_SEVERITY,
       baseMessage
     );
   }
