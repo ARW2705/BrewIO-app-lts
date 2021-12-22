@@ -10,9 +10,7 @@ import { RecipeMaster, RecipeVariant } from '../../shared/interfaces';
 
 /* Component imports */
 import { RecipeSliderComponent } from '../../components/recipe/public';
-
-/* Page imports */
-import { ConfirmationPage } from '../confirmation/confirmation.page';
+import { ConfirmationComponent } from '../../components/shared/public';
 
 /* Service imports */
 import { AnimationsService, ErrorReportingService, IdService, ModalService, RecipeService, ToastService, UserService, UtilityService } from '../../services/services';
@@ -28,7 +26,7 @@ export class RecipePage implements OnInit, OnDestroy {
   @ViewChild('createButtonContainer', { read: ElementRef }) createButtonContainer: ElementRef;
   @ViewChild('slidingItemsList') slidingItemsList: IonList;
   @ViewChild('slidingItemsList', { read: ElementRef }) slidingItemsListRef: ElementRef;
-  @ViewChildren(RecipeSliderComponent, { read: ViewContainerRef }) recipeSliderComponent: QueryList<ViewContainerRef>;
+  @ViewChildren(RecipeSliderComponent, { read: ViewContainerRef }) recipeSliderComponents: QueryList<ViewContainerRef>;
   creationMode: boolean = false;
   destroy$: Subject<boolean> = new Subject<boolean>();
   isLoggedIn: boolean = false;
@@ -64,8 +62,8 @@ export class RecipePage implements OnInit, OnDestroy {
 
   ionViewWillEnter(): void {
     this.refreshPipes = !this.refreshPipes;
-    if (this.recipeSliderComponent.length) {
-      const slider: HTMLElement = this.recipeSliderComponent.toArray()[0].element.nativeElement;
+    if (this.recipeSliderComponents.length) {
+      const slider: HTMLElement = this.recipeSliderComponents.toArray()[0].element.nativeElement;
       const sliderItem: HTMLElement = <HTMLElement>slider.firstChild;
       this.sliderHeight = sliderItem.clientHeight;
     }
@@ -101,7 +99,7 @@ export class RecipePage implements OnInit, OnDestroy {
   /**
    * Subscribe to the recipe master list; update local list on changes
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   listenForRecipes(): void {
@@ -109,33 +107,31 @@ export class RecipePage implements OnInit, OnDestroy {
       .pipe(
         takeUntil(this.destroy$),
         map((masterList: BehaviorSubject<RecipeMaster>[]): RecipeMaster[] => {
-          return masterList
-            .map((recipe$: BehaviorSubject<RecipeMaster>): RecipeMaster => {
-              return recipe$.value;
-            });
+          return masterList.map((recipe$: BehaviorSubject<RecipeMaster>): RecipeMaster => {
+            return recipe$.value;
+          });
         })
       )
       .subscribe(
         (masterList: RecipeMaster[]): void => {
           this.recipeList = masterList;
-          console.log('got list', this.recipeList);
           this.mapMasterRecipes();
         },
-        (error: any): void => this.errorReporter.handleUnhandledError(error)
+        (error: Error): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
   /**
    * Subscribe to user and listen for changes in login status
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   listenForUser(): void {
     this.userService.getUser()
       .pipe(takeUntil(this.destroy$))
       .subscribe((): void => { this.isLoggedIn = this.userService.isLoggedIn(); },
-        (error: any): void => {
+        (error: Error): void => {
           this.isLoggedIn = false;
           this.errorReporter.handleUnhandledError(error);
         }
@@ -151,8 +147,7 @@ export class RecipePage implements OnInit, OnDestroy {
    * Navigate to Process Page if a process schedule is present
    * Pass the recipe master, the owner's id, selected recipe's id on nav
    *
-   * @params: master - recipe master to use in brew process
-   *
+   * @param: master - recipe master to use in brew process
    * @return: none
    */
   navToBrewProcess(recipeMaster: RecipeMaster): void {
@@ -188,8 +183,7 @@ export class RecipePage implements OnInit, OnDestroy {
   /**
    * Navigate to Recipe Master details page
    *
-   * @params: index - masterList index to send to details page
-   *
+   * @param: index - masterList index to send to details page
    * @return: none
    */
   navToDetails(index: number): void {
@@ -199,7 +193,7 @@ export class RecipePage implements OnInit, OnDestroy {
       console.log('Details nav error', error);
       const message: string = 'Recipe details not found';
       const recipeIds: string[] = this.recipeList.map((recipe: RecipeMaster) => {
-        return `${recipe._id ? recipe._id : recipe.cid},`;
+        return `${recipe._id ?? recipe.cid},`;
       });
       this.errorReporter.setErrorReport(
         this.errorReporter.createErrorReport(
@@ -215,7 +209,7 @@ export class RecipePage implements OnInit, OnDestroy {
   /**
    * Navigate to recipe form in master creation mode
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   navToRecipeForm(): void {
@@ -233,13 +227,12 @@ export class RecipePage implements OnInit, OnDestroy {
   /**
    * Open confirmation modal prior to deletion
    *
-   * @params: index - index of recipe master to delete
-   *
+   * @param: index - index of recipe master to delete
    * @return: none
    */
   confirmDelete(index: number): void {
     this.modalService.openModal<boolean>(
-      ConfirmationPage,
+      ConfirmationComponent,
       {
         message: `Confirm deletion of "${this.recipeList[index].name}" and its variants`,
         subMessage: 'This action cannot be reversed'
@@ -248,7 +241,7 @@ export class RecipePage implements OnInit, OnDestroy {
     .subscribe(
       (shouldDelete: boolean): void => {
         if (shouldDelete) {
-          this.deleteMaster(index);
+          this.deleteRecipe(index);
         }
       },
       (error: Error): void => this.errorReporter.handleUnhandledError(error)
@@ -263,17 +256,21 @@ export class RecipePage implements OnInit, OnDestroy {
   /**
    * Delete a Recipe Master
    *
-   * @params: index - index of recipe master to delete
-   *
+   * @param: index - index of recipe master to delete
    * @return: none
    */
-  deleteMaster(index: number): void {
+  deleteRecipe(index: number): void {
     this.recipeService.removeRecipeMasterById(this.idService.getId(this.recipeList[index]))
       .subscribe(
         (): void => {
-          this.toastService.presentToast('Deleted Recipe', this.oneSecond, 'middle', 'toast-bright');
+          this.toastService.presentToast(
+            'Deleted Recipe',
+            this.toastService.shortDuration,
+            'middle',
+            'toast-bright'
+          );
         },
-        (error: any): void => this.errorReporter.handleUnhandledError(error)
+        (error: Error): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
@@ -281,8 +278,7 @@ export class RecipePage implements OnInit, OnDestroy {
    * Toggle recipe master ingredient list expansion; if expanding, scroll to
    * the opened list
    *
-   * @params: index - index in recipeIndex array to expand
-   *
+   * @param: index - index in recipeIndex array to expand
    * @return: none
    */
   expandIngredientList(index: number): void {
@@ -301,8 +297,7 @@ export class RecipePage implements OnInit, OnDestroy {
   /**
    * Populate variantList with a copy of each recipe master's selected variant
    *
-   * @params: none
-   *
+   * @param: none
    * @return: none
    */
   mapMasterRecipes(): void {
@@ -334,7 +329,7 @@ export class RecipePage implements OnInit, OnDestroy {
   /**
    * Trigger horizontally sliding gesture hint animations
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   runSlidingHints(): void {
@@ -354,7 +349,7 @@ export class RecipePage implements OnInit, OnDestroy {
     .pipe(finalize((): void => this.toggleSlidingItemClass(false)))
     .subscribe(
       (): void => this.animationService.setHintShownFlag('sliding', 'recipe'),
-      (error: any): void => this.errorReporter.handleUnhandledError(error)
+      (error: Error): void => this.errorReporter.handleUnhandledError(error)
     );
   }
 
@@ -362,9 +357,8 @@ export class RecipePage implements OnInit, OnDestroy {
    * Toggle classes on IonItemSliding for hint animations;
    * This will show the IonOptions underneath the IonItem
    *
-   * @params: show - true if classes should be added prior to animation; false to remove classes
+   * @param: show - true if classes should be added prior to animation; false to remove classes
    *  after animations have completed
-   *
    * @return: none
    */
   toggleSlidingItemClass(show: boolean): void {

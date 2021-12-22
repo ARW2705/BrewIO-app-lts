@@ -10,31 +10,28 @@ import { RoundPipeModule, TruncatePipeModule, UnitConversionPipeModule } from '.
 /* Component imports */
 import { IngredientListComponentModule } from '../../components/ingredient/public';
 import { RecipeSliderComponentModule } from '../../components/recipe/public';
-import { AccordionComponentModule, HeaderComponentModule, LoadingSpinnerComponentModule } from '../../components/shared/public';
+import { AccordionComponentModule, ConfirmationComponentModule, HeaderComponentModule, LoadingSpinnerComponentModule } from '../../components/shared/public';
+import { LoginSignupButtonComponentModule } from '../../components/user/public';
 
 /* Page imports */
-import { ConfirmationPageModule } from '../confirmation/confirmation.module';
-import { LoginPageModule } from '../forms/login/login.module';
-import { SignupPageModule } from '../forms/signup/signup.module';
 import { RecipePage } from './recipe.page';
 
 
 @NgModule({
   imports: [
-    LoginPageModule,
-    SignupPageModule,
+    AccordionComponentModule,
     CommonModule,
+    ConfirmationComponentModule,
+    HeaderComponentModule,
+    IngredientListComponentModule,
     IonicModule,
+    LoginSignupButtonComponentModule,
     LoadingSpinnerComponentModule,
     RecipeSliderComponentModule,
     RoundPipeModule,
+    RouterModule.forChild([{path: '', component: RecipePage}]),
     TruncatePipeModule,
-    UnitConversionPipeModule,
-    AccordionComponentModule,
-    ConfirmationPageModule,
-    HeaderComponentModule,
-    IngredientListComponentModule,
-    RouterModule.forChild([{path: '', component: RecipePage}])
+    UnitConversionPipeModule
   ],
   declarations: [
     RecipePage

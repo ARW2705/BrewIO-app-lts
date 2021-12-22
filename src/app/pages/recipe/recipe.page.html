@@ -25,14 +25,14 @@
           </app-recipe-slider>
           <!-- Recipe ingredient list -->
           <app-accordion  [expanded]="recipeIndex === i">
-            <ingredient-list  [recipeVariant]="variantList[i]"
-                              [refreshPipes]="refreshPipes">
-            </ingredient-list>
+            <app-ingredient-list  [recipeVariant]="variantList[i]"
+                                  [refreshPipes]="refreshPipes">
+            </app-ingredient-list>
           </app-accordion>
         </ng-container>
       </ion-list>
     </ion-row>
-    <ion-row  *ngIf="!recipeList.length || !variantList.length"
+    <ion-row  *ngIf="(recipeList && !recipeList.length) || !variantList.length"
               class="ion-justify-content-center no-recipes">
       No Recipes Yet
     </ion-row>

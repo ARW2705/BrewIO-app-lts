@@ -3,37 +3,37 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { IonicModule, ModalController } from '@ionic/angular';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { IonicModule } from '@ionic/angular';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockErrorReport, mockRecipeMasterActive, mockRecipeVariantComplete, mockUser } from '../../../../test-config/mock-models';
-import { AnimationsServiceStub, ErrorReportingServiceStub, IdServiceStub, RecipeServiceStub, ToastServiceStub, UserServiceStub, UtilityServiceStub } from '../../../../test-config/service-stubs';
-import { AccordionComponentStub, ConfirmationPageStub, HeaderComponentStub, IngredientListComponentStub } from '../../../../test-config/component-stubs';
+import { mockRecipeMasterActive, mockRecipeVariantComplete, mockUser } from '../../../../test-config/mock-models';
+import { AnimationsServiceStub, ErrorReportingServiceStub, IdServiceStub, ModalServiceStub, RecipeServiceStub, ToastServiceStub, UserServiceStub, UtilityServiceStub } from '../../../../test-config/service-stubs';
 import { RoundPipeStub, TruncatePipeStub, UnitConversionPipeStub } from '../../../../test-config/pipe-stubs';
-import { ActivatedRouteStub, ModalControllerStub, ModalStub, IonContentStub } from '../../../../test-config/ionic-stubs';
+import { ActivatedRouteStub, IonContentStub } from '../../../../test-config/ionic-stubs';
 
 /* Interface imports */
-import { ErrorReport, RecipeMaster, RecipeVariant, User } from '../../shared/interfaces';
+import { RecipeMaster, RecipeVariant, User } from '../../shared/interfaces';
 
 /* Service imports */
-import { AnimationsService, ErrorReportingService, IdService, RecipeService, ToastService, UserService, UtilityService } from '../../services/services';
+import { AnimationsService, ErrorReportingService, IdService, ModalService, RecipeService, ToastService, UserService, UtilityService } from '../../services/services';
+
+/* Component imports */
+import { ConfirmationComponent } from '../../components/shared/public';
 
 /* Page imports */
 import { RecipePage } from './recipe.page';
-import { ConfirmationPage } from '../confirmation/confirmation.page';
 
 
 describe('RecipePage', (): void => {
+  configureTestBed();
   let fixture: ComponentFixture<RecipePage>;
-  let recipePage: RecipePage;
+  let page: RecipePage;
   let originalOnInit: any;
   let originalOnDestroy: any;
-  configureTestBed();
 
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     ActivatedRouteStub.getter = () => 'test-id';
@@ -43,23 +43,18 @@ describe('RecipePage', (): void => {
         RecipePage,
         RoundPipeStub,
         TruncatePipeStub,
-        UnitConversionPipeStub,
-        AccordionComponentStub,
-        HeaderComponentStub,
-        IngredientListComponentStub,
-        ConfirmationPageStub
+        UnitConversionPipeStub
       ],
       imports: [
         IonicModule,
-        NoopAnimationsModule,
         RouterTestingModule
       ],
       providers: [
         { provide: ActivatedRoute, useClass: ActivatedRouteStub },
-        { provide: ModalController, useClass: ModalControllerStub },
         { provide: AnimationsService, useClass: AnimationsServiceStub },
         { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: IdService, useClass: IdServiceStub },
+        { provide: ModalService, useClass: ModalServiceStub },
         { provide: RecipeService, useClass: RecipeServiceStub },
         { provide: ToastService, useClass: ToastServiceStub },
         { provide: UserService, useClass: UserServiceStub },
@@ -74,43 +69,35 @@ describe('RecipePage', (): void => {
 
   beforeEach((): void => {
     fixture = TestBed.createComponent(RecipePage);
-    recipePage = fixture.componentInstance;
-    originalOnInit = recipePage.ngOnInit;
-    originalOnDestroy = recipePage.ngOnDestroy;
-    recipePage.ngOnInit = jest
-      .fn();
-    recipePage.ngOnDestroy = jest
-      .fn();
-    recipePage.toastService.presentToast = jest
-      .fn();
-    recipePage.toastService.presentErrorToast = jest
-      .fn();
-    recipePage.errorReporter.handleUnhandledError = jest
-      .fn();
-    recipePage.masterList = [];
-    recipePage.variantList = [];
+    page = fixture.componentInstance;
+    originalOnInit = page.ngOnInit;
+    originalOnDestroy = page.ngOnDestroy;
+    page.ngOnInit = jest.fn();
+    page.ngOnDestroy = jest.fn();
+    page.toastService.presentToast = jest.fn();
+    page.toastService.presentErrorToast = jest.fn();
+    page.toastService.shortDuration = 1000;
+    page.errorReporter.handleUnhandledError = jest.fn();
+    Object.assign(page.errorReporter, { moderateSeverity: 3 });
+    page.animationService.reportSlidingHintError = jest.fn();
+    page.recipeList = [];
+    page.variantList = [];
   });
 
   test('should create the component', (): void => {
     fixture.detectChanges();
-
-    expect(recipePage).toBeTruthy();
+    expect(page).toBeTruthy();
   });
 
   describe('Lifecycle', (): void => {
 
     test('should init the component', (): void => {
-      recipePage.ngOnInit = originalOnInit;
-
-      recipePage.listenForUser = jest
-        .fn();
-
-      recipePage.listenForRecipes = jest
-        .fn();
-
+      page.ngOnInit = originalOnInit;
+      page.listenForUser = jest.fn();
+      page.listenForRecipes = jest.fn();
       const listenSpies: jest.SpyInstance[] = [
-        jest.spyOn(recipePage, 'listenForUser'),
-        jest.spyOn(recipePage, 'listenForRecipes')
+        jest.spyOn(page, 'listenForUser'),
+        jest.spyOn(page, 'listenForRecipes')
       ];
 
       fixture.detectChanges();
@@ -123,54 +110,64 @@ describe('RecipePage', (): void => {
     test('should refresh pipes on view enter', (): void => {
       fixture.detectChanges();
 
-      expect(recipePage.refreshPipes).toBe(false);
-
-      recipePage.ionViewWillEnter();
-
-      expect(recipePage.refreshPipes).toBe(true);
+      const _mockSlider: any = {
+        mock:{
+          element: {
+            nativeElement: {
+              firstChild: {
+                clientHeight: 10
+              }
+            }
+          }
+        },
+        toArray: function() { return [this.mock]; },
+        length: 1
+      };
+      page.recipeSliderComponents = <any>_mockSlider;
+      page.sliderHeight = 0;
+      const _mockButton: any = {
+        nativeElement: {
+          clientHeight: 20
+        }
+      };
+      page.createButtonContainer = <any>_mockButton;
+      page.createButtonHeight = 0;
+      expect(page.refreshPipes).toBe(false);
+      page.ionViewWillEnter();
+      expect(page.refreshPipes).toBe(true);
+      expect(page.sliderHeight).toEqual(10);
+      expect(page.createButtonHeight).toEqual(20);
     });
 
     test('should trigger gesture hint animation after view has entered', (): void => {
-      recipePage.animationService.shouldShowHint = jest
-        .fn()
+      page.animationService.shouldShowHint = jest.fn()
         .mockReturnValueOnce(false)
         .mockReturnValueOnce(true);
-
-      recipePage.runSlidingHints = jest
-        .fn();
-
-      const runSpy: jest.SpyInstance = jest.spyOn(recipePage, 'runSlidingHints');
+      page.runSlidingHints = jest.fn();
+      const runSpy: jest.SpyInstance = jest.spyOn(page, 'runSlidingHints');
 
       fixture.detectChanges();
 
-      recipePage.ionViewDidEnter();
-
+      page.ionViewDidEnter();
       expect(runSpy).not.toHaveBeenCalled();
-
-      recipePage.ionViewDidEnter();
-
+      page.ionViewDidEnter();
       expect(runSpy).toHaveBeenCalledTimes(1);
     });
 
     test('should close sliding items on view leave', (done: jest.DoneCallback): void => {
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
       const _mockRecipeVariantComplete: RecipeVariant = mockRecipeVariantComplete();
-
-      recipePage.masterList = [ _mockRecipeMasterActive ];
-      recipePage.variantList = [ _mockRecipeVariantComplete ];
+      page.recipeList = [ _mockRecipeMasterActive ];
+      page.variantList = [ _mockRecipeVariantComplete ];
 
       fixture.detectChanges();
 
       fixture.whenStable()
         .then((): void => {
-          recipePage.slidingItemsList.closeSlidingItems = jest
-            .fn()
+          page.slidingItemsList.closeSlidingItems = jest.fn()
             .mockReturnValue(Promise.resolve());
-
           const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
-
-          recipePage.ionViewDidLeave();
-
+          page.ionViewDidLeave();
           setTimeout((): void => {
             expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('sliding items closed');
             done();
@@ -181,24 +178,18 @@ describe('RecipePage', (): void => {
     test('should handle error closing sliding items on view leave', (done: jest.DoneCallback): void => {
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
       const _mockRecipeVariantComplete: RecipeVariant = mockRecipeVariantComplete();
-
-      recipePage.masterList = [ _mockRecipeMasterActive ];
-      recipePage.variantList = [ _mockRecipeVariantComplete ];
+      page.recipeList = [ _mockRecipeMasterActive ];
+      page.variantList = [ _mockRecipeVariantComplete ];
 
       fixture.detectChanges();
 
       fixture.whenStable()
         .then((): void => {
-          recipePage.slidingItemsList.closeSlidingItems = jest
-            .fn()
-            .mockReturnValue(Promise.reject());
-
+          page.slidingItemsList = null;
           const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
-
-          recipePage.ionViewDidLeave();
-
+          page.ionViewDidLeave();
           setTimeout((): void => {
-            expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('error closing sliding items');
+            expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('Unable to close sliding items');
             done();
           }, 10);
         });
@@ -210,9 +201,7 @@ describe('RecipePage', (): void => {
       fixture.whenStable()
         .then((): void => {
           const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
-
-          recipePage.ionViewDidLeave();
-
+          page.ionViewDidLeave();
           setTimeout((): void => {
             expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('Unable to close sliding items');
             done();
@@ -221,15 +210,13 @@ describe('RecipePage', (): void => {
     });
 
     test('should handle destroying the component', (): void => {
-      const nextSpy: jest.SpyInstance = jest.spyOn(recipePage.destroy$, 'next');
-      const completeSpy: jest.SpyInstance = jest.spyOn(recipePage.destroy$, 'complete');
-
-      recipePage.ngOnDestroy = originalOnDestroy;
+      const nextSpy: jest.SpyInstance = jest.spyOn(page.destroy$, 'next');
+      const completeSpy: jest.SpyInstance = jest.spyOn(page.destroy$, 'complete');
+      page.ngOnDestroy = originalOnDestroy;
 
       fixture.detectChanges();
 
-      recipePage.ngOnDestroy();
-
+      page.ngOnDestroy();
       expect(nextSpy).toHaveBeenCalledWith(true);
       expect(completeSpy).toHaveBeenCalled();
     });
@@ -243,40 +230,29 @@ describe('RecipePage', (): void => {
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
       const _mockRecipeMasterActive$: BehaviorSubject<RecipeMaster> = new BehaviorSubject<RecipeMaster>(_mockRecipeMasterActive);
       const _mockMasterList$: BehaviorSubject<BehaviorSubject<RecipeMaster>[]> = new BehaviorSubject<BehaviorSubject<RecipeMaster>[]>([_mockRecipeMasterActive$]);
-
-      recipePage.recipeService.getMasterList = jest
-        .fn()
+      page.recipeService.getMasterList = jest.fn()
         .mockReturnValue(_mockMasterList$);
-
-      recipePage.mapMasterRecipes = jest
-        .fn();
+      page.mapMasterRecipes = jest.fn();
 
       fixture.detectChanges();
 
-      recipePage.listenForRecipes();
-
+      page.listenForRecipes();
       setTimeout((): void => {
-        expect(recipePage.masterList).toStrictEqual([_mockRecipeMasterActive]);
+        expect(page.recipeList).toStrictEqual([_mockRecipeMasterActive]);
         done();
       }, 10);
     });
 
     test('should get error listening for recipe changes', (done: jest.DoneCallback): void => {
       const _mockError: Error = new Error('test-error');
-
-      recipePage.recipeService.getMasterList = jest
-        .fn()
+      page.recipeService.getMasterList = jest.fn()
         .mockReturnValue(throwError(_mockError));
-
-      recipePage.mapMasterRecipes = jest
-        .fn();
-
-      const errorSpy: jest.SpyInstance = jest.spyOn(recipePage.errorReporter, 'handleUnhandledError');
+      page.mapMasterRecipes = jest.fn();
+      const errorSpy: jest.SpyInstance = jest.spyOn(page.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
-      recipePage.listenForRecipes();
-
+      page.listenForRecipes();
       setTimeout((): void => {
         expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
@@ -286,46 +262,34 @@ describe('RecipePage', (): void => {
     test('should listen for user changes', (done: jest.DoneCallback): void => {
       const _mockUser: User = mockUser();
       const _mockUser$: BehaviorSubject<User> = new BehaviorSubject<User>(_mockUser);
-
-      recipePage.userService.getUser = jest
-        .fn()
+      page.userService.getUser = jest.fn()
         .mockReturnValue(_mockUser$);
-
-      recipePage.userService.isLoggedIn = jest
-        .fn()
+      page.userService.isLoggedIn = jest.fn()
         .mockReturnValue(true);
 
       fixture.detectChanges();
 
-      expect(recipePage.isLoggedIn).toBe(false);
-
-      recipePage.listenForUser();
-
+      expect(page.isLoggedIn).toBe(false);
+      page.listenForUser();
       setTimeout((): void => {
-        expect(recipePage.isLoggedIn).toBe(true);
+        expect(page.isLoggedIn).toBe(true);
         done();
       }, 10);
     });
 
     test('should handle error listening for user changes', (done: jest.DoneCallback): void => {
       const _mockError: Error = new Error('test-error');
-
-      recipePage.isLoggedIn = true;
-
-      recipePage.userService.getUser = jest
-        .fn()
+      page.isLoggedIn = true;
+      page.userService.getUser = jest.fn()
         .mockReturnValue(throwError(_mockError));
-
-      const errorSpy: jest.SpyInstance = jest.spyOn(recipePage.errorReporter, 'handleUnhandledError');
+      const errorSpy: jest.SpyInstance = jest.spyOn(page.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
-      expect(recipePage.isLoggedIn).toBe(true);
-
-      recipePage.listenForUser();
-
+      expect(page.isLoggedIn).toBe(true);
+      page.listenForUser();
       setTimeout((): void => {
-        expect(recipePage.isLoggedIn).toBe(false);
+        expect(page.isLoggedIn).toBe(false);
         expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
@@ -338,28 +302,18 @@ describe('RecipePage', (): void => {
 
     test('should nav to brew process', (): void => {
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
-
-      recipePage.recipeService.isRecipeProcessPresent = jest
-        .fn()
+      page.recipeService.isRecipeProcessPresent = jest.fn()
         .mockReturnValue(true);
-
-      recipePage.router.navigate = jest
-        .fn();
-
-      recipePage.idService.hasId = jest
-        .fn()
+      page.router.navigate = jest.fn();
+      page.idService.hasId = jest.fn()
         .mockReturnValue(true);
-
-      recipePage.idService.getId = jest
-        .fn()
+      page.idService.getId = jest.fn()
         .mockReturnValue(_mockRecipeMasterActive._id);
-
-      const navSpy: jest.SpyInstance = jest.spyOn(recipePage.router, 'navigate');
+      const navSpy: jest.SpyInstance = jest.spyOn(page.router, 'navigate');
 
       fixture.detectChanges();
 
-      recipePage.navToBrewProcess(_mockRecipeMasterActive);
-
+      page.navToBrewProcess(_mockRecipeMasterActive);
       expect(navSpy).toHaveBeenCalledWith(
         ['tabs/process'],
         {
@@ -375,27 +329,17 @@ describe('RecipePage', (): void => {
 
     test('should get an error navigating to a missing brew process', (): void => {
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
-
-      recipePage.recipeService.isRecipeProcessPresent = jest
-        .fn()
+      page.recipeService.isRecipeProcessPresent = jest.fn()
         .mockReturnValue(false);
-
-      recipePage.errorReporter.setErrorReport = jest
-        .fn();
-
-      recipePage.errorReporter.createErrorReport = jest
-        .fn();
-
-      recipePage.idService.hasId = jest
-        .fn()
+      page.errorReporter.setErrorReport = jest.fn();
+      page.errorReporter.createErrorReport = jest.fn();
+      page.idService.hasId = jest.fn()
         .mockReturnValue(true);
-
-      const errorSpy: jest.SpyInstance = jest.spyOn(recipePage.errorReporter, 'createErrorReport');
+      const errorSpy: jest.SpyInstance = jest.spyOn(page.errorReporter, 'createErrorReport');
 
       fixture.detectChanges();
 
-      recipePage.navToBrewProcess(_mockRecipeMasterActive);
-
+      page.navToBrewProcess(_mockRecipeMasterActive);
       expect(errorSpy).toHaveBeenCalledWith(
         'MissingError',
         'Recipe is missing a process guide',
@@ -406,50 +350,34 @@ describe('RecipePage', (): void => {
 
     test('should nav to recipe details', (): void => {
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
-
-      recipePage.masterList = [ _mockRecipeMasterActive ];
-      recipePage.variantList = _mockRecipeMasterActive.variants;
-
-      recipePage.router.navigate = jest
-        .fn();
-
-      recipePage.idService.getId = jest
-        .fn()
+      page.recipeList = [ _mockRecipeMasterActive ];
+      page.variantList = _mockRecipeMasterActive.variants;
+      page.router.navigate = jest.fn();
+      page.idService.getId = jest.fn()
         .mockReturnValue(_mockRecipeMasterActive._id);
-
-      const navSpy: jest.SpyInstance = jest.spyOn(recipePage.router, 'navigate');
+      const navSpy: jest.SpyInstance = jest.spyOn(page.router, 'navigate');
 
       fixture.detectChanges();
 
-      recipePage.navToDetails(0);
-
+      page.navToDetails(0);
       expect(navSpy).toHaveBeenCalledWith([`tabs/recipe/${_mockRecipeMasterActive._id}`]);
     });
 
     test('should handle an error naving to recipe details', (): void => {
       const _mockError: Error = new Error('test-error');
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
-
-      recipePage.masterList = [ _mockRecipeMasterActive ];
-      recipePage.variantList = _mockRecipeMasterActive.variants;
-
-      recipePage.router.navigate = jest
-        .fn()
+      page.recipeList = [ _mockRecipeMasterActive ];
+      page.variantList = _mockRecipeMasterActive.variants;
+      page.router.navigate = jest.fn()
         .mockImplementation(() => { throw Error('test-error'); });
-
-      recipePage.errorReporter.setErrorReport = jest
-        .fn();
-
-      recipePage.errorReporter.createErrorReport = jest
-        .fn()
+      page.errorReporter.setErrorReport = jest.fn();
+      page.errorReporter.createErrorReport = jest.fn()
         .mockReturnValue(_mockError);
-
-      const errorSpy: jest.SpyInstance = jest.spyOn(recipePage.errorReporter, 'createErrorReport');
+      const errorSpy: jest.SpyInstance = jest.spyOn(page.errorReporter, 'createErrorReport');
 
       fixture.detectChanges();
 
-      recipePage.navToDetails(0);
-
+      page.navToDetails(0);
       expect(errorSpy).toHaveBeenCalledWith(
         'MissingError',
         `Recipe details not found: list index 0, present list [${_mockRecipeMasterActive._id},]`,
@@ -459,15 +387,12 @@ describe('RecipePage', (): void => {
     });
 
     test('should nav to recipe form', (): void => {
-      recipePage.router.navigate = jest
-        .fn();
-
-      const navSpy: jest.SpyInstance = jest.spyOn(recipePage.router, 'navigate');
+      page.router.navigate = jest.fn();
+      const navSpy: jest.SpyInstance = jest.spyOn(page.router, 'navigate');
 
       fixture.detectChanges();
 
-      recipePage.navToRecipeForm();
-
+      page.navToRecipeForm();
       expect(navSpy).toHaveBeenCalledWith(
         ['tabs/recipe-form'],
         {
@@ -484,124 +409,44 @@ describe('RecipePage', (): void => {
 
   describe('Modals', (): void => {
 
-    test('should handle confirmation modal success', (): void => {
-      recipePage.deleteMaster = jest
-        .fn();
-
-      const delSpy: jest.SpyInstance = jest.spyOn(recipePage, 'deleteMaster');
-
-      fixture.detectChanges();
-
-      const successHandler: (data: object) => void = recipePage.onConfirmDeleteSuccess(0);
-      successHandler({ data: true });
-
-      expect(delSpy).toHaveBeenCalledWith(0);
-
-      const noConfirmHandler: (data: object) => void = recipePage.onConfirmDeleteSuccess(0);
-      noConfirmHandler({});
-
-      expect(delSpy).toHaveBeenCalledTimes(1);
-    });
-
-    test('should handle confirmation modal error', (): void => {
-      // const toastSpy: jest.SpyInstance = jest.spyOn(recipePage.toastService, 'presentErrorToast');
-
-      const _mockError: Error = new Error('test-error');
-
-      recipePage.errorReporter.handleModalError = jest
-        .fn();
-
-      const errorSpy: jest.SpyInstance = jest.spyOn(recipePage.errorReporter, 'handleModalError');
-
-      fixture.detectChanges();
-
-      const errorHandler: (error: string) => void = recipePage.onConfirmDeleteError();
-      errorHandler(_mockError.message);
-
-      expect(errorSpy).toHaveBeenCalledWith(
-        _mockError.message,
-        'An internal error occurred trying to delete the recipe'
-      );
-
-      // expect(toastSpy).toHaveBeenCalledWith('Unable to delete recipe master');
-    });
-
-    test('should open confirmation modal on success', (done: jest.DoneCallback): void => {
+    test('should open the confirmation modal and handle success', (done: jest.DoneCallback): void => {
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
-      const _stubModal: ModalStub = new ModalStub();
-
-      recipePage.masterList = [ _mockRecipeMasterActive ];
-      recipePage.variantList = _mockRecipeMasterActive.variants;
-
-      recipePage.modalCtrl.create = jest
-        .fn()
-        .mockReturnValue(Promise.resolve(_stubModal));
-
-      _stubModal.onDidDismiss = jest
-        .fn()
-        .mockReturnValue(Promise.resolve({ data: true }));
-
-      recipePage.onConfirmDeleteSuccess = jest
-        .fn()
-        .mockReturnValue((): void => {});
-
-      const successSpy: jest.SpyInstance = jest.spyOn(recipePage, 'onConfirmDeleteSuccess');
-      const createSpy: jest.SpyInstance = jest.spyOn(recipePage.modalCtrl, 'create');
+      page.recipeList = [ _mockRecipeMasterActive, _mockRecipeMasterActive ];
+      page.modalService.openModal = jest.fn()
+        .mockReturnValue(of(true));
+      const modalSpy: jest.SpyInstance = jest.spyOn(page.modalService, 'openModal');
+      page.deleteRecipe = jest.fn();
+      const deleteSpy: jest.SpyInstance = jest.spyOn(page, 'deleteRecipe');
 
       fixture.detectChanges();
 
-      recipePage.confirmDelete(0);
-
-      expect(createSpy).toHaveBeenCalledWith({
-        component: ConfirmationPage,
-        componentProps: {
-          message: `Confirm deletion of "${_mockRecipeMasterActive.name}" and its variants`,
-          subMessage: 'This action cannot be reversed'
-        }
-      });
-
+      page.confirmDelete(1);
       setTimeout((): void => {
-        expect(successSpy).toHaveBeenCalledWith(0);
+        expect(modalSpy).toHaveBeenCalledWith(
+          ConfirmationComponent,
+          {
+            message: `Confirm deletion of "${_mockRecipeMasterActive.name}" and its variants`,
+            subMessage: 'This action cannot be reversed'
+          }
+        );
+        expect(deleteSpy).toHaveBeenCalledWith(1);
         done();
       }, 10);
     });
 
-    test('should open confirmation modal on error', (done: jest.DoneCallback): void => {
+    test('should handle error from confirmation modal', (done: jest.DoneCallback): void => {
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
-      const _stubModal: ModalStub = new ModalStub();
-
-      recipePage.masterList = [ _mockRecipeMasterActive ];
-      recipePage.variantList = _mockRecipeMasterActive.variants;
-
-      recipePage.modalCtrl.create = jest
-        .fn()
-        .mockReturnValue(Promise.resolve(_stubModal));
-
-      _stubModal.onDidDismiss = jest
-        .fn()
-        .mockReturnValue(Promise.reject());
-
-      recipePage.onConfirmDeleteError = jest
-        .fn()
-        .mockReturnValue((): void => {});
-
-      const errorSpy: jest.SpyInstance = jest.spyOn(recipePage, 'onConfirmDeleteError');
-      const createSpy: jest.SpyInstance = jest.spyOn(recipePage.modalCtrl, 'create');
+      page.recipeList = [_mockRecipeMasterActive];
+      const _mockError: Error = new Error('test-error');
+      page.modalService.openModal = jest.fn()
+        .mockReturnValue(throwError(_mockError));
+      const errorSpy: jest.SpyInstance = jest.spyOn(page.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
-      recipePage.confirmDelete(0);
-
-      expect(createSpy).toHaveBeenCalledWith({
-        component: ConfirmationPage,
-        componentProps: {
-          message: `Confirm deletion of "${_mockRecipeMasterActive.name}" and its variants`,
-          subMessage: 'This action cannot be reversed'
-        }
-      });
-
+      page.confirmDelete(0);
       setTimeout((): void => {
-        expect(errorSpy).toHaveBeenCalled();
+        expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
     });
@@ -613,24 +458,17 @@ describe('RecipePage', (): void => {
 
     test('should delete a recipe master', (done: jest.DoneCallback): void => {
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
-
-      recipePage.masterList = [ _mockRecipeMasterActive ];
-      recipePage.variantList = _mockRecipeMasterActive.variants;
-
-      const toastSpy: jest.SpyInstance = jest.spyOn(recipePage.toastService, 'presentToast');
-
-      recipePage.recipeService.removeRecipeMasterById = jest
-        .fn()
+      page.recipeList = [ _mockRecipeMasterActive ];
+      page.variantList = _mockRecipeMasterActive.variants;
+      const toastSpy: jest.SpyInstance = jest.spyOn(page.toastService, 'presentToast');
+      page.recipeService.removeRecipeMasterById = jest.fn()
         .mockReturnValue(of(true));
-
-      recipePage.idService.getId = jest
-        .fn()
+      page.idService.getId = jest.fn()
         .mockReturnValue('');
 
       fixture.detectChanges();
 
-      recipePage.deleteMaster(0);
-
+      page.deleteRecipe(0);
       setTimeout((): void => {
         expect(toastSpy).toHaveBeenCalledWith(
           'Deleted Recipe',
@@ -645,164 +483,71 @@ describe('RecipePage', (): void => {
     test('should get an error deleting a recipe master', (done: jest.DoneCallback): void => {
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
       const _mockError: Error = new Error('test-error');
-
-      recipePage.masterList = [ _mockRecipeMasterActive ];
-      recipePage.variantList = _mockRecipeMasterActive.variants;
-
-      recipePage.recipeService.removeRecipeMasterById = jest
-        .fn()
+      page.recipeList = [ _mockRecipeMasterActive ];
+      page.variantList = _mockRecipeMasterActive.variants;
+      page.recipeService.removeRecipeMasterById = jest.fn()
         .mockReturnValue(throwError(_mockError));
-
-      recipePage.idService.getId = jest
-        .fn()
+      page.idService.getId = jest.fn()
         .mockReturnValue('');
-
-      const errorSpy: jest.SpyInstance = jest.spyOn(recipePage.errorReporter, 'handleUnhandledError');
+      const errorSpy: jest.SpyInstance = jest.spyOn(page.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
-      recipePage.deleteMaster(0);
-
+      page.deleteRecipe(0);
       setTimeout((): void => {
         expect(errorSpy).toHaveBeenCalledWith(_mockError);
         done();
       }, 10);
     });
 
-    test('should handle expanding or collapsing a recipe master', (): void => {
+    test('should handle expanding or collapsing a ingredient list', (): void => {
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
       const _mockElement: Element = global.document.createElement('div');
       Object.defineProperty(_mockElement, 'offsetTop', { writable: false, value: 10 });
-
-      recipePage.masterList = [ _mockRecipeMasterActive ];
-      recipePage.variantList = _mockRecipeMasterActive.variants;
-
-      global.document.querySelector = jest
-        .fn()
+      page.recipeList = [ _mockRecipeMasterActive ];
+      page.variantList = _mockRecipeMasterActive.variants;
+      global.document.querySelector = jest.fn()
         .mockReturnValue(_mockElement);
+      page.createButtonHeight = 10;
+      page.scrollOffsetHeight = 20;
 
       fixture.detectChanges();
 
-      recipePage.ionContent.scrollToPoint = jest
-        .fn();
-
-      const scrollSpy: jest.SpyInstance = jest.spyOn(recipePage.ionContent, 'scrollToPoint');
-
-      expect(recipePage.masterIndex).toEqual(-1);
-
-      recipePage.expandMaster(0);
-
-      expect(scrollSpy).toHaveBeenCalledWith(0, 10, 1000);
-      expect(recipePage.masterIndex).toEqual(0);
-
-      recipePage.expandMaster(0);
-
-      expect(recipePage.masterIndex).toEqual(-1);
+      page.ionContent.scrollToPoint = jest.fn();
+      const scrollSpy: jest.SpyInstance = jest.spyOn(page.ionContent, 'scrollToPoint');
+      expect(page.recipeIndex).toEqual(-1);
+      page.expandIngredientList(0);
+      expect(scrollSpy).toHaveBeenCalledWith(0, 30, 1000);
+      expect(page.recipeIndex).toEqual(0);
+      page.expandIngredientList(0);
+      expect(page.recipeIndex).toEqual(-1);
     });
 
     test('should map recipe subjects with combined hops', (): void => {
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
-
-      recipePage.masterList = [ _mockRecipeMasterActive, _mockRecipeMasterActive ];
-
-      recipePage.recipeService.getCombinedHopsSchedule = jest
-        .fn()
+      page.recipeList = [ _mockRecipeMasterActive, _mockRecipeMasterActive ];
+      page.recipeService.getCombinedHopsSchedule = jest.fn()
         .mockImplementation((value: any) => value);
-
-      recipePage.utilService.clone = jest
-        .fn()
+      page.utilService.clone = jest.fn()
         .mockImplementation((recipe: any): any => _mockRecipeMasterActive.variants[0]);
-
-      recipePage.idService.hasId = jest
-        .fn()
+      page.idService.hasId = jest.fn()
         .mockReturnValue(true);
-
-      recipePage.mapMasterRecipes();
+      page.mapMasterRecipes();
 
       fixture.detectChanges();
 
-      expect(recipePage.variantList.length).toEqual(2);
+      expect(page.variantList.length).toEqual(2);
     });
 
     test('should get an error mapping recipe subjects with combined hops', (): void => {
-      recipePage.masterList.map = jest
-        .fn()
+      page.recipeList.map = jest.fn()
         .mockImplementation(() => { throw new Error('tets-error'); });
-
-      const toastSpy: jest.SpyInstance = jest.spyOn(recipePage.toastService, 'presentErrorToast');
-
-      recipePage.mapMasterRecipes();
+      const toastSpy: jest.SpyInstance = jest.spyOn(page.toastService, 'presentErrorToast');
+      page.mapMasterRecipes();
 
       fixture.detectChanges();
 
       expect(toastSpy).toHaveBeenCalledWith('Error generating recipe list');
-    });
-
-  });
-
-
-  describe('Template Render', (): void => {
-
-    test('should render the template with no recipes', (): void => {
-      recipePage.listenForRecipes = jest
-        .fn();
-
-      recipePage.listenForUser = jest
-        .fn();
-
-      recipePage.ngOnInit = originalOnInit;
-      recipePage.masterList = [];
-      recipePage.variantList = [];
-      recipePage.isLoggedIn = true;
-
-      fixture.detectChanges();
-
-      const noneRow: HTMLElement = fixture.nativeElement.querySelector('.no-recipes');
-      expect(noneRow.textContent).toMatch('No Recipes Yet');
-    });
-
-    test('should render the template with a list of recipes', (): void => {
-      const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
-      const _mockRecipeVariantComplete: RecipeVariant = _mockRecipeMasterActive.variants[0];
-
-      RoundPipeStub._returnValue = (value: string): number => {
-        return parseFloat(value);
-      };
-
-      TruncatePipeStub._returnValue = (value: string): string => {
-        return value;
-      };
-
-      UnitConversionPipeStub._returnValue = (value: string): string => {
-        return value;
-      };
-
-      recipePage.listenForRecipes = jest
-        .fn();
-
-      recipePage.listenForUser = jest
-        .fn();
-
-      recipePage.ngOnInit = originalOnInit;
-      recipePage.masterList = [ _mockRecipeMasterActive ];
-      recipePage.variantList = _mockRecipeMasterActive.variants;
-      recipePage.isLoggedIn = true;
-      recipePage.masterIndex = 0;
-
-      fixture.detectChanges();
-
-      const summaryHeader: HTMLElement = fixture.nativeElement.querySelector('.master-summary-header');
-      const masterNameElem: Element = summaryHeader.children[0].children[0];
-      expect(masterNameElem.textContent).toMatch('Active');
-      const styleNameElem: Element = summaryHeader.children[1].children[0];
-      expect(styleNameElem.textContent).toMatch(_mockRecipeMasterActive.style.name);
-
-      const summarySubHeader: HTMLElement = fixture.nativeElement.querySelector('.master-summary-subheader');
-      const subheaderSpans: NodeList = summarySubHeader.querySelectorAll('span');
-      expect(subheaderSpans.item(1).textContent).toMatch(_mockRecipeVariantComplete.batchVolume.toString());
-      expect(subheaderSpans.item(3).textContent).toMatch(_mockRecipeVariantComplete.ABV.toString());
-      expect(subheaderSpans.item(5).textContent).toMatch(_mockRecipeVariantComplete.IBU.toString());
-      expect(subheaderSpans.item(7).textContent).toMatch(_mockRecipeVariantComplete.SRM.toString());
     });
 
   });
@@ -814,30 +559,19 @@ describe('RecipePage', (): void => {
       const _stubIonContent: IonContentStub = new IonContentStub();
       const _mockElem: HTMLElement = global.document.createElement('div');
       Object.defineProperty(_stubIonContent, 'el', { writable: false, value: _mockElem });
-
-      recipePage.toggleSlidingItemClass = jest
-        .fn();
-
-      recipePage.animationService.getEstimatedItemOptionWidth = jest
-        .fn()
+      page.toggleSlidingItemClass = jest.fn();
+      page.animationService.getEstimatedItemOptionWidth = jest.fn()
         .mockReturnValue(100);
-
-      recipePage.animationService.playCombinedSlidingHintAnimations = jest
-        .fn()
+      page.animationService.playCombinedSlidingHintAnimations = jest.fn()
         .mockReturnValue(of([]));
-
-      recipePage.animationService.setHintShownFlag = jest
-        .fn();
-
-      const toggleSpy: jest.SpyInstance = jest.spyOn(recipePage, 'toggleSlidingItemClass');
-      const setSpy: jest.SpyInstance = jest.spyOn(recipePage.animationService, 'setHintShownFlag');
+      page.animationService.setHintShownFlag = jest.fn();
+      const toggleSpy: jest.SpyInstance = jest.spyOn(page, 'toggleSlidingItemClass');
+      const setSpy: jest.SpyInstance = jest.spyOn(page.animationService, 'setHintShownFlag');
 
       fixture.detectChanges();
 
-      recipePage.ionContent = <any>_stubIonContent;
-
-      recipePage.runSlidingHints();
-
+      page.ionContent = <any>_stubIonContent;
+      page.runSlidingHints();
       setTimeout((): void => {
         expect(toggleSpy).toHaveBeenCalledTimes(2);
         expect(setSpy).toHaveBeenCalledWith('sliding', 'recipe');
@@ -847,24 +581,14 @@ describe('RecipePage', (): void => {
 
     test('should get an error running sliding hints with missing content element', (): void => {
       const _stubIonContent: IonContentStub = new IonContentStub();
-      const _mockErrorReport: ErrorReport = mockErrorReport();
-
-      recipePage.errorReporter.setErrorReport = jest.fn();
-      recipePage.errorReporter.getCustomReportFromError = jest
-        .fn()
-        .mockReturnValue(_mockErrorReport);
-
-      const setSpy: jest.SpyInstance = jest.spyOn(recipePage.errorReporter, 'setErrorReport');
-      const getSpy: jest.SpyInstance = jest.spyOn(recipePage.errorReporter, 'getCustomReportFromError');
+      _stubIonContent.el = null;
+      const reportSpy: jest.SpyInstance = jest.spyOn(page.animationService, 'reportSlidingHintError');
 
       fixture.detectChanges();
 
-      recipePage.ionContent = <any>_stubIonContent;
-
-      recipePage.runSlidingHints();
-
-      expect(setSpy).toHaveBeenCalledWith(_mockErrorReport);
-      expect(getSpy.mock.calls[0][0]['name']).toMatch('AnimationError');
+      page.ionContent = <any>_stubIonContent;
+      page.runSlidingHints();
+      expect(reportSpy).toHaveBeenCalled();
     });
 
     test('should get an error running sliding hints with animation error', (done: jest.DoneCallback): void => {
@@ -872,66 +596,104 @@ describe('RecipePage', (): void => {
       const _mockElem: HTMLElement = global.document.createElement('div');
       Object.defineProperty(_stubIonContent, 'el', { writable: false, value: _mockElem });
       const _mockError: Error = new Error('test-error');
-
-      recipePage.toggleSlidingItemClass = jest
-        .fn();
-
-      recipePage.animationService.getEstimatedItemOptionWidth = jest
-        .fn()
+      page.toggleSlidingItemClass = jest.fn();
+      page.animationService.getEstimatedItemOptionWidth = jest.fn()
         .mockReturnValue(100);
-
-      recipePage.animationService.playCombinedSlidingHintAnimations = jest
-        .fn()
+      page.animationService.playCombinedSlidingHintAnimations = jest.fn()
         .mockReturnValue(throwError(_mockError));
-
-      recipePage.animationService.setHintShownFlag = jest
-        .fn();
-
-      // const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
-      const toggleSpy: jest.SpyInstance = jest.spyOn(recipePage, 'toggleSlidingItemClass');
-      const setSpy: jest.SpyInstance = jest.spyOn(recipePage.animationService, 'setHintShownFlag');
-      const errorSpy: jest.SpyInstance = jest.spyOn(recipePage.errorReporter, 'handleUnhandledError');
+      page.animationService.setHintShownFlag = jest.fn();
+      const toggleSpy: jest.SpyInstance = jest.spyOn(page, 'toggleSlidingItemClass');
+      const setSpy: jest.SpyInstance = jest.spyOn(page.animationService, 'setHintShownFlag');
+      const errorSpy: jest.SpyInstance = jest.spyOn(page.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
-      recipePage.ionContent = <any>_stubIonContent;
-
-      recipePage.runSlidingHints();
-
+      page.ionContent = <any>_stubIonContent;
+      page.runSlidingHints();
       setTimeout((): void => {
         expect(toggleSpy).toHaveBeenCalledTimes(2);
         expect(setSpy).not.toHaveBeenCalled();
         expect(errorSpy).toHaveBeenCalledWith(_mockError);
-        // const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
-        // expect(consoleCalls[0]).toMatch('Animation error');
-        // expect(consoleCalls[1]).toMatch('test-error');
         done();
       }, 10);
     });
 
     test('should toggle sliding item class', (): void => {
-      recipePage.animationService.toggleSlidingItemClass = jest
-        .fn();
-
-      const toggleSpy: jest.SpyInstance = jest.spyOn(recipePage.animationService, 'toggleSlidingItemClass');
+      page.animationService.toggleSlidingItemClass = jest.fn();
+      const toggleSpy: jest.SpyInstance = jest.spyOn(page.animationService, 'toggleSlidingItemClass');
 
       fixture.detectChanges();
 
-      recipePage.toggleSlidingItemClass(true);
-
+      page.toggleSlidingItemClass(true);
       expect(toggleSpy).toHaveBeenCalledWith(
-        recipePage.slidingItemsListRef.nativeElement,
+        page.slidingItemsListRef.nativeElement,
         true,
-        recipePage.renderer
+        page.renderer
       );
-
-      recipePage.toggleSlidingItemClass(false);
-
+      page.toggleSlidingItemClass(false);
       expect(toggleSpy).toHaveBeenCalledWith(
-        recipePage.slidingItemsListRef.nativeElement,
+        page.slidingItemsListRef.nativeElement,
         false,
-        recipePage.renderer
+        page.renderer
       );
+    });
+
+  });
+
+
+  describe('Template Render', (): void => {
+
+    test('should render the template with loading spinner', (): void => {
+      page.listenForRecipes = jest.fn();
+      page.listenForUser = jest.fn();
+      page.ngOnInit = originalOnInit;
+      page.recipeList = null;
+      page.isLoggedIn = true;
+
+      fixture.detectChanges();
+
+      const spinner: HTMLElement = fixture.nativeElement.querySelector('app-loading-spinner');
+      expect(spinner.getAttribute('loadingMessage')).toMatch('loading recipes');
+    });
+
+    test('should render the template with no recipes', (): void => {
+      page.listenForRecipes = jest.fn();
+      page.listenForUser = jest.fn();
+      page.ngOnInit = originalOnInit;
+      page.recipeList = [];
+      page.variantList = [];
+      page.isLoggedIn = true;
+
+      fixture.detectChanges();
+
+      const noneRow: HTMLElement = fixture.nativeElement.querySelector('.no-recipes');
+      expect(noneRow.textContent).toMatch('No Recipes Yet');
+    });
+
+    test('should render the template with a list of recipes', (): void => {
+      const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
+      RoundPipeStub._returnValue = (value: string): number => parseFloat(value);
+      TruncatePipeStub._returnValue = (value: string): string => value;
+      UnitConversionPipeStub._returnValue = (value: string): string => value;
+      page.listenForRecipes = jest.fn();
+      page.listenForUser = jest.fn();
+      page.ngOnInit = originalOnInit;
+      page.recipeList = [ _mockRecipeMasterActive ];
+      page.variantList = [_mockRecipeMasterActive.variants[0]];
+      page.isLoggedIn = true;
+      page.recipeIndex = 0;
+
+      fixture.detectChanges();
+
+      const createButton: HTMLElement = fixture.nativeElement.querySelector('ion-button');
+      expect(createButton.textContent).toMatch('CREATE NEW RECIPE');
+      const sliders: NodeList = fixture.nativeElement.querySelectorAll('app-recipe-slider');
+      expect(sliders.length).toEqual(1);
+      const slider: HTMLElement = <HTMLElement>sliders.item(0);
+      expect(slider['recipe']).toStrictEqual(_mockRecipeMasterActive);
+      expect(slider['variant']).toStrictEqual(_mockRecipeMasterActive.variants[0]);
+      const accordions: NodeList = fixture.nativeElement.querySelectorAll('app-accordion');
+      expect(accordions.length).toEqual(1);
     });
 
   });
