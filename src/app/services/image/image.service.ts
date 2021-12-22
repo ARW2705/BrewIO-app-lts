@@ -1,10 +1,10 @@
 /* Module imports */
 import { Injectable } from '@angular/core';
 import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
-import { Entry, Metadata } from '@ionic-native/file/ngx';
 import { Crop } from '@ionic-native/crop/ngx';
+import { Entry, Metadata } from '@ionic-native/file/ngx';
 import { ImageResizer, ImageResizerOptions } from '@ionic-native/image-resizer/ngx';
-import { Observable, forkJoin, from, of, throwError } from 'rxjs';
+import { forkJoin, from, Observable, of, throwError } from 'rxjs';
 import { catchError, defaultIfEmpty, map, mergeMap, tap } from 'rxjs/operators';
 
 /* Constant imports */
@@ -23,9 +23,9 @@ import { ImageGuardMetadata } from '../../shared/type-guard-metadata/image.guard
 import { CustomError } from '../../shared/types';
 
 /* Service imports */
-import { IdService } from '../id/id.service';
 import { ErrorReportingService } from '../error-reporting/error-reporting.service';
 import { FileService } from '../file/file.service';
+import { IdService } from '../id/id.service';
 import { TypeGuardService } from '../type-guard/type-guard.service';
 
 
@@ -50,9 +50,8 @@ export class ImageService {
   /**
    * Copy image file from device image gallery to local temporary directory
    *
-   * @params: path - local directory path
-   * @params: fileName - gallery image file name
-   *
+   * @param: path - local directory path
+   * @param: fileName - gallery image file name
    * @return: observable of temporary Image
    */
   copyImageToLocalTmpDir(path: string, fileName: string): Observable<Image> {
@@ -65,11 +64,11 @@ export class ImageService {
           const localURL: string = this.fileService.getLocalUrl(filePath);
 
           return {
-            cid: cid,
-            filePath: filePath,
+            cid,
+            filePath,
+            localURL,
             fileSize: metadata.size,
             hasPending: true,
-            localURL: localURL,
             url: localURL
           };
         }),
@@ -80,15 +79,14 @@ export class ImageService {
   /**
    * Delete an image at the given file path
    *
-   * @params: filePath - full path of image file
-   *
+   * @param: filePath - full path of image file
    * @return: observable of error message or null on success; inner Observable
    * does not throw an error, rather just passes on the message
    */
   deleteLocalImage(filePath: string): Observable<string> {
     if (!filePath) {
       const message: string = `Deletion error: invalid file path: ${filePath}`;
-      return throwError(new CustomError('ImageError', message, 2, message));
+      return throwError(new CustomError('ImageError', message, this.errorReporter.highSeverity, message));
     }
 
     return this.fileService.deleteLocalFile(filePath);
@@ -97,8 +95,7 @@ export class ImageService {
   /**
    * Import an image from device
    *
-   * @params: none
-   *
+   * @param: none
    * @return: observable of Image
    */
   importImage(): Observable<Image> {
@@ -131,7 +128,7 @@ export class ImageService {
             );
           return this.copyImageToLocalTmpDir(path, originalName);
         }),
-        catchError((error: Error | unknown): Observable<null | never> => {
+        catchError((error: Error): Observable<null | never> => {
           if (error instanceof Error) {
             return this.errorReporter.handleGenericCatchError()(error);
           } else {
@@ -146,9 +143,8 @@ export class ImageService {
    * Move image file locally from temporary to persistent directory
    * and update stored image file metadata
    *
-   * @params: image - Image data containing file path
-   * @params: [replaceImagePath] - path of persistent image that is being replaced
-   *
+   * @param: image - Image data containing file path
+   * @param: [replaceImagePath] - path of persistent image that is being replaced
    * @return: observable of persistent Image
    */
   storeImageToLocalDir(image: Image, replaceImagePath?: string): Observable<Image> {
@@ -185,8 +181,7 @@ export class ImageService {
   /**
    * Resize an image
    *
-   * @params: image - image metadata for image to resize
-   *
+   * @param: image - image metadata for image to resize
    * @return: observable of resized image filepath
    */
   resizeImage(image: Image): Observable<string> {
@@ -196,9 +191,11 @@ export class ImageService {
 
     // Reduce image quality so that it fits image size limit
     // rounded down to nearest tens place
+    const maxQualty: number = 100;
+    const tensPlace: number = 10;
     const reductionFactor: number = Math.min(
-      100,
-      Math.round((IMAGE_SIZE_LIMIT / image.fileSize) * 10) * 10
+      maxQualty,
+      Math.round((IMAGE_SIZE_LIMIT / image.fileSize) * tensPlace) * tensPlace
     );
 
     const options: ImageResizerOptions = {
@@ -222,8 +219,7 @@ export class ImageService {
   /**
    * Prepare images to be uploaded to server
    *
-   * @params: imageData - initial image request data
-   *
+   * @param: imageData - initial image request data
    * @return: observable of image request metadata
    */
   blobbifyImages(imageData: ImageRequestFormData[]): Observable<ImageRequestMetadata[]> {
@@ -260,7 +256,7 @@ export class ImageService {
   /**
    * Get complete server url for image filename
    *
-   * @params: filename - string of server filename
+   * @param: filename - string of server filename
    *
    * @return: complete url for image on server
    */
@@ -272,8 +268,7 @@ export class ImageService {
    * Handle image display error; attempt to change url to other sources or
    * assign to default image if no other option
    *
-   * @params: image - the erroring image
-   *
+   * @param: image - the erroring image
    * @return: none
    */
   handleImageError(image: Image): void {
@@ -287,8 +282,7 @@ export class ImageService {
   /**
    * Check if an image is the default image
    *
-   * @params: image - image to check
-   *
+   * @param: image - image to check
    * @return: true if image has the same id as the default image
    */
   hasDefaultImage(image: Image): boolean {
@@ -298,23 +292,22 @@ export class ImageService {
   /**
    * Check if image has a filepath to the temporary directory
    *
-   * @params: image - image with metadata to check
-   *
+   * @param: image - image with metadata to check
    * @return: true if filepath is to temporary directory
    */
   isTempImage(image: Image): boolean {
     if (!image || !image.filePath) {
       return false;
     }
-    return this.fileService.getTmpDirPath()
-      === image.filePath.substring(0, image.filePath.lastIndexOf('/') + 1);
+    return (
+      this.fileService.getTmpDirPath() === image.filePath.substring(0, image.filePath.lastIndexOf('/') + 1)
+    );
   }
 
   /**
    * Check if given image object is valid by correctly implementing the Image interface
    *
    * @param: image - expects a Image at runtime
-   *
    * @return: true if given image correctly implements Image interface
    */
   isSafeImage(image: any): boolean {
@@ -325,8 +318,7 @@ export class ImageService {
    * Set the display url of an image with the following priority ->
    * localURL -> serverURL -> not-foundURL
    *
-   * @params: image - image to modify
-   *
+   * @param: image - image to modify
    * @return: none
    */
   setInitialURL(image: Image): void {

@@ -29,19 +29,19 @@ import { IdService, ErrorReportingService, FileService, TypeGuardService } from 
 
 
 describe('ImageService', (): void => {
-  let injector: TestBed;
-  let imageService: ImageService;
   configureTestBed();
+  let injector: TestBed;
+  let service: ImageService;
 
   beforeAll(async((): void => {
     TestBed.configureTestingModule({
       providers: [
         ImageService,
-        { provide: IdService, useClass: IdServiceStub },
-        { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
-        { provide: FileService, useClass: FileServiceStub },
         { provide: Camera, useClass: CameraStub },
         { provide: Crop, useClass: CropStub },
+        { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
+        { provide: FileService, useClass: FileServiceStub },
+        { provide: IdService, useClass: IdServiceStub },
         { provide: ImageResizer, useClass: ImageResizerStub },
         { provide: TypeGuardService, useClass: TypeGuardServiceStub }
       ]
@@ -50,38 +50,31 @@ describe('ImageService', (): void => {
 
   beforeEach((): void => {
     injector = getTestBed();
-    imageService = injector.get(ImageService);
-
-    imageService.errorReporter.handleGenericCatchError = jest
-      .fn()
+    service = injector.get(ImageService);
+    service.errorReporter.handleGenericCatchError = jest.fn()
       .mockImplementation((): (error: any) => Observable<never> => {
         return (error: any): Observable<never> => throwError(error);
       });
   });
 
-  test('should create the service', () => {
-    expect(imageService).toBeDefined();
+  test('should create the service', (): void => {
+    expect(service).toBeTruthy();
   });
 
-  test('should copy image to local tmp dir', (done: jest.DoneCallback): void => {
-    const _mockEntry: Entry = mockEntry({
-      nativeURL: 'native-url'
-    });
-    const _mockFileMetadata = mockFileMetadata();
+  describe('Device Actions', (): void => {
 
-    imageService.idService.getNewId = jest
-      .fn()
-      .mockReturnValue('0');
-
-    imageService.fileService.copyFileToLocalTmpDir = jest
-      .fn()
+    test('should copy image to local tmp dir', (done: jest.DoneCallback): void => {
+      const _mockEntry: Entry = mockEntry({
+        nativeURL: 'native-url'
+      });
+      const _mockFileMetadata = mockFileMetadata();
+      service.idService.getNewId = jest.fn().mockReturnValue('0');
+      service.fileService.copyFileToLocalTmpDir = jest.fn()
       .mockReturnValue(of([_mockEntry, _mockFileMetadata]));
-
-    imageService.fileService.getLocalUrl = jest
-      .fn()
+      service.fileService.getLocalUrl = jest.fn()
       .mockReturnValue('local-url');
 
-    imageService.copyImageToLocalTmpDir('path', 'fileName')
+      service.copyImageToLocalTmpDir('path', 'fileName')
       .subscribe(
         (image: Image): void => {
           expect(image).toStrictEqual({
@@ -99,16 +92,14 @@ describe('ImageService', (): void => {
           expect(true).toBe(false);
         }
       );
-  });
+    });
 
-  test('should delete local image', (done: jest.DoneCallback): void => {
-    imageService.fileService.deleteLocalFile = jest
-      .fn()
-      .mockReturnValue(of(null));
+    test('should delete local image', (done: jest.DoneCallback): void => {
+      service.fileService.deleteLocalFile = jest.fn().mockReturnValue(of(null));
 
-    imageService.deleteLocalImage('path')
+      service.deleteLocalImage('path')
       .subscribe(
-        (results: any): void => {
+        (results: null): void => {
           expect(results).toBeNull();
           done();
         },
@@ -117,10 +108,10 @@ describe('ImageService', (): void => {
           expect(true).toBe(false);
         }
       );
-  });
+    });
 
-  test('should throw an error deleting local image', (done: jest.DoneCallback): void => {
-    imageService.deleteLocalImage(null)
+    test('should throw an error deleting local image', (done: jest.DoneCallback): void => {
+      service.deleteLocalImage(null)
       .subscribe(
         (results: any): void => {
           console.log('Should not get a result', results);
@@ -131,33 +122,23 @@ describe('ImageService', (): void => {
           done();
         }
       );
-  });
+    });
 
-  test('should import an image', (done: jest.DoneCallback): void => {
-    const _mockImage: Image = mockImage();
-
-    imageService.camera.getPicture = jest
-      .fn()
-      .mockReturnValue(Promise.resolve('image-path'));
-
-    imageService.crop.crop = jest
-      .fn()
+    test('should import an image', (done: jest.DoneCallback): void => {
+      const _mockImage: Image = mockImage();
+      service.camera.getPicture = jest.fn().mockReturnValue(Promise.resolve('image-path'));
+      service.crop.crop = jest.fn()
       .mockReturnValue(Promise.resolve('crop-path/additional-path'));
-
-    imageService.fileService.resolveNativePath = jest
-      .fn()
+      service.fileService.resolveNativePath = jest.fn()
       .mockReturnValue(of('native-path/additional-path'));
-
-    imageService.copyImageToLocalTmpDir = jest
-      .fn()
+      service.copyImageToLocalTmpDir = jest.fn()
       .mockReturnValue(of(_mockImage));
+      const picSpy: jest.SpyInstance = jest.spyOn(service.camera, 'getPicture');
+      const cropSpy: jest.SpyInstance = jest.spyOn(service.crop, 'crop');
+      const rnpSpy: jest.SpyInstance = jest.spyOn(service.fileService, 'resolveNativePath');
+      const copySpy: jest.SpyInstance = jest.spyOn(service, 'copyImageToLocalTmpDir');
 
-    const picSpy: jest.SpyInstance = jest.spyOn(imageService.camera, 'getPicture');
-    const cropSpy: jest.SpyInstance = jest.spyOn(imageService.crop, 'crop');
-    const rnpSpy: jest.SpyInstance = jest.spyOn(imageService.fileService, 'resolveNativePath');
-    const copySpy: jest.SpyInstance = jest.spyOn(imageService, 'copyImageToLocalTmpDir');
-
-    imageService.importImage()
+      service.importImage()
       .subscribe(
         (): void => {
           expect(picSpy).toHaveBeenCalledWith({
@@ -178,32 +159,54 @@ describe('ImageService', (): void => {
           expect(true).toBe(false);
         }
       );
-  });
+    });
 
-  test('should store image to local dir', (done: jest.DoneCallback): void => {
-    const _mockImage: Image = mockImage();
+    test('should handle error importing image by rethrowing error', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+      service.camera.getPicture = jest.fn().mockReturnValue(Promise.reject(_mockError));
+      service.errorReporter.handleGenericCatchError = jest.fn()
+      .mockReturnValue((error: Error): Observable<never> => throwError(error));
 
-    imageService.isTempImage = jest
-      .fn()
-      .mockReturnValue(true);
+      service.importImage()
+      .subscribe(
+        (results: any): void => {
+          console.log('should not get any results', results);
+          expect(true).toBe(false);
+        },
+        (error: Error): void => {
+          expect(error).toStrictEqual(_mockError);
+          done();
+        }
+      );
+    });
 
-    imageService.resizeImage = jest
-      .fn()
-      .mockReturnValue(of('new-resized-path'));
+    test('should handle error importing image by emitting null', (done: jest.DoneCallback): void => {
+      service.camera.getPicture = jest.fn().mockReturnValue(Promise.reject({}));
+      service.errorReporter.handleGenericCatchError = jest.fn()
+      .mockReturnValue((error: Error): Observable<never> => throwError(error));
 
-    imageService.fileService.getLocalUrl = jest
-      .fn()
-      .mockReturnValue('new-local-url');
+      service.importImage()
+      .subscribe(
+        (expected: null): void => {
+          expect(expected).toBeNull();
+          done();
+        },
+        (error: any): void => {
+          console.log('should not get an error', error);
+          expect(true).toBe(false);
+        }
+      );
+    });
 
-    imageService.fileService.getTmpDirPath = jest
-      .fn()
-      .mockReturnValue('tmp-dir');
+    test('should store image to local dir', (done: jest.DoneCallback): void => {
+      const _mockImage: Image = mockImage();
+      service.isTempImage = jest.fn().mockReturnValue(true);
+      service.resizeImage = jest.fn().mockReturnValue(of('new-resized-path'));
+      service.fileService.getLocalUrl = jest.fn().mockReturnValue('new-local-url');
+      service.fileService.getTmpDirPath = jest.fn().mockReturnValue('tmp-dir');
+      service.deleteLocalImage = jest.fn().mockReturnValue(of(null));
 
-    imageService.deleteLocalImage = jest
-      .fn()
-      .mockReturnValue(of(null));
-
-    imageService.storeImageToLocalDir(_mockImage)
+      service.storeImageToLocalDir(_mockImage)
       .subscribe(
         (finalImage: Image): void => {
           expect(finalImage.filePath).toMatch('new-resized-path');
@@ -216,34 +219,18 @@ describe('ImageService', (): void => {
           expect(true).toBe(false);
         }
       );
-  });
+    });
 
-  test('should store image to local dir and delete old image', (done: jest.DoneCallback): void => {
-    const _mockImage: Image = mockImage();
+    test('should store image to local dir and delete old image', (done: jest.DoneCallback): void => {
+      const _mockImage: Image = mockImage();
+      service.isTempImage = jest.fn().mockReturnValue(true);
+      service.resizeImage = jest.fn().mockReturnValue(of('new-resized-path'));
+      service.fileService.getLocalUrl = jest.fn().mockReturnValue('new-local-url');
+      service.fileService.getTmpDirPath = jest.fn().mockReturnValue('tmp-dir');
+      service.deleteLocalImage = jest.fn().mockReturnValue(of(null));
+      const deleteSpy: jest.SpyInstance = jest.spyOn(service, 'deleteLocalImage');
 
-    imageService.isTempImage = jest
-      .fn()
-      .mockReturnValue(true);
-
-    imageService.resizeImage = jest
-      .fn()
-      .mockReturnValue(of('new-resized-path'));
-
-    imageService.fileService.getLocalUrl = jest
-      .fn()
-      .mockReturnValue('new-local-url');
-
-    imageService.fileService.getTmpDirPath = jest
-      .fn()
-      .mockReturnValue('tmp-dir');
-
-    imageService.deleteLocalImage = jest
-      .fn()
-      .mockReturnValue(of(null));
-
-    const deleteSpy: jest.SpyInstance = jest.spyOn(imageService, 'deleteLocalImage');
-
-    imageService.storeImageToLocalDir(_mockImage, 'deletion-path')
+      service.storeImageToLocalDir(_mockImage, 'deletion-path')
       .subscribe(
         (): void => {
           expect(deleteSpy).toHaveBeenCalledTimes(2);
@@ -254,16 +241,13 @@ describe('ImageService', (): void => {
           expect(true).toBe(false);
         }
       );
-  });
+    });
 
-  test('should not resize and store an already stored image', (done: jest.DoneCallback): void => {
-    const _mockImage: Image = mockImage();
+    test('should not resize and store an already stored image', (done: jest.DoneCallback): void => {
+      const _mockImage: Image = mockImage();
+      service.isTempImage = jest.fn().mockReturnValue(false);
 
-    imageService.isTempImage = jest
-      .fn()
-      .mockReturnValue(false);
-
-    imageService.storeImageToLocalDir(_mockImage, 'deletion-path')
+      service.storeImageToLocalDir(_mockImage, 'deletion-path')
       .subscribe(
         (image: Image): void => {
           expect(image).toStrictEqual(_mockImage);
@@ -274,24 +258,22 @@ describe('ImageService', (): void => {
           expect(true).toBe(false);
         }
       );
+    });
+
   });
 
-  test('should resize an image', (done: jest.DoneCallback): void => {
-    const _mockImage: Image = mockImage();
-    _mockImage.fileSize = 1000 * 1024;
-    _mockImage.filePath = 'tmp/file/file.jpg';
 
-    imageService.imageResizer.resize = jest
-      .fn()
-      .mockReturnValue(Promise.resolve(''));
+  describe('File Conversion', (): void => {
 
-    imageService.fileService.getPersistentDirPath = jest
-      .fn()
-      .mockReturnValue('data/');
+    test('should resize an image', (done: jest.DoneCallback): void => {
+      const _mockImage: Image = mockImage();
+      _mockImage.fileSize = 1000 * 1024;
+      _mockImage.filePath = 'tmp/file/file.jpg';
+      service.imageResizer.resize = jest.fn().mockReturnValue(Promise.resolve(''));
+      service.fileService.getPersistentDirPath = jest.fn().mockReturnValue('data/');
+      const resizeSpy: jest.SpyInstance = jest.spyOn(service.imageResizer, 'resize');
 
-    const resizeSpy: jest.SpyInstance = jest.spyOn(imageService.imageResizer, 'resize');
-
-    imageService.resizeImage(_mockImage)
+      service.resizeImage(_mockImage)
       .subscribe(
         (): void => {
           expect(resizeSpy).toHaveBeenCalledWith({
@@ -310,15 +292,14 @@ describe('ImageService', (): void => {
           expect(true).toBe(false);
         }
       );
-  });
+    });
 
-  test('should not resize an image that is missing a fileSize', (done: jest.DoneCallback): void => {
-    const _mockImage: Image = mockImage();
-    delete _mockImage.fileSize;
+    test('should not resize an image that is missing a fileSize', (done: jest.DoneCallback): void => {
+      const _mockImage: Image = mockImage();
+      delete _mockImage.fileSize;
+      const resizeSpy: jest.SpyInstance = jest.spyOn(service.imageResizer, 'resize');
 
-    const resizeSpy: jest.SpyInstance = jest.spyOn(imageService.imageResizer, 'resize');
-
-    imageService.resizeImage(_mockImage)
+      service.resizeImage(_mockImage)
       .subscribe(
         (path: string): void => {
           expect(path).toMatch(_mockImage.filePath);
@@ -330,31 +311,31 @@ describe('ImageService', (): void => {
           expect(true).toBe(false);
         }
       );
+    });
+
   });
 
-  test('should prepare an image for upload', (done: jest.DoneCallback): void => {
-    const _mockImageRequestFormData1: ImageRequestFormData = mockImageRequestFormData();
-    const _mockImageRequestFormData2: ImageRequestFormData = mockImageRequestFormData();
-    _mockImageRequestFormData2.name = 'other-test-img';
-    _mockImageRequestFormData2.image.cid = '1';
-    _mockImageRequestFormData2.image.filePath = 'other-file-path';
-    const _mockImageRequestFormData3: ImageRequestFormData = mockImageRequestFormData();
 
-    imageService.isTempImage = jest
-      .fn()
+  describe('Server Upload Helpers', (): void => {
+
+    test('should prepare an image for upload', (done: jest.DoneCallback): void => {
+      const _mockImageRequestFormData1: ImageRequestFormData = mockImageRequestFormData();
+      const _mockImageRequestFormData2: ImageRequestFormData = mockImageRequestFormData();
+      _mockImageRequestFormData2.name = 'other-test-img';
+      _mockImageRequestFormData2.image.cid = '1';
+      _mockImageRequestFormData2.image.filePath = 'other-file-path';
+      const _mockImageRequestFormData3: ImageRequestFormData = mockImageRequestFormData();
+      service.isTempImage = jest.fn()
       .mockReturnValueOnce(false)
       .mockReturnValueOnce(false)
       .mockReturnValueOnce(true);
-
-    imageService.fileService.getLocalFile = jest
-      .fn()
+      service.fileService.getLocalFile = jest.fn()
       .mockImplementation((path: string): Observable<string | ArrayBuffer> => {
         return of(new ArrayBuffer(path.length));
       });
+      const getSpy: jest.SpyInstance = jest.spyOn(service.fileService, 'getLocalFile');
 
-    const getSpy: jest.SpyInstance = jest.spyOn(imageService.fileService, 'getLocalFile');
-
-    imageService.blobbifyImages([_mockImageRequestFormData1, _mockImageRequestFormData2, _mockImageRequestFormData3])
+      service.blobbifyImages([_mockImageRequestFormData1, _mockImageRequestFormData2, _mockImageRequestFormData3])
       .subscribe(
         (reqMetadata: ImageRequestMetadata[]): void => {
           expect(reqMetadata.length).toEqual(2);
@@ -372,93 +353,91 @@ describe('ImageService', (): void => {
           expect(true).toBe(false);
         }
       );
+    });
+
   });
 
-  test('should get the server url for a filename', (): void => {
-    expect(imageService.getServerURL('12345').includes('/images/12345.jpg')).toBe(true);
-  });
 
-  test('should handle an image error event', (): void => {
-    const _mockImage: Image = mockImage();
-    _mockImage.url = _mockImage.localURL;
+  describe('Other Methods', (): void => {
 
-    imageService.getServerURL = jest
-      .fn()
-      .mockReturnValue('/images/server-filename.jpg');
+    test('should get the server url for a filename', (): void => {
+      expect(service.getServerURL('12345').includes('/images/12345.jpg')).toBe(true);
+    });
 
-    imageService.handleImageError(_mockImage);
+    test('should handle an image error event', (): void => {
+      const _mockImage: Image = mockImage();
+      _mockImage.url = _mockImage.localURL;
+      service.getServerURL = jest.fn().mockReturnValue('/images/server-filename.jpg');
 
-    expect(_mockImage.url).toMatch('/images/server-filename.jpg');
+      service.handleImageError(_mockImage);
 
-    imageService.handleImageError(_mockImage);
+      expect(_mockImage.url).toMatch('/images/server-filename.jpg');
 
-    expect(_mockImage.url).toMatch(defaultImage().url);
-  });
+      service.handleImageError(_mockImage);
 
-  test('should check if image is the default image', (): void => {
-    const _mockImage: Image = mockImage();
-    _mockImage.cid = '12345';
-    const _defaultImage: Image = defaultImage();
+      expect(_mockImage.url).toMatch(defaultImage().url);
+    });
 
-    expect(imageService.hasDefaultImage(_mockImage)).toBe(false);
-    expect(imageService.hasDefaultImage(_defaultImage)).toBe(true);
-  });
+    test('should check if image is the default image', (): void => {
+      const _mockImage: Image = mockImage();
+      _mockImage.cid = '12345';
+      const _defaultImage: Image = defaultImage();
 
-  test('should check if image is stored in tmp dir', (): void => {
-    imageService.fileService.getTmpDirPath = jest
-      .fn()
-      .mockReturnValue('tmp/');
+      expect(service.hasDefaultImage(_mockImage)).toBe(false);
+      expect(service.hasDefaultImage(_defaultImage)).toBe(true);
+    });
 
-    const _mockImage: Image = mockImage();
-    _mockImage.filePath = 'tmp/12345.jpg';
+    test('should check if image is stored in tmp dir', (): void => {
+      service.fileService.getTmpDirPath = jest.fn().mockReturnValue('tmp/');
+      const _mockImage: Image = mockImage();
+      _mockImage.filePath = 'tmp/12345.jpg';
 
-    expect(imageService.isTempImage(_mockImage)).toBe(true);
+      expect(service.isTempImage(_mockImage)).toBe(true);
 
-    _mockImage.filePath = 'data/12345.jpg';
+      _mockImage.filePath = 'data/12345.jpg';
 
-    expect(imageService.isTempImage(_mockImage)).toBe(false);
+      expect(service.isTempImage(_mockImage)).toBe(false);
 
-    delete _mockImage.filePath;
+      delete _mockImage.filePath;
 
-    expect(imageService.isTempImage(_mockImage)).toBe(false);
+      expect(service.isTempImage(_mockImage)).toBe(false);
+      expect(service.isTempImage(null)).toBe(false);
+    });
 
-    expect(imageService.isTempImage(null)).toBe(false);
-  });
-
-  test('should type check a given image', (): void => {
-    const _mockImage: Image = mockImage();
-
-    imageService.typeGuard.hasValidProperties = jest
-      .fn()
+    test('should type check a given image', (): void => {
+      const _mockImage: Image = mockImage();
+      service.typeGuard.hasValidProperties = jest.fn()
       .mockReturnValueOnce(true)
       .mockReturnValueOnce(false);
 
-    expect(imageService.isSafeImage(_mockImage)).toBe(true);
-    expect(imageService.isSafeImage(null)).toBe(false);
-  });
+      expect(service.isSafeImage(_mockImage)).toBe(true);
+      expect(service.isSafeImage(null)).toBe(false);
+    });
 
-  test('should set image\'s initial url', (): void => {
-    imageService.getServerURL = jest
-      .fn()
-      .mockReturnValue('/images/12345');
+    test('should set image\'s initial url', (): void => {
+      service.getServerURL = jest.fn().mockReturnValue('/images/12345');
+      const _mockImage: Image = mockImage();
 
-    const _mockImage: Image = mockImage();
+      service.setInitialURL(null);
 
-    imageService.setInitialURL(null);
-    expect(_mockImage.url).toMatch('url');
+      expect(_mockImage.url).toMatch('url');
 
-    imageService.setInitialURL(_mockImage);
-    expect(_mockImage.url).toMatch(_mockImage.localURL);
+      service.setInitialURL(_mockImage);
 
-    delete _mockImage.localURL;
-    imageService.setInitialURL(_mockImage);
-    expect(_mockImage.url).toMatch('/images/12345');
+      expect(_mockImage.url).toMatch(_mockImage.localURL);
+      delete _mockImage.localURL;
 
-    delete _mockImage.serverFilename;
+      service.setInitialURL(_mockImage);
 
-    imageService.setInitialURL(_mockImage);
-    const _defaultImage: Image = defaultImage();
-    expect(_mockImage.url).toMatch(_defaultImage.url);
+      expect(_mockImage.url).toMatch('/images/12345');
+      delete _mockImage.serverFilename;
+
+      service.setInitialURL(_mockImage);
+
+      const _defaultImage: Image = defaultImage();
+      expect(_mockImage.url).toMatch(_defaultImage.url);
+    });
+    
   });
 
 });
