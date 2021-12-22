@@ -6,18 +6,18 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 /* Interface imports */
-import { Batch, BatchAnnotations, PrimaryValues, SelectedUnits } from '../../../shared/interfaces';
+import { Batch, BatchAnnotations, PrimaryValues, SelectedUnits } from '../../../../shared/interfaces';
 
 /* Service imports */
-import { CalculationsService, FormValidationService, PreferencesService, UtilityService } from '../../../services/services';
+import { CalculationsService, FormValidationService, PreferencesService, UtilityService } from '../../../../services/services';
 
 
 @Component({
-  selector: 'app-page-process-measurements-form',
-  templateUrl: './process-measurements-form.page.html',
-  styleUrls: ['./process-measurements-form.page.scss']
+  selector: 'app-process-measurements-form',
+  templateUrl: './process-measurements-form.component.html',
+  styleUrls: ['./process-measurements-form.component.scss']
 })
-export class ProcessMeasurementsFormPage implements OnInit, OnDestroy {
+export class ProcessMeasurementsFormComponent implements OnInit, OnDestroy {
   @Input() areAllRequired: boolean = false;
   @Input() batch: Batch = null;
   destroy$: Subject<boolean> = new Subject<boolean>();
@@ -96,14 +96,12 @@ export class ProcessMeasurementsFormPage implements OnInit, OnDestroy {
    */
   getGravity(measuredGravity: number, targetGravity: number): number {
     let originalGravity: number = measuredGravity !== -1 ? measuredGravity : targetGravity;
-
     if (this.requiresDensityConversion) {
-      originalGravity = this.calculator
-        .convertDensity(
-          originalGravity,
-          'specificGravity',
-          this.units.density.longName
-        );
+      originalGravity = this.calculator.convertDensity(
+        originalGravity,
+        'specificGravity',
+        this.units.density.longName
+      );
     }
 
     return originalGravity;
@@ -120,7 +118,6 @@ export class ProcessMeasurementsFormPage implements OnInit, OnDestroy {
    */
   getVolume(measuredVolume: number, targetVolume: number): number {
     let batchVolume: number = measuredVolume !== -1 ? measuredVolume : targetVolume;
-
     if (this.requiresVolumeConversion) {
       batchVolume = this.calculator.convertVolume(batchVolume, true, false);
     }
@@ -176,7 +173,6 @@ export class ProcessMeasurementsFormPage implements OnInit, OnDestroy {
    */
   initForm(): void {
     // TODO: validator to check that final gravity is not more than original gravity
-    console.log('init form', this.batch);
     const annotations: BatchAnnotations = this.batch.annotations;
     const targetValues: PrimaryValues = annotations.targetValues;
     const measuredValues: PrimaryValues = annotations.measuredValues;
@@ -217,19 +213,20 @@ export class ProcessMeasurementsFormPage implements OnInit, OnDestroy {
    * @return: none
    */
   listenForChanges(): void {
+    const maxPlaces: number = 5;
     this.measurementsForm.valueChanges
       .pipe(takeUntil(this.destroy$))
       .subscribe(
         (formValues: { originalGravity: string, finalGravity: string }): void => {
           const controls: { [key: string]: AbstractControl } = this.measurementsForm.controls;
 
-          if (formValues.originalGravity.length > 5) {
+          if (formValues.originalGravity.length > maxPlaces) {
             controls.originalGravity.setValue(
               parseFloat(formValues.originalGravity).toFixed(3).toString()
             );
           }
 
-          if (formValues.finalGravity.length > 5) {
+          if (formValues.finalGravity.length > maxPlaces) {
             controls.finalGravity.setValue(
               parseFloat(formValues.finalGravity).toFixed(3).toString()
             );

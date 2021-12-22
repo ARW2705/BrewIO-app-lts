@@ -5,11 +5,10 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { FormButtonsComponentModule, FormInputComponentModule } from '../../../components/form-elements/public';
-import { HeaderComponentModule } from '../../../components/shared/public';
+import { FormButtonsComponentModule, FormInputComponentModule } from '../../../form-elements/public';
 
 /* Page imports */
-import { ProcessMeasurementsFormPage } from './process-measurements-form.page';
+import { ProcessMeasurementsFormComponent } from './process-measurements-form.component';
 
 
 @NgModule({
@@ -19,11 +18,10 @@ import { ProcessMeasurementsFormPage } from './process-measurements-form.page';
     FormButtonsComponentModule,
     FormInputComponentModule,
     ReactiveFormsModule,
-    IonicModule,
-    HeaderComponentModule
+    IonicModule
   ],
   declarations: [
-    ProcessMeasurementsFormPage
+    ProcessMeasurementsFormComponent
   ]
 })
-export class ProcessMeasurementsFormPageModule {}
+export class ProcessMeasurementsFormComponentModule {}
