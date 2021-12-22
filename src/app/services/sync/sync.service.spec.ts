@@ -8,26 +8,27 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
 import { mockErrorResponse, mockInventoryItem, mockSyncMetadata } from '../../../../test-config/mock-models';
-import { ErrorReportingServiceStub, IdServiceStub, StorageServiceStub, TypeGuardServiceStub } from '../../../../test-config/service-stubs';
+import { ErrorReportingServiceStub, HttpErrorServiceStub, IdServiceStub, StorageServiceStub, TypeGuardServiceStub } from '../../../../test-config/service-stubs';
 
 /* Interface imports */
 import { InventoryItem, SyncError, SyncMetadata, SyncResponse } from '../../shared/interfaces';
 
 /* Service imports */
 import { SyncService } from './sync.service';
-import { ErrorReportingService, IdService, StorageService, TypeGuardService } from '../services';
+import { ErrorReportingService, HttpErrorService, IdService, StorageService, TypeGuardService } from '../services';
 
 
 describe('SyncService', (): void => {
-  let injector: TestBed;
-  let syncService: SyncService;
   configureTestBed();
+  let injector: TestBed;
+  let service: SyncService;
 
   beforeAll(async((): void => {
     TestBed.configureTestingModule({
       providers: [
         SyncService,
         { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
+        { provide: HttpErrorService, useClass: HttpErrorServiceStub },
         { provide: IdService, useClass: IdServiceStub },
         { provide: StorageService, useClass: StorageServiceStub },
         { provide: TypeGuardService, useClass: TypeGuardServiceStub }
@@ -35,136 +36,141 @@ describe('SyncService', (): void => {
     });
     StorageServiceStub._body = of([]);
     injector = getTestBed();
-    syncService = injector.get(SyncService);
+    service = injector.get(SyncService);
   }));
 
   beforeEach((): void => {
     injector = getTestBed();
-    syncService = injector.get(SyncService);
+    service = injector.get(SyncService);
   });
 
   test('should create the service', (): void => {
-    expect(syncService).toBeDefined();
+    expect(service).toBeTruthy();
   });
 
   test('should handle a create sync flag', (): void => {
     const _mockSyncMetadata: SyncMetadata = mockSyncMetadata('create', 'docId', 'docType');
-    syncService.syncFlags = [];
+    service.syncFlags = [];
+    service.updateStorage = jest.fn();
 
-    syncService.updateStorage = jest
-      .fn();
+    service.addCreateSyncFlag(_mockSyncMetadata);
 
-    syncService.addSyncFlag(_mockSyncMetadata);
+    expect(service.syncFlags.length).toEqual(1);
+    expect(service.syncFlags[0]).toStrictEqual(_mockSyncMetadata);
 
-    expect(syncService.syncFlags.length).toEqual(1);
-    expect(syncService.syncFlags[0]).toStrictEqual(_mockSyncMetadata);
+    service.addCreateSyncFlag(_mockSyncMetadata);
 
-    syncService.addSyncFlag(_mockSyncMetadata);
-
-    expect(syncService.syncFlags.length).toEqual(1);
+    expect(service.syncFlags.length).toEqual(1);
   });
 
   test('should handle an update sync flag', (): void => {
     const _mockSyncMetadata: SyncMetadata = mockSyncMetadata('update', '1a2b3c', 'docType');
+    service.syncFlags = [];
+    service.updateStorage = jest.fn();
+    service.idService.hasDefaultIdType = jest.fn().mockReturnValue(false);
 
-    syncService.syncFlags = [];
+    expect(service.syncFlags.length).toEqual(0);
 
-    syncService.updateStorage = jest
-      .fn();
+    service.addUpdateSyncFlag(_mockSyncMetadata);
 
-    syncService.idService.hasDefaultIdType = jest
-      .fn()
-      .mockReturnValue(false);
+    expect(service.syncFlags.length).toEqual(1);
+    expect(service.syncFlags[0]).toStrictEqual(_mockSyncMetadata);
 
-    expect(syncService.syncFlags.length).toEqual(0);
-
-    syncService.addSyncFlag(_mockSyncMetadata);
-
-    expect(syncService.syncFlags.length).toEqual(1);
-    expect(syncService.syncFlags[0]).toStrictEqual(_mockSyncMetadata);
-
-    syncService.addSyncFlag(_mockSyncMetadata);
-    expect(syncService.syncFlags.length).toEqual(1);
+    service.addUpdateSyncFlag(_mockSyncMetadata);
+    expect(service.syncFlags.length).toEqual(1);
   });
 
   test('should handle a delete sync flag', (): void => {
     const _mockSyncDelete: SyncMetadata = mockSyncMetadata('delete', '1a2b3c', 'docType');
+    service.syncFlags = [];
+    service.updateStorage = jest.fn();
+
+    service.addDeleteSyncFlag(_mockSyncDelete);
+
+    expect(service.syncFlags.length).toEqual(1);
+    expect(service.syncFlags[0]).toStrictEqual(_mockSyncDelete);
+
     const _mockSyncCreate: SyncMetadata = mockSyncMetadata('create', '1a2b3c', 'docType');
+    service.syncFlags = [_mockSyncCreate];
+
+    service.addDeleteSyncFlag(_mockSyncDelete);
+
+    expect(service.syncFlags.length).toEqual(0);
+
     const _mockSyncUpdate: SyncMetadata = mockSyncMetadata('update', '1a2b3c', 'docType');
+    service.syncFlags = [_mockSyncUpdate];
 
-    syncService.syncFlags = [];
+    service.addDeleteSyncFlag(_mockSyncDelete);
 
-    syncService.updateStorage = jest
-      .fn();
+    expect(service.syncFlags.length).toEqual(1);
+    expect(service.syncFlags[0]).toStrictEqual(_mockSyncDelete);
+  });
 
-    syncService.addSyncFlag(_mockSyncDelete);
+  test('should add a sync flag', (): void => {
+    service.addCreateSyncFlag = jest.fn();
+    const addSpy: jest.SpyInstance = jest.spyOn(service, 'addCreateSyncFlag');
+    service.addUpdateSyncFlag = jest.fn();
+    const updateSpy: jest.SpyInstance = jest.spyOn(service, 'addUpdateSyncFlag');
+    service.addDeleteSyncFlag = jest.fn();
+    const deleteSpy: jest.SpyInstance = jest.spyOn(service, 'addDeleteSyncFlag');
+    service.updateStorage = jest.fn();
+    const storageSpy: jest.SpyInstance = jest.spyOn(service, 'updateStorage');
+    const _mockSyncMetadata: SyncMetadata = mockSyncMetadata('create', '1', 'docType');
 
-    expect(syncService.syncFlags.length).toEqual(1);
-    expect(syncService.syncFlags[0]).toStrictEqual(_mockSyncDelete);
+    service.addSyncFlag(_mockSyncMetadata);
+    expect(addSpy).toHaveBeenCalledWith(_mockSyncMetadata);
 
-    syncService.syncFlags = [_mockSyncCreate];
+    _mockSyncMetadata.method = 'update';
+    service.addSyncFlag(_mockSyncMetadata);
+    expect(updateSpy).toHaveBeenCalledWith(_mockSyncMetadata);
 
-    syncService.addSyncFlag(_mockSyncDelete);
-
-    expect(syncService.syncFlags.length).toEqual(0);
-
-    syncService.syncFlags = [_mockSyncUpdate];
-
-    syncService.addSyncFlag(_mockSyncDelete);
-
-    expect(syncService.syncFlags.length).toEqual(1);
-    expect(syncService.syncFlags[0]).toStrictEqual(_mockSyncDelete);
+    _mockSyncMetadata.method = 'delete';
+    service.addSyncFlag(_mockSyncMetadata);
+    expect(deleteSpy).toHaveBeenCalledWith(_mockSyncMetadata);
+    expect(storageSpy).toHaveBeenCalledTimes(3);
   });
 
   test('should get an error adding an unknown sync flag', (): void => {
     expect((): void => {
-      syncService.addSyncFlag(mockSyncMetadata('invalid', 'docId', 'docType'));
+      service.addSyncFlag(mockSyncMetadata('invalid', 'docId', 'docType'));
     })
     .toThrowError('Unknown sync flag method: invalid');
   });
 
   test('should clear sync data', (): void => {
     const _mockSyncMetadata: SyncMetadata = mockSyncMetadata('create', 'docId', 'docType');
+    service.syncFlags = [_mockSyncMetadata];
+    service.storageService.removeSyncFlags = jest.fn();
 
-    syncService.syncFlags = [_mockSyncMetadata];
+    service.clearSyncData();
 
-    syncService.storageService.removeSyncFlags = jest
-      .fn();
-
-    syncService.clearSyncData();
-
-    expect(syncService.syncFlags.length).toEqual(0);
+    expect(service.syncFlags.length).toEqual(0);
   });
 
   test('should clear sync flags by type', (): void => {
     const _mockSyncMetadata: SyncMetadata = mockSyncMetadata('create', 'docId', 'docType');
     const _mockToClear: SyncMetadata = mockSyncMetadata('create', 'docId', 'clearType');
+    service.syncFlags = [ _mockSyncMetadata, _mockToClear, _mockSyncMetadata, _mockSyncMetadata ];
+    service.updateStorage = jest.fn();
 
-    syncService.syncFlags = [ _mockSyncMetadata, _mockToClear, _mockSyncMetadata, _mockSyncMetadata ];
+    service.clearSyncFlagByType('clearType');
 
-    syncService.updateStorage = jest
-      .fn();
-
-    syncService.clearSyncFlagByType('clearType');
-
-    expect(syncService.syncFlags.length).toEqual(3);
-    expect(syncService.syncFlags.find((flag: SyncMetadata): boolean => flag.docType === 'clearType')).toBeUndefined();
+    expect(service.syncFlags.length).toEqual(3);
+    expect(service.syncFlags.find((flag: SyncMetadata): boolean => flag.docType === 'clearType')).toBeUndefined();
   });
 
   test('should construct sync error', (): void => {
-    expect(syncService.constructSyncError('test-message', 2)).toStrictEqual({errCode: 2, message: 'test-message'});
-    expect(syncService.constructSyncError('test-message-no-code')).toStrictEqual({errCode: -1, message: 'test-message-no-code'});
+    expect(service.constructSyncError('test-message', 2)).toStrictEqual({errCode: 2, message: 'test-message'});
+    expect(service.constructSyncError('test-message-no-code')).toStrictEqual({errCode: -1, message: 'test-message-no-code'});
   });
 
   test('should get all sync flags', (): void => {
     const _mockSyncMetadata: SyncMetadata = mockSyncMetadata('create', 'docId', 'docType');
     const _mockToClear: SyncMetadata = mockSyncMetadata('create', 'docId', 'clearType');
-
     const flagList: SyncMetadata[] = [ _mockSyncMetadata, _mockToClear, _mockSyncMetadata, _mockSyncMetadata ];
+    service.syncFlags = flagList;
 
-    syncService.syncFlags = flagList;
-
-    expect(syncService.getAllSyncFlags()).toStrictEqual(flagList);
+    expect(service.getAllSyncFlags()).toStrictEqual(flagList);
   });
 
   test('should get requests with error resolving handlers', (done: jest.DoneCallback): void => {
@@ -172,7 +178,7 @@ describe('SyncService', (): void => {
     const httpError: HttpErrorResponse = mockErrorResponse(500, 'server error');
     const requests: Observable<InventoryItem>[] = [ of(_mockInventoryItem), throwError(httpError) ];
 
-    forkJoin(syncService.getRequestsWithErrorResolvingHandlers<InventoryItem>(requests))
+    forkJoin(service.getRequestsWithErrorResolvingHandlers<InventoryItem>(requests))
       .subscribe(
         (results: (InventoryItem | HttpErrorResponse)[]): void => {
           expect(results[0]).toStrictEqual(_mockInventoryItem);
@@ -189,27 +195,21 @@ describe('SyncService', (): void => {
   test('should get sync flags by type', (): void => {
     const _mockSyncMetadata: SyncMetadata = mockSyncMetadata('create', 'docId', 'docType');
     const _mockToGet: SyncMetadata = mockSyncMetadata('create', 'docId', 'getType');
+    service.syncFlags = [ _mockSyncMetadata, _mockToGet, _mockSyncMetadata, _mockSyncMetadata ];
+    service.updateStorage = jest.fn();
 
-    syncService.syncFlags = [ _mockSyncMetadata, _mockToGet, _mockSyncMetadata, _mockSyncMetadata ];
-
-    syncService.updateStorage = jest
-      .fn();
-
-    expect(syncService.getSyncFlagsByType('getType')).toStrictEqual([_mockToGet]);
+    expect(service.getSyncFlagsByType('getType')).toStrictEqual([_mockToGet]);
   });
 
   test('should load sync flags', (done: jest.DoneCallback): void => {
     const _mockSyncMetadata: SyncMetadata = mockSyncMetadata('method', 'docId', 'docType');
+    service.storageService.getSyncFlags = jest.fn().mockReturnValue(of([_mockSyncMetadata]));
 
-    syncService.storageService.getSyncFlags = jest
-      .fn()
-      .mockReturnValue(of([_mockSyncMetadata]));
-
-    syncService.init();
+    service.init();
 
     setTimeout((): void => {
-      console.log(syncService.syncFlags);
-      expect(syncService.syncFlags).toStrictEqual([_mockSyncMetadata]);
+      console.log(service.syncFlags);
+      expect(service.syncFlags).toStrictEqual([_mockSyncMetadata]);
       done();
     }, 10);
   });
@@ -218,17 +218,11 @@ describe('SyncService', (): void => {
     const notFoundError: Error = new Error();
     notFoundError.name = 'NotFoundError';
     notFoundError.message = 'test-error-message';
+    service.storageService.getSyncFlags = jest.fn().mockReturnValue(throwError(notFoundError));
+    service.errorReporter.handleUnhandledError = jest.fn();
+    const errorSpy: jest.SpyInstance = jest.spyOn(service.errorReporter, 'handleUnhandledError');
 
-    syncService.storageService.getSyncFlags = jest
-      .fn()
-      .mockReturnValue(throwError(notFoundError));
-
-    syncService.errorReporter.handleUnhandledError = jest
-      .fn();
-
-    const errorSpy: jest.SpyInstance = jest.spyOn(syncService.errorReporter, 'handleUnhandledError');
-
-    syncService.init();
+    service.init();
 
     setTimeout((): void => {
       expect(errorSpy).toHaveBeenCalledWith(notFoundError);
@@ -240,31 +234,31 @@ describe('SyncService', (): void => {
     const error: Error = new Error('error-msg');
     const httpError: HttpErrorResponse = mockErrorResponse(503, 'server error');
     const errors: (HttpErrorResponse | Error)[] = [ error, httpError ];
-
-    syncService.constructSyncError = jest
-      .fn()
+    service.httpError.composeErrorMessage = jest.fn()
+      .mockReturnValue('<503> Service Unavailable');
+    service.constructSyncError = jest.fn()
       .mockImplementation((message: string): SyncError => {
         return { errCode: 1, message: message };
       });
 
-    expect(syncService.processSyncErrors(errors)).toStrictEqual([
+    expect(service.processSyncErrors(errors)).toStrictEqual([
       { errCode: 1, message: 'error-msg' },
-      { errCode: 1, message: '<503> server error' }
+      { errCode: 1, message: '<503> Service Unavailable' }
     ]);
   });
 
   test('should process errors as sync errors with default values', (): void => {
     const httpError: HttpErrorResponse = mockErrorResponse(null, null);
     const errors: (HttpErrorResponse | Error)[] = [ httpError ];
-
-    syncService.constructSyncError = jest
-      .fn()
+    service.httpError.composeErrorMessage = jest.fn()
+      .mockReturnValue('<500> Internal Service Error');
+    service.constructSyncError = jest.fn()
       .mockImplementation((message: string): SyncError => {
         return { errCode: 1, message: message };
       });
 
-    expect(syncService.processSyncErrors(errors)).toStrictEqual([
-      { errCode: 1, message: '<500> Internal Server Error' }
+    expect(service.processSyncErrors(errors)).toStrictEqual([
+      { errCode: 1, message: '<500> Internal Service Error' }
     ]);
   });
 
@@ -274,15 +268,15 @@ describe('SyncService', (): void => {
     _mockError.message = 'test validation error';
     const httpError: HttpErrorResponse = mockErrorResponse(400, 'bad request', 'url', _mockError);
     const errors: (HttpErrorResponse | Error)[] = [ httpError ];
-
-    syncService.constructSyncError = jest
-      .fn()
+    service.httpError.composeErrorMessage = jest.fn()
+      .mockReturnValue('<400> Bad Request: Test Validation Error');
+    service.constructSyncError = jest.fn()
       .mockImplementation((message: string): SyncError => {
         return { errCode: 1, message: message };
       });
 
-    expect(syncService.processSyncErrors(errors)).toStrictEqual([
-      { errCode: 1, message: '<400> bad request: test validation error' }
+    expect(service.processSyncErrors(errors)).toStrictEqual([
+      { errCode: 1, message: '<400> Bad Request: Test Validation Error' }
     ]);
   });
 
@@ -291,19 +285,12 @@ describe('SyncService', (): void => {
     const httpError: HttpErrorResponse = mockErrorResponse(500, 'server error');
     const requests: Observable<any>[] = [ of(_mockInventoryItem), of(httpError) ];
     const syncError: SyncError = { errCode: 1, message: '<500> server error' };
-
-    syncService.clearSyncFlagByType = jest
-      .fn();
-
-    syncService.processSyncErrors = jest
-      .fn()
-      .mockReturnValue([syncError]);
-
-    syncService.getRequestsWithErrorResolvingHandlers = jest
-      .fn()
+    service.clearSyncFlagByType = jest.fn();
+    service.processSyncErrors = jest.fn().mockReturnValue([syncError]);
+    service.getRequestsWithErrorResolvingHandlers = jest.fn()
       .mockImplementation((_requests: Observable<any>[]): Observable<any>[] => _requests);
 
-    syncService.sync<InventoryItem>('inventory', requests)
+    service.sync<InventoryItem>('inventory', requests)
       .subscribe(
         (response: SyncResponse<InventoryItem>): void => {
           expect(response).toStrictEqual({
@@ -320,13 +307,10 @@ describe('SyncService', (): void => {
   });
 
   test('should update storage', (done: jest.DoneCallback): void => {
-    syncService.storageService.setSyncFlags = jest
-      .fn()
-      .mockReturnValue(of({}));
-
+    service.storageService.setSyncFlags = jest.fn().mockReturnValue(of({}));
     const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
 
-    syncService.updateStorage();
+    service.updateStorage();
 
     setTimeout((): void => {
       expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('Stored sync flags');
@@ -336,17 +320,12 @@ describe('SyncService', (): void => {
 
   test('should get an error updating storage', (done: jest.DoneCallback): void => {
     const _mockError: Error = new Error('test-error');
-
-    syncService.storageService.setSyncFlags = jest
-      .fn()
+    service.storageService.setSyncFlags = jest.fn()
       .mockReturnValue(throwError(_mockError));
+    service.errorReporter.handleUnhandledError = jest.fn();
+    const errorSpy: jest.SpyInstance = jest.spyOn(service.errorReporter, 'handleUnhandledError');
 
-    syncService.errorReporter.handleUnhandledError = jest
-      .fn();
-
-    const errorSpy: jest.SpyInstance = jest.spyOn(syncService.errorReporter, 'handleUnhandledError');
-
-    syncService.updateStorage();
+    service.updateStorage();
 
     setTimeout((): void => {
       expect(errorSpy).toHaveBeenCalledWith(_mockError);
