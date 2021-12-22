@@ -1,5 +1,5 @@
 /* Module imports */
-import { Injectable, Injector, ErrorHandler } from '@angular/core';
+import { ErrorHandler, Injectable, Injector } from '@angular/core';
 
 /* Constant imports */
 import { BUILTIN_ERROR_TYPES } from '../../shared/constants';
@@ -22,7 +22,6 @@ export class ClientErrorService implements ErrorHandler {
    * Handle a thrown error that has was not previously handled
    *
    * @param: error - the error to handle; expect type Error, but handle any
-   *
    * @return: none
    */
   handleError(error: any): void {
@@ -39,16 +38,15 @@ export class ClientErrorService implements ErrorHandler {
    *
    * @param: error - the caught error
    * @param: timestamp - ISO string timestamp
-   *
    * @return: a new error report
    */
   createJSErrorReport(error: Error, timestamp: string): ErrorReport {
     return {
+      timestamp,
       message: error.message,
       name: error.name,
       severity: error['severity'] || 2,
       stackTrace: error.stack,
-      timestamp: timestamp,
       userMessage: this.getUserMessage(error)
     };
   }
@@ -58,15 +56,14 @@ export class ClientErrorService implements ErrorHandler {
    *
    * @param: error - the caught error
    * @param: timestamp - ISO string timestamp
-   *
    * @return: a new error report
    */
   createUnknownErrorReport(error: any, timestamp: string): ErrorReport {
     return {
+      timestamp,
       name: 'UnknownError',
       message: JSON.stringify(error),
       severity: 2,
-      timestamp: timestamp,
       userMessage: this.getUserMessage(error)
     };
   }
@@ -75,7 +72,6 @@ export class ClientErrorService implements ErrorHandler {
    * Format an error message to present to the user
    *
    * @param: error - the caught error
-   *
    * @return: an error message for the user; may be empty string
    */
   getUserMessage(error: any): string {

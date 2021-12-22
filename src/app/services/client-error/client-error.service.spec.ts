@@ -16,10 +16,10 @@ import { ErrorReportingService } from '../services';
 
 
 describe('ClientErrorService', () => {
-  let injector: TestBed;
-  let clientError: ClientErrorService;
-  let errorReporter: ErrorReportingService;
   configureTestBed();
+  let injector: TestBed;
+  let service: ClientErrorService;
+  let errorReporter: ErrorReportingService;
 
   beforeAll(async((): void => {
     TestBed.configureTestingModule({
@@ -32,31 +32,25 @@ describe('ClientErrorService', () => {
 
   beforeEach((): void => {
     injector = getTestBed();
-    clientError = injector.get(ClientErrorService);
+    service = injector.get(ClientErrorService);
     errorReporter = injector.get(ErrorReportingService);
     errorReporter.setErrorReport = jest.fn();
-    errorReporter.getTimestamp = jest
-      .fn()
-      .mockReturnValue('timestamp');
-    clientError.injector.get = jest
-      .fn()
-      .mockReturnValue(errorReporter);
+    errorReporter.getTimestamp = jest.fn().mockReturnValue('timestamp');
+    service.injector.get = jest.fn().mockReturnValue(errorReporter);
   });
 
   test('should create the service', (): void => {
-    expect(clientError).toBeTruthy();
+    expect(service).toBeTruthy();
   });
 
   test('should handle an error', (): void => {
     const _mockError: Error = new Error('test-error');
-
-    clientError.createJSErrorReport = jest.fn();
-    clientError.createUnknownErrorReport = jest.fn();
-
+    service.createJSErrorReport = jest.fn();
+    service.createUnknownErrorReport = jest.fn();
     const setSpy: jest.SpyInstance = jest.spyOn(errorReporter, 'setErrorReport');
-    const createSpy: jest.SpyInstance = jest.spyOn(clientError, 'createJSErrorReport');
+    const createSpy: jest.SpyInstance = jest.spyOn(service, 'createJSErrorReport');
 
-    clientError.handleError(_mockError);
+    service.handleError(_mockError);
 
     expect(setSpy).toHaveBeenCalled();
     expect(createSpy).toHaveBeenCalledWith(_mockError, 'timestamp');
@@ -64,14 +58,12 @@ describe('ClientErrorService', () => {
 
   test('should handle an error of unknown type', (): void => {
     const _mockUnknown: any = { test: true };
-
-    clientError.createJSErrorReport = jest.fn();
-    clientError.createUnknownErrorReport = jest.fn();
-
+    service.createJSErrorReport = jest.fn();
+    service.createUnknownErrorReport = jest.fn();
     const setSpy: jest.SpyInstance = jest.spyOn(errorReporter, 'setErrorReport');
-    const createSpy: jest.SpyInstance = jest.spyOn(clientError, 'createUnknownErrorReport');
+    const createSpy: jest.SpyInstance = jest.spyOn(service, 'createUnknownErrorReport');
 
-    clientError.handleError(_mockUnknown);
+    service.handleError(_mockUnknown);
 
     expect(setSpy).toHaveBeenCalled();
     expect(createSpy).toHaveBeenCalledWith(_mockUnknown, 'timestamp');
@@ -81,21 +73,16 @@ describe('ClientErrorService', () => {
     const _mockError: Error = new Error();
     _mockError.name = 'ErrorName';
     _mockError.message = 'test-error';
-
     const _mockCustomError: CustomError = new CustomError(
       'CustomName',
       'test-message',
       3,
       'test-user-message'
     );
+    service.getUserMessage = jest.fn().mockReturnValue('user-message');
+    const getSpy: jest.SpyInstance = jest.spyOn(service, 'getUserMessage');
 
-    clientError.getUserMessage = jest
-      .fn()
-      .mockReturnValue('user-message');
-
-    const getSpy: jest.SpyInstance = jest.spyOn(clientError, 'getUserMessage');
-
-    expect(clientError.createJSErrorReport(_mockError, 'timestamp')).toStrictEqual({
+    expect(service.createJSErrorReport(_mockError, 'timestamp')).toStrictEqual({
       message: 'test-error',
       name: 'ErrorName',
       severity: 2,
@@ -104,8 +91,7 @@ describe('ClientErrorService', () => {
       userMessage: 'user-message'
     });
     expect(getSpy).toHaveBeenNthCalledWith(1, _mockError);
-
-    expect(clientError.createJSErrorReport(_mockCustomError, 'timestamp')).toStrictEqual({
+    expect(service.createJSErrorReport(_mockCustomError, 'timestamp')).toStrictEqual({
       message: 'test-message',
       name: 'CustomName',
       severity: 3,
@@ -118,12 +104,9 @@ describe('ClientErrorService', () => {
 
   test('should create an unknown error report', (): void => {
     const _mockUnknown: any = { test: true };
+    service.getUserMessage = jest.fn().mockReturnValue('user-message');
 
-    clientError.getUserMessage = jest
-      .fn()
-      .mockReturnValue('user-message');
-
-    expect(clientError.createUnknownErrorReport(_mockUnknown, 'timestamp')).toStrictEqual({
+    expect(service.createUnknownErrorReport(_mockUnknown, 'timestamp')).toStrictEqual({
       name: 'UnknownError',
       message: '{"test":true}',
       severity: 2,
@@ -135,16 +118,14 @@ describe('ClientErrorService', () => {
   test('should get a user message', (): void => {
     const _mockError: Error = new Error();
     _mockError.name = 'TypeError';
-
     const _mockCustomError: CustomError = new CustomError('CustomError', 'message', 2, 'user-message');
-
     const _mockUnknownButMessage: any = { message: 'test-message' };
 
-    expect(clientError.getUserMessage(_mockError)).toMatch('A system error has occurred');
-    expect(clientError.getUserMessage(_mockCustomError)).toMatch(_mockCustomError.userMessage);
-    expect(clientError.getUserMessage(_mockUnknownButMessage)).toMatch('test-message');
-    expect(typeof clientError.getUserMessage({})).toMatch('string');
-    expect(clientError.getUserMessage({}).length).toEqual(0);
+    expect(service.getUserMessage(_mockError)).toMatch('A system error has occurred');
+    expect(service.getUserMessage(_mockCustomError)).toMatch(_mockCustomError.userMessage);
+    expect(service.getUserMessage(_mockUnknownButMessage)).toMatch('test-message');
+    expect(typeof service.getUserMessage({})).toMatch('string');
+    expect(service.getUserMessage({}).length).toEqual(0);
   });
 
 });
