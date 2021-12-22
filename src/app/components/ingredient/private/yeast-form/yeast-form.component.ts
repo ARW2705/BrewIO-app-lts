@@ -23,7 +23,6 @@ export class YeastFormComponent implements AfterViewInit, OnDestroy, OnInit {
   @Output() formStatusEvent: EventEmitter<boolean> = new EventEmitter<boolean>();
   destroy$: Subject<boolean> = new Subject<boolean>();
   compareWithFn: (o1: any, o2: any) => boolean;
-  // formType: string;
   yeastForm: FormGroup;
 
   constructor(
@@ -36,7 +35,6 @@ export class YeastFormComponent implements AfterViewInit, OnDestroy, OnInit {
   /***** Lifecycle Hooks *****/
 
   ngOnInit(): void {
-    // this.formType = this.update ? 'update' : 'create';
     this.initForm();
   }
 
