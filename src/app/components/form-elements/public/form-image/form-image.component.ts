@@ -8,7 +8,7 @@ import { MISSING_IMAGE_URL } from '../../../../shared/constants';
 import { Image } from '../../../../shared/interfaces';
 
 /* Component imports */
-import { ImageFormPage } from '../../../../pages/forms/image-form/image-form.page';
+import { ImageSelectionComponent } from '../../private/image-selection/image-selection.component';
 
 /* Service imports */
 import { ErrorReportingService, ImageService, ModalService } from '../../../../services/services';
@@ -33,6 +33,23 @@ export class FormImageComponent {
   ) { }
 
   /**
+   * Get Image Modal component options
+   *
+   * @param: none
+   * @return: options object
+   */
+  getImageModalOptions(): object {
+    const options: object = {
+      overrideTitleCase: this.overrideTitleCase,
+      label: this.label
+    };
+    if (!this.imageService.hasDefaultImage(this.image)) {
+      Object.assign(options, { image: this.image });
+    }
+    return options;
+  }
+
+  /**
    * Open image modal
    *
    * @params: none
@@ -40,8 +57,8 @@ export class FormImageComponent {
    */
   openImageModal(): void {
     this.modalService.openModal<Image>(
-      ImageFormPage,
-      this.imageService.hasDefaultImage(this.image) ? null : { image: this.image }
+      ImageSelectionComponent,
+      this.getImageModalOptions()
     )
     .subscribe(
       (image: Image): void => {
