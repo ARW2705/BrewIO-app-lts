@@ -1,7 +1,7 @@
 /* Module imports */
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
-/* Page imports */
+/* Component imports */
 import { NoteFormComponent } from '../note-form/note-form.component';
 
 /* Service imports */
@@ -46,7 +46,6 @@ export class NoteContainerComponent {
    * @return: none
    */
   openNoteModal(index?: number): void {
-    console.log('open note modal', index);
     this.modalService.openModal<{ method: string, note: string }>(
       NoteFormComponent,
       this.getModalOptions(index)
