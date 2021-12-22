@@ -1,9 +1,6 @@
 /* Module imports */
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-
-/* Interface imports */
-import { CalendarDate } from '../../../../shared/interfaces';
-
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-calendar-controls',
@@ -11,7 +8,7 @@ import { CalendarDate } from '../../../../shared/interfaces';
   styleUrls: ['./calendar-controls.component.scss'],
 })
 export class CalendarControlsComponent {
-  @Input() displayDate: CalendarDate;
+  @Input() displayDate: moment.Moment;
   @Input() editType: string;
   @Output() changeButtonEvent: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() selectButtonEvent: EventEmitter<string> = new EventEmitter<string>();

@@ -7,10 +7,8 @@
                                             iconName="caret-back-circle-outline">
       </app-calendar-controls-change-button>
     </ion-col>
-
     <!-- Displayed month -->
     <ion-col class="month-header">{{ displayDate | moment:'format':'MMMM' }}</ion-col>
-
     <!-- Go forward month button -->
     <ion-col size="2">
       <app-calendar-controls-change-button  (changeButtonEvent)="onChangeClick(true)"
@@ -19,7 +17,6 @@
     </ion-col>
 
   </ion-row>
-
   <!-- Start and Alert toggle buttons -->
   <ion-row class="ion-justify-content-between toggle-container">
 
@@ -38,5 +35,4 @@
     </ion-col>
 
   </ion-row>
-
 </ion-grid>
