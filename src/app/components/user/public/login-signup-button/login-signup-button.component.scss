@@ -1,0 +1,15 @@
+:host {
+  width: 100%;
+}
+
+.icon-button {
+  --padding-top: 0;
+  --padding-end: 0;
+  --padding-bottom: 0;
+  --padding-start: 0;
+}
+
+ion-icon {
+  --ionicon-stroke-width: 26px;
+  font-size: 2.5rem;
+}
