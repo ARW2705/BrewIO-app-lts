@@ -7,13 +7,16 @@ import { IonicModule, ModalController } from '@ionic/angular';
 import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockGrains, mockGrainBill, mockEnglishUnits } from '../../../../../../test-config/mock-models';
+import { mockGrains, mockGrainBill, mockHops, mockHopsSchedule, mockOtherIngredients, mockYeast, mockYeastBatch, mockEnglishUnits } from '../../../../../../test-config/mock-models';
 import { PreferencesServiceStub, UtilityServiceStub } from '../../../../../../test-config/service-stubs';
-import { HeaderComponentStub } from '../../../../../../test-config/component-stubs';
+import { GrainFormComponentStub, HeaderComponentStub } from '../../../../../../test-config/component-stubs';
 import { ModalControllerStub } from '../../../../../../test-config/ionic-stubs';
 
 /* Interface imports */
-import { Grains, GrainBill, SelectedUnits } from '../../../../shared/interfaces';
+import { FormSelectOption, Grains, GrainBill, Hops, HopsSchedule, OtherIngredients, Yeast, YeastBatch, SelectedUnits } from '../../../../shared/interfaces';
+
+/* component imports */
+import { GrainFormComponent } from '../../private/grain-form/grain-form.component';
 
 /* Service imports */
 import { PreferencesService, UtilityService } from '../../../../services/services';
@@ -24,7 +27,7 @@ import { IngredientFormComponent } from './ingredient-form.component';
 
 describe('IngredientFormComponent', (): void => {
   let fixture: ComponentFixture<IngredientFormComponent>;
-  let page: IngredientFormComponent;
+  let component: IngredientFormComponent;
   let originalOnInit: any;
   configureTestBed();
 
@@ -48,158 +51,226 @@ describe('IngredientFormComponent', (): void => {
 
   beforeEach((): void => {
     fixture = TestBed.createComponent(IngredientFormComponent);
-    page = fixture.componentInstance;
-    originalOnInit = page.ngOnInit;
-    page.ngOnInit = jest.fn();
+    component = fixture.componentInstance;
+    originalOnInit = component.ngOnInit;
+    component.ngOnInit = jest.fn();
+    component.modalCtrl.dismiss = jest.fn();
+    component.utilService.toTitleCase = jest.fn()
+      .mockImplementation((str: string): string => str);
   });
 
   test('should create the component', (): void => {
     fixture.detectChanges();
 
-    expect(page).toBeTruthy();
+    expect(component).toBeTruthy();
   });
-  //
-  // describe('Form Methods', (): void => {
-  //
-  //   test('should init the component', (): void => {
-  //     page.ngOnInit = originalOnInit;
-  //     page.ingredientType = 'grains';
-  //     page.update = mockGrainBill()[0];
-  //     const _mockEnglishUnits: SelectedUnits = mockEnglishUnits();
-  //     page.utilService.toTitleCase = jest.fn()
-  //       .mockImplementation((value: string): string => value);
-  //     page.preferenceService.getSelectedUnits = jest.fn()
-  //       .mockReturnValue(_mockEnglishUnits);
-  //     page.buildFormSelectOptions = jest.fn();
-  //     const buildSpy: jest.SpyInstance = jest.spyOn(page, 'buildFormSelectOptions');
-  //     page.setFormValidity = jest.fn();
-  //     const setSpy: jest.SpyInstance = jest.spyOn(page, 'setFormValidity');
-  //
-  //     fixture.detectChanges();
-  //
-  //     expect(buildSpy).toHaveBeenCalled();
-  //     expect(setSpy).toHaveBeenCalledWith(true);
-  //     expect(page.formType).toMatch('update');
-  //     expect(page.title).toMatch('grains');
-  //     expect(page.units).toStrictEqual(_mockEnglishUnits);
-  //   });
-  //
-  //   test('should dismiss if missing ingredient type', (): void => {
-  //     page.ngOnInit = originalOnInit;
-  //     page.dismissOnError = jest.fn();
-  //     const dismissSpy: jest.SpyInstance = jest.spyOn(page, 'dismissOnError');
-  //
-  //     fixture.detectChanges();
-  //
-  //     expect(dismissSpy).toHaveBeenCalledWith('Missing ingredient type');
-  //   });
-  //
-  //   test('should build an array of form select options based on ingredient library', (): void => {
-  //     const _mockGrains: Grains[] = mockGrains();
-  //     page.ingredientLibrary = _mockGrains;
-  //
-  //     fixture.detectChanges();
-  //
-  //     expect(page.ingredientOptions.length).toEqual(0);
-  //     page.buildFormSelectOptions();
-  //     expect(page.ingredientOptions.length).toEqual(_mockGrains.length);
-  //     expect(page.ingredientOptions[0]).toStrictEqual({
-  //       label: _mockGrains[0].name,
-  //       value: _mockGrains[0]
-  //     });
-  //   });
-  //
-  //   test('should dismiss modal with no data', (): void => {
-  //     page.modalCtrl.dismiss = jest.fn();
-  //     const dismissSpy: jest.SpyInstance = jest.spyOn(page.modalCtrl, 'dismiss');
-  //
-  //     fixture.detectChanges();
-  //
-  //     page.dismiss();
-  //     expect(dismissSpy).toHaveBeenCalled();
-  //   });
-  //
-  //   test('should dismiss modal with error', (): void => {
-  //     page.modalCtrl.dismiss = jest.fn();
-  //     const dismissSpy: jest.SpyInstance = jest.spyOn(page.modalCtrl, 'dismiss');
-  //
-  //     fixture.detectChanges();
-  //
-  //     page.dismissOnError('test-message');
-  //     expect(dismissSpy).toHaveBeenCalledWith({ error: 'test-message' });
-  //   });
-  //
-  //   test('should dismiss modal with deletion flag', (): void => {
-  //     page.modalCtrl.dismiss = jest.fn();
-  //     const dismissSpy: jest.SpyInstance = jest.spyOn(page.modalCtrl, 'dismiss');
-  //
-  //     fixture.detectChanges();
-  //
-  //     page.onDeletion();
-  //     expect(dismissSpy).toHaveBeenCalledWith({ delete: true });
-  //   });
-  //
-  //   test('should submit the sub component form values', (): void => {
-  //     const _formResult: object = { test: true };
-  //     const formPage: any = { getFormResult: (): object => _formResult };
-  //     page.modalCtrl.dismiss = jest.fn();
-  //     const dismissSpy: jest.SpyInstance = jest.spyOn(page.modalCtrl, 'dismiss');
-  //
-  //     fixture.detectChanges();
-  //
-  //     page.formRef = formPage;
-  //     page.onSubmit();
-  //     expect(dismissSpy).toHaveBeenCalledWith(_formResult);
-  //   });
-  //
-  //   test('should set form validity', (): void => {
-  //     fixture.detectChanges();
-  //
-  //     page.isFormValid = false;
-  //     page.setFormValidity(true);
-  //     expect(page.isFormValid).toBe(true);
-  //     page.setFormValidity(false);
-  //     expect(page.isFormValid).toBe(false);
-  //   });
-  //
-  // });
-  //
-  //
-  // describe('Render Template', (): void => {
-  //
-  //   test('should render the template', (): void => {
-  //     page.ngOnInit = originalOnInit;
-  //     page.ingredientType = 'grains';
-  //     const _mockGrains: Grains[] = mockGrains();
-  //     page.ingredientLibrary = _mockGrains;
-  //     page.utilService.toTitleCase = jest.fn()
-  //       .mockReturnValue('Grains');
-  //     const _mockUnits = mockEnglishUnits();
-  //     page.preferenceService.getSelectedUnits = jest.fn()
-  //       .mockReturnValue(_mockUnits);
-  //     const _mockGrainBill: GrainBill = mockGrainBill()[0];
-  //     page.update = _mockGrainBill;
-  //
-  //     fixture.detectChanges();
-  //
-  //     const grainFormElem: HTMLElement = fixture.nativeElement.querySelector('app-grain-form');
-  //     expect(grainFormElem).toBeTruthy();
-  //     expect(grainFormElem['grainFormOptions'].length).toEqual(_mockGrains.length);
-  //     expect(grainFormElem['units']).toStrictEqual(_mockUnits);
-  //     expect(grainFormElem['update']).toStrictEqual(_mockGrainBill);
-  //     const hopsFormElem: HTMLElement = fixture.nativeElement.querySelector('app-hops-form');
-  //     expect(hopsFormElem).toBeNull();
-  //     const yeastFormElem: HTMLElement = fixture.nativeElement.querySelector('app-yeast-form');
-  //     expect(yeastFormElem).toBeNull();
-  //     const otherFormElem: HTMLElement = fixture.nativeElement.querySelector('app-other-ingredients-form');
-  //     expect(otherFormElem).toBeNull();
-  //     const formButtons: HTMLElement = fixture.nativeElement.querySelector('app-form-buttons');
-  //     expect(formButtons).toBeTruthy();
-  //     expect(formButtons['isSubmitDisabled']).toBe(false);
-  //     const deleteButton: HTMLElement = fixture.nativeElement.querySelector('app-delete-button');
-  //     expect(deleteButton).toBeTruthy();
-  //   });
-  //
-  // });
+
+  test('should init the component with defaults', (): void => {
+    component.ngOnInit = originalOnInit;
+    const _mockEnglishUnits: SelectedUnits = mockEnglishUnits();
+    component.preferenceService.getSelectedUnits = jest.fn()
+      .mockReturnValue(_mockEnglishUnits);
+    component.buildFormSelectOptions = jest.fn();
+    const buildSpy: jest.SpyInstance = jest.spyOn(component, 'buildFormSelectOptions');
+    const setSpy: jest.SpyInstance = jest.spyOn(component, 'setFormValidity');
+
+    fixture.detectChanges();
+
+    component.ngOnInit();
+    expect(buildSpy).toHaveBeenCalled();
+    expect(setSpy).not.toHaveBeenCalled();
+    expect(component.formType).toMatch('create');
+  });
+
+  test('should init the component with update', (): void => {
+    component.ngOnInit = originalOnInit;
+    const _mockGrainBill: GrainBill = mockGrainBill()[0];
+    component.update = _mockGrainBill;
+    const _mockEnglishUnits: SelectedUnits = mockEnglishUnits();
+    component.preferenceService.getSelectedUnits = jest.fn()
+      .mockReturnValue(_mockEnglishUnits);
+    component.buildFormSelectOptions = jest.fn();
+    component.setFormValidity = jest.fn();
+    const buildSpy: jest.SpyInstance = jest.spyOn(component, 'buildFormSelectOptions');
+    const setSpy: jest.SpyInstance = jest.spyOn(component, 'setFormValidity');
+
+    fixture.detectChanges();
+
+    component.ngOnInit();
+    expect(buildSpy).toHaveBeenCalled();
+    expect(setSpy).toHaveBeenCalledWith(true);
+    expect(component.formType).toMatch('update');
+  });
+
+  test('should build form select options', (): void => {
+    const _mockGrains: Grains[] = mockGrains();
+    component.ingredientLibrary = _mockGrains;
+
+    fixture.detectChanges();
+
+    expect(component.ingredientOptions.length).toEqual(0);
+    component.buildFormSelectOptions();
+    expect(component.ingredientOptions.length).toEqual(_mockGrains.length);
+    component.ingredientOptions.forEach((option: FormSelectOption, index: number): void => {
+      expect(option.label).toMatch(_mockGrains[index].name);
+      expect(option.value).toStrictEqual(_mockGrains[index]);
+    })
+  });
+
+  test('should dismiss the modal', (): void => {
+    const dismissSpy: jest.SpyInstance = jest.spyOn(component.modalCtrl, 'dismiss');
+
+    fixture.detectChanges();
+
+    component.dismiss();
+    expect(dismissSpy).toHaveBeenCalled();
+  });
+
+  test('should dismiss the modal with deletion flag', (): void => {
+    const dismissSpy: jest.SpyInstance = jest.spyOn(component.modalCtrl, 'dismiss');
+
+    fixture.detectChanges();
+
+    component.onDeletion();
+    expect(dismissSpy).toHaveBeenCalledWith({ delete: true });
+  });
+
+  test('should dismiss the modal with form result', (): void => {
+    const grainFormComponent: GrainFormComponent = (new GrainFormComponentStub() as GrainFormComponent);
+    const _mockGrainBill: GrainBill = mockGrainBill()[0];
+    const _mockFormResult: GrainBill = _mockGrainBill;
+    grainFormComponent.getFormResult = jest.fn()
+      .mockReturnValue(_mockFormResult);
+    const dismissSpy: jest.SpyInstance = jest.spyOn(component.modalCtrl, 'dismiss');
+
+    fixture.detectChanges();
+
+    component.formRef = grainFormComponent;
+    component.onSubmit();
+    expect(dismissSpy).toHaveBeenCalledWith(_mockFormResult);
+  });
+
+  test('should set form validity', (): void => {
+    fixture.detectChanges();
+
+    expect(component.isFormValid).toBe(false);
+    component.setFormValidity(true);
+    expect(component.isFormValid).toBe(true);
+  });
+
+  test('should render the template', (): void => {
+    component.ngOnInit = originalOnInit;
+    const _mockEnglishUnits: SelectedUnits = mockEnglishUnits();
+    component.preferenceService.getSelectedUnits = jest.fn()
+      .mockReturnValue(_mockEnglishUnits);
+    const _mockGrains: Grains[] = mockGrains();
+    component.ingredientLibrary = _mockGrains;
+    component.ingredientType = 'grains';
+
+    fixture.detectChanges();
+
+    const required: HTMLElement = fixture.nativeElement.querySelector('p');
+    expect(required.textContent).toMatch('Required fields');
+    const formButtons: HTMLElement = fixture.nativeElement.querySelector('app-form-buttons');
+    expect(formButtons).toBeTruthy();
+    const deleteButtonMissing: HTMLElement = fixture.nativeElement.querySelector('app-delete-button');
+    expect(deleteButtonMissing).toBeNull();
+    component.formType = 'update';
+
+    fixture.detectChanges();
+
+    const deleteButton: HTMLElement = fixture.nativeElement.querySelector('app-delete-button');
+    expect(deleteButton).toBeTruthy();
+  });
+
+  test('should render the template with the grain from', (): void => {
+    component.ngOnInit = originalOnInit;
+    const _mockGrainBill: GrainBill = mockGrainBill()[0];
+    component.update = _mockGrainBill;
+    const _mockEnglishUnits: SelectedUnits = mockEnglishUnits();
+    component.preferenceService.getSelectedUnits = jest.fn()
+      .mockReturnValue(_mockEnglishUnits);
+    const _mockGrains: Grains[] = mockGrains();
+    component.ingredientLibrary = _mockGrains;
+    component.ingredientType = 'grains';
+
+    fixture.detectChanges();
+
+    const grainForm: HTMLElement = fixture.nativeElement.querySelector('app-grain-form');
+    expect(grainForm).toBeTruthy();
+    const hopsForm: HTMLElement = fixture.nativeElement.querySelector('app-hops-form');
+    expect(hopsForm).toBeNull();
+    const yeastForm: HTMLElement = fixture.nativeElement.querySelector('app-yeast-form');
+    expect(yeastForm).toBeNull();
+    const otherForm: HTMLElement = fixture.nativeElement.querySelector('app-other-ingredients-form');
+    expect(otherForm).toBeNull();
+  });
+
+  test('should render the template with the hops from', (): void => {
+    component.ngOnInit = originalOnInit;
+    const _mockHopsSchedule: HopsSchedule = mockHopsSchedule()[0];
+    component.update = _mockHopsSchedule;
+    const _mockEnglishUnits: SelectedUnits = mockEnglishUnits();
+    component.preferenceService.getSelectedUnits = jest.fn()
+      .mockReturnValue(_mockEnglishUnits);
+    const _mockHops: Hops[] = mockHops();
+    component.ingredientLibrary = _mockHops;
+    component.ingredientType = 'hops';
+
+    fixture.detectChanges();
+
+    const grainForm: HTMLElement = fixture.nativeElement.querySelector('app-grain-form');
+    expect(grainForm).toBeNull();
+    const hopsForm: HTMLElement = fixture.nativeElement.querySelector('app-hops-form');
+    expect(hopsForm).toBeTruthy();
+    const yeastForm: HTMLElement = fixture.nativeElement.querySelector('app-yeast-form');
+    expect(yeastForm).toBeNull();
+    const otherForm: HTMLElement = fixture.nativeElement.querySelector('app-other-ingredients-form');
+    expect(otherForm).toBeNull();
+  });
+
+  test('should render the template with the yeast from', (): void => {
+    component.ngOnInit = originalOnInit;
+    const _mockYeastBatch: YeastBatch = mockYeastBatch()[0];
+    component.update = _mockYeastBatch;
+    const _mockEnglishUnits: SelectedUnits = mockEnglishUnits();
+    component.preferenceService.getSelectedUnits = jest.fn()
+      .mockReturnValue(_mockEnglishUnits);
+    const _mockYeast: Yeast[] = mockYeast();
+    component.ingredientLibrary = _mockYeast;
+    component.ingredientType = 'yeast';
+
+    fixture.detectChanges();
+
+    const grainForm: HTMLElement = fixture.nativeElement.querySelector('app-grain-form');
+    expect(grainForm).toBeNull();
+    const hopsForm: HTMLElement = fixture.nativeElement.querySelector('app-hops-form');
+    expect(hopsForm).toBeNull();
+    const yeastForm: HTMLElement = fixture.nativeElement.querySelector('app-yeast-form');
+    expect(yeastForm).toBeTruthy();
+    const otherForm: HTMLElement = fixture.nativeElement.querySelector('app-other-ingredients-form');
+    expect(otherForm).toBeNull();
+  });
+
+  test('should render the template with the other ingredients from', (): void => {
+    component.ngOnInit = originalOnInit;
+    const _mockOtherIngredients: OtherIngredients = mockOtherIngredients()[0];
+    component.update = _mockOtherIngredients;
+    const _mockEnglishUnits: SelectedUnits = mockEnglishUnits();
+    component.preferenceService.getSelectedUnits = jest.fn()
+      .mockReturnValue(_mockEnglishUnits);
+    component.ingredientType = 'otherIngredients';
+
+    fixture.detectChanges();
+
+    const grainForm: HTMLElement = fixture.nativeElement.querySelector('app-grain-form');
+    expect(grainForm).toBeNull();
+    const hopsForm: HTMLElement = fixture.nativeElement.querySelector('app-hops-form');
+    expect(hopsForm).toBeNull();
+    const yeastForm: HTMLElement = fixture.nativeElement.querySelector('app-yeast-form');
+    expect(yeastForm).toBeNull();
+    const otherForm: HTMLElement = fixture.nativeElement.querySelector('app-other-ingredients-form');
+    expect(otherForm).toBeTruthy();
+  });
 
 });
