@@ -2,14 +2,15 @@
 import { Injectable } from '@angular/core';
 
 /* Constants imports */
-import { ABV_FACTORS, BIGNESS_BASE, BIGNESS_FACTOR, BOIL_TIME_EXP, BOIL_TIME_FACTOR, BRIX, ENGLISH_TEMPERATURE, FL_TO_ML, GAL_TO_L, G_TO_OZ, IBU_FACTOR, KG_TO_LB, LARGE_ENGLISH_VOLUME, LARGE_ENGLISH_WEIGHT, LB_TO_KG, L_TO_GAL, ML_TO_FL, OZ_TO_G, PLATO_TO_SG, PLATO, SG_TO_PLATO, SMALL_ENGLISH_VOLUME, SMALL_ENGLISH_WEIGHT, SPECIFIC_GRAVITY, SRM_EXP, SRM_FACTOR } from '../../shared/constants';
+import { ABV_FACTORS, BIGNESS_BASE, BIGNESS_FACTOR, BOIL_TIME_EXP, BOIL_TIME_FACTOR, BRIX, ENGLISH_TEMPERATURE, FL_TO_ML, G_TO_OZ, GAL_TO_L, IBU_FACTOR, KG_TO_LB, L_TO_GAL, LARGE_ENGLISH_VOLUME, LARGE_ENGLISH_WEIGHT, LB_TO_KG, ML_TO_FL, OZ_TO_G, PLATO, PLATO_TO_SG, SG_TO_PLATO, SMALL_ENGLISH_VOLUME, SMALL_ENGLISH_WEIGHT, SPECIFIC_GRAVITY, SRM_EXP, SRM_FACTOR } from '../../shared/constants';
 
 /* Interface imports */
-import { GrainBill, HopsSchedule, YeastBatch, Grains, Hops, RecipeVariant, SelectedUnits } from '../../shared/interfaces';
+import { GrainBill, Grains, Hops, HopsSchedule, RecipeVariant, SelectedUnits, YeastBatch } from '../../shared/interfaces';
 
 /* Provider imports */
 import { PreferencesService } from '../preferences/preferences.service';
 import { UtilityService } from '../utility/utility.service';
+
 
 @Injectable({
   providedIn: 'root'
@@ -25,74 +26,53 @@ export class CalculationsService {
 
   /**
    * Convert density values between specific gravity, plato, and brix
-   *
    * Conversions use the following formulas:
    *   SG to Plato = 135.997sg^3 - 630.272sg^2 + 1111.14sg - 616.868
    *   Plato to SG = (plato / (258.6 - (227.1plato / 258.2))) + 1
    *   Plato <-> Brix considered 1:1
    *
-   * @params: density - value to convert
-   * @params: inputUnit - the original value unit
-   * @params: outputUnit - the target value unit
-   *
+   * @param: density - value to convert
+   * @param: inputUnit - the original value unit
+   * @param: outputUnit - the target value unit
    * @return: converted density value or -1 if units are not valid
    */
-  convertDensity(
-    density: number,
-    inputUnit: string,
-    outputUnit: string
-  ): number {
-    if (
-      inputUnit === SPECIFIC_GRAVITY.longName
-      && (
-        outputUnit === PLATO.longName
-        || outputUnit === BRIX.longName
-      )
-    ) {
+  convertDensity(density: number, inputUnit: string, outputUnit: string): number {
+    const sg: string = SPECIFIC_GRAVITY.longName;
+    const pl: string = PLATO.longName;
+    const bx: string = BRIX.longName;
+    if (inputUnit === sg && (outputUnit === pl || outputUnit === bx)) {
       return (Math.abs(
         (SG_TO_PLATO[0] * density ** 3)
         - (SG_TO_PLATO[1] * density ** 2)
         + (SG_TO_PLATO[2] * density)
         - SG_TO_PLATO[3]
       ));
-    } else if (
-      outputUnit === SPECIFIC_GRAVITY.longName
-      && (
-        inputUnit === PLATO.longName
-        || inputUnit === BRIX.longName
-      )
-    ) {
+    } else if ((inputUnit === pl || inputUnit === bx) && outputUnit === sg) {
       return ((density / (PLATO_TO_SG[0] - (density * PLATO_TO_SG[1] / PLATO_TO_SG[2]))) + 1);
     } else if (this.isValidDensityUnit(inputUnit) && this.isValidDensityUnit(outputUnit)) {
       return density;
+    } else {
+      return -1;
     }
-
-    return -1;
   }
 
   /**
    * Convert temperature value between celsius and fahrenheit
    *
-   * @params: temperature - value to convert
-   * @params: toF - true if converting from celsius to fahrenheit,
-   *          false for C -> F
-   *
+   * @param: temperature - value to convert
+   * @param: toF - true if converting from celsius to fahrenheit, false for C -> F
    * @return: converted temperature value
    */
   convertTemperature(temperature: number, toF: boolean): number {
-    if (toF) {
-      return temperature * 1.8 + 32;
-    }
-    return (temperature - 32) / 1.8;
+    return toF ? (temperature * 1.8 + 32) : ((temperature - 32) / 1.8);
   }
 
   /**
    * Convert volume values between metric and english standard
    *
-   * @params: volume - volume value to convert
-   * @params: isLarge - true for large volume unit, false for small
-   * @params: toEn - true to convert to english standard, false for metric
-   *
+   * @param: volume - volume value to convert
+   * @param: isLarge - true if using large volume unit, false for small
+   * @param: toEn - true to convert to english standard, false for metric
    * @return: converted volume value
    */
   convertVolume(volume: number, isLarge: boolean, toEn: boolean): number {
@@ -106,10 +86,9 @@ export class CalculationsService {
   /**
    * Convert weight values between metric and english standard
    *
-   * @params: weight - weight value to convert
-   * @params: isLarge - true for large weight unit, false for small
-   * @params: toEn - true to convert to english standard, false for metric
-   *
+   * @param: weight - weight value to convert
+   * @param: isLarge - true if using large weight unit, false for small
+   * @param: toEn - true to convert to english standard, false for metric
    * @return: converted weight value
    */
   convertWeight(weight: number, isLarge: boolean, toEn: boolean): number {
@@ -123,8 +102,7 @@ export class CalculationsService {
   /**
    * Check if a given density unit name is valid
    *
-   * @params: unitName - density unit long name
-   *
+   * @param: unitName - density unit long name
    * @return: true if unitName matches SPECIFIC_GRAVITY, PLATO, or BRIX longName
    */
   isValidDensityUnit(unitName: string): boolean {
@@ -138,9 +116,8 @@ export class CalculationsService {
   /**
    * Data is stored in english standard units and requires conversion otherwise
    *
-   * @params: unitType - the unit type to check
-   * @params: unit - the unit object to check
-   *
+   * @param: unitType - the unit type to check
+   * @param: unit - the unit object to check
    * @return: true if the given unit requires conversion
    */
   requiresConversion(unitType: string, unit: SelectedUnits): boolean {
@@ -168,13 +145,12 @@ export class CalculationsService {
   /***** Recipe Calculations *****/
 
   /**
-   * Calculate mash efficiency from grain bill, and measured original gravity
-   * with measured batch volume
+   * Calculate mash efficiency from grain bill, and measured
+   * original gravity with measured batch volume
    *
-   * @params: grainBill - array of grains instances
-   * @params: measuredOriginalGravity - measured original gravity after mash out
-   * @params: measuredBatchVolume - measured volume added to the fermenter
-   *
+   * @param: grainBill - array of grains instances
+   * @param: measuredOriginalGravity - measured original gravity after mash out
+   * @param: measuredBatchVolume - measured volume added to the fermenter
    * @return: updated mash efficiency
    */
   calculateMashEfficiency(
@@ -188,17 +164,13 @@ export class CalculationsService {
       grainBill
     );
 
-    return Math.round(
-      (measuredOriginalGravity - 1) / (maxEfficiencyGravity - 1) * 100
-    );
+    return Math.round((measuredOriginalGravity - 1) / (maxEfficiencyGravity - 1) * 100);
   }
 
   /**
-   * Calculate original gravity, final gravity, IBU, SRM,
-   * and ABV for a given recipe
+   * Calculate original gravity, final gravity, IBU, SRM, and ABV for a given recipe
    *
-   * @params: variant - recipe variant values to calculate with
-   *
+   * @param: variant - recipe variant values to calculate with
    * @return: none
    */
   calculateRecipeValues(variant: RecipeVariant): void {
@@ -209,11 +181,10 @@ export class CalculationsService {
     let abv: number = 0;
 
     if (variant.grains.length) {
-      const attenuationRate: number
-        = variant.yeast.length
-          ? this.getAverageAttenuation(variant.yeast)
-          : 75;
-
+      const defaultAttenutation: number = 75;
+      const attenuationRate: number = variant.yeast.length
+        ? this.getAverageAttenuation(variant.yeast)
+        : defaultAttenutation;
       og = this.calculateTotalOriginalGravity(
         variant.batchVolume,
         (variant.efficiency / 100),
@@ -225,12 +196,7 @@ export class CalculationsService {
     }
 
     if (variant.hops.length) {
-      ibu = this.calculateTotalIBU(
-        variant.hops,
-        og,
-        variant.batchVolume,
-        variant.boilVolume
-      );
+      ibu = this.calculateTotalIBU(variant.hops, og, variant.batchVolume, variant.boilVolume);
     }
 
     variant.originalGravity = og;
@@ -243,33 +209,26 @@ export class CalculationsService {
   /**
    * Get original gravity for all grains instances
    *
-   * @params: batchVolume - volume to add to fermenter
-   * @params: efficiency - expected mash efficiency as decimal between 0 - 1
-   * @params: grainBill - array of grains instances
-   *
+   * @param: batchVolume - volume to add to fermenter
+   * @param: efficiency - expected mash efficiency as decimal between 0 - 1
+   * @param: grainBill - array of grains instances
    * @return: total original gravity
    */
-  calculateTotalOriginalGravity(
-    batchVolume: number,
-    efficiency: number,
-    grainBill: GrainBill[]
-  ): number {
+  calculateTotalOriginalGravity(batchVolume: number, efficiency: number, grainBill: GrainBill[]): number {
     if (!grainBill.length) {
       return 0;
     }
 
     return this.utilService.roundToDecimalPlace(
-      (grainBill
-        .map((grainsItem: GrainBill): number => {
-          return this.getOriginalGravity(
-            grainsItem.grainType.gravity,
-            grainsItem.quantity,
-            batchVolume,
-            efficiency
-          );
-        })
-        .reduce((arr: number, curr: number): number => arr + curr - 1)
-      ),
+      grainBill.map((grainsItem: GrainBill): number => {
+        return this.getOriginalGravity(
+          grainsItem.grainType.gravity,
+          grainsItem.quantity,
+          batchVolume,
+          efficiency
+        );
+      })
+      .reduce((arr: number, curr: number): number => arr + curr - 1),
       3
     );
   }
@@ -277,11 +236,10 @@ export class CalculationsService {
   /**
    * Get IBU for all hops instances
    *
-   * @params: hopsSchedule - array of hops instances
-   * @params: og - original gravity
-   * @params: batchVolume - volume in gallons to add to fermenter
-   * @params: boilVolume - volume in gallons at boil start
-   *
+   * @param: hopsSchedule - array of hops instances
+   * @param: og - original gravity
+   * @param: batchVolume - volume in gallons to add to fermenter
+   * @param: boilVolume - volume in gallons at boil start
    * @return: total IBUs
    */
   calculateTotalIBU(
@@ -295,12 +253,10 @@ export class CalculationsService {
     }
 
     return this.utilService.roundToDecimalPlace(
-      hopsSchedule
-        .map((hops: HopsSchedule): number => {
-          if (hops.dryHop) return 0;
-          return this.getIBU(hops.hopsType, hops, og, batchVolume, boilVolume);
-        })
-        .reduce((arr: number, curr: number): number => arr + curr),
+      hopsSchedule.map((hops: HopsSchedule): number => {
+        return hops.dryHop ? 0 : this.getIBU(hops.hopsType, hops, og, batchVolume, boilVolume);
+      })
+      .reduce((arr: number, curr: number): number => arr + curr),
       1
     );
   }
@@ -308,9 +264,8 @@ export class CalculationsService {
   /**
    * Get total Standard Reference Method for all grains instances
    *
-   * @params: grainBill - array of grains instances
-   * @params: batchVolume - volume in gallons to add to fermenter
-   *
+   * @param: grainBill - array of grains instances
+   * @param: batchVolume - volume in gallons to add to fermenter
    * @return: total SRM value for batch
    */
   calculateTotalSRM(grainBill: GrainBill[], batchVolume: number): number {
@@ -320,11 +275,10 @@ export class CalculationsService {
 
     return this.utilService.roundToDecimalPlace(
       this.getSRM(
-        grainBill
-          .map((grains: GrainBill): number => {
-            return this.getMCU(grains.grainType, grains, batchVolume);
-          })
-          .reduce((arr: number, curr: number): number => arr + curr)
+        grainBill.map((grains: GrainBill): number => {
+          return this.getMCU(grains.grainType, grains, batchVolume);
+        })
+        .reduce((arr: number, curr: number): number => arr + curr)
       ),
       1
     );
@@ -333,42 +287,36 @@ export class CalculationsService {
   /**
    * Get average attenuation of yeast instances
    *
-   * @params: yeast - array of yeast instances
-   *
+   * @param: yeast - array of yeast instances
    * @return: average attenuation of yeast types in whole numbers
    */
   getAverageAttenuation(yeast: YeastBatch[]): number {
     let total: number = 0;
     let count: number = 0;
     yeast.forEach((yeastInstance: YeastBatch): void => {
-      yeastInstance.yeastType.attenuation.forEach((attn: number): void => {
-        total += attn;
+      yeastInstance.yeastType.attenuation.forEach((attenuation: number): void => {
+        total += attenuation;
         count++;
       });
     });
+
     return this.utilService.roundToDecimalPlace(total / count, 1);
   }
 
   /**
    * Get ABV value from original and final gravities
+   * Conversion uses the following formula:
+   * - original and final gravities are in specific gravity
+   * ( (76.08 * (original - final)) / (1.775 - original) ) * (final / 0.794)
    *
-   * @params: og - original gravity
-   * @params: fg - final gravity
-   *
+   * @param: og - original gravity
+   * @param: fg - final gravity
    * @return: ABV percentage
-   *
    * @example: (1.050, 1.010) => 5.339
    */
   getABV(og: number, fg: number): number {
     return this.utilService.roundToDecimalPlace(
-      (
-        (
-          ABV_FACTORS[0]
-          * (og - fg)
-          / (ABV_FACTORS[1] - og)
-        )
-        * (fg / ABV_FACTORS[2])
-      ),
+      ((ABV_FACTORS[0] * (og - fg) / (ABV_FACTORS[1] - og)) * (fg / ABV_FACTORS[2])),
       3
     );
   }
@@ -376,92 +324,67 @@ export class CalculationsService {
   /**
    * Get original gravity by grains' gravity points
    *
-   * @params: pps - gravity points from grains instance
-   * @params: quantity - amount of grains in pounds
-   * @params: batchVolume - batch volume in gallons to add to fermenter
-   * @params: efficiency - expected mash efficiency in decimal between 0 - 1
-   *
+   * @param: pps - gravity points from grains instance
+   * @param: quantity - amount of grains in pounds
+   * @param: volume - batch volume in gallons to add to fermenter
+   * @param: efficiency - expected mash efficiency in decimal between 0 - 1
    * @return: original gravity value
-   *
    * @example: (1.037, 10, 5, 0.7) => 1.052
    */
-  getOriginalGravity(
-    pps: number,
-    quantity: number,
-    batchVolume: number,
-    efficiency: number
-  ): number {
+  getOriginalGravity(pps: number, quantity: number, volume: number, efficiency: number): number {
     if (pps === 0) {
       return 1;
     }
 
-    return this.utilService.roundToDecimalPlace(
-      1 + ((pps - 1) * quantity * efficiency / batchVolume),
-      3
-    );
+    const og: number = 1 + ((pps - 1) * quantity * efficiency / volume);
+    return this.utilService.roundToDecimalPlace(og, 3);
   }
 
   /**
    * Get final gravity by original gravity value and expected yeast attenuation
    *
-   * @params: og - original gravity
-   * @params: attenuation - expected yeast attenuation as whole number
-   *
+   * @param: og - original gravity
+   * @param: attenuation - expected yeast attenuation as whole number
    * @return: final gravity
-   *
    * @example: (1.050, 70) => 1.015
    */
   getFinalGravity(og: number, attenuation: number): number {
-    return this.utilService.roundToDecimalPlace(
-      1 + ((og - 1) * (1 - (attenuation / 100))),
-      3
-    );
+    const fg: number = 1 + ((og - 1) * (1 - (attenuation / 100)));
+    return this.utilService.roundToDecimalPlace(fg, 3);
   }
 
   /**
    * Get original gravity at start of boil
    * Part of Tinseth formula for IBU
    *
-   * @params: og - original gravity
-   * @params: batchVolume - volume in gallons to add to fermenter
-   * @params: boilVolume - volume in gallons at start of boil
-   *
+   * @param: og - original gravity
+   * @param: batchVolume - volume in gallons to add to fermenter
+   * @param: boilVolume - volume in gallons at start of boil
    * @return: original gravity at start of boil
-   *
    * @example: (1.050, 5, 6) => 0.041666667
    */
   getBoilGravity(og: number, batchVolume: number, boilVolume: number): number {
-    return this.utilService.roundToDecimalPlace(
-      (batchVolume / boilVolume) * (og - 1),
-      9
-    );
+    return this.utilService.roundToDecimalPlace((batchVolume / boilVolume) * (og - 1), 9);
   }
 
   /**
    * Get factor for reduced utilization from wort gravity
    * Part of Tinseth formula for IBU
    *
-   * @params: boilGravity - original gravity at start of boil
-   *
+   * @param: boilGravity - original gravity at start of boil
    * @return: "bigness" factor
-   *
    * @example: (0.041666667) => 1.134632433
    */
   getBignessFactor(boilGravity: number) {
-    return this.utilService.roundToDecimalPlace(
-      BIGNESS_FACTOR * Math.pow(BIGNESS_BASE, boilGravity),
-      9
-    );
+    return this.utilService.roundToDecimalPlace(BIGNESS_FACTOR * Math.pow(BIGNESS_BASE, boilGravity), 9);
   }
 
   /**
    * Get factor for change in utilization from boil time
    * Part of Tinseth formula for IBU
    *
-   * @params: boilTime - the boil time in minutes
-   *
+   * @param: boilTime - the boil time in minutes
    * @return: boil time factor
-   *
    * @example: (60) => 0.219104108
    */
   getBoilTimeFactor(boilTime: number): number {
@@ -475,11 +398,9 @@ export class CalculationsService {
    * Get utilization of hops for given bigness and boil time factors
    * Part of Tinseth formula for IBU
    *
-   * @params: bignessFactor - calculated bigness factor
-   * @params: boilTimeFactor - calculated boil time factor
-   *
+   * @param: bignessFactor - calculated bigness factor
+   * @param: boilTimeFactor - calculated boil time factor
    * @return: utilization factor
-   *
    * @example: (1.134632433, 0.219104108) => 0.248602627
    */
   getUtilization(bignessFactor: number, boilTimeFactor: number): number {
@@ -488,14 +409,13 @@ export class CalculationsService {
 
   /**
    * Get IBU for hops instance
-   * Use Tinseth formula
+   * Use Tinseth IBU formula
    *
-   * @params: hops - hops-type information
-   * @params: hopsInstance - a hops instance
-   * @params: og - original gravity
-   * @params: batchVolume - volume in gallons to add to fermenter
-   * @params: boilVolume - volume in gallons at start of boil
-   *
+   * @param: hops - hops-type information
+   * @param: hopsInstance - a hops instance
+   * @param: og - original gravity
+   * @param: batchVolume - volume in gallons to add to fermenter
+   * @param: boilVolume - volume in gallons at start of boil
    * @return: IBUs for hops instance
    */
   getIBU(
@@ -505,11 +425,9 @@ export class CalculationsService {
     batchVolume: number,
     boilVolume: number
   ): number {
-    const bignessFactor: number = this.getBignessFactor(
-      this.getBoilGravity(og, batchVolume, boilVolume)
-    );
+    const boilGravity: number = this.getBoilGravity(og, batchVolume, boilVolume);
+    const bignessFactor: number = this.getBignessFactor(boilGravity);
     const boilTimeFactor: number = this.getBoilTimeFactor(hopsInstance.duration);
-
     return this.utilService.roundToDecimalPlace(
       (
         hops.alphaAcid
@@ -525,17 +443,12 @@ export class CalculationsService {
   /**
    * Get Malt Color Units value of given grains instance
    *
-   * @params: grains - grains-type information
-   * @params: grainsInstance - grains instance
-   * @params: batchVolume - volume in gallons to add to fermenter
-   *
+   * @param: grains - grains-type information
+   * @param: grainsInstance - grains instance
+   * @param: batchVolume - volume in gallons to add to fermenter
    * @return: MCU value for grains instance
    */
-  getMCU(
-    grains: Grains,
-    grainsInstance: GrainBill,
-    batchVolume: number
-  ): number {
+  getMCU(grains: Grains, grainsInstance: GrainBill, batchVolume: number): number {
     return this.utilService.roundToDecimalPlace(
       grains.lovibond * grainsInstance.quantity / batchVolume, 2
     );
@@ -544,8 +457,7 @@ export class CalculationsService {
   /**
    * Calculate Standard Reference Method value from MCU
    *
-   * @params: mcu - batch mcu value
-   *
+   * @param: mcu - batch mcu value
    * @return: SRM value rounded to whole number
    */
   getSRM(mcu: number): number {
