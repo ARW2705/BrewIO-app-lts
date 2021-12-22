@@ -1,0 +1,23 @@
+<ion-content>
+  <ion-grid>
+    <ion-row class="ion-justify-content-center">
+      <header>Select {{ overrideTitleCase ? label : (label | titlecase) }}</header>
+    </ion-row>
+    <ion-row>
+      <ion-button (click)="openGallery()"
+                  class="form-button gallery-button">
+        Open Gallery
+      </ion-button>
+    </ion-row>
+    <ion-row *ngIf="image">
+      <img  [src]="image.url"
+            alt="Selected image"/>
+    </ion-row>
+    <ion-row>
+      <app-form-buttons (cancelEvent)="dismiss()"
+                        (submitEvent)="selectPhoto()"
+                        [isSubmitDisabled]="!image">
+      </app-form-buttons>
+    </ion-row>
+  </ion-grid>
+</ion-content>
