@@ -16,9 +16,9 @@ import { RecipeSliderContentComponent } from './recipe-slider-content.component'
 
 
 describe('RecipeSliderContentComponent', (): void => {
+  configureTestBed();
   let fixture: ComponentFixture<RecipeSliderContentComponent>;
   let component: RecipeSliderContentComponent;
-  configureTestBed();
 
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
@@ -37,7 +37,6 @@ describe('RecipeSliderContentComponent', (): void => {
 
   test('should create the component', (): void => {
     fixture.detectChanges();
-
     expect(component).toBeTruthy();
   });
 
