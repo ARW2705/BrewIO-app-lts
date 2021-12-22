@@ -2,7 +2,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ActivatedRoute } from '@angular/router';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { throwError } from 'rxjs';
 import { IonicModule } from '@ionic/angular';
@@ -13,7 +12,6 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 /* Mock imports */
 import { mockBatch, mockErrorReport, mockInventoryItem } from '../../../../test-config/mock-models';
 import { AnimationsServiceStub, ErrorReportingServiceStub, UtilityServiceStub } from '../../../../test-config/service-stubs';
-import { AboutComponentStub, ActiveBatchListComponentStub, HeaderComponentStub, InventoryComponentStub, PreferencesComponentStub, UserComponentStub } from '../../../../test-config/component-stubs';
 import { ActivatedRouteStub, AnimationStub } from '../../../../test-config/ionic-stubs';
 
 /* Interface imports */
@@ -30,25 +28,15 @@ describe('ExtrasPage', (): void => {
   configureTestBed();
   let fixture: ComponentFixture<ExtrasPage>;
   let page: ExtrasPage;
-  let originalOnInit: any;
-  let originalOnDestroy: any;
-  let originalQuery: any;
+  let originalOnInit: () => void;
+  let originalOnDestroy: () => void;
 
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
-      declarations: [
-        ExtrasPage,
-        AboutComponentStub,
-        ActiveBatchListComponentStub,
-        InventoryComponentStub,
-        HeaderComponentStub,
-        PreferencesComponentStub,
-        UserComponentStub
-      ],
+      declarations: [ ExtrasPage ],
       imports: [
         IonicModule,
-        RouterTestingModule,
-        NoopAnimationsModule
+        RouterTestingModule
       ],
       providers: [
         { provide: ActivatedRoute, useClass: ActivatedRouteStub },
@@ -68,18 +56,12 @@ describe('ExtrasPage', (): void => {
     page = fixture.componentInstance;
     originalOnInit = page.ngOnInit;
     originalOnDestroy = page.ngOnDestroy;
-    originalQuery = global.document.querySelector;
     page.ngOnInit = jest.fn();
     page.ngOnDestroy = jest.fn();
   });
 
-  afterEach((): void => {
-    global.document.querySelector = originalQuery;
-  });
-
   test('should create the component', (): void => {
     fixture.detectChanges();
-
     expect(page).toBeDefined();
   });
 
