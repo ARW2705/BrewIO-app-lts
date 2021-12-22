@@ -24,6 +24,9 @@ import { IonicStorageModule } from '@ionic/storage';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 
+/* Component Modules */
+import { ErrorReportComponentModule } from './components/system/public/error-report/error-report.module';
+
 /* Services */
 import {
   ActionSheetService,
@@ -66,6 +69,7 @@ import {
   declarations: [ AppComponent ],
   entryComponents: [],
   imports: [
+    ErrorReportComponentModule,
     AppRoutingModule,
     BrowserAnimationsModule,
     BrowserModule,
