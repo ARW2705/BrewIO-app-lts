@@ -55,7 +55,7 @@ describe('ProcessHeaderComponent', (): void => {
 
     fixture.detectChanges();
 
-    const header: HTMLElement = global.document.querySelector('h2');
+    const header: HTMLElement = fixture.nativeElement.querySelector('h2');
     expect(header.classList).toContain('preview-header-text');
     expect(header.children[0].textContent.toLowerCase()).toMatch(text);
   });
@@ -72,10 +72,10 @@ describe('ProcessHeaderComponent', (): void => {
     expect(button.classList).toContain('button');
     expect(button.classList).toContain('expand-button');
     expect(button.classList).toContain('timer-expired');
-    const icon: HTMLElement = global.document.querySelector('ion-icon');
+    const icon: HTMLElement = fixture.nativeElement.querySelector('ion-icon');
     expect(icon['color']).toMatch('accent');
     expect(icon['name']).toMatch('checkmark-circle-outline');
-    const span: HTMLElement = global.document.querySelector('span');
+    const span: HTMLElement = fixture.nativeElement.querySelector('span');
     expect(span.textContent.toLowerCase()).toMatch(text);
   });
 
@@ -91,10 +91,10 @@ describe('ProcessHeaderComponent', (): void => {
     expect(button.classList).toContain('button');
     expect(button.classList).toContain('expand-button');
     expect(button.classList).not.toContain('timer-expired');
-    const icon: HTMLElement = global.document.querySelector('ion-icon');
+    const icon: HTMLElement = fixture.nativeElement.querySelector('ion-icon');
     expect(icon['color']).toMatch('primary');
     expect(icon['name']).toMatch('document-text-outline');
-    const span: HTMLElement = global.document.querySelector('span');
+    const span: HTMLElement = fixture.nativeElement.querySelector('span');
     expect(span.textContent.toLowerCase()).toMatch(text);
   });
 
