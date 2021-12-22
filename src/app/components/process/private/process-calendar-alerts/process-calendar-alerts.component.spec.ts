@@ -1,18 +1,16 @@
 /* Module imports */
-import { ComponentFixture, getTestBed, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockAlertFuture, mockAlertPast, mockAlertPresent, mockProcessSchedule } from '../../../../../../test-config/mock-models';
-import { CalendarComponentStub } from '../../../../../../test-config/component-stubs';
-import { IdServiceStub } from '../../../../../../test-config/service-stubs';
+import { mockAlertFuture, mockAlertPast, mockAlertPresent } from '../../../../../../test-config/mock-models';
 import { SortPipeStub } from '../../../../../../test-config/pipe-stubs';
 
 /* Interface imports */
-import { Alert, CalendarProcess, Process } from '../../../../shared/interfaces';
+import { Alert } from '../../../../shared/interfaces';
 
 /* Component imports */
 import { ProcessCalendarAlertsComponent } from './process-calendar-alerts.component';
@@ -43,7 +41,6 @@ describe('ProcessCalendarAlertsComponent', (): void => {
 
   test('should create the component', (): void => {
     fixture.detectChanges();
-
     expect(component).toBeTruthy();
   });
 
@@ -64,10 +61,10 @@ describe('ProcessCalendarAlertsComponent', (): void => {
     const _mockAlerts: Alert[] = [_mockalertPast, _mockAlertPresent, _mockAlertFuture ];
     component.alerts = _mockAlerts;
     component.closestAlert = _mockAlertPresent;
-    SortPipeStub._returnValue = (value: any) => _mockAlerts;
+    SortPipeStub._returnValue = (value: any): any[] => _mockAlerts;
     fixture.detectChanges();
 
-    const alerts: NodeList = global.document.querySelectorAll('p');
+    const alerts: NodeList = fixture.nativeElement.querySelectorAll('p');
     expect(alerts.length).toEqual(3);
     expect((<Element>alerts.item(0)).className).toMatch('alert-datetime');
     expect((<Element>alerts.item(1)).className).toMatch('alert-datetime next-datetime');
