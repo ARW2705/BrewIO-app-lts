@@ -13,12 +13,12 @@ import { DeviceStub, PlatformDevStub, PlatformCordovaStub } from '../../../../te
 import { DeviceService } from './device.service';
 
 
-describe('DeviceService', () => {
+describe('DeviceService', (): void => {
 
   describe('Device in dev mode', (): void => {
-    let injector: TestBed;
-    let device: DeviceService;
     configureTestBed();
+    let injector: TestBed;
+    let service: DeviceService;
 
     beforeAll(async((): void => {
       TestBed.configureTestingModule({
@@ -28,26 +28,25 @@ describe('DeviceService', () => {
           { provide: Platform, useClass: PlatformDevStub }
         ]
       });
-
       injector = getTestBed();
-      device = injector.get(DeviceService);
+      service = injector.get(DeviceService);
     }));
 
     test('should create the service', (): void => {
-      expect(device).toBeTruthy();
+      expect(service).toBeTruthy();
     });
 
-    test('should get null when getting device info in dev mode', (): void => {
-      expect(device.getDeviceInfo()).toBeNull();
+    test('should get null when getting service info in dev mode', (): void => {
+      expect(service.getDeviceInfo()).toBeNull();
     });
 
   });
 
 
   describe('Device in cordova mode', (): void => {
-    let injector: TestBed;
-    let device: DeviceService;
     configureTestBed();
+    let injector: TestBed;
+    let service: DeviceService;
 
     beforeAll(async((): void => {
       TestBed.configureTestingModule({
@@ -57,15 +56,14 @@ describe('DeviceService', () => {
           { provide: Platform, useClass: PlatformCordovaStub }
         ]
       });
-
       injector = getTestBed();
-      device = injector.get(DeviceService);
+      service = injector.get(DeviceService);
     }));
 
-    test('should get device info', (): void => {
+    test('should get service info', (): void => {
       const _stubDevice: DeviceStub = new DeviceStub();
 
-      expect(device.getDeviceInfo()).toStrictEqual({
+      expect(service.getDeviceInfo()).toStrictEqual({
         model: _stubDevice.model,
         os: _stubDevice.platform,
         version: _stubDevice.version,
