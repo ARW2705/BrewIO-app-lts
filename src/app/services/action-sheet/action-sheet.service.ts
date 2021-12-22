@@ -30,17 +30,15 @@ export class ActionSheetService {
     buttons.push({
       text: 'Cancel',
       role: 'cancel',
-      handler: () => {
-        console.log('Action Sheet cancelled');
-      }
+      handler: (): void => console.log('Action Sheet cancelled')
     });
 
     this.actionCtrl.create({
-      header: header,
-      buttons: buttons,
+      buttons,
+      header,
       cssClass: customClass || 'action-sheet-main'
     })
-    .then((actionSheet: HTMLIonActionSheetElement) => actionSheet.present());
+    .then((actionSheet: HTMLIonActionSheetElement): Promise<void> => actionSheet.present());
   }
 
 }
