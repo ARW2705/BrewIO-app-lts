@@ -1,5 +1,5 @@
 /* Module imports */
-import { HttpInterceptor, HttpHandler, HttpRequest, HttpEvent, HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -20,9 +20,8 @@ export class AuthorizeInterceptor implements HttpInterceptor {
   /**
    * Add authorization header with json web token
    *
-   * @params: req - the outgoing http request
-   * @params: next - angular http handler to continue the request
-   *
+   * @param: req - the outgoing http request
+   * @param: next - angular http handler to continue the request
    * @return: observable of http event to pass response back to origin
    */
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
@@ -50,14 +49,12 @@ export class ErrorInterceptor implements HttpInterceptor {
   /**
    * Handle unauthorized response
    *
-   * @params: req - the outgoing http request
-   * @params: next - angular http handler to continue the request
-   *
+   * @param: req - the outgoing http request
+   * @param: next - angular http handler to continue the request
    * @return: observable of http event to pass response back to origin
    */
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    return next
-      .handle(req)
+    return next.handle(req)
       .pipe(catchError((error: HttpErrorResponse) => this.handleHttpError(error)));
   }
 
@@ -65,17 +62,16 @@ export class ErrorInterceptor implements HttpInterceptor {
    * Dispatch and handle caught http error according to status
    *
    * @param: error - the caught HttpErrorResponse
-   *
    * @return: throw error of null to continue observable chain
    */
   handleHttpError(error: HttpErrorResponse): Observable<never> {
     if (error && !this.isHandlerExempt(error)) {
-      if (error.status === 400) {
+      if (error.status === this.httpError.BAD_REQUEST_STATUS) {
         this.reportHttpError(
           error,
           { severity: 2, userMessage: this.httpError.composeErrorMessage(error) }
         );
-      } else if (error.status === 401) {
+      } else if (error.status === this.httpError.NOT_AUTHORIZED_STATUS) {
         if (this.userService.isLoggedIn()) {
           this.userService.logOut();
         }
@@ -83,15 +79,15 @@ export class ErrorInterceptor implements HttpInterceptor {
           error,
           { severity: 3, userMessage: this.httpError.composeErrorMessage(error) }
         );
-      } else if (error.status === 403) {
+      } else if (error.status === this.httpError.FORBIDDEN_STATUS) {
         this.reportHttpError(
           error,
           { severity: 3, userMessage: this.httpError.composeErrorMessage(error) }
         );
-      } else if (error.status === 404) {
+      } else if (error.status === this.httpError.NOT_FOUND_STATUS) {
         // 404 may be handled differently by requesters: let requester handle the response
         return throwError(error);
-      } else if (error.status > 404 || error.status === 402) {
+      } else if (error.status > this.httpError.NOT_FOUND_STATUS || error.status === this.httpError.PAYMENT_REQUIRED_STATUS) {
         this.reportHttpError(
           error,
           { severity: 2, userMessage: this.httpError.composeErrorMessage(error) }
@@ -106,7 +102,6 @@ export class ErrorInterceptor implements HttpInterceptor {
    * Check if caught error should be resolved based on url
    *
    * @param: error - the caught HttpErrorResponse
-   *
    * @return: true if url does not contain exempt url string
    */
   isHandlerExempt(error: HttpErrorResponse): boolean {
@@ -118,7 +113,6 @@ export class ErrorInterceptor implements HttpInterceptor {
    *
    * @param: error - the caught HttpErrorResponse
    * @param: [overrides] - optional override fields for error report
-   *
    * @return: none
    */
   reportHttpError(error: HttpErrorResponse, overrides?: object): void {

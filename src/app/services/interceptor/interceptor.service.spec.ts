@@ -24,17 +24,14 @@ import { ErrorReportingService, HttpErrorService, UserService } from '../service
 
 
 describe('InterceptorService', (): void => {
+  configureTestBed();
   let injector: TestBed;
   let httpMock: HttpTestingController;
-  let userService: UserService;
   let mockHttpService: HttpStub;
-  configureTestBed();
 
-  beforeAll(async(() => {
+  beforeAll(async((): void => {
     TestBed.configureTestingModule({
-      imports: [
-        HttpClientTestingModule
-      ],
+      imports: [ HttpClientTestingModule ],
       providers: [
         HttpStub,
         { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
@@ -57,7 +54,6 @@ describe('InterceptorService', (): void => {
   beforeAll(async((): void => {
     injector = getTestBed();
     httpMock = injector.get(HttpTestingController);
-    userService = injector.get(UserService);
     mockHttpService = injector.get(HttpStub);
   }));
 
@@ -71,16 +67,13 @@ describe('InterceptorService', (): void => {
     beforeAll((): void => {
       authedService = injector.get(ErrorInterceptor);
       const _mockUser: User = mockUser();
-      userService.getUser = jest
-        .fn()
+      authedService.userService.getUser = jest.fn()
         .mockReturnValue(new BehaviorSubject<User>(_mockUser));
-      userService.getToken = jest
-        .fn()
-        .mockReturnValue(_mockUser.token);
+      authedService.userService.getToken = jest.fn().mockReturnValue(_mockUser.token);
     });
 
     test('should create authorized service', (): void => {
-      expect(authedService).toBeDefined();
+      expect(authedService).toBeTruthy();
     });
 
     test('should have authorization header with token', (done: jest.DoneCallback): void => {
@@ -102,53 +95,46 @@ describe('InterceptorService', (): void => {
         );
 
       const req: TestRequest = httpMock.expectOne(`${BASE_URL}/${API_VERSION}/mock`);
-
       expect(req.request.headers.has('Authorization')).toBeTruthy();
       expect(req.request.headers.get('Authorization')).toMatch('bearer testtoken');
-
       req.flush(mockResponse);
     });
 
   });
 
+
   describe('Error interceptor', (): void => {
     let unauthedService: ErrorInterceptor;
     let originalIsExempt: any;
     let originalReportError: any;
-    let originalMessage: any;
 
     beforeEach((): void => {
       unauthedService = injector.get(ErrorInterceptor);
-      userService.getUser = jest
-        .fn()
+      unauthedService.userService.getUser = jest.fn()
         .mockReturnValue(new BehaviorSubject<User>(null));
-      userService.getToken = jest
-        .fn()
-        .mockReturnValue(undefined);
+      unauthedService.userService.getToken = jest.fn().mockReturnValue(undefined);
       originalIsExempt = unauthedService.isHandlerExempt;
-      unauthedService.isHandlerExempt = jest
-        .fn()
-        .mockReturnValue(false);
+      unauthedService.isHandlerExempt = jest.fn().mockReturnValue(false);
       originalReportError = unauthedService.reportHttpError;
       unauthedService.reportHttpError = jest.fn();
-      originalMessage = unauthedService.httpError.composeErrorMessage;
-      unauthedService.httpError.composeErrorMessage = jest
-        .fn()
-        .mockReturnValue('http-error');
+      unauthedService.httpError.composeErrorMessage = jest.fn().mockReturnValue('http-error');
+      Object.assign(unauthedService.httpError, { BAD_REQUEST_STATUS: 400 });
+      Object.assign(unauthedService.httpError, { NOT_AUTHORIZED_STATUS: 401 });
+      Object.assign(unauthedService.httpError, { PAYMENT_REQUIRED_STATUS: 402 });
+      Object.assign(unauthedService.httpError, { FORBIDDEN_STATUS: 403 });
+      Object.assign(unauthedService.httpError, { NOT_FOUND_STATUS: 404 });
+      Object.assign(unauthedService.httpError, { INTERNAL_SERVER_STATUS: 500 });
+      Object.assign(unauthedService.httpError, { SERVICE_UNAVAILABLE_STATUS: 503 });
     });
 
     test('should create authorized service', (): void => {
-      expect(unauthedService).toBeDefined();
+      expect(unauthedService).toBeTruthy();
     });
 
     test('should pass caught error to handler', (done: jest.DoneCallback): void => {
       const _mockHttpError: HttpErrorResponse = mockErrorResponse(404, 'test-error', 'url');
       const _mockHandler: HttpHandler = mockHttpErrorHandler(_mockHttpError);
-
-      unauthedService.handleHttpError = jest
-        .fn()
-        .mockReturnValue(throwError(null));
-
+      unauthedService.handleHttpError = jest.fn().mockReturnValue(throwError(null));
       const handleSpy: jest.SpyInstance = jest.spyOn(unauthedService, 'handleHttpError');
 
       unauthedService.intercept(null, _mockHandler)
@@ -167,7 +153,6 @@ describe('InterceptorService', (): void => {
 
     test('should handle 400 http error', (done: jest.DoneCallback): void => {
       const _mockHttpError: HttpErrorResponse = mockErrorResponse(400, 'bad request', 'url');
-
       const reportSpy: jest.SpyInstance = jest.spyOn(unauthedService, 'reportHttpError');
       const composeSpy: jest.SpyInstance = jest.spyOn(unauthedService.httpError, 'composeErrorMessage');
 
@@ -194,12 +179,8 @@ describe('InterceptorService', (): void => {
 
     test('should handle 401 http error', (done: jest.DoneCallback): void => {
       const _mockHttpError: HttpErrorResponse = mockErrorResponse(401, 'not authorized', 'url');
-
-      unauthedService.userService.isLoggedIn = jest
-        .fn()
-        .mockReturnValue(true);
+      unauthedService.userService.isLoggedIn = jest.fn().mockReturnValue(true);
       unauthedService.userService.logOut = jest.fn();
-
       const reportSpy: jest.SpyInstance = jest.spyOn(unauthedService, 'reportHttpError');
       const composeSpy: jest.SpyInstance = jest.spyOn(unauthedService.httpError, 'composeErrorMessage');
       const logoutSpy: jest.SpyInstance = jest.spyOn(unauthedService.userService, 'logOut');
@@ -228,7 +209,6 @@ describe('InterceptorService', (): void => {
 
     test('should handle 403 http error', (done: jest.DoneCallback): void => {
       const _mockHttpError: HttpErrorResponse = mockErrorResponse(403, 'forbidden', 'url');
-
       const reportSpy: jest.SpyInstance = jest.spyOn(unauthedService, 'reportHttpError');
       const composeSpy: jest.SpyInstance = jest.spyOn(unauthedService.httpError, 'composeErrorMessage');
 
@@ -271,7 +251,6 @@ describe('InterceptorService', (): void => {
 
     test('should handle 402 or > 404 http error', (done: jest.DoneCallback): void => {
       const _mockHttpError: HttpErrorResponse = mockErrorResponse(500, 'internal error', 'url');
-
       const reportSpy: jest.SpyInstance = jest.spyOn(unauthedService, 'reportHttpError');
       const composeSpy: jest.SpyInstance = jest.spyOn(unauthedService.httpError, 'composeErrorMessage');
 
@@ -298,7 +277,6 @@ describe('InterceptorService', (): void => {
 
     test('should check if error url should be exempt', (): void => {
       unauthedService.isHandlerExempt = originalIsExempt;
-
       const _mockHttpErrorExempt: HttpErrorResponse = mockErrorResponse(404, 'not found', 'url/reporting/error');
       const _mockHttpErrorNonExempt: HttpErrorResponse = mockErrorResponse(404, 'not found', 'url');
 
@@ -308,15 +286,11 @@ describe('InterceptorService', (): void => {
 
     test('should report http error', (): void => {
       unauthedService.reportHttpError = originalReportError;
-
       const _mockHttpError: HttpErrorResponse = mockErrorResponse(404, 'not found');
       const _mockErrorReport: ErrorReport = mockErrorReport();
-
       unauthedService.errorReporter.setErrorReport = jest.fn();
-      unauthedService.errorReporter.getCustomReportFromHttpError = jest
-        .fn()
+      unauthedService.errorReporter.getCustomReportFromHttpError = jest.fn()
         .mockReturnValue(_mockErrorReport);
-
       const setSpy: jest.SpyInstance = jest.spyOn(unauthedService.errorReporter, 'setErrorReport');
       const getSpy: jest.SpyInstance = jest.spyOn(unauthedService.errorReporter, 'getCustomReportFromHttpError');
 
