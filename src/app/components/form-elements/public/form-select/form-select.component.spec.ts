@@ -151,16 +151,16 @@ describe('FormSelectComponent', (): void => {
 
     fixture.detectChanges();
 
-    const label: HTMLElement = global.document.querySelector('ion-label');
+    const label: HTMLElement = fixture.nativeElement.querySelector('ion-label');
     expect(label.textContent).toMatch('Test-name');
-    const select: HTMLElement = global.document.querySelector('ion-select');
+    const select: HTMLElement = fixture.nativeElement.querySelector('ion-select');
     expect(select['cancelText']).toMatch('dismiss');
     expect(select['okText']).toMatch('confirm');
-    const options: NodeList = global.document.querySelectorAll('ion-select-option');
+    const options: NodeList = fixture.nativeElement.querySelectorAll('ion-select-option');
     expect(options.item(0).textContent).toMatch('label1');
     expect(options.item(1).textContent).toMatch('label2');
     expect(options.item(2).textContent).toMatch('label3');
-    const error: HTMLElement = global.document.querySelector('app-form-error');
+    const error: HTMLElement = fixture.nativeElement.querySelector('app-form-error');
     expect(error).toBeNull();
   });
 
@@ -178,7 +178,7 @@ describe('FormSelectComponent', (): void => {
 
     fixture.detectChanges();
 
-    const error: HTMLElement = global.document.querySelector('app-form-error');
+    const error: HTMLElement = fixture.nativeElement.querySelector('app-form-error');
     expect(error['formName']).toMatch('form');
     expect(error['controlName']).toMatch('control');
     expect(error['controlErrors']).toStrictEqual({ maxlength: true });
