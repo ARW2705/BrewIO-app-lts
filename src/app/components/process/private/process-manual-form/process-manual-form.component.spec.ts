@@ -109,7 +109,8 @@ describe('ProcessManualFormComponent', (): void => {
     expect(result).toStrictEqual({
       name: 'test',
       description: 'description',
-      expectedDuration: 9
+      expectedDuration: 9,
+      type: 'manual'
     });
   });
 
