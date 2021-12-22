@@ -7,7 +7,9 @@ import { IonicModule } from '@ionic/angular';
 import { AccordionComponentModule } from '../../../shared/accordion/accordion.module';
 import { FriendsComponentModule } from '../../private/friends/friends.module';
 import { ProfileComponentModule } from '../../private/profile/profile.module';
+import { LoginSignupButtonComponentModule } from '../login-signup-button/login-signup-button.module';
 import { UserComponent } from './user.component';
+
 
 @NgModule({
   imports: [
@@ -15,6 +17,7 @@ import { UserComponent } from './user.component';
     IonicModule,
     AccordionComponentModule,
     FriendsComponentModule,
+    LoginSignupButtonComponentModule,
     ProfileComponentModule
   ],
   declarations: [

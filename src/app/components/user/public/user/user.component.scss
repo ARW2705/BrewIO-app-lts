@@ -71,16 +71,19 @@
 }
 
 .login-signup-container {
-  text-align: center;
+  font-size: 1.5rem;
 }
 
 ion-item {
+  /* Display */
   margin: 10px 0;
-  font-size: 1.35rem;
   --border-color: var(--ion-color-primary);
   --padding-start: 24px;
   --padding-end: 6px;
   --min-height: 52px;
+
+  /* Text */
+  font-size: 1.35rem;
 }
 
 ion-list {

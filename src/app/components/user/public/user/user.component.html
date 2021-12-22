@@ -31,22 +31,9 @@
 <!-- Login/Signup button -->
 <ion-grid>
   <ion-row  *ngIf="!isLoggedIn"
-            class="section-row login-signup-container">
-    <ion-col size="12">
-      Log in or Sign up to view more options
-    </ion-col>
-    <ion-col>
-      <ion-button color="primary"
-                  (click)="openLogin()">
-        Log In
-      </ion-button>
-    </ion-col>
-    <ion-col>
-      <ion-button color="primary"
-                  (click)="openSignup()">
-        Sign Up
-      </ion-button>
-    </ion-col>
+            class="ion-justify-content-center section-row login-signup-container">
+    <span>Log In or Sign Up to view more options</span>
+    <app-login-signup-button></app-login-signup-button>
   </ion-row>
   <ion-row  *ngIf="isLoggedIn"
             class="ion-justify-content-center">

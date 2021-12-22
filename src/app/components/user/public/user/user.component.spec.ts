@@ -1,6 +1,6 @@
 /* Module imports */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject } from 'rxjs';
@@ -11,7 +11,7 @@ import { configureTestBed } from '../../../../../../test-config/configure-test-b
 /* Mock imports */
 import { mockUser } from '../../../../../../test-config/mock-models';
 import { UserServiceStub } from '../../../../../../test-config/service-stubs';
-import { ModalControllerStub, ModalStub } from '../../../../../../test-config/ionic-stubs';
+import { ModalControllerStub } from '../../../../../../test-config/ionic-stubs';
 
 /* Interface imports */
 import { User } from '../../../../shared/interfaces';
@@ -19,20 +19,16 @@ import { User } from '../../../../shared/interfaces';
 /* Service imports */
 import { UserService } from '../../../../services/user/user.service';
 
-/* Page imports */
-import { LoginPage } from '../../../../pages/forms/login/login.page';
-import { SignupPage } from '../../../../pages/forms/signup/signup.page';
-
 /* Component imoprts */
 import { UserComponent } from './user.component';
 
 
 describe('UserComponent', (): void => {
-  let fixture: ComponentFixture<UserComponent>;
-  let userCmp: UserComponent;
-  let originalOnInit: any;
-  let originalOnDestroy: any;
   configureTestBed();
+  let fixture: ComponentFixture<UserComponent>;
+  let component: UserComponent;
+  let originalOnInit: () => void;
+  let originalOnDestroy: () => void;
 
   beforeEach((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
@@ -42,7 +38,7 @@ describe('UserComponent', (): void => {
         { provide: UserService, useClass: UserServiceStub },
         { provide: ModalController, useClass: ModalControllerStub }
       ],
-      schemas: [ NO_ERRORS_SCHEMA ]
+      schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
     await TestBed.compileComponents();
   })()
@@ -51,170 +47,90 @@ describe('UserComponent', (): void => {
 
   beforeEach((): void => {
     fixture = TestBed.createComponent(UserComponent);
-    userCmp = fixture.componentInstance;
-    originalOnInit = userCmp.ngOnInit;
-    originalOnDestroy = userCmp.ngOnDestroy;
-    userCmp.ngOnInit = jest
-      .fn();
-    userCmp.ngOnDestroy = jest
-      .fn();
+    component = fixture.componentInstance;
+    originalOnInit = component.ngOnInit;
+    originalOnDestroy = component.ngOnDestroy;
+    component.ngOnInit = jest.fn();
+    component.ngOnDestroy = jest.fn();
   });
 
   test('should create the component', (): void => {
     fixture.detectChanges();
-
-    expect(userCmp).toBeDefined();
+    expect(component).toBeTruthy();
   });
 
   test('should init the component', (): void => {
     const _mockUser: User = mockUser();
     const _mockUser$: BehaviorSubject<User> = new BehaviorSubject<User>(_mockUser);
-
-    userCmp.ngOnInit = originalOnInit;
-
-    userCmp.userService.getUser = jest
-      .fn()
+    component.ngOnInit = originalOnInit;
+    component.userService.getUser = jest.fn()
       .mockReturnValue(_mockUser$);
-
-    userCmp.userService.isLoggedIn = jest
-      .fn()
+    component.userService.isLoggedIn = jest.fn()
       .mockReturnValue(true);
 
     fixture.detectChanges();
 
-    userCmp.ngOnInit();
-
-    expect(userCmp.isLoggedIn).toBe(true);
+    component.ngOnInit();
+    expect(component.isLoggedIn).toBe(true);
   });
 
   test('should handle destroying the component', (): void => {
-    userCmp.ngOnDestroy = originalOnDestroy;
-
-    const nextSpy: jest.SpyInstance = jest.spyOn(userCmp.destroy$, 'next');
-    const completeSpy: jest.SpyInstance = jest.spyOn(userCmp.destroy$, 'complete');
+    component.ngOnDestroy = originalOnDestroy;
+    const nextSpy: jest.SpyInstance = jest.spyOn(component.destroy$, 'next');
+    const completeSpy: jest.SpyInstance = jest.spyOn(component.destroy$, 'complete');
 
     fixture.detectChanges();
 
-    userCmp.ngOnDestroy();
-
+    component.ngOnDestroy();
     expect(nextSpy).toHaveBeenCalledWith(true);
     expect(completeSpy).toHaveBeenCalled();
   });
 
-  test('should log out user', (): void => {
-    userCmp.userService.logOut = jest
-      .fn();
-
-    const logoutSpy: jest.SpyInstance = jest.spyOn(userCmp.userService, 'logOut');
+  test('should call logout method', (): void => {
+    component.userService.logOut = jest.fn();
+    const logoutSpy: jest.SpyInstance = jest.spyOn(component.userService, 'logOut');
 
     fixture.detectChanges();
 
-    userCmp.logOut();
-
+    component.logOut();
     expect(logoutSpy).toHaveBeenCalled();
   });
 
-  test('should open login modal', (done: jest.DoneCallback): void => {
-    const _stubModal: ModalStub = new ModalStub();
-
-    userCmp.modalCtrl.create = jest
-      .fn()
-      .mockReturnValue(_stubModal);
-
-    _stubModal.present = jest
-      .fn();
-
-    const createSpy: jest.SpyInstance = jest.spyOn(userCmp.modalCtrl, 'create');
-    const presentSpy: jest.SpyInstance = jest.spyOn(_stubModal, 'present');
-
+  test('should toggle expanded content', (): void => {
     fixture.detectChanges();
 
-    userCmp.openLogin();
-
-    setTimeout((): void => {
-      expect(createSpy).toHaveBeenCalledWith({ component: LoginPage });
-      expect(presentSpy).toHaveBeenCalled();
-      done();
-    }, 10);
+    component.toggleExpandContent('friends');
+    expect(component.expandedContent).toMatch('friends');
+    component.toggleExpandContent('profile');
+    expect(component.expandedContent).toMatch('profile');
+    component.toggleExpandContent('profile');
+    expect(component.expandedContent.length).toEqual(0);
   });
 
-  test('should open signup modal', (done: jest.DoneCallback): void => {
-    const _stubModal: ModalStub = new ModalStub();
-
-    userCmp.modalCtrl.create = jest
-      .fn()
-      .mockReturnValue(_stubModal);
-
-    _stubModal.present = jest
-      .fn();
-
-    const createSpy: jest.SpyInstance = jest.spyOn(userCmp.modalCtrl, 'create');
-    const presentSpy: jest.SpyInstance = jest.spyOn(_stubModal, 'present');
+  test('should render the template while logged out', (): void => {
+    component.isLoggedIn = false;
 
     fixture.detectChanges();
 
-    userCmp.openSignup();
-
-    setTimeout((): void => {
-      expect(createSpy).toHaveBeenCalledWith({ component: SignupPage });
-      expect(presentSpy).toHaveBeenCalled();
-      done();
-    }, 10);
+    const message: Element = fixture.nativeElement.querySelector('span');
+    expect(message.textContent).toMatch('Log In or Sign Up to view more options');
+    const loginButton: Element = fixture.nativeElement.querySelector('app-login-signup-button');
+    expect(loginButton).toBeTruthy();
   });
 
-  test('should toggle expand content section', (): void => {
-    fixture.detectChanges();
-
-    expect(userCmp.expandedContent.length).toEqual(0);
-
-    userCmp.toggleExpandContent('profile');
-
-    expect(userCmp.expandedContent).toMatch('profile');
-
-    userCmp.toggleExpandContent('profile');
-
-    expect(userCmp.expandedContent.length).toEqual(0);
-  });
-
-  test('should render the template with user not logged in', (): void => {
-    fixture.detectChanges();
-
-    const componentList: HTMLElement = fixture.nativeElement.querySelector('ion-list');
-    expect(componentList).toBeNull();
-
-    const buttons: NodeList = fixture.nativeElement.querySelectorAll('ion-button');
-    expect(buttons.length).toEqual(2);
-    expect(buttons.item(0).textContent).toMatch('Log In');
-    expect(buttons.item(1).textContent).toMatch('Sign Up');
-  });
-
-  test('should render the template with user logged in', (): void => {
-    userCmp.isLoggedIn = true;
-    userCmp.expandedContent = 'profile';
+  test('should render the template while logged in', (): void => {
+    component.isLoggedIn = true;
 
     fixture.detectChanges();
 
-    const componentList: HTMLElement = fixture.nativeElement.querySelector('ion-list');
-    expect(componentList.children.length).toEqual(4);
-
-    const profileLabel: Element = componentList.children[0].children[0];
-    expect(profileLabel.textContent).toMatch('Profile');
-
-    const profileCmpContainer: Element = componentList.children[1];
-    expect(profileCmpContainer['expanded']).toBe(true);
-    const profileCmp: Element = profileCmpContainer.children[0];
-    expect(profileCmp).not.toBeNull();
-
-    const friendsLabel: Element = componentList.children[2].children[0];
-    expect(friendsLabel.textContent).toMatch('Friends');
-
-    const friendsCmpContainer: Element = componentList.children[3];
-    expect(friendsCmpContainer['expanded']).toBe(false);
-    const friendsCmp: Element = friendsCmpContainer.children[0];
-    expect(friendsCmp).not.toBeNull();
-
-    const buttons: NodeList = fixture.nativeElement.querySelectorAll('ion-button');
-    const logoutButton: HTMLElement = <HTMLElement>buttons.item(buttons.length - 1);
+    const items: NodeList = fixture.nativeElement.querySelectorAll('ion-item');
+    const profileItem: Element = <Element>items.item(0);
+    expect(profileItem.children[0].textContent).toMatch('Profile');
+    const friendsItem: Element = <Element>items.item(1);
+    expect(friendsItem.children[0].textContent).toMatch('Friends');
+    const accordions: NodeList = fixture.nativeElement.querySelectorAll('app-accordion');
+    expect(accordions.length).toEqual(2);
+    const logoutButton: Element = fixture.nativeElement.querySelector('ion-button');
     expect(logoutButton.textContent).toMatch('Log Out');
   });
 
