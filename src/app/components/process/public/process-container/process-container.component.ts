@@ -1,11 +1,10 @@
 /* Module imports */
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 /* Interface imports */
-import { CalendarProcess, ManualProcess, Process, ProcessUpdate, ProcessUpdateEvent, RecipeVariant, TimerProcess } from '../../../../shared/interfaces';
+import { CalendarProcess, ManualProcess, Process, ProcessUpdateEvent, RecipeVariant, TimerProcess } from '../../../../shared/interfaces';
 
-/* Page imports */
-// import { ProcessFormPage } from '../../../../pages/forms/process-form/process-form.page';
+/* Component imports */
 import { ProcessFormComponent } from '../../private/process-form/process-form.component';
 
 /* Service imports */
@@ -17,7 +16,7 @@ import { ActionSheetService, ErrorReportingService, ModalService } from '../../.
   templateUrl: './process-container.component.html',
   styleUrls: ['./process-container.component.scss'],
 })
-export class ProcessContainerComponent implements OnInit {
+export class ProcessContainerComponent {
   @Input() isAddButtonDisabled: boolean;
   @Input() variant: RecipeVariant;
   @Output() processUpdateEvent: EventEmitter<ProcessUpdateEvent> = new EventEmitter<ProcessUpdateEvent>();
@@ -28,8 +27,6 @@ export class ProcessContainerComponent implements OnInit {
     public errorReporter: ErrorReportingService,
     public modalService: ModalService
   ) { }
-
-  ngOnInit() {}
 
   /**
    * Open action sheet to select the type of process step to add
@@ -43,15 +40,15 @@ export class ProcessContainerComponent implements OnInit {
       [
         {
           text: 'Manual',
-          handler: (): void => { this.openProcessModal('manual'); }
+          handler: (): void => this.openProcessModal('manual')
         },
         {
           text: 'Timer',
-          handler: (): void => { this.openProcessModal('timer'); }
+          handler: (): void => this.openProcessModal('timer')
         },
         {
           text: 'Calendar',
-          handler: (): void => { this.openProcessModal('calendar'); }
+          handler: (): void => this.openProcessModal('calendar')
         }
       ]
     );
@@ -67,50 +64,11 @@ export class ProcessContainerComponent implements OnInit {
    */
   getProcessFormModalOptions(type: string, toUpdate?: Process): object {
     return {
-      processType: toUpdate ? toUpdate['type'] : type,
+      processType: toUpdate ? toUpdate.type : type,
       update: toUpdate,
       formType: toUpdate ? 'update' : 'create'
     };
   }
-
-  /**
-   * Handle process form modal error
-   *
-   * @params: none
-   *
-   * @return: error handler function
-   */
-  // onProcessFormModalError(): (error: string) => void {
-  //   return (error: string): void => {
-  //     console.log('Process form modal error', error);
-  //     this.toastService.presentErrorToast('A process form error occurred');
-  //   };
-  // }
-
-  /**
-   * Handle process form modal returned data
-   *
-   * @params: [index] - the index to update/delete or to add if undefined
-   *
-   * @return: success handler function
-   */
-  // onProcessFormModalSuccess(index?: number): (data: object) => void {
-  //   return (data: object): void => {
-  //     const _data: object = data['data'];
-  //
-  //     if (_data) {
-  //       if (_data['delete']) {
-  //         this.variant.processSchedule.splice(index, 1);
-  //       } else if (_data['update']) {
-  //         _data['update']['cid'] = this.variant.processSchedule[index].cid;
-  //         this.variant.processSchedule[index] = <Process>_data['update'];
-  //       } else {
-  //         _data['cid'] = this.idService.getNewId();
-  //         this.variant.processSchedule.push(<Process>_data);
-  //       }
-  //     }
-  //   };
-  // }
 
   /**
    * Open modal to create, edit, or delete specified process step type
@@ -123,7 +81,6 @@ export class ProcessContainerComponent implements OnInit {
    */
   openProcessModal(type: string, toUpdate?: Process, index?: number): void {
     this.modalService.openModal<CalendarProcess | ManualProcess | TimerProcess | { delete: boolean }>(
-      // ProcessFormPage,
       ProcessFormComponent,
       this.getProcessFormModalOptions(type, toUpdate)
     )
@@ -135,19 +92,6 @@ export class ProcessContainerComponent implements OnInit {
       },
       (error: Error): void => this.errorReporter.handleUnhandledError(error)
     );
-
-    // const modal: HTMLIonModalElement = await this.modalCtrl.create({
-    //   component: ProcessFormPage,
-    //   componentProps: this.getProcessFormModalOptions(type, toUpdate)
-    // });
-    //
-    // from(modal.onDidDismiss())
-    //   .subscribe(
-    //     this.onProcessFormModalSuccess(index),
-    //     this.onProcessFormModalError()
-    //   );
-    //
-    // return await modal.present();
   }
 
   /**

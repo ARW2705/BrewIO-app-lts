@@ -8,7 +8,7 @@
       ADD PROCESS
     </ion-button>
   </ion-row>
-  <ion-row *ngIf="variant.processSchedule.length">
+  <ion-row *ngIf="variant && variant.processSchedule.length">
     <app-process-list (openProcessModalEvent)="openProcessModalHelper($event)"
                       (reorderEvent)="onReorder($event)"
                       [schedule]="variant.processSchedule">
