@@ -144,7 +144,7 @@ describe('ProcessPreviewContentComponent', (): void => {
 
     fixture.detectChanges();
 
-    const contentRows: NodeList = global.document.querySelectorAll('ion-row');
+    const contentRows: NodeList = fixture.nativeElement.querySelectorAll('ion-row');
     const duration: Element = (<HTMLElement>contentRows.item(0)).children[0];
     expect(duration.children[0].textContent).toMatch('Duration:');
     expect(duration.children[1].textContent).toMatch('1 hour');
