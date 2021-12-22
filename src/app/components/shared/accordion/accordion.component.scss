@@ -1,6 +1,10 @@
+:host {
+  width: 100%;
+}
+
 .accordion {
   /* Display */
-  height: 0;
+  max-height: 0;
   opacity: 0;
   overflow: hidden;
 }
