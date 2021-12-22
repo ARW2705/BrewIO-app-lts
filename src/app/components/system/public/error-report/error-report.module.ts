@@ -4,26 +4,26 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
-/* Page imports */
-import { ErrorReportPage } from './error-report.page';
-
 /* Component imports */
-import { AccordionComponentModule, HeaderComponentModule } from '../../components/shared/public';
+import { AccordionComponentModule } from '../../../shared/accordion/accordion.module';
+
+/* Page imports */
+import { ErrorReportComponent } from './error-report.component';
+
 
 
 @NgModule({
   imports: [
+    AccordionComponentModule,
     CommonModule,
     FormsModule,
-    AccordionComponentModule,
-    HeaderComponentModule,
     IonicModule
   ],
   declarations: [
-    ErrorReportPage
+    ErrorReportComponent
   ],
   exports: [
-    ErrorReportPage
+    ErrorReportComponent
   ]
 })
-export class ErrorReportPageModule {}
+export class ErrorReportComponentModule {}
