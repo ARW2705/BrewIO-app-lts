@@ -2,7 +2,7 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
-import { BehaviorSubject, Observable, forkJoin, throwError, combineLatest, of, concat } from 'rxjs';
+import { BehaviorSubject, combineLatest, concat, forkJoin, Observable, of, throwError } from 'rxjs';
 import { catchError, defaultIfEmpty, finalize, map, mergeMap, take, tap } from 'rxjs/operators';
 
 /* Constant imports */
@@ -73,7 +73,7 @@ export class InventoryService {
   /**
    * Perform any pending sync operations then fetch inventory from server
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   initFromServer(): void {
@@ -102,7 +102,7 @@ export class InventoryService {
    * white screen between loading splash screen and app ready;
    * investigating alternatives
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   initFromStorage(): void {
@@ -123,7 +123,7 @@ export class InventoryService {
   /**
    * Get the inventory list
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   initializeInventory(): void {
@@ -138,7 +138,7 @@ export class InventoryService {
   /**
    * Set up to necessary events
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   registerEvents(): void {
@@ -156,8 +156,7 @@ export class InventoryService {
   /**
    * Add item to the inventory list
    *
-   * @params: item - the item to add to list
-   *
+   * @param: item - the item to add to list
    * @return: observable of boolean on success
    */
   addItemToList(item: InventoryItem): Observable<boolean> {
@@ -172,7 +171,7 @@ export class InventoryService {
   /**
    * Clear all inventory items
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   clearInventory(): void {
@@ -183,8 +182,7 @@ export class InventoryService {
   /**
    * Create a new inventory item
    *
-   * @params: newItemValues - values to construct the new inventory item
-   *
+   * @param: newItemValues - values to construct the new inventory item
    * @return: observable of boolean on success
    */
   createItem(newItemValues: object): Observable<boolean> {
@@ -223,9 +221,8 @@ export class InventoryService {
   /**
    * Create a new inventory item based on a given batch
    *
-   * @params: batch - batch to base item from
-   * @params: newItemValues - values not contained in batch
-   *
+   * @param: batch - batch to base item from
+   * @param: newItemValues - values not contained in batch
    * @return: observable of boolean on success
    */
   createItemFromBatch(batch: Batch, newItemValues: object): Observable<boolean> {
@@ -260,10 +257,9 @@ export class InventoryService {
           itemLabelImage: contextInfo.recipeImage,
           batchId: this.idService.getId(batch),
           originalRecipeId: this.idService.getId(recipeMaster),
-          sourceType:
-            batch.owner === 'offline' || (recipeMaster && batch.owner === recipeMaster.owner)
-              ? 'self'
-              : 'other'
+          sourceType: batch.owner === 'offline' || (recipeMaster && batch.owner === recipeMaster.owner)
+            ? 'self'
+            : 'other'
         };
 
         if (batch.annotations.packagingDate !== undefined) {
@@ -278,8 +274,7 @@ export class InventoryService {
   /**
    * Get the inventory list
    *
-   * @params: none
-   *
+   * @param: none
    * @return: BehaviorSubject of inventory item list
    */
   getInventoryList(): BehaviorSubject<InventoryItem[]> {
@@ -289,8 +284,7 @@ export class InventoryService {
   /**
    * Get an inventory item by its id
    *
-   * @params: itemId - the item's id
-   *
+   * @param: itemId - the item's id
    * @return: the InventoryItem or undefined if not found
    */
   getItemById(itemId: string): InventoryItem {
@@ -300,8 +294,7 @@ export class InventoryService {
   /**
    * Remove an item from inventory
    *
-   * @params: itemId - id of item to remove
-   *
+   * @param: itemId - id of item to remove
    * @return: observable of null on completion
    */
   removeItem(itemId: string): Observable<InventoryItem> {
@@ -349,9 +342,8 @@ export class InventoryService {
   /**
    * Update an item
    *
-   * @params: itemId - the item id to update
-   * @params: update - updated values to apply
-   *
+   * @param: itemId - the item id to update
+   * @param: update - updated values to apply
    * @return: observable of updated item
    */
   updateItem(itemId: string, update: object): Observable<InventoryItem> {
@@ -418,8 +410,7 @@ export class InventoryService {
   /**
    * Set up image upload request data
    *
-   * @params: item - parent item to images
-   *
+   * @param: item - parent item to images
    * @return: array of objects with image and its formdata name
    */
   composeImageUploadRequests(item: InventoryItem): ImageRequestFormData[] {
@@ -446,9 +437,8 @@ export class InventoryService {
    * Set up image storage function calls to persistently store image
    * If an existing persistent image is to be overridden, provide new path
    *
-   * @params: item - item that contains the image(s)
-   * @params: replacementPaths - object with original paths for overriding persistent image
-   *
+   * @param: item - item that contains the image(s)
+   * @param: replacementPaths - object with original paths for overriding persistent image
    * @return: array of persistent image observables
    */
   composeImageStoreRequests(item: InventoryItem, replacementPaths: object = {}): Observable<Image>[] {
@@ -474,11 +464,10 @@ export class InventoryService {
   /**
    * Configure a background request while defining which error handling method to use
    *
-   * @params: syncMethod - the http method to apply
-   * @params: item - the InventoryItem to use in request
-   * @params: shouldResolveError - true if error should return the error response as an observable
+   * @param: syncMethod - the http method to apply
+   * @param: item - the InventoryItem to use in request
+   * @param: shouldResolveError - true if error should return the error response as an observable
    * or false if error should be handled as an error
-   *
    * @return: observable of InventoryItem or HttpErrorResponse
    */
   configureBackgroundRequest(
@@ -496,10 +485,9 @@ export class InventoryService {
   /**
    * Construct a server request
    *
-   * @params: requestMethod - the http method to call
-   * @params: item - item to use in request
-   * @params: [deletionId] - id to delete if item has already been deleted locally
-   *
+   * @param: requestMethod - the http method to call
+   * @param: item - item to use in request
+   * @param: [deletionId] - id to delete if item has already been deleted locally
    * @return: observable of server request
    */
   getBackgroundRequest(
@@ -547,8 +535,7 @@ export class InventoryService {
   /**
    * Update in memory item with update response from server
    *
-   * @params: itemResponse - server response with item
-   *
+   * @param: itemResponse - server response with item
    * @return: none
    */
   handleBackgroundUpdateResponse(itemResponse: InventoryItem, isDeletion: boolean): Observable<boolean> {
@@ -577,9 +564,8 @@ export class InventoryService {
   /**
    * Send a server request in background
    *
-   * @params: syncMethod - http request method
-   * @params: item - inventory item request body
-   *
+   * @param: syncMethod - http request method
+   * @param: item - inventory item request body
    * @return: none
    */
   requestInBackground(syncMethod: string, item: InventoryItem): void {
@@ -613,15 +599,14 @@ export class InventoryService {
   /**
    * Add a sync flag for inventory
    *
-   * @params: method - the sync action
-   * @params: docId - the id of the sync target
-   *
+   * @param: method - the sync action
+   * @param: docId - the id of the sync target
    * @return: none
    */
   addSyncFlag(method: string, docId: string): void {
     const syncFlag: SyncMetadata = {
-      method: method,
-      docId: docId,
+      docId,
+      method,
       docType: 'inventory'
     };
 
@@ -631,7 +616,7 @@ export class InventoryService {
   /**
    * Clear all sync errors
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   dismissAllSyncErrors(): void {
@@ -641,8 +626,7 @@ export class InventoryService {
   /**
    * Clear a sync error at the given index
    *
-   * @params: index - error array index to remove
-   *
+   * @param: index - error array index to remove
    * @return: none
    */
   dismissSyncError(index: number): void {
@@ -652,8 +636,7 @@ export class InventoryService {
   /**
    * Generate a new sync request based on syncFlag and associated item
    *
-   * @params: none
-   *
+   * @param: none
    * @return: observable of sync requests and any non-server errors
    */
   generateSyncRequests(): SyncRequests<InventoryItem> {
@@ -705,9 +688,8 @@ export class InventoryService {
   /**
    * Process sync successes to update in memory items
    *
-   * @params: syncData - an array of successfully synced docs; deleted docs
+   * @param: syncData - an array of successfully synced docs; deleted docs
    * will contain a special flag to avoid searching for a removed doc in memory
-   *
    * @return: none
    */
   processSyncSuccess(syncData: (InventoryItem | SyncData<InventoryItem>)[]): void {
@@ -739,8 +721,7 @@ export class InventoryService {
   /**
    * Process all sync flags on a login or reconnect event
    *
-   * @params: onLogin - true if calling sync at login, false for sync on reconnect
-   *
+   * @param: onLogin - true if calling sync at login, false for sync on reconnect
    * @return: none
    */
   syncOnConnection(onLogin: boolean): Observable<boolean> {
@@ -751,8 +732,9 @@ export class InventoryService {
 
     const syncRequests: SyncRequests<InventoryItem> = this.generateSyncRequests();
     const errors: SyncError[] = syncRequests.syncErrors;
-    const requests: Observable<HttpErrorResponse | InventoryItem | SyncData<InventoryItem>>[]
-      = syncRequests.syncRequests;
+    const requests: (
+      Observable<HttpErrorResponse | InventoryItem | SyncData<InventoryItem>>[]
+    ) = syncRequests.syncRequests;
 
     console.log('inventory sync on connection', onLogin, requests.length);
 
@@ -773,8 +755,8 @@ export class InventoryService {
   /**
    * Network reconnect event handler - process sync flags on reconnect only if signed in
    *
-   * @params: none
-   * @params: none
+   * @param: none
+   * @return: none
    */
   syncOnReconnect(): void {
     this.syncOnConnection(false)
@@ -787,7 +769,7 @@ export class InventoryService {
   /**
    * Post all stored inventory items to server
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   syncOnSignup(): void {
@@ -826,8 +808,7 @@ export class InventoryService {
   /**
    * Check if able to send an http request
    *
-   * @params: [ids] - optional array of ids to check
-   *
+   * @param: [ids] - optional array of ids to check
    * @return: true if ids are valid, device is connected to network, and user logged in
    */
   canSendRequest(ids?: string[]): boolean {
@@ -844,7 +825,6 @@ export class InventoryService {
    *
    * @param: baseMessage - primary error user message
    * @param: additionalMessage - additional message not shown to user
-   *
    * @return: new custom error for missing inventory item
    */
   getMissingError(baseMessage: string, additionalMessage: string = ''): Error {
@@ -859,8 +839,7 @@ export class InventoryService {
   /**
    * Get the appropriate quantity color by item
    *
-   * @params: item - item instance to get count from item quantity counts
-   *
+   * @param: item - item instance to get count from item quantity counts
    * @return: style color hex
    */
   getRemainingColor(item: InventoryItem): string {
@@ -878,8 +857,7 @@ export class InventoryService {
   /**
    * Get the appropriate SRM color by item
    *
-   * @params: item - item instance to get count from item quantity counts
-   *
+   * @param: item - item instance to get count from item quantity counts
    * @return: style color value
    */
   getSRMColor(item: InventoryItem): string {
@@ -899,9 +877,8 @@ export class InventoryService {
   /**
    * Check if given key should be mapped to the optionalData object
    *
-   * @params: key - key to check
-   * @params: optionalData - object to check
-   *
+   * @param: key - key to check
+   * @param: optionalData - object to check
    * @return: true if key should be mapped to given object
    */
   hasMappableKey(key: string, optionalData: object): boolean {
@@ -911,8 +888,7 @@ export class InventoryService {
   /**
    * Check if inventory stock type is based on capacity instead of discrete units
    *
-   * @params: item - item with stock data
-   *
+   * @param: item - item with stock data
    * @return: true if stock type is 'growler' or 'keg'
    */
   isCapacityBased(item: InventoryItem): boolean {
@@ -923,9 +899,8 @@ export class InventoryService {
   /**
    * Map any optional data to an item
    *
-   * @params: item - the target item
-   * @params: optionalData - contains optional properties to copy
-   *
+   * @param: item - the target item
+   * @param: optionalData - contains optional properties to copy
    * @return: none
    */
   mapOptionalData(item: InventoryItem, optionalData: object): void {
@@ -965,7 +940,7 @@ export class InventoryService {
   /**
    * Update inventory storage
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   updateInventoryStorage(): void {
@@ -985,7 +960,6 @@ export class InventoryService {
    * Runtime check given InventoryItem for type correctness; throws error on check failed
    *
    * @param: inventoryItem - the item to check
-   *
    * @return: none
    */
   checkTypeSafety(inventoryItem: any): void {
@@ -998,7 +972,6 @@ export class InventoryService {
    * Get a custom error on unsafe inventory item type
    *
    * @param: thrownFor - the original error thrown
-   *
    * @return: new custom error
    */
   getUnsafeError(thrownFor: any): Error {
@@ -1014,7 +987,6 @@ export class InventoryService {
    * Check if given inventory item is type safe at runtime
    *
    * @param: inventoryItem - the item to check
-   *
    * @return: true if item and component property types are valid
    */
   isSafeInventoryItem(inventoryItem: any): boolean {
@@ -1028,7 +1000,6 @@ export class InventoryService {
    * Check if given inventory item optional item data is type safe at runtime
    *
    * @param: optionalItemData - the optional data object to check
-   *
    * @return: true if optional item data types are valid
    */
   isSafeOptionalItemData(optionalItemData: any): boolean {
