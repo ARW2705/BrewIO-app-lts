@@ -179,16 +179,16 @@ describe('FormInputComponent', (): void => {
   test('should render the template without an error', (): void => {
     fixture.detectChanges();
 
-    const label: HTMLElement = global.document.querySelector('ion-label');
+    const label: HTMLElement = fixture.nativeElement.querySelector('ion-label');
     expect(label.textContent).toMatch('Label');
-    const input: HTMLElement = global.document.querySelector('ion-input');
+    const input: HTMLElement = fixture.nativeElement.querySelector('ion-input');
     expect(input['autocapitalize']).toMatch('off');
     expect(input['autocomplete']).toMatch('off');
     expect(input['autocorrect']).toMatch('off');
     expect(input['formControl']).toBe(component.control);
     expect(input['spellcheck']).toBe(false);
     expect(input['type']).toMatch('text');
-    const error: HTMLElement = global.document.querySelector('app-form-error');
+    const error: HTMLElement = fixture.nativeElement.querySelector('app-form-error');
     expect(error).toBeNull();
   });
 
@@ -198,7 +198,7 @@ describe('FormInputComponent', (): void => {
 
     fixture.detectChanges();
 
-    const error: HTMLElement = global.document.querySelector('app-form-error');
+    const error: HTMLElement = fixture.nativeElement.querySelector('app-form-error');
     expect(error['formName']).toMatch('form');
     expect(error['controlName']).toMatch('control');
     expect(error['controlErrors']).toStrictEqual({ maxlength: true });
