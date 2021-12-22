@@ -1,6 +1,5 @@
 /* Module imports */
 import { Injectable } from '@angular/core';
-import { environment } from '../../../environments/environment';
 
 /* Interface imports */
 import { DocumentGuard } from '../../shared/interfaces';
@@ -12,13 +11,10 @@ import { DocumentGuard } from '../../shared/interfaces';
 export class TypeGuardService {
   strictDebug: boolean = false;
 
-  constructor() {}
-
   /**
    * Combine two or more type guard metadata into a single guard
    *
    * @param: guards - collection of type guard metadata to combine
-   *
    * @return: unified document validation metadata
    */
   concatGuards(...guards: DocumentGuard[]): DocumentGuard {
@@ -39,7 +35,6 @@ export class TypeGuardService {
    *
    * @param: source - the source document to verify
    * @param: guard - the corresponding validation metadata to use to determine correctness
-   *
    * @return: true if all properties with primitive types are correct
    */
   hasValidProperties(source: any, guard: DocumentGuard): boolean {
@@ -67,7 +62,6 @@ export class TypeGuardService {
    * @param: propName - property key to check,
    * @param: type - the expected type of the property's value
    * @param: required - true if property must be present
-   *
    * @return: true if given source property is present when required and of the correct type
    */
   hasValidPropertyHelper(source: any, propName: string, type: string, required: boolean): boolean {

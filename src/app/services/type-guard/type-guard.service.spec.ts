@@ -15,25 +15,23 @@ import { TypeGuardService } from './type-guard.service';
 
 
 describe('TypeGuardService', (): void => {
-  let injector: TestBed;
-  let typeGuard: TypeGuardService;
   configureTestBed();
+  let injector: TestBed;
+  let service: TypeGuardService;
 
   beforeAll(async((): void => {
     TestBed.configureTestingModule({
-      providers: [
-        TypeGuardService
-      ]
+      providers: [ TypeGuardService ]
     });
   }));
 
   beforeEach((): void => {
     injector = getTestBed();
-    typeGuard = injector.get(TypeGuardService);
+    service = injector.get(TypeGuardService);
   });
 
   test('should create the service', (): void => {
-    expect(typeGuard).toBeDefined();
+    expect(service).toBeTruthy();
   });
 
   test('should concat document guards', (): void => {
@@ -43,7 +41,7 @@ describe('TypeGuardService', (): void => {
       prop5: { type: 'number', required: true  }
     };
 
-    const concatted: DocumentGuard = typeGuard.concatGuards(_mockDocumentGuard, _mockDocumentGuard2);
+    const concatted: DocumentGuard = service.concatGuards(_mockDocumentGuard, _mockDocumentGuard2);
     Object.keys(concatted).forEach((key: string, index: number): void => {
       expect(key).toMatch(`prop${index + 1}`);
     });
@@ -65,9 +63,7 @@ describe('TypeGuardService', (): void => {
       prop1: 'test',
       prop3: 1
     };
-
-    typeGuard.hasValidPropertyHelper = jest
-      .fn()
+    service.hasValidPropertyHelper = jest.fn()
       .mockReturnValueOnce(true)
       .mockReturnValueOnce(true)
       .mockReturnValueOnce(true)
@@ -75,10 +71,10 @@ describe('TypeGuardService', (): void => {
       .mockReturnValueOnce(false)
       .mockReturnValueOnce(false);
 
-    expect(typeGuard.hasValidProperties(validSource, _mockDocumentGuard)).toBe(true);
-    expect(typeGuard.hasValidProperties(invalidSourceWrongType, _mockDocumentGuard)).toBe(false);
-    expect(typeGuard.hasValidProperties(invalidSourceMissingRequired, _mockDocumentGuard)).toBe(false);
-    expect(typeGuard.hasValidProperties(null, _mockDocumentGuard)).toBe(false);
+    expect(service.hasValidProperties(validSource, _mockDocumentGuard)).toBe(true);
+    expect(service.hasValidProperties(invalidSourceWrongType, _mockDocumentGuard)).toBe(false);
+    expect(service.hasValidProperties(invalidSourceMissingRequired, _mockDocumentGuard)).toBe(false);
+    expect(service.hasValidProperties(null, _mockDocumentGuard)).toBe(false);
   });
 
   test('should check if a given property is valid', (): void => {
@@ -87,10 +83,10 @@ describe('TypeGuardService', (): void => {
     const validSourceNotRequired: object = { prop1: undefined };
     const invalidSource: object = {};
 
-    expect(typeGuard.hasValidPropertyHelper(validSourceRequired, 'prop2', 'boolean', true)).toBe(true);
-    expect(typeGuard.hasValidPropertyHelper(validSourceArray, 'prop1', 'string', false)).toBe(true);
-    expect(typeGuard.hasValidPropertyHelper(validSourceNotRequired, 'prop1', 'string', false)).toBe(true);
-    expect(typeGuard.hasValidPropertyHelper(invalidSource, 'prop1', 'string', true)).toBe(false);
+    expect(service.hasValidPropertyHelper(validSourceRequired, 'prop2', 'boolean', true)).toBe(true);
+    expect(service.hasValidPropertyHelper(validSourceArray, 'prop1', 'string', false)).toBe(true);
+    expect(service.hasValidPropertyHelper(validSourceNotRequired, 'prop1', 'string', false)).toBe(true);
+    expect(service.hasValidPropertyHelper(invalidSource, 'prop1', 'string', true)).toBe(false);
   });
 
 });
