@@ -12,19 +12,15 @@ import { EventSubscriber } from '../../shared/interfaces';
 export class EventService {
   subscribers: EventSubscriber = {};
 
-  constructor() { }
-
   /**
    * Emit an event
    *
-   * @params: name - the name of the event
-   * @params: message - object containing event data
-   *
+   * @param: name - the name of the event
+   * @param: message - object containing event data
    * @return: none
    */
   emit(name: string, message: object = {}): void {
     if (this.subscribers[name]) {
-      console.log('emitting', name, message);
       this.subscribers[name].message.next(message);
     }
   }
@@ -33,8 +29,7 @@ export class EventService {
   /**
    * Register an event listener
    *
-   * @params: name - the event name to listen for
-   *
+   * @param: name - the event name to listen for
    * @return: event Subject
    */
   register(name: string): Subject<object> {
@@ -51,8 +46,7 @@ export class EventService {
   /**
    * Unregister from an event
    *
-   * @params: name - the event name to unregister from
-   *
+   * @param: name - the event name to unregister from
    * @return: none
    */
   unregister(name: string): void {

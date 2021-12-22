@@ -9,10 +9,10 @@ import { configureTestBed } from '../../../../test-config/configure-test-bed';
 import { EventService } from './event.service';
 
 
-describe('EventService', () => {
-  let injector: TestBed;
-  let eventService: EventService;
+describe('EventService', (): void => {
   configureTestBed();
+  let injector: TestBed;
+  let service: EventService;
 
   beforeAll(async((): void => {
     TestBed.configureTestingModule({
@@ -20,20 +20,20 @@ describe('EventService', () => {
     });
 
     injector = getTestBed();
-    eventService = injector.get(EventService);
+    service = injector.get(EventService);
   }));
 
   test('should create the service', () => {
-    expect(eventService).toBeDefined();
+    expect(service).toBeDefined();
   });
 
   test('should register a new event', (done: jest.DoneCallback): void => {
     const eventName: string = 'newEvent';
     const testMessage: object = { test: 'data' };
 
-    expect(eventService.subscribers[eventName]).toBeUndefined();
+    expect(service.subscribers[eventName]).toBeUndefined();
 
-    eventService.register(eventName)
+    service.register(eventName)
       .subscribe(
         (message: object): void => {
           expect(message).toStrictEqual(testMessage);
@@ -45,21 +45,20 @@ describe('EventService', () => {
         }
       );
 
-    expect(eventService.subscribers[eventName]).toBeDefined();
-    expect(eventService.subscribers[eventName].subscriberCount).toEqual(1);
-    eventService.subscribers[eventName].message.next(testMessage);
-  }); // end 'should register a new event' test
+    expect(service.subscribers[eventName]).toBeDefined();
+    expect(service.subscribers[eventName].subscriberCount).toEqual(1);
+    service.subscribers[eventName].message.next(testMessage);
+  });
 
   test('should register to an existing event', (done: jest.DoneCallback): void => {
     const eventName: string = 'existing';
     const testMessage: object = { test: 'data' };
-
-    eventService.subscribers[eventName] = {
+    service.subscribers[eventName] = {
       message: new Subject<object>(),
       subscriberCount: 1
     };
 
-    eventService.register(eventName)
+    service.register(eventName)
       .subscribe(
         (message: object): void => {
           expect(message).toStrictEqual(testMessage);
@@ -71,37 +70,35 @@ describe('EventService', () => {
         }
       );
 
-    expect(eventService.subscribers[eventName].subscriberCount).toEqual(2);
-    eventService.subscribers[eventName].message.next(testMessage);
-  }); // end 'should register to an existing event' test
+    expect(service.subscribers[eventName].subscriberCount).toEqual(2);
+    service.subscribers[eventName].message.next(testMessage);
+  });
 
   test('should unregister from an event', () => {
     const eventName: string = 'event';
-
-    eventService.subscribers[eventName] = {
+    service.subscribers[eventName] = {
       message: new Subject<object>(),
       subscriberCount: 2
     };
 
-    eventService.unregister(eventName);
+    service.unregister(eventName);
 
-    expect(eventService.subscribers[eventName].subscriberCount).toEqual(1);
+    expect(service.subscribers[eventName].subscriberCount).toEqual(1);
 
-    eventService.unregister(eventName);
+    service.unregister(eventName);
 
-    expect(eventService.subscribers[eventName]).toBeUndefined();
-  }); // end 'should unregister from an event' test
+    expect(service.subscribers[eventName]).toBeUndefined();
+  });
 
   test('should emit a message for an event', (done: jest.DoneCallback): void => {
     const eventName: string = 'existing';
     const testMessage: object = { test: 'data' };
-
-    eventService.subscribers[eventName] = {
+    service.subscribers[eventName] = {
       message: new Subject<object>(),
       subscriberCount: 1
     };
 
-    eventService.subscribers[eventName].message
+    service.subscribers[eventName].message
       .subscribe(
         (message: object): void => {
           expect(message).toStrictEqual(testMessage);
@@ -113,7 +110,7 @@ describe('EventService', () => {
         }
       );
 
-    eventService.emit(eventName, testMessage);
-  }); // end 'should emit a message for an event' test
+    service.emit(eventName, testMessage);
+  });
 
 });
