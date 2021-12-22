@@ -23,17 +23,17 @@
       </ion-row>
 
       <ion-row>
-        <app-ingredients-container  *ngIf="!(formType === 'master' && docMethod === 'update')"
-                                    (ingredientUpdateEvent)="handleIngredientUpdate($event)"
+        <app-ingredient-container  *ngIf="!(formType === 'master' && docMethod === 'update')"
+                                    (ingredientUpdateEvent)="handleIngredientUpdateEvent($event)"
                                     [isAddButtonDisabled]="!isGeneralFormComplete"
                                     [variant]="variant"
                                     [refresh]="refreshIngredients">
-        </app-ingredients-container>
+        </app-ingredient-container>
       </ion-row>
 
       <ion-row>
         <app-process-container  *ngIf="!(formType === 'master' && docMethod === 'update')"
-                                (processUpdateEvent)="handleProcessUpdate($event)"
+                                (processUpdateEvent)="handleProcessUpdateEvent($event)"
                                 (reorderEvent)="onReorder($event)"
                                 [isAddButtonDisabled]="!isGeneralFormComplete"
                                 [variant]="variant">
@@ -41,7 +41,7 @@
       </ion-row>
 
       <ion-row>
-        <app-note-container (noteUpdateEvent)="handleNoteUpdate($event)"
+        <app-note-container (noteUpdateEvent)="handleNoteUpdateEvent($event)"
                             [isAddButtonDisabled]="!isGeneralFormComplete"
                             [noteType]="formType"
                             [notes]="formType === 'master'? master.notes : variant.notes">

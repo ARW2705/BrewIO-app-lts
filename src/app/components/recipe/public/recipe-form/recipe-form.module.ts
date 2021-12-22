@@ -6,13 +6,12 @@ import { RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { IngredientsContainerComponentModule } from '../../../ingredient/public';
+import { IngredientContainerComponentModule } from '../../../ingredient/public';
 import { NoteContainerComponentModule } from '../../../note/public';
 import { ProcessContainerComponentModule } from '../../../process/public';
-import { GeneralFormButtonComponentModule, RecipeQuickDataComponentModule } from '../../../recipe/public';
 import { HeaderComponentModule } from '../../../shared/public';
-
-/* Page imports */
+import { GeneralFormButtonComponentModule } from '../../private/general-form-button/general-form-button.module';
+import { RecipeQuickDataComponentModule } from '../../private/recipe-quick-data/recipe-quick-data.module';
 import { RecipeFormComponent } from './recipe-form.component';
 
 
@@ -24,7 +23,7 @@ import { RecipeFormComponent } from './recipe-form.component';
     GeneralFormButtonComponentModule,
     RouterModule.forChild([{path: '', component: RecipeFormComponent}]),
     HeaderComponentModule,
-    IngredientsContainerComponentModule,
+    IngredientContainerComponentModule,
     ProcessContainerComponentModule,
     NoteContainerComponentModule,
     RecipeQuickDataComponentModule

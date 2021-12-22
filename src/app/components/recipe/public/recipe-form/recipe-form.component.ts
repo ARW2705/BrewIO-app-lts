@@ -125,11 +125,10 @@ export class RecipeFormComponent implements OnInit, OnDestroy {
    * @param: update - ingredient update data
    * @return: none
    */
-  handleIngredientUpdate(update: IngredientUpdateEvent) {
+  handleIngredientUpdateEvent(update: IngredientUpdateEvent) {
     this.updateIngredientList(update);
     this.sortIngredients(update.type);
     this.updateRecipeValues();
-    console.log('refresh ingredients');
     this.refreshIngredients = !this.refreshIngredients;
     if (update.type === 'hops') {
       this.autoSetHopsAdditions();
@@ -142,7 +141,7 @@ export class RecipeFormComponent implements OnInit, OnDestroy {
    * @param: update - process update data
    * @return: none
    */
-  handleProcessUpdate(update: ProcessUpdateEvent): void {
+  handleProcessUpdateEvent(update: ProcessUpdateEvent): void {
     const process: Process = <Process>update.process;
     if (update.toUpdate) {
       if (update.process.hasOwnProperty('delete')) {
@@ -162,7 +161,7 @@ export class RecipeFormComponent implements OnInit, OnDestroy {
    * @param: notesUpdate - the current notes array to apply
    * @return: none
    */
-  handleNoteUpdate(notesUpdate: string[]): void {
+  handleNoteUpdateEvent(notesUpdate: string[]): void {
     if (this.formType === 'master') {
       this.master.notes = notesUpdate;
     } else if (this.formType === 'variant') {
@@ -333,8 +332,8 @@ export class RecipeFormComponent implements OnInit, OnDestroy {
    * @return: none
    */
   onSubmit(): void {
-    const isCreation: boolean = this.docMethod === 'create';
     const isMaster: boolean = this.formType === 'master';
+    const isCreation: boolean = this.docMethod === 'create';
 
     let submissionResponse: Observable<RecipeMaster | RecipeVariant>;
 
