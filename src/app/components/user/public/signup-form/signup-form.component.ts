@@ -1,29 +1,28 @@
 /* Module imports */
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ModalController } from '@ionic/angular';
 import { finalize } from 'rxjs/operators';
 
 /* Constant imports */
-import { NAME_MAX_LENGTH, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, USERNAME_MAX_LENGTH, USERNAME_MIN_LENGTH } from '../../../shared/constants';
+import { NAME_MAX_LENGTH, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, USERNAME_MAX_LENGTH, USERNAME_MIN_LENGTH } from '../../../../shared/constants';
 
 /* Default imports */
-import { defaultImage } from '../../../shared/defaults';
+import { defaultImage } from '../../../../shared/defaults';
 
 /* Interface imports */
-import { Image, User } from '../../../shared/interfaces';
+import { Image, User } from '../../../../shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService, FormValidationService, LoadingService, ToastService, UserService } from '../../../services/services';
+import { ErrorReportingService, FormValidationService, LoadingService, ToastService, UserService } from '../../../../services/services';
 
 
 @Component({
-  selector: 'page-signup',
-  templateUrl: './signup.page.html',
-  styleUrls: ['./signup.page.scss']
+  selector: 'app-signup-form',
+  templateUrl: './signup-form.component.html',
+  styleUrls: ['./signup-form.component.scss']
 })
-export class SignupPage implements OnInit {
-  @Input() rootURL: string;
+export class SignupFormComponent implements OnInit {
   awaitingResponse: boolean = false;
   defaultImage: Image = defaultImage();
   breweryLabelImage: Image = this.defaultImage;
@@ -32,8 +31,8 @@ export class SignupPage implements OnInit {
   userImage: Image = this.defaultImage;
 
   constructor(
-    public formBuilder: FormBuilder,
     public errorReporter: ErrorReportingService,
+    public formBuilder: FormBuilder,
     public formValidator: FormValidationService,
     public loadingService: LoadingService,
     public modalCtrl: ModalController,
@@ -41,17 +40,9 @@ export class SignupPage implements OnInit {
     public userService: UserService
   ) { }
 
-  /***** Lifecycle Hooks *****/
-
-  ngOnInit() {
-    console.log('signup page init');
+  ngOnInit(): void {
     this.initForm();
   }
-
-  /***** End Lifecycle Hooks *****/
-
-
-  /***** Form Methods *****/
 
   /**
    * Call modal dismiss method with no data
@@ -89,7 +80,7 @@ export class SignupPage implements OnInit {
    * @param: imageType - identifier to determine which image should be updated
    * @return: none
    */
-  imageModalDismiss(image: Image, imageType: string): void {
+  handleImageModalDismissEvent(image: Image, imageType: string): void {
     if (imageType === 'userImage' && image) {
       this.userImage = image;
     } else if (imageType === 'breweryLabelImage' && image) {
@@ -105,7 +96,6 @@ export class SignupPage implements OnInit {
    */
   async onSubmit(): Promise<void> {
     this.awaitingResponse = true;
-
     const loading: HTMLIonLoadingElement = await this.loadingService.createLoader();
     const newUser: object = this.signupForm.value;
     newUser['userImage'] = this.userImage;
@@ -137,11 +127,7 @@ export class SignupPage implements OnInit {
    * @return: none
    */
   togglePasswordVisible(showPassword: boolean): void {
-    if (showPassword) {
-      this.passwordType = 'text';
-    } else {
-      this.passwordType = 'password';
-    }
+    this.passwordType = showPassword ? 'text' : 'password';
   }
 
 }

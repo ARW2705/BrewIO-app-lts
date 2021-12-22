@@ -5,11 +5,10 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { FormButtonsComponentModule, FormCheckboxComponentModule, FormImageComponentModule, FormInputComponentModule } from '../../../components/form-elements/public';
-import { HeaderComponentModule } from '../../../components/shared/public';
+import { FormButtonsComponentModule, FormCheckboxComponentModule, FormImageComponentModule, FormInputComponentModule } from '../../../form-elements/public';
 
 /* Page imports */
-import { SignupPage } from './signup.page';
+import { SignupFormComponent } from './signup-form.component';
 
 
 @NgModule({
@@ -20,12 +19,11 @@ import { SignupPage } from './signup.page';
     FormImageComponentModule,
     FormInputComponentModule,
     FormsModule,
-    HeaderComponentModule,
     IonicModule,
     ReactiveFormsModule
   ],
   declarations: [
-    SignupPage
+    SignupFormComponent
   ]
 })
-export class SignupPageModule {}
+export class SignupFormComponentModule {}

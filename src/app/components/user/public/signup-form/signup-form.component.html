@@ -1,9 +1,5 @@
-<app-header title="Sign Up"
-            [rootURL]="rootURL"
-            [shouldHideLoginButton]="true">
-</app-header>
-
 <ion-content class="sub-page">
+  <header>Sign Up</header>
   <ng-container *ngIf="signupForm">
     <p class="form-info required">Required fields</p>
 
@@ -45,12 +41,12 @@
                       type="email">
       </app-form-input>
       <!-- User Avatar Image -->
-      <app-form-image (imageModalEvent)="imageModalDismiss($event, 'userImage')"
+      <app-form-image (imageModalEvent)="handleImageModalDismissEvent($event, 'userImage')"
                       [image]="userImage"
                       label="user avatar">
       </app-form-image>
       <!-- Brewery Image -->
-      <app-form-image (imageModalEvent)="imageModalDismiss($event, 'breweryLabelImage')"
+      <app-form-image (imageModalEvent)="handleImageModalDismissEvent($event, 'breweryLabelImage')"
                       [image]="breweryLabelImage"
                       label="brewery label image">
       </app-form-image>
@@ -69,10 +65,10 @@
                       type="text">
       </app-form-input>
     </form>
-    <!-- Form Buttons -->
-    <app-form-buttons (cancelEvent)="dismiss()"
-                      (submitEvent)="onSubmit()"
-                      [isSubmitDisabled]="!signupForm.valid || awaitingResponse">
-    </app-form-buttons>
   </ng-container>
+  <!-- Form Buttons -->
+  <app-form-buttons (cancelEvent)="dismiss()"
+                    (submitEvent)="onSubmit()"
+                    [isSubmitDisabled]="!signupForm.valid || awaitingResponse">
+  </app-form-buttons>
 </ion-content>
