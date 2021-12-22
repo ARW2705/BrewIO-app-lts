@@ -13,10 +13,10 @@ import { HttpErrorService } from './http-error.service';
 import { ErrorReportingService } from '../services';
 
 
-describe('Process HTTP Error Service', (): void => {
-  let injector: TestBed;
-  let httpError: HttpErrorService;
+describe('HTTPErrorService', (): void => {
   configureTestBed();
+  let injector: TestBed;
+  let service: HttpErrorService;
 
   beforeAll(async((): void => {
     TestBed.configureTestingModule({
@@ -29,12 +29,13 @@ describe('Process HTTP Error Service', (): void => {
 
   beforeEach((): void => {
     injector = getTestBed();
-    httpError = injector.get(HttpErrorService);
+    service = injector.get(HttpErrorService);
+    Object.assign(service.errorReporter, { moderateSeverity: 3 });
   });
 
   test('should compose a 401 error message', (): void => {
     const errorResponse: HttpErrorResponse = new HttpErrorResponse({
-      status: 401,
+      status: service.NOT_AUTHORIZED_STATUS,
       statusText: '',
       error: {
         error: {
@@ -43,24 +44,22 @@ describe('Process HTTP Error Service', (): void => {
       }
     });
 
-    expect(httpError.composeErrorMessage(errorResponse)).toMatch('Not Authorized');
+    expect(service.composeErrorMessage(errorResponse)).toMatch('Not Authorized');
   });
 
   test('should compose a 500 error message', (): void => {
     const errorResponse: HttpErrorResponse = new HttpErrorResponse({
-      status: 500,
+      status: service.INTERNAL_SERVER_STATUS,
       statusText: 'test 500 error',
-      error: {
-        name: ''
-      }
+      error: { name: '' }
     });
 
-    expect(httpError.composeErrorMessage(errorResponse)).toMatch('<500> test 500 error');
+    expect(service.composeErrorMessage(errorResponse)).toMatch('<500> test 500 error');
   });
 
   test('should compose a validation error message', (): void => {
     const errorResponse: HttpErrorResponse = new HttpErrorResponse({
-      status: 500,
+      status: service.INTERNAL_SERVER_STATUS,
       statusText: 'test validation error',
       error: {
         name: 'ValidationError',
@@ -68,36 +67,25 @@ describe('Process HTTP Error Service', (): void => {
       }
     });
 
-    expect(httpError.composeErrorMessage(errorResponse)).toMatch('<500> test validation error');
+    expect(service.composeErrorMessage(errorResponse)).toMatch('<500> test validation error');
   });
 
   test('should get generic 503 error', (): void => {
-    const genericError: object = {
-      message: 'generic error message'
-    };
-
-    expect(httpError.composeErrorMessage(<HttpErrorResponse>genericError)).toMatch('Unknown http error');
+    const genericError: object = { message: 'generic error message' };
+    expect(service.composeErrorMessage(<HttpErrorResponse>genericError)).toMatch('Unknown http error');
   });
 
   test('should handle an http error', (done: jest.DoneCallback): void => {
     const errorResponse: HttpErrorResponse = new HttpErrorResponse({
-      status: 500,
+      status: service.INTERNAL_SERVER_STATUS,
       statusText: 'test 500 error',
-      error: {
-        name: ''
-      }
+      error: { name: '' }
     });
+    service.errorReporter.setErrorReport = jest.fn();
+    service.errorReporter.getTimestamp = jest.fn().mockReturnValue('test-iso');
+    const errorSpy: jest.SpyInstance = jest.spyOn(service.errorReporter, 'setErrorReport');
 
-    httpError.errorReporter.setErrorReport = jest
-      .fn();
-
-    httpError.errorReporter.getTimestamp = jest
-      .fn()
-      .mockReturnValue('test-iso');
-
-    const errorSpy: jest.SpyInstance = jest.spyOn(httpError.errorReporter, 'setErrorReport');
-
-    httpError.handleError(errorResponse)
+    service.handleError(errorResponse)
       .subscribe(
         (results: any): void => {
           console.log('should not get results', results);
@@ -108,7 +96,7 @@ describe('Process HTTP Error Service', (): void => {
           expect(errorSpy).toHaveBeenCalledWith({
             name: 'HttpError',
             message: '<500> test 500 error',
-            severity: 3,
+            severity: service.errorReporter.moderateSeverity,
             timestamp: 'test-iso',
             userMessage: '<500> test 500 error'
           });
