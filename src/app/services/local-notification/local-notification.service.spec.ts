@@ -13,9 +13,9 @@ import { LocalNotificationService } from './local-notification.service';
 
 
 describe('LocalNotificationService', (): void => {
-  let injector: TestBed;
-  let localNotificationService: LocalNotificationService;
   configureTestBed();
+  let injector: TestBed;
+  let service: LocalNotificationService;
 
   beforeAll(async((): void => {
     TestBed.configureTestingModule({
@@ -26,17 +26,17 @@ describe('LocalNotificationService', (): void => {
     });
 
     injector = getTestBed();
-    localNotificationService = injector.get(LocalNotificationService);
+    service = injector.get(LocalNotificationService);
   }));
 
   test('should create the service', (): void => {
-    expect(localNotificationService).toBeDefined();
+    expect(service).toBeTruthy();
   });
 
   test('should set a local notification', (): void => {
-    const localSpy: jest.SpyInstance = jest.spyOn(localNotificationService.localNotifications, 'schedule');
+    const localSpy: jest.SpyInstance = jest.spyOn(service.localNotifications, 'schedule');
 
-    localNotificationService.setLocalNotification('test-title', 'optional-text');
+    service.setLocalNotification('test-title', 'optional-text');
 
     expect(localSpy).toHaveBeenCalledWith({
       title: 'test-title',

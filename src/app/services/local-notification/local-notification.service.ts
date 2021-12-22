@@ -13,14 +13,14 @@ export class LocalNotificationService {
   /**
    * Display a notification immediately
    *
-   * @params: title - title of notification
-   * @params: [text] - optional additional text
+   * @param: title - title of notification
+   * @param: [text] - optional additional text
    *
    * @return: none
    */
   setLocalNotification(title: string, text?: string): void {
     const notification: object = {
-      title: title,
+      title,
       foreground: true,
       color: '40e0cf'
     };
