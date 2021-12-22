@@ -12,6 +12,12 @@ export class NoteListComponent {
   @Input() notes: string[] = [];
   @Output() openNoteModalEvent: EventEmitter<number> = new EventEmitter<number>();
 
+  /**
+   * Emit open note modal event
+   *
+   * @param: index - the index of the note to pass to the modal
+   * @return: none
+   */
   openNoteModal(index: number): void {
     this.openNoteModalEvent.emit(index);
   }
