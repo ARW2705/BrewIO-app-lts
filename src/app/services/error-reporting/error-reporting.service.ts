@@ -6,6 +6,9 @@ import { ModalController } from '@ionic/angular';
 import { from, Observable, of, throwError } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
+/* Constant imports */
+import { FATAL_SEVERITY, HIGH_SEVERITY, LOW_SEVERITY, MODERATE_SEVERITY } from '../../shared/constants';
+
 /* Interface imports */
 import { ErrorReport } from '../../shared/interfaces';
 
@@ -13,7 +16,7 @@ import { ErrorReport } from '../../shared/interfaces';
 import { CustomError } from '../../shared/types';
 
 /* Component imports */
-import { ErrorReportPage } from '../../pages/error-report/error-report.page';
+import { ErrorReportComponent } from '../../components/system/public/error-report/error-report.component';
 
 /* Service imports */
 import { DeviceService } from '../device/device.service';
@@ -27,10 +30,10 @@ import { ToastService } from '../toast/toast.service';
 export class ErrorReportingService {
   reports: ErrorReport[] = [];
   isErrorModalOpen: boolean = false;
-  readonly fatalSeverity: number = 1;
-  readonly highSeverity: number = 2;
-  readonly moderateSeverity: number = 3;
-  readonly lowestSeverity: number = 4;
+  readonly fatalSeverity: number = FATAL_SEVERITY;
+  readonly highSeverity: number = HIGH_SEVERITY;
+  readonly moderateSeverity: number = MODERATE_SEVERITY;
+  readonly lowSeverity: number = LOW_SEVERITY;
 
   constructor(
     public device: DeviceService,
@@ -60,7 +63,6 @@ export class ErrorReportingService {
    * @param: severity - the severity of the error (see ErrorReport interface for details)
    * @param: userMessage - a message to display to the user
    * @param: [dismissFn] - optional cleanup function to call on error report resolution
-   *
    * @return: a new error report
    */
   createErrorReport(
@@ -85,7 +87,6 @@ export class ErrorReportingService {
    *
    * @param: error - the error to base the report on
    * @param: overrides - object containing any field overrides to apply
-   *
    * @return: a new error report
    */
   getCustomReportFromError(error: Error | CustomError, overrides: object = {}): ErrorReport {
@@ -109,7 +110,6 @@ export class ErrorReportingService {
    *
    * @param: error - the error to base the report on
    * @param: overrides - object containing any field overrides to apply
-   *
    * @return: a new error report
    */
   getCustomReportFromHttpError(error: HttpErrorResponse, overrides: object = {}): ErrorReport {
@@ -134,7 +134,6 @@ export class ErrorReportingService {
    * Set an error report and trigger the appropriate user notification and logging
    *
    * @param: report - the new report to add
-   *
    * @return: none
    */
   setErrorReport(report: ErrorReport): void {
@@ -161,7 +160,6 @@ export class ErrorReportingService {
    * Set an error report based on given error
    *
    * @param: error - the triggering error event
-   *
    * @return: none
    */
   setErrorReportFromCustomError(error: CustomError | Error): void {
@@ -177,7 +175,6 @@ export class ErrorReportingService {
    * Get a generic catch error handler
    *
    * @param: [overrideError] - optional replacement error to handle
-   *
    * @return: error handling function
    */
   handleGenericCatchError(
@@ -200,7 +197,6 @@ export class ErrorReportingService {
    *
    * @param: shouldResolveError - true if error should resolve, false to continue as error
    * @param: [resolvedValue] - optional replacement value to return from handler function
-   *
    * @return: optionally resolvable error handling function
    */
   handleResolvableCatchError<T>(
@@ -212,7 +208,7 @@ export class ErrorReportingService {
         return of(resolvedValue as any);
       } else if (error && error instanceof HttpErrorResponse) {
         this.setErrorReport(this.getCustomReportFromHttpError(error));
-      } else if (error && error instanceof HttpErrorResponse) {
+      } else if (error && error instanceof Error) {
         this.setErrorReport(this.getCustomReportFromError(error));
       }
       return throwError(null);
@@ -223,7 +219,6 @@ export class ErrorReportingService {
    * Handle an error that should have already been handled; if null, error was previously handled
    *
    * @param: error - the caught error
-   *
    * @return: none
    */
   handleUnhandledError(error: any): void {
@@ -246,12 +241,11 @@ export class ErrorReportingService {
    *
    * @param: errorMessage - the error message
    * @param: [userMessage] - optional user error message
-   *
    * @return: none
    */
   handleModalError(errorMessage: string, userMessage?: string): void {
     this.setErrorReport(
-      this.createErrorReport('ModalError', errorMessage, this.lowestSeverity, userMessage || '')
+      this.createErrorReport('ModalError', errorMessage, this.lowSeverity, userMessage || '')
     );
   }
 
@@ -263,7 +257,7 @@ export class ErrorReportingService {
    */
   async openReportModal(): Promise<void> {
     const modal: HTMLIonModalElement = await this.modalCtrl.create({
-      component: ErrorReportPage,
+      component: ErrorReportComponent,
       componentProps: {
         reports: this.reports,
         shouldHideLoginButton: true
@@ -295,7 +289,6 @@ export class ErrorReportingService {
    * Get a string of all headers from an HttpErrorResponse
    *
    * @param: error - an HttpErrorResponse
-   *
    * @return: string of comma separated headers
    */
   getHeaders(error: HttpErrorResponse): string {
@@ -314,7 +307,6 @@ export class ErrorReportingService {
    * Get error severity for report
    *
    * @param: error - the given error
-   *
    * @return: error severity 1 (highest) - 4 (lowest)
    */
   getReportSeverity(error: Error | CustomError | HttpErrorResponse): number {
@@ -325,7 +317,6 @@ export class ErrorReportingService {
    * Get error user accessible message for report
    *
    * @param: error - the given error
-   *
    * @return: message to display to user
    */
   getReportUserMessage(error: Error | CustomError | HttpErrorResponse): string {
@@ -342,7 +333,6 @@ export class ErrorReportingService {
    * Get current datetime ISO string
    *
    * @param: none
-   *
    * @return: current datetime as ISO string
    */
   getTimestamp(): string {
@@ -353,18 +343,20 @@ export class ErrorReportingService {
    * Format an unhandled error
    *
    * @param: error - the caught error
-   *
    * @return: a custom error based on given error
    */
-  formatUnhandledError(error: any): CustomError {
-    const baseMessage: string = 'An unhandled error occurred';
+  formatUnhandledError(error: Error): CustomError {
+    let message: string = 'An unhandled error occurred';
+    if (error && error.message) {
+      message = `${message}: ${error.message}`;
+    }
     const jsonIndent: number = 2;
     const messageExtention: string = JSON.stringify(error, null, jsonIndent);
     return new CustomError(
       'UncaughtError',
-      `${baseMessage}: ${messageExtention}`,
+      `${message}: ${messageExtention}`,
       this.highSeverity,
-      baseMessage
+      message
     );
   }
 
@@ -399,7 +391,6 @@ export class ErrorReportingService {
    *
    * @param: message - message to display
    * @param: [dismissFn] - optional function to call on toast dismiss
-   *
    * @return: none
    */
   presentErrorToast(message: string, dismissFn?: () => void): void {
