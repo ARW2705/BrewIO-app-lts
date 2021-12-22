@@ -6,11 +6,11 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockAlertPresent, mockCalendarMetadata } from '../../../../../../test-config/mock-models';
+import { mockAlertPresent, mockCalendarMetadata, mockCalendarProcess } from '../../../../../../test-config/mock-models';
 import { CalendarAlertServiceStub, IdServiceStub } from '../../../../../../test-config/service-stubs';
 
 /* Interface imports */
-import { Alert, CalendarMetadata } from '../../../../shared/interfaces';
+import { Alert, CalendarMetadata, CalendarProcess } from '../../../../shared/interfaces';
 
 /* Service imports */
 import { CalendarAlertService, IdService } from '../../../../services/services';
@@ -50,7 +50,6 @@ describe('ProcessCalendarComponent', (): void => {
 
   test('should create the component', (): void => {
     fixture.detectChanges();
-
     expect(component).toBeTruthy();
   });
 
@@ -94,6 +93,71 @@ describe('ProcessCalendarComponent', (): void => {
     expect(component.showDescription).toBe(true);
     component.toggleShowDescription();
     expect(component.showDescription).toBe(false);
+  });
+
+  test('should render the template as preview', (): void => {
+    component.isPreview = true;
+    const _mockCalendarProcess: CalendarProcess = mockCalendarProcess();
+    component.calendarProcess = _mockCalendarProcess;
+    component.alerts = [];
+
+    fixture.detectChanges();
+
+    const header: HTMLElement = fixture.nativeElement.querySelector('app-process-header');
+    expect(header['isPreview']).toBe(true);
+    const preview: HTMLElement = fixture.nativeElement.querySelector('app-process-preview-content');
+    expect(preview['process']).toStrictEqual(_mockCalendarProcess);
+    const description: HTMLElement = fixture.nativeElement.querySelector('app-process-description');
+    expect(description).toBeNull();
+    const alerts: HTMLElement = fixture.nativeElement.querySelector('app-process-calendar-alerts');
+    expect(alerts).toBeNull();
+    const calendar: HTMLElement = fixture.nativeElement.querySelector('app-calendar');
+    expect(calendar).toBeNull();
+  });
+
+  test('should render the template as calendar that has not been started', (): void => {
+    component.isPreview = false;
+    const _mockCalendarProcess: CalendarProcess = mockCalendarProcess();
+    component.calendarProcess = _mockCalendarProcess;
+    component.alerts = [];
+    component.showDescription = true;
+
+    fixture.detectChanges();
+
+    const header: HTMLElement = fixture.nativeElement.querySelector('app-process-header');
+    expect(header['isPreview']).toBe(false);
+    const preview: HTMLElement = fixture.nativeElement.querySelector('app-process-preview-content');
+    expect(preview).toBeNull();
+    const description: HTMLElement = fixture.nativeElement.querySelector('app-process-description');
+    expect(description['description']).toMatch(_mockCalendarProcess.description);
+    const alerts: HTMLElement = fixture.nativeElement.querySelector('app-process-calendar-alerts');
+    expect(alerts).toBeNull();
+    const calendar: HTMLElement = fixture.nativeElement.querySelector('app-calendar');
+    expect(calendar['calendarProcess']).toStrictEqual(_mockCalendarProcess);
+  });
+
+  test('should render the template as calendar that has been started', (): void => {
+    component.isPreview = false;
+    const _mockCalendarProcess: CalendarProcess = mockCalendarProcess();
+    const now: string = (new Date()).toISOString();
+    _mockCalendarProcess.startDatetime = now;
+    component.calendarProcess = _mockCalendarProcess;
+    const _mockAlert: Alert = mockAlertPresent();
+    component.alerts = [_mockAlert];
+    component.showDescription = true;
+
+    fixture.detectChanges();
+
+    const header: HTMLElement = fixture.nativeElement.querySelector('app-process-header');
+    expect(header['isPreview']).toBe(false);
+    const preview: HTMLElement = fixture.nativeElement.querySelector('app-process-preview-content');
+    expect(preview).toBeNull();
+    const description: HTMLElement = fixture.nativeElement.querySelector('app-process-description');
+    expect(description['description']).toMatch(_mockCalendarProcess.description);
+    const alerts: HTMLElement = fixture.nativeElement.querySelector('app-process-calendar-alerts');
+    expect(alerts['alerts']).toStrictEqual([_mockAlert]);
+    const calendar: HTMLElement = fixture.nativeElement.querySelector('app-calendar');
+    expect(calendar).toBeNull();
   });
 
 });
