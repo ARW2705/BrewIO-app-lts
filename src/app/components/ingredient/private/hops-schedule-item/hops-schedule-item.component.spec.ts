@@ -68,7 +68,7 @@ describe('HopsScheduleItemComponent', (): void => {
 
     fixture.detectChanges();
 
-    const container: HTMLElement = global.document.querySelector('.ingredient-text-container');
+    const container: HTMLElement = fixture.nativeElement.querySelector('.ingredient-text-container');
     const topRow: Element = container.children[0];
     expect(topRow.children[0].textContent).toMatch(_mockHopsNonDryHop.hopsType.name);
     expect(topRow.children[1].textContent).toMatch(_mockHopsNonDryHop.quantity.toString());
@@ -80,7 +80,7 @@ describe('HopsScheduleItemComponent', (): void => {
 
     fixture.detectChanges();
 
-    const newContainer: HTMLElement = global.document.querySelector('.ingredient-text-container');
+    const newContainer: HTMLElement = fixture.nativeElement.querySelector('.ingredient-text-container');
     const dryHopRow: Element = newContainer.children[1];
     expect(dryHopRow.children[0].textContent).toMatch('0% AA');
     expect(dryHopRow.children[1].textContent).toMatch('0 IBU');
