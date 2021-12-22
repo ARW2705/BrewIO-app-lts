@@ -16,7 +16,7 @@ import { DateButtonComponent } from './date-button.component';
 describe('DateButtonComponent', (): void => {
   configureTestBed();
   let fixture: ComponentFixture<DateButtonComponent>;
-  let dbCmp: DateButtonComponent;
+  let component: DateButtonComponent;
 
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
@@ -33,13 +33,12 @@ describe('DateButtonComponent', (): void => {
 
   beforeEach((): void => {
     fixture = TestBed.createComponent(DateButtonComponent);
-    dbCmp = fixture.componentInstance;
+    component = fixture.componentInstance;
   });
 
   test('should create the component', (): void => {
     fixture.detectChanges();
-
-    expect(dbCmp).toBeDefined();
+    expect(component).toBeDefined();
   });
 
   test('should handle input changes', (): void => {
@@ -49,18 +48,18 @@ describe('DateButtonComponent', (): void => {
 
     fixture.detectChanges();
 
-    expect(dbCmp.svgClass).toMatch('base');
-    dbCmp.ngOnChanges(startChange);
-    expect(dbCmp.svgClass).toMatch('base start');
-    dbCmp.ngOnChanges(projectedChange);
-    expect(dbCmp.svgClass).toMatch('base projected');
-    dbCmp.ngOnChanges(monthChange);
-    expect(dbCmp.svgClass).toMatch('base month');
+    expect(component.svgClass).toMatch('base');
+    component.ngOnChanges(startChange);
+    expect(component.svgClass).toMatch('base start');
+    component.ngOnChanges(projectedChange);
+    expect(component.svgClass).toMatch('base projected');
+    component.ngOnChanges(monthChange);
+    expect(component.svgClass).toMatch('base month');
   });
 
-  test('should display the date', (): void => {
+  test('should render the template', (): void => {
     const testMoment: moment.Moment = moment('2020-01-01');
-    dbCmp.date = testMoment;
+    component.date = testMoment;
     MomentPipeStub._returnValue = (): string => {
       return testMoment.toISOString();
     };
