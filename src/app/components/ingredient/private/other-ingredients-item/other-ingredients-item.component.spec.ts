@@ -56,7 +56,7 @@ describe('OtherIngredientsItemComponent', (): void => {
   test('should render the template', (): void => {
     fixture.detectChanges();
 
-    const container: HTMLElement = global.document.querySelector('ion-row');
+    const container: HTMLElement = fixture.nativeElement.querySelector('ion-row');
     const icon: Element = container.children[0].children[0];
     expect(icon.attributes.item(1).value).toMatch('create-outline');
     const contentContainer: Element = container.children[1];
