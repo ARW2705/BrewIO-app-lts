@@ -31,7 +31,6 @@ describe('CalendarControlsChangeButtonComponent', (): void => {
 
   test('should create the component', (): void => {
     fixture.detectChanges();
-
     expect(component).toBeTruthy();
   });
 
@@ -50,7 +49,7 @@ describe('CalendarControlsChangeButtonComponent', (): void => {
 
     fixture.detectChanges();
 
-    const elem: HTMLElement = global.document.querySelector('ion-icon');
+    const elem: HTMLElement = fixture.nativeElement.querySelector('ion-icon');
     expect(elem['name']).toMatch('test-icon-name');
   });
 
