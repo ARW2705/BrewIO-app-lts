@@ -12,18 +12,14 @@ import { ToastControllerStub } from '../../../../test-config/ionic-stubs';
 /* Interface imports */
 import { ToastButton } from '../../shared/interfaces';
 
-/* Default imports */
-import { defaultDismissButton } from '../../shared/defaults';
-
 /* Service imports */
 import { ToastService } from './toast.service';
 
 
 describe('ToastService', (): void => {
-  let injector: TestBed;
-  let toastService: ToastService;
-  let toastCtrl: ToastController;
   configureTestBed();
+  let injector: TestBed;
+  let service: ToastService;
 
   beforeAll(async((): void => {
     TestBed.configureTestingModule({
@@ -32,28 +28,21 @@ describe('ToastService', (): void => {
         { provide: ToastController, useClass: ToastControllerStub }
       ]
     });
-
     injector = getTestBed();
-    toastService = injector.get(ToastService);
-    toastCtrl = injector.get(ToastController);
+    service = injector.get(ToastService);
   }));
 
   test('should create the service', (): void => {
-    expect(toastService).toBeDefined();
+    expect(service).toBeTruthy();
   });
 
   test('should present basic toast', (done: jest.DoneCallback): void => {
     const _mockToastElement = mockToastElement();
-    const _defaultDismissButton: object = defaultDismissButton();
-
-    toastCtrl.create = jest
-      .fn()
-      .mockReturnValue(Promise.resolve(_mockToastElement));
-
-    const createSpy: jest.SpyInstance = jest.spyOn(toastCtrl, 'create');
+    service.toastCtrl.create = jest.fn().mockReturnValue(Promise.resolve(_mockToastElement));
+    const createSpy: jest.SpyInstance = jest.spyOn(service.toastCtrl, 'create');
     const presentSpy: jest.SpyInstance = jest.spyOn(_mockToastElement, 'present');
 
-    toastService.presentToast('test-message');
+    service.presentToast('test-message');
 
     setTimeout((): void => {
       const createCall: object = createSpy.mock.calls[0][0];
@@ -69,22 +58,14 @@ describe('ToastService', (): void => {
     const _mockToastElement = mockToastElement();
     const _mockToastButtons: ToastButton[] = mockToastButtons();
     const _mockDismissFn = (): void => { console.log('dismiss'); };
-
     const toast = Promise.resolve(_mockToastElement);
-
-    toastCtrl.create = jest
-      .fn()
-      .mockReturnValue(toast);
-
-    _mockToastElement.onDidDismiss = jest
-      .fn()
-      .mockReturnValue(Promise.resolve());
-
-    const createSpy: jest.SpyInstance = jest.spyOn(toastCtrl, 'create');
+    service.toastCtrl.create = jest.fn().mockReturnValue(toast);
+    _mockToastElement.onDidDismiss = jest.fn().mockReturnValue(Promise.resolve());
+    const createSpy: jest.SpyInstance = jest.spyOn(service.toastCtrl, 'create');
     const presentSpy: jest.SpyInstance = jest.spyOn(_mockToastElement, 'present');
     const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
 
-    toastService.presentToast(
+    service.presentToast(
       'test-message',
       1000,
       'bottom',
@@ -113,12 +94,10 @@ describe('ToastService', (): void => {
   });
 
   test('should present a basic error toast', (): void => {
-    toastService.presentToast = jest
-      .fn();
+    service.presentToast = jest.fn();
+    const toastSpy: jest.SpyInstance = jest.spyOn(service, 'presentToast');
 
-    const toastSpy: jest.SpyInstance = jest.spyOn(toastService, 'presentToast');
-
-    toastService.presentErrorToast('test-message');
+    service.presentErrorToast('test-message');
 
     expect(toastSpy).toHaveBeenCalledWith(
       'test-message',
@@ -133,13 +112,10 @@ describe('ToastService', (): void => {
 
   test('should present an error toast with optional dismiss function', (): void => {
     const _mockDismissFn = (): void => { console.log('dismiss'); };
+    service.presentToast = jest.fn();
+    const toastSpy: jest.SpyInstance = jest.spyOn(service, 'presentToast');
 
-    toastService.presentToast = jest
-      .fn();
-
-    const toastSpy: jest.SpyInstance = jest.spyOn(toastService, 'presentToast');
-
-    toastService.presentErrorToast('test-message', _mockDismissFn);
+    service.presentErrorToast('test-message', _mockDismissFn);
 
     expect(toastSpy).toHaveBeenCalledWith(
       'test-message',

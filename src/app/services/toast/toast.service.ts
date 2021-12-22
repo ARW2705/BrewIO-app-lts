@@ -22,9 +22,8 @@ export class ToastService {
   /**
    * Construct an error toast to present
    *
-   * @params: message - error message text
-   * @params: [dismissFn] - optional function to call on toast dismiss
-   *
+   * @param: message - error message text
+   * @param: [dismissFn] - optional function to call on toast dismiss
    * @return: none
    */
   presentErrorToast(message: string, dismissFn?: any): void {
@@ -42,14 +41,13 @@ export class ToastService {
   /**
    * Construct and present toast
    *
-   * @params: message - message text
-   * @params: [duration] - time toast is shown in ms
-   * @params: [position] - position on screen of toast, options: 'top', 'bottom', or 'middle'
-   * @params: [customClass] - css class name to add to toast
-   * @params: [buttons] - array of toast buttons to display
-   * @params: [header] - header text
-   * @params: [dismissFn] - callback function when toast dismiss button is clicked
-   *
+   * @param: message - message text
+   * @param: [duration] - time toast is shown in ms
+   * @param: [position] - position on screen of toast, options: 'top', 'bottom', or 'middle'
+   * @param: [customClass] - css class name to add to toast
+   * @param: [buttons] - array of toast buttons to display
+   * @param: [header] - header text
+   * @param: [dismissFn] - callback function when toast dismiss button is clicked
    * @return: none
    */
   async presentToast(
@@ -70,29 +68,23 @@ export class ToastService {
     if (duration) {
       toastOptions['duration'] = duration;
     }
-
     if (position) {
       toastOptions['position'] = position;
     }
-
     if (customClass) {
       toastOptions['cssClass'] += ` ${customClass}`;
     }
-
     if (header) {
       toastOptions['header'] = header;
     }
-
     if (buttons) {
       toastOptions['buttons'] = buttons;
     }
 
     const toast: HTMLIonToastElement = await this.toastCtrl.create(toastOptions);
-
     if (dismissFn) {
       toast.onDidDismiss().then((): void => dismissFn());
     }
-
     return await toast.present();
   }
 
