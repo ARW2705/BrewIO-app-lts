@@ -109,7 +109,8 @@ describe('ProcessCalendarFormComponent', (): void => {
     expect(result).toStrictEqual({
       name: 'test',
       description: 'description',
-      duration: 9
+      duration: 9,
+      type: 'calendar'
     });
   });
 
