@@ -115,7 +115,7 @@ describe('GrainBillComponent', (): void => {
 
     fixture.detectChanges();
 
-    const items: NodeList = global.document.querySelectorAll('app-grain-bill-item');
+    const items: NodeList = fixture.nativeElement.querySelectorAll('app-grain-bill-item');
     const first: HTMLElement = <HTMLElement>items.item(0);
     expect(first['grains']).toStrictEqual(_mockGrainBill[0]);
     expect(first['ratio']).toMatch('80%');
