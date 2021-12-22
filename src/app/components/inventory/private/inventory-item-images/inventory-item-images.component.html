@@ -16,12 +16,12 @@
   <!-- Item supplier info -->
   <ion-row>
     <ion-col class="ion-align-self-center supplier-name">
-      <a  *ngIf="item.supplierURL !== undefined"
-          [href]="item.supplierURL"
+      <a  *ngIf="item && item.optionalItemData.supplierURL"
+          [href]="item.optionalItemData.supplierURL"
           target="blank">
         {{ item.supplierName }}
       </a>
-      <ng-container *ngIf="item.supplierURL === undefined">
+      <ng-container *ngIf="!item || !item.optionalItemData.supplierURL">
         {{ item.supplierName }}
       </ng-container>
     </ion-col>
