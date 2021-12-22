@@ -61,10 +61,10 @@ describe('FormToggleComponent', (): void => {
 
     fixture.detectChanges();
 
-    const spans: NodeList = global.document.querySelectorAll('span');
+    const spans: NodeList = fixture.nativeElement.querySelectorAll('span');
     expect(spans.item(0).textContent).toMatch('Toggle');
     expect(spans.item(1).textContent).toMatch('Additional');
-    const toggle: HTMLElement = global.document.querySelector('ion-toggle');
+    const toggle: HTMLElement = fixture.nativeElement.querySelector('ion-toggle');
     expect(toggle['color']).toMatch('primary');
   });
 
