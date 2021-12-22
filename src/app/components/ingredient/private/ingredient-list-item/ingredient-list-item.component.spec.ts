@@ -125,9 +125,9 @@ describe('IngredientListItemComponent', () => {
 
     fixture.detectChanges();
 
-    const titleElem: HTMLElement = global.document.querySelector('span');
+    const titleElem: HTMLElement = fixture.nativeElement.querySelector('span');
     expect(titleElem.textContent).toMatch('Grain');
-    const container: HTMLElement = global.document.querySelector('ion-grid');
+    const container: HTMLElement = fixture.nativeElement.querySelector('ion-grid');
     expect(container.children.length).toEqual(_mockGrainBill.length);
     const sampleContainer: Element = container.children[0];
     expect(sampleContainer.children[0].textContent).toMatch(_mockGrainBill[0].grainType.name);
