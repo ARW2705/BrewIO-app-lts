@@ -6,7 +6,7 @@ import { RecipeVariant } from '../../../../shared/interfaces';
 
 
 @Component({
-  selector: 'ingredient-list',
+  selector: 'app-ingredient-list',
   templateUrl: './ingredient-list.component.html',
   styleUrls: ['./ingredient-list.component.scss'],
 })
