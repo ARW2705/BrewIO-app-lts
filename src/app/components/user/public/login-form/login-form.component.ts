@@ -5,19 +5,18 @@ import { ModalController } from '@ionic/angular';
 import { finalize } from 'rxjs/operators';
 
 /* Interface imports */
-import { User } from '../../../shared/interfaces';
+import { User } from '../../../../shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService, LoadingService, ToastService, UserService } from '../../../services/services';
+import { ErrorReportingService, LoadingService, ToastService, UserService } from '../../../../services/services';
 
 
 @Component({
-  selector: 'app-page-login',
-  templateUrl: './login.page.html',
-  styleUrls: ['./login.page.scss']
+  selector: 'app-login-form',
+  templateUrl: './login-form.component.html',
+  styleUrls: ['./login-form.component.scss']
 })
-export class LoginPage implements OnInit {
-  @Input() rootURL: string = '';
+export class LoginFormComponent implements OnInit {
   awaitingResponse: boolean = false;
   loginForm: FormGroup = null;
   passwordType: string = 'password';
@@ -67,9 +66,7 @@ export class LoginPage implements OnInit {
    */
   async onSubmit(): Promise<void> {
     this.awaitingResponse = true;
-
     const loading: HTMLIonLoadingElement = await this.loadingService.createLoader();
-
     this.userService.logIn(this.loginForm.value, false)
       .pipe(finalize((): void => {
         loading.dismiss();

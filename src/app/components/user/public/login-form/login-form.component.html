@@ -1,9 +1,5 @@
-<app-header title="Log In"
-            [rootURL]="rootURL"
-            [shouldHideLoginButton]="true">
-</app-header>
-
 <ion-content class="sub-page">
+  <header>Log In</header>
   <ng-container *ngIf="loginForm">
     <p class="form-info required">Required fields</p>
 
@@ -33,14 +29,15 @@
                           label="remember me">
       </app-form-checkbox>
     </form>
-    <!-- Form Buttons -->
-    <app-form-buttons (cancelEvent)="dismiss()"
-                      (submitEvent)="onSubmit()"
-                      [isSubmitDisabled]="!loginForm.valid || awaitingResponse">
-    </app-form-buttons>
   </ng-container>
+
   <ng-container *ngIf="!loginForm">
     Login Form Failed
   </ng-container>
 
+  <!-- Form Buttons -->
+  <app-form-buttons (cancelEvent)="dismiss()"
+                    (submitEvent)="onSubmit()"
+                    [isSubmitDisabled]="!loginForm.valid || awaitingResponse">
+  </app-form-buttons>
 </ion-content>

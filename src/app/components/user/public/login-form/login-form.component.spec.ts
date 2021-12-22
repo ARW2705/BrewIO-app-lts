@@ -2,38 +2,43 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { IonicModule, ModalController } from '@ionic/angular';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { of, throwError } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import { mockUser } from '../../../../../test-config/mock-models';
-import { ErrorReportingServiceStub, LoadingServiceStub, ToastServiceStub, UserServiceStub } from '../../../../../test-config/service-stubs';
-import { HeaderComponentStub } from '../../../../../test-config/component-stubs';
-import { LoadingStub, ModalControllerStub } from '../../../../../test-config/ionic-stubs';
+import { mockUser } from '../../../../../../test-config/mock-models';
+import { ErrorReportingServiceStub, LoadingServiceStub, ToastServiceStub, UserServiceStub } from '../../../../../../test-config/service-stubs';
+import { HeaderComponentStub } from '../../../../../../test-config/component-stubs';
+import { ModalControllerStub } from '../../../../../../test-config/ionic-stubs';
 
 /* Interface imports */
-import { User } from '../../../shared/interfaces';
+import { User } from '../../../../shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService, LoadingService, ToastService, UserService } from '../../../services/services';
+import { ErrorReportingService, LoadingService, ToastService, UserService } from '../../../../services/services';
 
 /* Page imports */
-import { LoginPage } from './login.page';
+import { LoginFormComponent } from './login-form.component';
 
 
-describe('LoginPage', (): void => {
+describe('LoginFormComponent', (): void => {
   configureTestBed();
-  let fixture: ComponentFixture<LoginPage>;
-  let page: LoginPage;
+  let fixture: ComponentFixture<LoginFormComponent>;
+  let component: LoginFormComponent;
   let originalOnInit: any;
+  const defaultForm: FormGroup = new FormGroup({
+    password: new FormControl(),
+    username: new FormControl(),
+    remember: new FormControl()
+  });
 
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
       declarations: [
-        LoginPage,
+        LoginFormComponent,
         HeaderComponentStub,
       ],
       imports: [
@@ -55,26 +60,26 @@ describe('LoginPage', (): void => {
   .catch(done.fail));
 
   beforeEach((): void => {
-    fixture = TestBed.createComponent(LoginPage);
-    page = fixture.componentInstance;
-    originalOnInit = page.ngOnInit;
-    page.ngOnInit = jest.fn();
-    page.toastService.presentToast = jest.fn();
-    page.toastService.presentErrorToast = jest.fn();
-    page.modalCtrl.dismiss = jest.fn();
-    page.toastService.mediumDuration = 1500;
+    fixture = TestBed.createComponent(LoginFormComponent);
+    component = fixture.componentInstance;
+    originalOnInit = component.ngOnInit;
+    component.ngOnInit = jest.fn();
+    component.toastService.presentToast = jest.fn();
+    component.toastService.presentErrorToast = jest.fn();
+    component.modalCtrl.dismiss = jest.fn();
+    component.toastService.mediumDuration = 1500;
+    component.loginForm = defaultForm;
   });
 
   test('should create the component', (): void => {
     fixture.detectChanges();
-
-    expect(page).toBeDefined();
+    expect(component).toBeTruthy();
   });
 
   test('should init the component', (): void => {
-    page.ngOnInit = originalOnInit;
-    page.initForm = jest.fn();
-    const initSpy: jest.SpyInstance = jest.spyOn(page, 'initForm');
+    component.ngOnInit = originalOnInit;
+    component.initForm = jest.fn();
+    const initSpy: jest.SpyInstance = jest.spyOn(component, 'initForm');
 
     fixture.detectChanges();
 
@@ -82,19 +87,19 @@ describe('LoginPage', (): void => {
   });
 
   test('should call modal dismiss with no data', (): void => {
-    const dismissSpy: jest.SpyInstance = jest.spyOn(page.modalCtrl, 'dismiss');
+    const dismissSpy: jest.SpyInstance = jest.spyOn(component.modalCtrl, 'dismiss');
 
     fixture.detectChanges();
 
-    page.dismiss();
+    component.dismiss();
     expect(dismissSpy).toHaveBeenCalled();
   });
 
   test('should init the form', (): void => {
     fixture.detectChanges();
 
-    page.initForm();
-    expect(page.loginForm.value).toStrictEqual({
+    component.initForm();
+    expect(component.loginForm.value).toStrictEqual({
       password: '',
       remember: false,
       username: ''
@@ -109,18 +114,18 @@ describe('LoginPage', (): void => {
       remember: true,
       username: 'test-user'
     };
-    page.userService.logIn = jest.fn()
+    component.userService.logIn = jest.fn()
       .mockReturnValue(of(_mockUser));
     let isDismissed: boolean = false;
-    page.loadingService.createLoader = jest.fn()
-      .mockReturnValue({ dismiss: () => { isDismissed = true } });
-    const loginSpy: jest.SpyInstance = jest.spyOn(page.userService, 'logIn');
-    const toastSpy: jest.SpyInstance = jest.spyOn(page.toastService, 'presentToast');
+    component.loadingService.createLoader = jest.fn()
+      .mockReturnValue({ dismiss: (): void => { isDismissed = true } });
+    const loginSpy: jest.SpyInstance = jest.spyOn(component.userService, 'logIn');
+    const toastSpy: jest.SpyInstance = jest.spyOn(component.toastService, 'presentToast');
 
     fixture.detectChanges();
 
-    page.loginForm = formBuilder.group(form);
-    page.onSubmit();
+    component.loginForm = formBuilder.group(form);
+    component.onSubmit();
     setTimeout((): void => {
       expect(loginSpy).toHaveBeenCalledWith(form, false);
       expect(toastSpy).toHaveBeenCalledWith(
@@ -142,19 +147,19 @@ describe('LoginPage', (): void => {
       remember: true,
       username: 'test-user'
     };
-    page.userService.logIn = jest.fn()
+    component.userService.logIn = jest.fn()
       .mockReturnValue(throwError(_mockError));
     let isDismissed: boolean = false;
-    page.loadingService.createLoader = jest.fn()
+    component.loadingService.createLoader = jest.fn()
       .mockReturnValue({ dismiss: () => { isDismissed = true } });
-    page.errorReporter.handleUnhandledError = jest.fn();
-    const errorSpy: jest.SpyInstance = jest.spyOn(page.errorReporter, 'handleUnhandledError');
+    component.errorReporter.handleUnhandledError = jest.fn();
+    const errorSpy: jest.SpyInstance = jest.spyOn(component.errorReporter, 'handleUnhandledError');
 
     fixture.detectChanges();
 
-    page.loginForm = formBuilder.group(form);
+    component.loginForm = formBuilder.group(form);
 
-    page.onSubmit();
+    component.onSubmit();
 
     setTimeout((): void => {
       expect(errorSpy).toHaveBeenCalledWith(_mockError);
@@ -166,11 +171,11 @@ describe('LoginPage', (): void => {
   test('should toggle password visibility', (): void => {
     fixture.detectChanges();
 
-    expect(page.passwordType).toMatch('password');
-    page.togglePasswordVisible(true);
-    expect(page.passwordType).toMatch('text');
-    page.togglePasswordVisible(false);
-    expect(page.passwordType).toMatch('password');
+    expect(component.passwordType).toMatch('password');
+    component.togglePasswordVisible(true);
+    expect(component.passwordType).toMatch('text');
+    component.togglePasswordVisible(false);
+    expect(component.passwordType).toMatch('password');
   });
 
   test('should render the template', (): void => {
@@ -181,7 +186,7 @@ describe('LoginPage', (): void => {
       username: ''
     };
 
-    page.loginForm = formBuilder.group(form);
+    component.loginForm = formBuilder.group(form);
 
     fixture.detectChanges();
 
@@ -196,7 +201,7 @@ describe('LoginPage', (): void => {
     expect(displayBox.getAttribute('label')).toMatch('show password');
     const rememberBox: Element = <Element>checkboxes.item(1);
     expect(rememberBox.getAttribute('label')).toMatch('remember me');
-    page.passwordType = 'text';
+    component.passwordType = 'text';
 
     fixture.detectChanges();
 
