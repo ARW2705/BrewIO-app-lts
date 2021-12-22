@@ -1,6 +1,6 @@
 /* Module imports */
-import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { catchError, mergeMap } from 'rxjs/operators';
 
@@ -33,16 +33,13 @@ export class LoggingService {
    * Send error reports to server
    *
    * @param: reports - array of error reports
-   *
    * @return: none
    */
   logErrorReports(reports: ErrorReport[]): void {
     console.log('logging reports', reports);
     if (reports && reports.length) {
       this.http.post(`${BASE_URL}/${API_VERSION}/reporting/error`, reports)
-        .pipe(
-          catchError((_: any): Observable<any> => this.storeErrorReports(reports))
-        )
+        .pipe(catchError((_: any): Observable<any> => this.storeErrorReports(reports)))
         .subscribe((): void => console.log('error reports sent'));
     }
   }
@@ -62,7 +59,6 @@ export class LoggingService {
    * Store error reports
    *
    * @param: reports - array of error reports to store
-   *
    * @return: observable of storage response
    */
   storeErrorReports(reports: ErrorReport[]): Observable<any> {

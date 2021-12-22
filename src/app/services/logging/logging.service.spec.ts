@@ -22,18 +22,16 @@ import { LoggingService } from './logging.service';
 import { ConnectionService, StorageService } from '../services';
 
 describe('LoggingService', (): void => {
+  configureTestBed();
   let injector: TestBed;
-  let logger: LoggingService;
+  let service: LoggingService;
   let connection: ConnectionService;
   let httpMock: HttpTestingController;
   let originalSend: any;
-  configureTestBed();
 
   beforeAll(async((): void => {
     TestBed.configureTestingModule({
-      imports: [
-        HttpClientTestingModule
-      ],
+      imports: [ HttpClientTestingModule ],
       providers: [
         LoggingService,
         { provide: ConnectionService, useClass: ConnectionServiceStub },
@@ -46,14 +44,10 @@ describe('LoggingService', (): void => {
     injector = getTestBed();
     connection = injector.get(ConnectionService);
     httpMock = injector.get(HttpTestingController);
-    connection.listenForConnection = jest
-      .fn()
-      .mockReturnValue(EMPTY);
-    logger = injector.get(LoggingService);
-
-    originalSend = logger.sendReportsOnConnection;
-    logger.sendReportsOnConnection = jest
-      .fn();
+    connection.listenForConnection = jest.fn().mockReturnValue(EMPTY);
+    service = injector.get(LoggingService);
+    originalSend = service.sendReportsOnConnection;
+    service.sendReportsOnConnection = jest.fn();
   });
 
   afterEach((): void => {
@@ -61,19 +55,15 @@ describe('LoggingService', (): void => {
   });
 
   test('should create the service', (): void => {
-    expect(logger).toBeTruthy();
+    expect(service).toBeTruthy();
   });
 
   test('should send reports on connection', (done: jest.DoneCallback): void => {
     const _connection: ConnectionService = new ConnectionServiceStub() as ConnectionService;
-    _connection.listenForConnection = jest
-      .fn()
-      .mockReturnValue(of(null).pipe(delay(10)));
-
-    const _logger: LoggingService = new LoggingService(_connection, null, null);
-    _logger.sendReportsOnConnection = jest
-      .fn();
-    const sendSpy: jest.SpyInstance = jest.spyOn(_logger, 'sendReportsOnConnection');
+    _connection.listenForConnection = jest.fn().mockReturnValue(of(null).pipe(delay(10)));
+    const _service: LoggingService = new LoggingService(_connection, null, null);
+    _service.sendReportsOnConnection = jest.fn();
+    const sendSpy: jest.SpyInstance = jest.spyOn(_service, 'sendReportsOnConnection');
 
     setTimeout((): void => {
       expect(sendSpy).toHaveBeenCalled();
@@ -83,54 +73,41 @@ describe('LoggingService', (): void => {
 
   test('should log error reports', (done: jest.DoneCallback): void => {
     const _mockErrorReport: ErrorReport = mockErrorReport();
-
     const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
 
-    logger.logErrorReports([ _mockErrorReport ]);
+    service.logErrorReports([ _mockErrorReport ]);
 
     setTimeout((): void => {
       expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('error reports sent');
       done();
     }, 10);
-
     const req: TestRequest = httpMock.expectOne(`${BASE_URL}/${API_VERSION}/reporting/error`);
     req.flush({});
   });
 
   test('should store errors on log error reports error response', (done: jest.DoneCallback): void => {
     const _mockErrorReport: ErrorReport = mockErrorReport();
+    service.storeErrorReports = jest.fn().mockReturnValue(of(null));
+    const storeSpy: jest.SpyInstance = jest.spyOn(service, 'storeErrorReports');
 
-    logger.storeErrorReports = jest
-      .fn()
-      .mockReturnValue(of(null));
-
-    const storeSpy: jest.SpyInstance = jest.spyOn(logger, 'storeErrorReports');
-
-    logger.logErrorReports([ _mockErrorReport ]);
+    service.logErrorReports([ _mockErrorReport ]);
 
     setTimeout((): void => {
       expect(storeSpy).toHaveBeenCalledWith([ _mockErrorReport ]);
       done();
     }, 10);
-
     const req: TestRequest = httpMock.expectOne(`${BASE_URL}/${API_VERSION}/reporting/error`);
     req.flush(null, mockErrorResponse(404, 'not found'));
   });
 
   test('should send error reports on connection', (done: jest.DoneCallback): void => {
-    logger.sendReportsOnConnection = originalSend;
-
+    service.sendReportsOnConnection = originalSend;
     const _mockErrorReport: ErrorReport = mockErrorReport();
+    service.storage.getErrorReports = jest.fn().mockReturnValue(of([_mockErrorReport]));
+    service.logErrorReports = jest.fn();
+    const logSpy: jest.SpyInstance = jest.spyOn(service, 'logErrorReports');
 
-    logger.storage.getErrorReports = jest
-      .fn()
-      .mockReturnValue(of([_mockErrorReport]));
-
-    logger.logErrorReports = jest.fn();
-
-    const logSpy: jest.SpyInstance = jest.spyOn(logger, 'logErrorReports');
-
-    logger.sendReportsOnConnection();
+    service.sendReportsOnConnection();
 
     setTimeout((): void => {
       expect(logSpy).toHaveBeenCalledWith([_mockErrorReport]);
@@ -141,18 +118,11 @@ describe('LoggingService', (): void => {
   test('should store error reports', (done: jest.DoneCallback): void => {
     const _mockErrorReport1: ErrorReport = mockErrorReport();
     const _mockErrorReport2: ErrorReport = mockErrorReport();
+    service.storage.getErrorReports = jest.fn().mockReturnValue(of([_mockErrorReport1]));
+    service.storage.setErrorReports = jest.fn().mockReturnValue(of(null));
+    const setSpy: jest.SpyInstance = jest.spyOn(service.storage, 'setErrorReports');
 
-    logger.storage.getErrorReports = jest
-      .fn()
-      .mockReturnValue(of([_mockErrorReport1]));
-
-    logger.storage.setErrorReports = jest
-      .fn()
-      .mockReturnValue(of(null));
-
-    const setSpy: jest.SpyInstance = jest.spyOn(logger.storage, 'setErrorReports');
-
-    logger.storeErrorReports([_mockErrorReport2])
+    service.storeErrorReports([_mockErrorReport2])
       .subscribe(
         (): void => {
           expect(setSpy).toHaveBeenCalledWith([ _mockErrorReport1, _mockErrorReport2 ]);
@@ -167,18 +137,11 @@ describe('LoggingService', (): void => {
 
   test('should store reports substituting an error response from get with an empty array', (done: jest.DoneCallback): void => {
     const _mockErrorReport2: ErrorReport = mockErrorReport();
+    service.storage.getErrorReports = jest.fn().mockReturnValue(throwError(''));
+    service.storage.setErrorReports = jest.fn().mockReturnValue(of(null));
+    const setSpy: jest.SpyInstance = jest.spyOn(service.storage, 'setErrorReports');
 
-    logger.storage.getErrorReports = jest
-      .fn()
-      .mockReturnValue(throwError(''));
-
-    logger.storage.setErrorReports = jest
-      .fn()
-      .mockReturnValue(of(null));
-
-    const setSpy: jest.SpyInstance = jest.spyOn(logger.storage, 'setErrorReports');
-
-    logger.storeErrorReports([_mockErrorReport2])
+    service.storeErrorReports([_mockErrorReport2])
       .subscribe(
         (): void => {
           expect(setSpy).toHaveBeenCalledWith([ _mockErrorReport2 ]);
