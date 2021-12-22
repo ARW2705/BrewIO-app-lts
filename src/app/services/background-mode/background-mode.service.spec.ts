@@ -15,12 +15,12 @@ import { BackgroundModeService } from './background-mode.service';
 
 describe('BackgroundModeService', () => {
 
-  describe('\nDev Mode', () => {
-    let injector: TestBed;
-    let backgroundService: BackgroundModeService;
+  describe('Dev Mode', () => {
     configureTestBed();
+    let injector: TestBed;
+    let service: BackgroundModeService;
 
-    beforeAll(async(() => {
+    beforeAll(async((): void => {
       TestBed.configureTestingModule({
         providers: [
           BackgroundModeService,
@@ -30,51 +30,51 @@ describe('BackgroundModeService', () => {
       });
     }));
 
-    beforeEach(() => {
+    beforeEach((): void => {
       injector = getTestBed();
-      backgroundService = injector.get(BackgroundModeService);
+      service = injector.get(BackgroundModeService);
     });
 
-    test('should create the service', () => {
-      expect(backgroundService).toBeDefined();
+    test('should create the service', (): void => {
+      expect(service).toBeTruthy();
     });
 
-    test('should not listen for background mode', () => {
+    test('should not listen for background mode', (): void => {
       const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
 
-      backgroundService.initBackgroundMode();
+      service.initBackgroundMode();
 
       expect(consoleSpy).not.toHaveBeenCalled();
     });
 
-    test('should not call disable', () => {
-      const disableSpy: jest.SpyInstance = jest.spyOn(backgroundService.backgroundMode, 'disable');
+    test('should not call disable', (): void => {
+      const disableSpy: jest.SpyInstance = jest.spyOn(service.backgroundMode, 'disable');
 
-      backgroundService.disableBackgroundMode();
+      service.disableBackgroundMode();
 
       expect(disableSpy).not.toHaveBeenCalled();
     });
 
-    test('should not call enable', () => {
-      const enableSpy: jest.SpyInstance = jest.spyOn(backgroundService.backgroundMode, 'enable');
+    test('should not call enable', (): void => {
+      const enableSpy: jest.SpyInstance = jest.spyOn(service.backgroundMode, 'enable');
 
-      backgroundService.enableBackgroundMode();
+      service.enableBackgroundMode();
 
       expect(enableSpy).not.toHaveBeenCalled();
     });
 
-    test('should not be active', () => {
-      expect(backgroundService.isActive()).toBe(false);
+    test('should not be active', (): void => {
+      expect(service.isActive()).toBe(false);
     });
 
   });
 
-  describe('\nCordova Mode', () => {
-    let injector: TestBed;
-    let backgroundService: BackgroundModeService;
+  describe('Cordova Mode', () => {
     configureTestBed();
+    let injector: TestBed;
+    let service: BackgroundModeService;
 
-    beforeAll(async(() => {
+    beforeAll(async((): void => {
       TestBed.configureTestingModule({
         declarations: [],
         imports: [],
@@ -86,17 +86,17 @@ describe('BackgroundModeService', () => {
       });
     }));
 
-    beforeEach(() => {
+    beforeEach((): void => {
       injector = getTestBed();
-      backgroundService = injector.get(BackgroundModeService);
+      service = injector.get(BackgroundModeService);
     });
 
-    test('should listen for background mode', (done: jest.DoneCallback) => {
-      const onSpy: jest.SpyInstance = jest.spyOn(backgroundService.backgroundMode, 'on');
+    test('should listen for background mode', (done: jest.DoneCallback): void => {
+      const onSpy: jest.SpyInstance = jest.spyOn(service.backgroundMode, 'on');
 
-      backgroundService.initBackgroundMode();
+      service.initBackgroundMode();
 
-      setTimeout(() => {
+      setTimeout((): void => {
         const caughtCalls = onSpy.mock.calls;
         expect(caughtCalls[0][0]).toMatch('activate');
         expect(caughtCalls[1][0]).toMatch('deactivate');
@@ -104,93 +104,77 @@ describe('BackgroundModeService', () => {
       }, 10);
     });
 
-    test('should call background mode disable', () => {
-      backgroundService.backgroundMode.isEnabled = jest
-        .fn()
-        .mockReturnValue(true);
+    test('should call background mode disable', (): void => {
+      service.backgroundMode.isEnabled = jest.fn().mockReturnValue(true);
+      const disableSpy: jest.SpyInstance = jest.spyOn(service.backgroundMode, 'disable');
 
-      const disableSpy: jest.SpyInstance = jest.spyOn(backgroundService.backgroundMode, 'disable');
-
-      backgroundService.disableBackgroundMode();
+      service.disableBackgroundMode();
 
       expect(disableSpy).toHaveBeenCalled();
     });
 
-    test('should not call disable', () => {
-      backgroundService.backgroundMode.isEnabled = jest
-        .fn()
-        .mockReturnValue(false);
+    test('should not call disable', (): void => {
+      service.backgroundMode.isEnabled = jest.fn().mockReturnValue(false);
+      const disableSpy: jest.SpyInstance = jest.spyOn(service.backgroundMode, 'disable');
 
-      const disableSpy: jest.SpyInstance = jest.spyOn(backgroundService.backgroundMode, 'disable');
-
-      backgroundService.disableBackgroundMode();
+      service.disableBackgroundMode();
 
       expect(disableSpy).not.toHaveBeenCalled();
     });
 
-    test('should call background mode enable', () => {
-      backgroundService.backgroundMode.isEnabled = jest
-        .fn()
-        .mockReturnValue(false);
+    test('should call background mode enable', (): void => {
+      service.backgroundMode.isEnabled = jest.fn().mockReturnValue(false);
+      const enableSpy: jest.SpyInstance = jest.spyOn(service.backgroundMode, 'enable');
 
-      const enableSpy: jest.SpyInstance = jest.spyOn(backgroundService.backgroundMode, 'enable');
-
-      backgroundService.enableBackgroundMode();
+      service.enableBackgroundMode();
 
       expect(enableSpy).toHaveBeenCalled();
     });
 
-    test('should not call enable', () => {
-      backgroundService.backgroundMode.isEnabled = jest
-        .fn()
-        .mockReturnValue(true);
+    test('should not call enable', (): void => {
+      service.backgroundMode.isEnabled = jest.fn().mockReturnValue(true);
+      const enableSpy: jest.SpyInstance = jest.spyOn(service.backgroundMode, 'enable');
 
-      const enableSpy: jest.SpyInstance = jest.spyOn(backgroundService.backgroundMode, 'enable');
-
-      backgroundService.enableBackgroundMode();
+      service.enableBackgroundMode();
 
       expect(enableSpy).not.toHaveBeenCalled();
     });
 
-    test('should check if background mode is active', () => {
-      expect(backgroundService.isActive()).toBe(false);
+    test('should check if background mode is active', (): void => {
+      expect(service.isActive()).toBe(false);
 
-      backgroundService.backgroundMode.isActive = jest
-        .fn()
-        .mockReturnValue(true);
+      service.backgroundMode.isActive = jest.fn().mockReturnValue(true);
 
-      expect(backgroundService.isActive()).toBe(true);
+      expect(service.isActive()).toBe(true);
     });
 
-    test('should disable web view and battery optimizations on activate', () => {
+    test('should disable web view and battery optimizations on activate', (): void => {
       const webSpy: jest.SpyInstance = jest
-        .spyOn(backgroundService.backgroundMode, 'disableWebViewOptimizations');
+        .spyOn(service.backgroundMode, 'disableWebViewOptimizations');
       const battSpy: jest.SpyInstance = jest
-        .spyOn(backgroundService.backgroundMode, 'disableBatteryOptimizations');
+        .spyOn(service.backgroundMode, 'disableBatteryOptimizations');
 
-      backgroundService.onActivate();
+      service.onActivate();
 
       expect(webSpy).toHaveBeenCalled();
       expect(battSpy).toHaveBeenCalled();
     });
 
-    test('should log deactivation notice', () => {
+    test('should log deactivation notice', (): void => {
       const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
 
-      backgroundService.onDeactivate();
+      service.onDeactivate();
 
       expect(consoleSpy).toHaveBeenCalledWith('background mode deactivated');
     });
 
-    test('should set a background notification', () => {
-      backgroundService.isActive = jest
-        .fn()
+    test('should set a background notification', (): void => {
+      service.isActive = jest.fn()
         .mockReturnValueOnce(true)
         .mockReturnValueOnce(false);
+      const configSpy: jest.SpyInstance = jest.spyOn(service.backgroundMode, 'configure');
 
-      const configSpy: jest.SpyInstance = jest.spyOn(backgroundService.backgroundMode, 'configure');
-
-      backgroundService.setNotification('test title', 'test message');
+      service.setNotification('test title', 'test message');
 
       expect(configSpy).toHaveBeenCalledWith({
         title: 'test title',
@@ -201,7 +185,7 @@ describe('BackgroundModeService', () => {
         color: '40e0cf'
       });
 
-      backgroundService.setNotification('shouldn\'t', 'set');
+      service.setNotification('shouldn\'t', 'set');
 
       expect(configSpy.mock.calls.length).toEqual(1);
     });

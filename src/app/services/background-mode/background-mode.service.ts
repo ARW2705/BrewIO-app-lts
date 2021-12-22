@@ -1,7 +1,7 @@
 /* Module imports */
 import { Injectable } from '@angular/core';
-import { Platform } from '@ionic/angular';
 import { BackgroundMode } from '@ionic-native/background-mode/ngx';
+import { Platform } from '@ionic/angular';
 
 
 @Injectable({
@@ -23,7 +23,7 @@ export class BackgroundModeService {
   /**
    * Disable background mode
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   disableBackgroundMode(): void {
@@ -37,7 +37,7 @@ export class BackgroundModeService {
    * Enable background mode; override back button to move app to background
    * instead of closing
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   enableBackgroundMode(): void {
@@ -51,7 +51,7 @@ export class BackgroundModeService {
   /**
    * Set up initial background mode event subscriptions
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   initBackgroundMode(): void {
@@ -65,21 +65,17 @@ export class BackgroundModeService {
   /**
    * Check if background mode is active
    *
-   * @params: none
-   *
+   * @param: none
    * @return: true if backgroud mode is active
    */
   isActive(): boolean {
-    if (this.platform.is('cordova')) {
-      return this.backgroundMode.isActive();
-    }
-    return false;
+    return this.platform.is('cordova') ? this.backgroundMode.isActive() : false;
   }
 
   /**
    * Perform additional actions when background mode is activated
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   onActivate(): void {
@@ -91,7 +87,7 @@ export class BackgroundModeService {
   /**
    * Perform additional actions when background mode is deactivated
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   onDeactivate(): void {
@@ -101,16 +97,15 @@ export class BackgroundModeService {
   /**
    * Display a notification
    *
-   * @params: title - title of notification
-   * @params: text - additional text of notification
-   *
+   * @param: title - title of notification
+   * @param: text - additional text of notification
    * @return: none
    */
   setNotification(title: string, text: string): void {
     if (this.platform.is('cordova') && this.isActive()) {
       this.backgroundMode.configure({
-        title: title,
-        text: text,
+        text,
+        title,
         icon: this.icon,
         hidden: this.hidden,
         silent: this.silent,
