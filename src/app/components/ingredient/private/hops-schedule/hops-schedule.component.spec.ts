@@ -134,7 +134,7 @@ describe('HopsSchedule', (): void => {
 
     fixture.detectChanges();
 
-    const items: NodeList = global.document.querySelectorAll('app-hops-schedule-item');
+    const items: NodeList = fixture.nativeElement.querySelectorAll('app-hops-schedule-item');
     expect(items.length).toEqual(_mockHopsSchedule.length);
     _mockHopsSchedule.forEach((_mockHops: HopsSchedule, index: number): void => {
       expect(items.item(index)['hops']).toStrictEqual(_mockHops);
