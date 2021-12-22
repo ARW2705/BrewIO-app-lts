@@ -3,6 +3,7 @@ export * from './constants/app-version.constant';
 export * from './constants/base-url.constant';
 export * from './constants/builtin-error-types.constant';
 export * from './constants/common-containers.constant';
+export * from './constants/error-severity.constant';
 export * from './constants/form-error-messages.constant';
 export * from './constants/image-extension.constant';
 export * from './constants/image-size-limit.constant';
