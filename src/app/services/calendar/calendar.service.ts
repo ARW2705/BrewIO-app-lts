@@ -29,7 +29,7 @@ export class CalendarService {
   /**
    * Build the 6 x 7 calendar date matrix
    *
-   * @param: none
+   * @param: initialValues - object containing start date, display date, and projected dates
    * @return: none
    */
   buildCalendar(initialValues: CalendarInitialValues): CalendarDate[][] {
@@ -44,8 +44,8 @@ export class CalendarService {
   /**
    * Build a new CalendarDate from a provided Moment
    *
+   * @param: initialValues - object containing start date, display date, and projected dates
    * @param: date - a momentjs date object
-   *
    * @return: a new CalendarDate
    */
   buildCalendarDate(initialValues: CalendarInitialValues, date: moment.Moment): CalendarDate {
@@ -61,8 +61,8 @@ export class CalendarService {
   /**
    * Build a 6 x 7 matrix of CalendarDates
    *
+   * @param: initialValues - object containing start date, display date, and projected dates
    * @param: firstDateOfMatrix - the first date of matrix (row 0, col 0)
-   *
    * @return: calendar matrix of dates
    */
   buildMonthMatrix(
@@ -79,7 +79,6 @@ export class CalendarService {
    *
    * @param: firstDateOfMatrix - the original first date of the calendar matrix
    * @param: weekIndex - the current week row to be built
-   *
    * @return: an array of CalendarDates for a calendar week
    */
   buildWeekArray(
@@ -198,7 +197,7 @@ export class CalendarService {
     this.processService.updateCalendarStep(this.idService.getId(batch), values)
       .subscribe(
         (): void => console.log('Started calendar'),
-        (error: any): void => this.errorReporter.handleUnhandledError(error)
+        (error: Error): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 }
