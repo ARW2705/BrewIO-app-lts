@@ -2,8 +2,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, forkJoin, of } from 'rxjs';
-import { catchError, defaultIfEmpty, mergeMap, map, tap } from 'rxjs/operators';
+import { BehaviorSubject, forkJoin, Observable, of } from 'rxjs';
+import { catchError, defaultIfEmpty, map, mergeMap, tap } from 'rxjs/operators';
 
 /* Constants imports */
 import { API_VERSION, BASE_URL } from '../../shared/constants';
@@ -75,7 +75,6 @@ export class UserService {
    * Request server check of json web token validity
    *
    * @param: none
-   *
    * @return: Observable of UserResponse
    */
   checkJWToken(): Observable<UserResponse> {
@@ -110,9 +109,7 @@ export class UserService {
     };
 
     this.checkTypeSafety(blankUser);
-
     this.user$.next(blankUser);
-
     this.storageService.removeUser();
     this.event.emit('clear-data');
   }
@@ -121,7 +118,6 @@ export class UserService {
    * Retrieve user authentication json web token
    *
    * @param: none
-   *
    * @return: user's auth token
    */
   getToken(): string {
@@ -132,7 +128,6 @@ export class UserService {
    * Get the user subject
    *
    * @param: none
-   *
    * @return: user behavior subject
    */
   getUser(): BehaviorSubject<User> {
@@ -143,7 +138,6 @@ export class UserService {
    * Check if user is logged in
    *
    * @param: none
-   *
    * @return: true if an auth token is present and not an empty string
    */
   isLoggedIn(): boolean {
@@ -163,9 +157,7 @@ export class UserService {
       .subscribe(
         (user: User): void => {
           this.checkTypeSafety(user);
-
           this.user$.next(user);
-
           if (this.isLoggedIn()) {
             this.checkJWToken()
               .subscribe(
@@ -192,7 +184,6 @@ export class UserService {
    *
    * @param: user - contains username, password, and remember boolean
    * @param: onSignupSync - true if logging in after initial sign up
-   *
    * @return: observable with login response user data
    */
   logIn(user: LoginCredentials, onSignupSync: boolean): Observable<User> {
@@ -202,7 +193,6 @@ export class UserService {
           this.checkTypeSafety(response.user);
           this.user$.next(response.user);
           this.connectionService.setOfflineMode(false);
-
           if (onSignupSync) {
             this.event.emit('sync-recipes-on-signup');
           } else {
@@ -210,7 +200,6 @@ export class UserService {
           }
 
           this.preferenceService.setUnits(response.user.preferredUnitSystem, response.user.units);
-
           if (user.remember) {
             this.storageService.setUser(response.user)
               .subscribe(
@@ -294,7 +283,6 @@ export class UserService {
    * Sign up a new user and login if successful
    *
    * @param: user - user must contain at least a username, password, and email
-   *
    * @return: if signup successful, return observable of login response, else signup response
    */
   signUp(user: User): Observable<UserResponse> {
@@ -307,17 +295,14 @@ export class UserService {
         defaultIfEmpty(null),
         mergeMap((): Observable<ImageRequestMetadata[]> => {
           const imageRequests: ImageRequestFormData[] = this.composeImageUploadRequests(user);
-
           return this.imageService.blobbifyImages(imageRequests);
         }),
         mergeMap((imageData: ImageRequestMetadata[]): Observable<UserResponse> => {
           const formData: FormData = new FormData();
           formData.append('user', JSON.stringify(user));
-
           imageData.forEach((imageDatum: ImageRequestMetadata): void => {
             formData.append(imageDatum.name, imageDatum.blob, imageDatum.filename);
           });
-
           return this.http.post<UserResponse>(`${BASE_URL}/${API_VERSION}/users/signup`, formData);
         }),
         tap((): void => {
@@ -338,6 +323,13 @@ export class UserService {
       );
   }
 
+  /**
+   * Get the file path for either a user avatar or brewery label image
+   *
+   * @param: user - the user containing the image data
+   * @param: imageName - the particular image type; either 'userImage' or 'breweryLabelImage'
+   * @return: the image file path or null if not found
+   */
   getImagePath(user: User, imageName: string): string {
     if (user && user.hasOwnProperty(imageName)) {
       return user[imageName].filePath;
@@ -349,7 +341,6 @@ export class UserService {
    * Update user profile
    *
    * @param: user - object with new user profile data
-   *
    * @return: Observable of user data from server
    */
   updateUserProfile(userUpdate: object): Observable<User> {
@@ -377,7 +368,6 @@ export class UserService {
           }
 
           this.checkTypeSafety(user);
-
           user$.next(user);
           return of(user);
         }),
@@ -405,7 +395,6 @@ export class UserService {
    * Check if able to send an http request
    *
    * @param: userId - the user's id to check
-   *
    * @return: true if connected to network, logged in, and has a server id
    */
   canSendRequest(userId: string): boolean {
@@ -422,22 +411,18 @@ export class UserService {
    *
    * @param: user - contains the image(s)
    * @param: replacementPaths - object with original paths for overriding persistent image
-   *
    * @return: array of persistent image observables
    */
   composeImageStoreRequests(user: User, replacementPaths: object = {}): Observable<Image>[] {
     const storeImages: Observable<Image>[] = [];
-
     let imageName = 'userImage';
     let image: Image = user[imageName];
-
     if (image && image.hasPending) {
       storeImages.push(this.imageService.storeImageToLocalDir(image, replacementPaths[imageName]));
     }
 
     imageName = 'breweryLabelImage';
     image = user[imageName];
-
     if (image && image.hasPending) {
       storeImages.push(this.imageService.storeImageToLocalDir(image, replacementPaths[imageName]));
     }
@@ -449,22 +434,18 @@ export class UserService {
    * Set up image upload request data
    *
    * @param: user - user update object
-   *
    * @return: array of objects with image and its formdata name
    */
   composeImageUploadRequests(user: User | object): ImageRequestFormData[] {
     const imageRequests: ImageRequestFormData[] = [];
-
     let imageName: string = 'userImage';
     let image: Image = user[imageName];
-
     if (image && image.hasPending) {
       imageRequests.push({ image: user[imageName], name: imageName });
     }
 
     imageName = 'breweryLabelImage';
     image = user[imageName];
-
     if (image && image.hasPending) {
       imageRequests.push({ image: user[imageName], name: imageName });
     }
@@ -478,13 +459,11 @@ export class UserService {
    * @param: user - user update object
    * @param: shouldResolveError - true if error should return the error response as an observable
    * or false if error should be handled as an error
-   *
    * @return: observable of User or HttpErrorResponse
    */
   configureBackgroundRequest(user: User | object, shouldResolveError: boolean): Observable<User> {
     const formData: FormData = new FormData();
     formData.append('user', JSON.stringify(user));
-
     const imageRequests: ImageRequestFormData[] = this.composeImageUploadRequests(user);
 
     return this.imageService.blobbifyImages(imageRequests)
@@ -493,7 +472,6 @@ export class UserService {
           imageData.forEach((imageDatum: ImageRequestMetadata): void => {
             formData.append(imageDatum.name, imageDatum.blob, imageDatum.filename);
           });
-
           return this.http.patch<User>(`${BASE_URL}/${API_VERSION}/users/profile`, formData);
         }),
         catchError(this.errorReporter.handleResolvableCatchError<User>(shouldResolveError))
@@ -504,7 +482,6 @@ export class UserService {
    * Get a server update object for the user
    *
    * @param: user - the user as the basis for the update - may have pre-saved updated values
-   *
    * @return: object of user update body
    */
   configureRequestBody(user: User): object {
@@ -531,7 +508,6 @@ export class UserService {
    * Perform background server http request - update local user with response
    *
    * @param: user - the user to push to server
-   *
    * @return: none
    */
   requestInBackground(user: User): void {
@@ -556,16 +532,14 @@ export class UserService {
    *
    * @param: method - options: 'create', 'update', or 'delete'
    * @param: docId - document id to apply sync
-   *
    * @return: none
    */
   addSyncFlag(method: string, docId: string): void {
     const syncFlag: SyncMetadata = {
-      method: method,
-      docId: docId,
+      docId,
+      method,
       docType: 'user'
     };
-
     this.syncService.addSyncFlag(syncFlag);
   }
 
@@ -578,7 +552,6 @@ export class UserService {
   syncOnConnection(): Observable<boolean> {
     const user$: BehaviorSubject<User> = this.getUser();
     const user: User = user$.value;
-
     const requests: SyncMetadata[] = this.syncService.getSyncFlagsByType('user');
     if (!requests.length) {
       return of(true);
@@ -590,9 +563,7 @@ export class UserService {
           console.log('sync complete', response);
           const userResponse: User = <User>response.successes[0];
           this.mapUserData(userResponse, user);
-
           this.checkTypeSafety(user);
-
           user$.next(user);
           return true;
         }),
@@ -605,6 +576,12 @@ export class UserService {
 
   /***** Type Guard *****/
 
+  /**
+   * Check if user properties are the correct types; throws error if not safe
+   *
+   * @param: user - the user object to check
+   * @return: none
+   */
   checkTypeSafety(user: any): void {
     if (!this.isSafeUser(user)) {
       throw this.getUnsafeUserError(user);
@@ -615,14 +592,13 @@ export class UserService {
    * Throw a custom error when an invalid user is encountered
    *
    * @param: thrownFor - given user object that failed validation
-   *
    * @return: custom invalid user error
    */
   getUnsafeUserError(thrownFor: any): Error {
     return new CustomError(
       'UserError',
       `Given User is invalid: got\n${JSON.stringify(thrownFor, null, 2)}`,
-      2,
+      this.errorReporter.highSeverity,
       'An error occurred while updating user: invalid user'
     );
   }
@@ -631,13 +607,13 @@ export class UserService {
    * Check if given user object is valid by correctly implementing the User interface
    *
    * @param: user - expects a User at runtime
-   *
    * @return: true if given user correctly implements User interface
    */
   isSafeUser(user: any): boolean {
     if (!this.typeGuard.hasValidProperties(user, UserGuardMetadata)) {
       return false;
     }
+
     return (
       this.preferenceService.isValidUnits(user.units)
       && (!user.hasOwnProperty('userImage') || !user.breweryLabelImage || this.imageService.isSafeImage(user.breweryLabelImage))
