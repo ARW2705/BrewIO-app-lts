@@ -67,7 +67,7 @@ describe('GrainBillItemComponent', (): void => {
   test('should render the template', (): void => {
     fixture.detectChanges();
 
-    const textContainer: HTMLElement = global.document.querySelector('.ingredient-text-container');
+    const textContainer: HTMLElement = fixture.nativeElement.querySelector('.ingredient-text-container');
     const topRow: Element = textContainer.children[0];
     expect(topRow.children[0].textContent).toMatch(_mockGrainBill.grainType.name);
     expect(topRow.children[1].textContent).toMatch(_mockGrainBill.quantity.toString());
