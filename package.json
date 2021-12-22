@@ -119,10 +119,11 @@
     "coveragePathIgnorePatterns": [
       "/node_modules/",
       "/test-config/",
-      "/constants/",
-      "/defaults/",
-      "/interfaces/",
-      ".html"
+      "/shared/",
+      ".html",
+      "public.ts",
+      "pipes.ts",
+      "services.ts"
     ]
   }
 }
