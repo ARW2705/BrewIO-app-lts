@@ -93,7 +93,7 @@ describe('IngredientListComponent', (): void => {
 
     fixture.detectChanges();
 
-    const items: NodeList = global.document.querySelectorAll('app-ingredient-list-item');
+    const items: NodeList = fixture.nativeElement.querySelectorAll('app-ingredient-list-item');
     expect(items.item(0)['ingredients']).toStrictEqual(_mockRecipeVariant.grains);
     expect(items.item(1)['ingredients']).toStrictEqual(_mockRecipeVariant.hops);
     expect(items.item(2)['ingredients']).toStrictEqual(_mockRecipeVariant.yeast);
