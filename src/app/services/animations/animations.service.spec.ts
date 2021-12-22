@@ -1,38 +1,53 @@
 /* Module imports */
 import { TestBed, getTestBed, async } from '@angular/core/testing';
 import { AnimationController } from '@ionic/angular';
-import { of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
+import { mockErrorReport } from '../../../../test-config/mock-models';
 import { AnimationControllerStub, AnimationStub, Renderer2Stub } from '../../../../test-config/ionic-stubs';
+import { ErrorReportingServiceStub } from '../../../../test-config/service-stubs';
+
+/* Interface imports */
+import { ErrorReport } from '../../shared/interfaces';
+
+/* Type imports */
+import { CustomError } from '../../shared/types';
 
 /* Service imports */
 import { AnimationsService } from './animations.service';
+import { ErrorReportingService } from '../error-reporting/error-reporting.service';
 
 
-describe('AnimationsService', () => {
-
-  let injector: TestBed;
-  let animationService: AnimationsService;
+describe('AnimationsService', (): void => {
   configureTestBed();
+  let injector: TestBed;
+  let service: AnimationsService;
+  let errorReporter: ErrorReportingService;
 
-  beforeAll(async(() => {
+  beforeAll(async((): void  => {
     TestBed.configureTestingModule({
       providers: [
         AnimationsService,
-        { provide: AnimationController, useClass: AnimationControllerStub }
+        { provide: AnimationController, useClass: AnimationControllerStub },
+        { provide: ErrorReportingService, useClass: ErrorReportingServiceStub }
       ]
     });
-
     injector = getTestBed();
-    animationService = injector.get(AnimationsService);
+    service = injector.get(AnimationsService);
+    errorReporter = injector.get(ErrorReportingService);
   }));
 
-  test('should create the service', () => {
-    expect(animationService).toBeDefined();
+  beforeEach((): void => {
+    errorReporter.handleGenericCatchError = jest.fn()
+      .mockImplementation((error: Error): Observable<never> => throwError(error));
+  });
+
+  test('should create the service', (): void => {
+    expect(service).toBeTruthy();
   });
 
   describe('Animations', (): void => {
@@ -40,26 +55,15 @@ describe('AnimationsService', () => {
     test('should get slide in animation with defaults', (): void => {
       const mockElem: HTMLElement = global.document.createElement('div');
       const _stubAnimation: AnimationStub = new AnimationStub();
-
-      animationService.animationCtrl.create = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-
-      _stubAnimation.addElement = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-      _stubAnimation.duration = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-      _stubAnimation.fromTo = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-
+      service.animationCtrl.create = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.addElement = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.duration = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.fromTo = jest.fn().mockReturnValue(_stubAnimation);
       const addSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'addElement');
       const durationSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'duration');
       const fromSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'fromTo');
 
-      animationService.slideIn(mockElem);
+      service.slideIn(mockElem);
 
       expect(addSpy).toHaveBeenCalledWith(mockElem);
       expect(durationSpy).toHaveBeenCalledWith(500);
@@ -70,44 +74,26 @@ describe('AnimationsService', () => {
     test('should get slide in animation with options', (): void => {
       const mockElem: HTMLElement = global.document.createElement('div');
       const _stubAnimation: AnimationStub = new AnimationStub();
-
-      animationService.animationCtrl.create = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-
-      _stubAnimation.addElement = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-      _stubAnimation.duration = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-      _stubAnimation.fromTo = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-
+      service.animationCtrl.create = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.addElement = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.duration = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.fromTo = jest.fn().mockReturnValue(_stubAnimation);
       const addSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'addElement');
       const durationSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'duration');
       const fromSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'fromTo');
 
-      animationService.slideIn(mockElem, {
-        duration: 250,
-        direction: 70
-      });
+      service.slideIn(mockElem, { duration: 250, direction: 70 });
 
       expect(addSpy).toHaveBeenCalledWith(mockElem);
       expect(durationSpy).toHaveBeenCalledWith(250);
       expect(fromSpy).toHaveBeenNthCalledWith(1, 'transform', 'translateX(70%)', 'translateX(0)');
       expect(fromSpy).toHaveBeenNthCalledWith(2, 'opacity', 0, 1);
 
-      animationService.slideIn(mockElem, {
-        duration: 500
-      });
+      service.slideIn(mockElem, { duration: 500 });
 
       expect(durationSpy).toHaveBeenNthCalledWith(2, 500);
 
-      animationService.slideIn(mockElem, {
-        direction: 100
-      });
+      service.slideIn(mockElem, { direction: 100 });
 
       expect(fromSpy).toHaveBeenNthCalledWith(5, 'transform', 'translateX(100%)', 'translateX(0)');
     });
@@ -115,26 +101,15 @@ describe('AnimationsService', () => {
     test('should get slide out animation with defaults', (): void => {
       const mockElem: HTMLElement = global.document.createElement('div');
       const _stubAnimation: AnimationStub = new AnimationStub();
-
-      animationService.animationCtrl.create = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-
-      _stubAnimation.addElement = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-      _stubAnimation.duration = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-      _stubAnimation.fromTo = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-
+      service.animationCtrl.create = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.addElement = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.duration = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.fromTo = jest.fn().mockReturnValue(_stubAnimation);
       const addSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'addElement');
       const durationSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'duration');
       const fromSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'fromTo');
 
-      animationService.slideOut(mockElem);
+      service.slideOut(mockElem);
 
       expect(addSpy).toHaveBeenCalledWith(mockElem);
       expect(durationSpy).toHaveBeenCalledWith(500);
@@ -145,44 +120,26 @@ describe('AnimationsService', () => {
     test('should get slide out animation with options', (): void => {
       const mockElem: HTMLElement = global.document.createElement('div');
       const _stubAnimation: AnimationStub = new AnimationStub();
-
-      animationService.animationCtrl.create = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-
-      _stubAnimation.addElement = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-      _stubAnimation.duration = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-      _stubAnimation.fromTo = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-
+      service.animationCtrl.create = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.addElement = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.duration = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.fromTo = jest.fn().mockReturnValue(_stubAnimation);
       const addSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'addElement');
       const durationSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'duration');
       const fromSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'fromTo');
 
-      animationService.slideOut(mockElem, {
-        duration: 250,
-        direction: 70
-      });
+      service.slideOut(mockElem, { duration: 250, direction: 70 });
 
       expect(addSpy).toHaveBeenCalledWith(mockElem);
       expect(durationSpy).toHaveBeenCalledWith(250);
       expect(fromSpy).toHaveBeenNthCalledWith(1, 'transform', 'translateX(0)', 'translateX(70%)');
       expect(fromSpy).toHaveBeenNthCalledWith(2, 'opacity', 1, 0);
 
-      animationService.slideOut(mockElem, {
-        duration: 500
-      });
+      service.slideOut(mockElem, { duration: 500 });
 
       expect(durationSpy).toHaveBeenNthCalledWith(2, 500);
 
-      animationService.slideOut(mockElem, {
-        direction: 100
-      });
+      service.slideOut(mockElem, { direction: 100 });
 
       expect(fromSpy).toHaveBeenNthCalledWith(5, 'transform', 'translateX(0)', 'translateX(100%)');
     });
@@ -190,175 +147,99 @@ describe('AnimationsService', () => {
     test('should get expand animation with defaults', (): void => {
       const mockElem: HTMLElement = global.document.createElement('div');
       const _stubAnimation: AnimationStub = new AnimationStub();
-
-      animationService.animationCtrl.create = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-
-      _stubAnimation.addElement = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-      _stubAnimation.duration = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-      _stubAnimation.fromTo = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-      _stubAnimation.easing = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-
+      service.animationCtrl.create = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.addElement = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.duration = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.fromTo = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.easing = jest.fn().mockReturnValue(_stubAnimation);
       const addSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'addElement');
       const durationSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'duration');
       const fromSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'fromTo');
       const easingSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'easing');
 
-      animationService.expand(mockElem);
+      service.expand(mockElem);
 
       expect(addSpy).toHaveBeenCalledWith(mockElem);
       expect(durationSpy).toHaveBeenCalledWith(250);
       expect(easingSpy).toHaveBeenCalledWith('ease-in');
-      expect(fromSpy).toHaveBeenNthCalledWith(1, 'transform', 'translateY(-50%)', 'translateY(0%)');
-      expect(fromSpy).toHaveBeenNthCalledWith(2, 'height', 0, 'auto');
-      expect(fromSpy).toHaveBeenNthCalledWith(3, 'opacity', 0, 1);
+      expect(fromSpy).toHaveBeenNthCalledWith(1, 'maxHeight', 0, '100vh');
+      expect(fromSpy).toHaveBeenNthCalledWith(2, 'opacity', 0, 1);
     });
 
     test('should get expand animation with options', (): void => {
       const mockElem: HTMLElement = global.document.createElement('div');
       const _stubAnimation: AnimationStub = new AnimationStub();
-
-      animationService.animationCtrl.create = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-
-      _stubAnimation.addElement = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-      _stubAnimation.duration = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-      _stubAnimation.fromTo = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-      _stubAnimation.easing = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-
+      service.animationCtrl.create = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.addElement = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.duration = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.fromTo = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.easing = jest.fn().mockReturnValue(_stubAnimation);
       const addSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'addElement');
       const durationSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'duration');
       const fromSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'fromTo');
       const easingSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'easing');
 
-      animationService.expand(mockElem, {
-        duration: 500,
-        direction: -20
-      });
+      service.expand(mockElem, { duration: 500 });
 
       expect(addSpy).toHaveBeenCalledWith(mockElem);
       expect(durationSpy).toHaveBeenCalledWith(500);
       expect(easingSpy).toHaveBeenCalledWith('ease-in');
-      expect(fromSpy).toHaveBeenNthCalledWith(1, 'transform', 'translateY(-20%)', 'translateY(0%)');
-      expect(fromSpy).toHaveBeenNthCalledWith(2, 'height', 0, 'auto');
-      expect(fromSpy).toHaveBeenNthCalledWith(3, 'opacity', 0, 1);
+      expect(fromSpy).toHaveBeenNthCalledWith(1, 'maxHeight', 0, '100vh');
+      expect(fromSpy).toHaveBeenNthCalledWith(2, 'opacity', 0, 1);
 
-      animationService.expand(mockElem, {
-        duration: 100
-      });
+      service.expand(mockElem, { duration: 100 });
 
       expect(durationSpy).toHaveBeenNthCalledWith(2, 100);
-
-      animationService.expand(mockElem, {
-        direction: 100
-      });
-
-      expect(fromSpy).toHaveBeenNthCalledWith(7, 'transform', 'translateY(100%)', 'translateY(0%)');
     });
 
     test('should get collapse animation with defaults', (): void => {
       const mockElem: HTMLElement = global.document.createElement('div');
       const _stubAnimation: AnimationStub = new AnimationStub();
-
-      animationService.animationCtrl.create = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-
-      _stubAnimation.addElement = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-      _stubAnimation.duration = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-      _stubAnimation.fromTo = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-
+      service.animationCtrl.create = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.addElement = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.duration = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.fromTo = jest.fn().mockReturnValue(_stubAnimation);
       const addSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'addElement');
       const durationSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'duration');
       const fromSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'fromTo');
 
-      animationService.collapse(mockElem);
+      service.collapse(mockElem);
 
       expect(addSpy).toHaveBeenCalledWith(mockElem);
       expect(durationSpy).toHaveBeenCalledWith(250);
-      expect(fromSpy).toHaveBeenNthCalledWith(1, 'transform', 'translateY(0%)', 'translateY(-50%)');
-      expect(fromSpy).toHaveBeenNthCalledWith(2, 'height', 'auto', 0);
-      expect(fromSpy).toHaveBeenNthCalledWith(3, 'opacity', 1, 0);
+      expect(fromSpy).toHaveBeenNthCalledWith(1, 'maxHeight', '100vh', 0);
+      expect(fromSpy).toHaveBeenNthCalledWith(2, 'opacity', 1, 0);
     });
 
     test('should get collapse animation with options', (): void => {
       const mockElem: HTMLElement = global.document.createElement('div');
       const _stubAnimation: AnimationStub = new AnimationStub();
-
-      animationService.animationCtrl.create = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-
-      _stubAnimation.addElement = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-      _stubAnimation.duration = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-      _stubAnimation.fromTo = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-
+      service.animationCtrl.create = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.addElement = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.duration = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.fromTo = jest.fn().mockReturnValue(_stubAnimation);
       const addSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'addElement');
       const durationSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'duration');
       const fromSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'fromTo');
 
-      animationService.collapse(mockElem, {
-        duration: 500,
-        direction: -20
-      });
+      service.collapse(mockElem, { duration: 500 });
 
       expect(addSpy).toHaveBeenCalledWith(mockElem);
       expect(durationSpy).toHaveBeenCalledWith(500);
-      expect(fromSpy).toHaveBeenNthCalledWith(1, 'transform', 'translateY(0%)', 'translateY(-20%)');
-      expect(fromSpy).toHaveBeenNthCalledWith(2, 'height', 'auto', 0);
-      expect(fromSpy).toHaveBeenNthCalledWith(3, 'opacity', 1, 0);
+      expect(fromSpy).toHaveBeenNthCalledWith(1, 'maxHeight', '100vh', 0);
+      expect(fromSpy).toHaveBeenNthCalledWith(2, 'opacity', 1, 0);
 
-      animationService.collapse(mockElem, {
-        duration: 100
-      });
+      service.collapse(mockElem, { duration: 100 });
 
       expect(durationSpy).toHaveBeenNthCalledWith(2, 100);
-
-      animationService.collapse(mockElem, {
-        direction: 100
-      });
-
-      expect(fromSpy).toHaveBeenNthCalledWith(7, 'transform', 'translateY(0%)', 'translateY(100%)');
     });
 
     test('should check if a hint animation has been shown', (): void => {
       const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
-
-      animationService.hintFlags.sliding.recipeDetail = true;
-
-      expect(animationService.shouldShowHint('sliding', 'recipeDetail')).toBe(false);
-      expect(animationService.shouldShowHint('sliding', 'recipe')).toBe(true);
-      expect(animationService.shouldShowHint('other', 'recipe')).toBe(true);
+      service.hintFlags.sliding.recipeDetail = true;
+      expect(service.shouldShowHint('sliding', 'recipeDetail')).toBe(false);
+      expect(service.shouldShowHint('sliding', 'recipe')).toBe(true);
+      expect(service.shouldShowHint('other', 'recipe')).toBe(true);
 
       const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
       expect(consoleCalls[0]).toMatch('Error getting hint show flag');
@@ -369,15 +250,16 @@ describe('AnimationsService', () => {
 
     test('should set hint shown flag', (): void => {
       const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
+      service.hintFlags.sliding.recipeDetail = false;
 
-      animationService.hintFlags.sliding.recipeDetail = false;
-      animationService.setHintShownFlag('sliding', 'recipeDetail');
-      expect(animationService.hintFlags.sliding.recipeDetail).toBe(true);
+      service.setHintShownFlag('sliding', 'recipeDetail');
 
-      expect(animationService.hintFlags.other).toBeUndefined();
-      animationService.setHintShownFlag('other', 'recipe');
-      expect(animationService.hintFlags.other).toBeUndefined();
+      expect(service.hintFlags.sliding.recipeDetail).toBe(true);
+      expect(service.hintFlags.other).toBeUndefined();
 
+      service.setHintShownFlag('other', 'recipe');
+
+      expect(service.hintFlags.other).toBeUndefined();
       const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
       expect(consoleCalls[0]).toMatch('Error setting hint show flag');
       expect(consoleCalls[1]).toMatch('other');
@@ -388,34 +270,19 @@ describe('AnimationsService', () => {
     test('should get sliding hint animation with defaults', (): void => {
       const mockElem: HTMLElement = global.document.createElement('div');
       const _stubAnimation: AnimationStub = new AnimationStub();
-
-      animationService.animationCtrl.create = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-
-      _stubAnimation.addElement = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-      _stubAnimation.duration = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-      _stubAnimation.delay = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-      _stubAnimation.easing = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-      _stubAnimation.keyframes = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-
+      service.animationCtrl.create = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.addElement = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.duration = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.delay = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.easing = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.keyframes = jest.fn().mockReturnValue(_stubAnimation);
       const addSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'addElement');
       const durationSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'duration');
       const delaySpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'delay');
       const easingSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'easing');
       const keyframesSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'keyframes');
 
-      animationService.slidingHint(mockElem, {});
+      service.slidingHint(mockElem, {});
 
       expect(addSpy).toHaveBeenCalledWith(mockElem);
       expect(durationSpy).toHaveBeenCalledWith(1000);
@@ -438,38 +305,19 @@ describe('AnimationsService', () => {
     test('should get sliding hint animation with options', (): void => {
       const mockElem: HTMLElement = global.document.createElement('div');
       const _stubAnimation: AnimationStub = new AnimationStub();
-
-      animationService.animationCtrl.create = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-
-      _stubAnimation.addElement = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-      _stubAnimation.duration = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-      _stubAnimation.delay = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-      _stubAnimation.easing = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-      _stubAnimation.keyframes = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-
+      service.animationCtrl.create = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.addElement = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.duration = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.delay = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.easing = jest.fn().mockReturnValue(_stubAnimation);
+      _stubAnimation.keyframes = jest.fn().mockReturnValue(_stubAnimation);
       const addSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'addElement');
       const durationSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'duration');
       const delaySpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'delay');
       const easingSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'easing');
       const keyframesSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'keyframes');
 
-      animationService.slidingHint(mockElem, {
-        duration: 800,
-        delay: 250,
-        distance: 100
-      });
+      service.slidingHint(mockElem, { duration: 800, delay: 250, distance: 100 });
 
       expect(addSpy).toHaveBeenCalledWith(mockElem);
       expect(durationSpy).toHaveBeenCalledWith(800);
@@ -500,13 +348,13 @@ describe('AnimationsService', () => {
       const _mockSampleElement: HTMLElement = global.document.createElement('div');
       Object.defineProperty(_mockSampleElement, 'clientHeight', { writable: false, value: 100 });
 
-      expect(animationService.getAboveFoldCount(_mockContainerElement, _mockSampleElement)).toEqual(10);
+      expect(service.getAboveFoldCount(_mockContainerElement, _mockSampleElement)).toEqual(10);
     });
 
     test('should handle error getting above the fold item count and return -1', (): void => {
       const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
 
-      expect(animationService.getAboveFoldCount(null, null)).toEqual(-1);
+      expect(service.getAboveFoldCount(null, null)).toEqual(-1);
 
       const consoleCalls: any[] = consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1];
       expect(consoleCalls[0]).toMatch('Error getting content height');
@@ -522,49 +370,35 @@ describe('AnimationsService', () => {
       Object.defineProperty(_mockIonItemOptions3, 'textContent', { writable: false, value: 'longest' });
 
       const _mockContainer: HTMLElement = global.document.createElement('div');
-      _mockContainer.querySelectorAll = jest
-        .fn()
+      _mockContainer.querySelectorAll = jest.fn()
         .mockReturnValue([ _mockIonItemOptions1, _mockIonItemOptions2, _mockIonItemOptions3 ]);
 
-      expect(animationService.getEstimatedItemOptionWidth(_mockContainer, 1, 2)).toEqual(157);
+      expect(service.getEstimatedItemOptionWidth(_mockContainer, 1, 2)).toEqual(157);
     });
 
     test('should get list of items to be animated', (): void => {
       const _mockContainer: HTMLElement = global.document.createElement('div');
       const _mockElems: HTMLElement[] = new Array(4).fill(global.document.createElement('div'));
-
-      animationService.getAboveFoldCount = jest
-        .fn()
+      service.getAboveFoldCount = jest.fn()
         .mockReturnValueOnce(3)
         .mockReturnValueOnce(-1);
-
-      _mockContainer.querySelectorAll = jest
-        .fn()
-        .mockReturnValue(_mockElems);
+      _mockContainer.querySelectorAll = jest.fn().mockReturnValue(_mockElems);
 
       // above fold count = 3
-      expect(animationService.getSlidingElements(_mockContainer, _mockContainer).length).toEqual(3);
-
+      expect(service.getSlidingElements(_mockContainer, _mockContainer).length).toEqual(3);
       // above fold count returns -1
-      expect(animationService.getSlidingElements(_mockContainer, _mockContainer).length).toEqual(2);
+      expect(service.getSlidingElements(_mockContainer, _mockContainer).length).toEqual(2);
     });
 
     test('should get sliding hint animations', (): void => {
       const mockElem1: HTMLElement = global.document.createElement('div');
       const mockElem2: HTMLElement = global.document.createElement('section');
       const _stubAnimation: AnimationStub = new AnimationStub();
+      service.slidingHint = jest.fn().mockReturnValue(_stubAnimation);
+      const animSpy: jest.SpyInstance = jest.spyOn(service, 'slidingHint');
 
-      animationService.slidingHint = jest
-        .fn()
-        .mockReturnValue(_stubAnimation);
-
-      const animSpy: jest.SpyInstance = jest.spyOn(animationService, 'slidingHint');
-
-      expect(animationService.getSlidingHintAnimations([mockElem1, mockElem2], 200, 0))
-        .toStrictEqual([
-          _stubAnimation,
-          _stubAnimation
-        ]);
+      expect(service.getSlidingHintAnimations([mockElem1, mockElem2], 200, 0))
+        .toStrictEqual([ _stubAnimation, _stubAnimation ]);
 
       expect(animSpy).toHaveBeenNthCalledWith(1, mockElem1, { delay: 0, distance: 200 });
       expect(animSpy).toHaveBeenNthCalledWith(2, mockElem2, { delay: 100, distance: 200 });
@@ -573,23 +407,17 @@ describe('AnimationsService', () => {
     test('should queue sliding hint animations', (done: jest.DoneCallback): void => {
       const _stubAnimation: AnimationStub = new AnimationStub();
       let callBack: () => void;
-
-      _stubAnimation.play = jest
-        .fn()
-        .mockReturnValue(Promise.resolve());
-      _stubAnimation.destroy = jest
-        .fn();
-      _stubAnimation.onFinish = jest
-        .fn()
+      _stubAnimation.play = jest.fn().mockReturnValue(Promise.resolve());
+      _stubAnimation.destroy = jest.fn();
+      _stubAnimation.onFinish = jest.fn()
         .mockImplementation((cb: () => void): Animation => {
           callBack = cb;
           return <any>_stubAnimation;
         });
-
       const playSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'play');
       const destroySpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'destroy');
 
-      animationService.queueAnimations([<any>_stubAnimation])[0]
+      service.queueAnimations([<any>_stubAnimation])[0]
         .subscribe(
           (): void => {
             expect(playSpy).toHaveBeenCalled();
@@ -609,24 +437,14 @@ describe('AnimationsService', () => {
       const _mockElem: HTMLElement = global.document.createElement('div');
       Object.defineProperty(_mockElem, 'clientWidth', { writable: false, value: 100 });
       const _stubAnimation: AnimationStub = new AnimationStub();
+      service.getSlidingElements = jest.fn().mockReturnValue([_mockElem]);
+      service.getSlidingHintAnimations = jest.fn().mockReturnValue([_stubAnimation]);
+      service.queueAnimations = jest.fn().mockReturnValue([of(null)]);
+      const getElemSpy: jest.SpyInstance = jest.spyOn(service, 'getSlidingElements');
+      const getAnimSpy: jest.SpyInstance = jest.spyOn(service, 'getSlidingHintAnimations');
+      const queueSpy: jest.SpyInstance = jest.spyOn(service, 'queueAnimations');
 
-      animationService.getSlidingElements = jest
-        .fn()
-        .mockReturnValue([_mockElem]);
-
-      animationService.getSlidingHintAnimations = jest
-        .fn()
-        .mockReturnValue([_stubAnimation]);
-
-      animationService.queueAnimations = jest
-        .fn()
-        .mockReturnValue([of(null)]);
-
-      const getElemSpy: jest.SpyInstance = jest.spyOn(animationService, 'getSlidingElements');
-      const getAnimSpy: jest.SpyInstance = jest.spyOn(animationService, 'getSlidingHintAnimations');
-      const queueSpy: jest.SpyInstance = jest.spyOn(animationService, 'queueAnimations');
-
-      animationService.playCombinedSlidingHintAnimations(_mockElem, _mockElem)
+      service.playCombinedSlidingHintAnimations(_mockElem, _mockElem)
         .subscribe(
           (): void => {
             expect(getElemSpy).toHaveBeenCalledWith(_mockElem, _mockElem);
@@ -643,12 +461,10 @@ describe('AnimationsService', () => {
 
     test('should get an error trying to play combined sliding hint animations', (done: jest.DoneCallback): void => {
       const _mockError: Error = new Error('test-error');
-
-      animationService.getSlidingElements = jest
-        .fn()
+      service.getSlidingElements = jest.fn()
         .mockImplementation((): any => { throw _mockError; });
 
-      animationService.playCombinedSlidingHintAnimations(null, null)
+      service.playCombinedSlidingHintAnimations(null, null)
         .subscribe(
           (results: any): void => {
             console.log('Should not get results', results);
@@ -665,31 +481,55 @@ describe('AnimationsService', () => {
       const _stubRenderer: Renderer2Stub = new Renderer2Stub();
       const _mockElem: HTMLElement = global.document.createElement('div');
       const _mockChildElem: HTMLElement = global.document.createElement('div');
-
-      _stubRenderer.addClass = jest
-        .fn();
-
-      _stubRenderer.removeClass = jest
-        .fn();
-
-      _mockElem.querySelectorAll = jest
-        .fn()
+      _stubRenderer.addClass = jest.fn();
+      _stubRenderer.removeClass = jest.fn();
+      _mockElem.querySelectorAll = jest.fn()
         .mockReturnValue([_mockChildElem]);
-
       const addSpy: jest.SpyInstance = jest.spyOn(_stubRenderer, 'addClass');
       const removeSpy: jest.SpyInstance = jest.spyOn(_stubRenderer, 'removeClass');
 
-      animationService.toggleSlidingItemClass(_mockElem, true, <any>_stubRenderer);
+      service.toggleSlidingItemClass(_mockElem, true, <any>_stubRenderer);
 
       expect(addSpy).toHaveBeenNthCalledWith(1, _mockChildElem, 'item-sliding-active-slide');
       expect(addSpy).toHaveBeenNthCalledWith(2, _mockChildElem, 'item-sliding-active-options-end');
       expect(removeSpy).not.toHaveBeenCalled();
 
-      animationService.toggleSlidingItemClass(_mockElem, false, <any>_stubRenderer);
+      service.toggleSlidingItemClass(_mockElem, false, <any>_stubRenderer);
 
       expect(removeSpy).toHaveBeenNthCalledWith(1, _mockChildElem, 'item-sliding-active-slide');
       expect(removeSpy).toHaveBeenNthCalledWith(2, _mockChildElem, 'item-sliding-active-options-end');
       expect(addSpy).toHaveBeenCalledTimes(2);
+    });
+
+  });
+
+
+  describe('Errors', (): void => {
+
+    test('should get an animation error', (): void => {
+      const customError: CustomError = service.getAnimationError();
+      expect(customError.name).toMatch('AnimationError');
+      expect(customError.message).toMatch('An error occurred playing sliding hint animations');
+      expect(customError.severity).toEqual(service.errorReporter.lowSeverity);
+      expect(customError.userMessage).toMatch('An error occurred playing sliding hint animations');
+    })
+
+    test('should report sliding hint error', (): void => {
+      const _mockErrorReport: ErrorReport = mockErrorReport();
+      Object.assign(service.errorReporter, { lowSeverity: 1 });
+      service.errorReporter.setErrorReport = jest.fn();
+      const setSpy: jest.SpyInstance = jest.spyOn(service.errorReporter, 'setErrorReport');
+      service.errorReporter.getCustomReportFromError = jest.fn()
+        .mockImplementation((error: Error): ErrorReport => _mockErrorReport);
+      const getSpy: jest.SpyInstance = jest.spyOn(service.errorReporter, 'getCustomReportFromError');
+
+      service.reportSlidingHintError();
+      const customError: CustomError = getSpy.mock.calls[0][0];
+      expect(customError.name).toMatch('AnimationError');
+      expect(customError.message).toMatch('Cannot find content container');
+      expect(customError.severity).toEqual(service.errorReporter.lowSeverity);
+      expect(customError.userMessage).toMatch('Cannot find content container');
+      expect(setSpy).toHaveBeenCalledWith(_mockErrorReport);
     });
 
   });
