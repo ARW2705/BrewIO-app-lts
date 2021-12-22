@@ -1,7 +1,7 @@
 /* Module imports */
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, forkJoin, of, throwError } from 'rxjs';
+import { forkJoin, Observable, of, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
 /* Constants imports */
@@ -14,7 +14,7 @@ import { Grains, Hops, LibraryStorage, Style, Yeast } from '../../shared/interfa
 import { CustomError } from '../../shared/types';
 
 /* Type guard imports */
-import { StyleGuardMetadata, GrainsGuardMetadata, HopsGuardMetadata, YeastGuardMetadata } from '../../shared/type-guard-metadata';
+import { GrainsGuardMetadata, HopsGuardMetadata, StyleGuardMetadata, YeastGuardMetadata } from '../../shared/type-guard-metadata';
 
 /* Service imports */
 import { ErrorReportingService } from '../error-reporting/error-reporting.service';
@@ -42,7 +42,7 @@ export class LibraryService {
   /**
    * Fetch all libraries from the server; overwrite any existing library
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   fetchAllLibrariesFromServer(): void {
@@ -68,7 +68,7 @@ export class LibraryService {
    * Fetch each library type to pre-load into memory, not to be used to return
    * the observables
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   fetchAllLibraries(): void {
@@ -79,9 +79,8 @@ export class LibraryService {
   /**
    * Helper method to fetch a library for a given type
    *
-   * @params: libraryName - the name of the library for the given type;
+   * @param: libraryName - the name of the library for the given type;
    * choices include 'grains', 'hops', 'yeast', or 'style'
-   *
    * @return: observable of requested library
    */
   fetchLibrary<T>(libraryName: string): Observable<T[]> {
@@ -104,8 +103,7 @@ export class LibraryService {
   /**
    * Fetch grains library
    *
-   * @params: none
-   *
+   * @param: none
    * @return: observable of array of grains
    */
   fetchGrainsLibrary(): Observable<Grains[]> {
@@ -115,8 +113,7 @@ export class LibraryService {
   /**
    * Fetch hops library
    *
-   * @params: none
-   *
+   * @param: none
    * @return: observable of array of hops
    */
   fetchHopsLibrary(): Observable<Hops[]> {
@@ -126,8 +123,7 @@ export class LibraryService {
   /**
    * Fetch yeast library
    *
-   * @params: none
-   *
+   * @param: none
    * @return: observable of array of yeast
    */
   fetchYeastLibrary(): Observable<Yeast[]> {
@@ -137,8 +133,7 @@ export class LibraryService {
   /**
    * Fetch style library
    *
-   * @params: none
-   *
+   * @param: none
    * @return: observable of array of style
    */
   fetchStyleLibrary(): Observable<Style[]> {
@@ -153,8 +148,7 @@ export class LibraryService {
   /**
    * Call get methods for each library type
    *
-   * @params: none
-   *
+   * @param: none
    * @return: combined observable of all library requests
    */
   getAllLibraries(): Observable<(Grains[] | Hops[] | Yeast[] | Style[])[]> {
@@ -170,8 +164,7 @@ export class LibraryService {
   /**
    * Get grains library from memory or fetch from server if not present
    *
-   * @params: none
-   *
+   * @param: none
    * @return: observable of array of grains
    */
   getGrainsLibrary(): Observable<Grains[]> {
@@ -181,8 +174,7 @@ export class LibraryService {
   /**
    * Get hops library from memory or fetch from server if not present
    *
-   * @params: none
-   *
+   * @param: none
    * @return: observable of array of hops
    */
   getHopsLibrary(): Observable<Hops[]> {
@@ -192,8 +184,7 @@ export class LibraryService {
   /**
    * Get yeast library from memory or fetch from server if not present
    *
-   * @params: none
-   *
+   * @param: none
    * @return: observable of array of yeast
    */
   getYeastLibrary(): Observable<Yeast[]> {
@@ -203,8 +194,7 @@ export class LibraryService {
   /**
    * Get style library from memory or fetch from server if not present
    *
-   * @params: none
-   *
+   * @param: none
    * @return: observable of array of style
    */
   getStyleLibrary(): Observable<Style[]> {
@@ -214,9 +204,8 @@ export class LibraryService {
   /**
    * Helper method to get a library for a given type
    *
-   * @params: libraryName - the name of the library for the given type;
+   * @param: libraryName - the name of the library for the given type;
    * choices include 'grains', 'hops', 'yeast', or 'style'
-   *
    * @return: observable of requested library
    */
   getIngredientById<T>(ingredientName: string, id: string): Observable<T> {
@@ -240,8 +229,7 @@ export class LibraryService {
   /**
    * Get grains by id, fetch the library if one is not present
    *
-   * @params: grainId - id of grains document to retrieve
-   *
+   * @param: grainId - id of grains document to retrieve
    * @return: observable of grains document
    */
   getGrainsById(grainId: string): Observable<Grains> {
@@ -251,8 +239,7 @@ export class LibraryService {
   /**
    * Get hops by id, fetch the library if one is not present
    *
-   * @params: hopsId - id of hops document to retrieve
-   *
+   * @param: hopsId - id of hops document to retrieve
    * @return: observable of hops document
    */
   getHopsById(hopsId: string): Observable<Hops> {
@@ -262,8 +249,7 @@ export class LibraryService {
   /**
    * Get yeast by id, fetch the library if one is not present
    *
-   * @params: yeastId - id of yeast document to retrieve
-   *
+   * @param: yeastId - id of yeast document to retrieve
    * @return: observable of yeast document
    */
   getYeastById(yeastId: string): Observable<Yeast> {
@@ -273,8 +259,7 @@ export class LibraryService {
   /**
    * Get style by id, fetch the library if one is not present
    *
-   * @params: styleId - id of yeast document to retrieve
-   *
+   * @param: styleId - id of yeast document to retrieve
    * @return: observable of style
    */
   getStyleById(styleId: string): Observable<Style> {
@@ -289,7 +274,7 @@ export class LibraryService {
   /**
    * Get all libraries that have been stored; do not overwrite any library that is already present
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   getAllLibrariesFromStorage(): void {
@@ -297,17 +282,17 @@ export class LibraryService {
       .subscribe(
         (libraries: LibraryStorage): void => {
           if (this.grainsLibrary === null) {
-             this.grainsLibrary = libraries.grains;
-           }
+            this.grainsLibrary = libraries.grains;
+          }
           if (this.hopsLibrary === null) {
-             this.hopsLibrary = libraries.hops;
-           }
+            this.hopsLibrary = libraries.hops;
+          }
           if (this.yeastLibrary === null) {
-             this.yeastLibrary = libraries.yeast;
-           }
+            this.yeastLibrary = libraries.yeast;
+          }
           if (this.styleLibrary === null) {
-             this.styleLibrary = libraries.style;
-           }
+            this.styleLibrary = libraries.style;
+          }
         },
         (error: any): void => this.errorReporter.handleUnhandledError(error)
       );
@@ -316,9 +301,8 @@ export class LibraryService {
   /**
    * Comparator to sort object alphabetically
    *
-   * @params: a - lefthand object to compare
-   * @params: b - righthand object to compare
-   *
+   * @param: a - lefthand object to compare
+   * @param: b - righthand object to compare
    * @return: -1 if lefthand should be first, 1 if righthand should be first,
    *          0 if equal
    */
@@ -338,7 +322,7 @@ export class LibraryService {
   /**
    * Update library storage
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   updateStorage(): void {
@@ -363,7 +347,6 @@ export class LibraryService {
    * Check if given grains object is valid by correctly implementing the Grains interface
    *
    * @param: grains - expects a Grains at runtime
-   *
    * @return: true if given grains correctly implements Grains interface
    */
   isSafeGrains(grains: any): boolean {
@@ -374,38 +357,26 @@ export class LibraryService {
    * Check if given hops object is valid by correctly implementing the Hops interface
    *
    * @param: hops - expects a Hops at runtime
-   *
    * @return: true if given hops correctly implements Hops interface
    */
   isSafeHops(hops: any): boolean {
-    if (!this.typeGuard.hasValidProperties(hops, HopsGuardMetadata)) {
-      return false;
-    }
-    return true;
+    return this.typeGuard.hasValidProperties(hops, HopsGuardMetadata);
   }
 
   /**
    * Check if given yeast object is valid by correctly implementing the Yeast interface
    *
    * @param: yeast - expects a Yeast at runtime
-   *
    * @return: true if given yeast correctly implements Yeast interface
    */
   isSafeYeast(yeast: any): boolean {
-    if (!this.typeGuard.hasValidProperties(yeast, YeastGuardMetadata)) {
-      return false;
-    }
-    if (!yeast.recommendedStyles.every((style: Style): boolean => this.isSafeStyle(style))) {
-      return false;
-    }
-    return true;
+    return this.typeGuard.hasValidProperties(yeast, YeastGuardMetadata);
   }
 
   /**
    * Check if given style object is valid by correctly implementing the Style interface
    *
    * @param: style - expects a Style at runtime
-   *
    * @return: true if given style correctly implements Style interface
    */
   isSafeStyle(style: any): boolean {
