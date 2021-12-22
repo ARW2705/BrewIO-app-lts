@@ -4,11 +4,9 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
-/* Page imports */
-import { QuantityHelperPage } from './quantity-helper.page';
-
 /* Component imports */
-import { HeaderComponentModule } from '../../components/shared/public';
+import { HeaderComponentModule } from '../../../shared/public';
+import { QuantityHelperComponent } from './quantity-helper.component';
 
 
 @NgModule({
@@ -19,10 +17,10 @@ import { HeaderComponentModule } from '../../components/shared/public';
     HeaderComponentModule
   ],
   declarations: [
-    QuantityHelperPage
+    QuantityHelperComponent
   ],
   exports: [
-    QuantityHelperPage
+    QuantityHelperComponent
   ]
 })
-export class QuantityHelperPageModule {}
+export class QuantityHelperComponentModule {}
