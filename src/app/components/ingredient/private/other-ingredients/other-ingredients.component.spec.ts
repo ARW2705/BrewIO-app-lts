@@ -58,7 +58,7 @@ describe('OtherIngredientsComponent', (): void => {
 
     fixture.detectChanges();
 
-    const items: NodeList = global.document.querySelectorAll('app-other-ingredients-item');
+    const items: NodeList = fixture.nativeElement.querySelectorAll('app-other-ingredients-item');
     expect(items.length).toEqual(_mockOtherIngredients.length);
     _mockOtherIngredients.forEach((other: OtherIngredients, index: number): void => {
       expect(items.item(index)['other']).toStrictEqual(other);
