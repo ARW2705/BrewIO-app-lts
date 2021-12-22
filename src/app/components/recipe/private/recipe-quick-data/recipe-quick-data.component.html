@@ -1,15 +1,13 @@
 <div  *ngIf="variant && style"
       id="calculated-values">
   <ion-grid>
-    <ion-row>
-      <ion-row id="values-header">
-        <ion-col class="col-left col-header">
-          Recipe
-        </ion-col>
-        <ion-col class="col-right col-header">
-          Style
-        </ion-col>
-      </ion-row>
+    <ion-row id="values-header">
+      <ion-col class="col-left col-header">
+        Recipe
+      </ion-col>
+      <ion-col class="col-right col-header">
+        Style
+      </ion-col>
     </ion-row>
     <!-- Original Gravity -->
     <ion-row>
@@ -24,6 +22,7 @@
         {{ style.originalGravity[0] | unitConversion:'density' }} - {{ style.originalGravity[1] | unitConversion:'density' }}
       </ion-col>
     </ion-row>
+
     <!-- Final Gravity -->
     <ion-row>
       <!-- Calculated final gravity -->
@@ -37,6 +36,7 @@
         {{ style.finalGravity[0] | unitConversion:'density' }} - {{ style.finalGravity[1] | unitConversion:'density' }}
       </ion-col>
     </ion-row>
+
     <!-- International Bittering Units -->
     <ion-row>
       <!-- Calculated IBU -->
@@ -50,6 +50,7 @@
         {{ style._id !== '-1' ? style.IBU[0]: '--' }} - {{ style._id !== '-1' ? style.IBU[1]: '--' }}
       </ion-col>
     </ion-row>
+
     <!-- Standard Research Method -->
     <ion-row>
       <!-- Calculated SRM -->
