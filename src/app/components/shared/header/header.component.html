@@ -35,12 +35,8 @@
       <ion-col  *ngIf="!isLoggedIn && !shouldHideLoginButton"
                 size="2"
                 class="ion-no-padding ion-align-self-center login-button">
-        <ion-button *ngIf="!isLoggedIn"
-                    (click)="openLoginSignup()">
-
-          <ion-icon name="log-in-outline">
-          </ion-icon>
-        </ion-button>
+        <app-login-signup-button [isIconButton]="true">
+        </app-login-signup-button>
       </ion-col>
 
     </ion-row>

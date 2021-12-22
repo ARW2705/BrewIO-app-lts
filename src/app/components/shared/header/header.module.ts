@@ -1,16 +1,18 @@
 /* Module imports */
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
+import { LoginSignupButtonComponentModule } from '../../user/public/login-signup-button/login-signup-button.module';
 import { HeaderComponent } from './header.component';
 
 
 @NgModule({
   imports: [
     CommonModule,
-    IonicModule
+    IonicModule,
+    LoginSignupButtonComponentModule
   ],
   declarations: [
     HeaderComponent
