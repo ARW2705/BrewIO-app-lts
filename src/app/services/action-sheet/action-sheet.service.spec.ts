@@ -17,45 +17,40 @@ import { ActionSheetService } from './action-sheet.service';
 
 
 describe('ActionSheetService', () => {
-
-  let injector: TestBed;
-  let actionSheetService: ActionSheetService;
-  let actionCtrl: ActionSheetController;
   configureTestBed();
+  let injector: TestBed;
+  let service: ActionSheetService;
+  let actionCtrl: ActionSheetController;
 
-  beforeAll(async(() => {
+  beforeAll(async((): void => {
     TestBed.configureTestingModule({
       providers: [
         ActionSheetService,
         { provide: ActionSheetController, useClass: ActionSheetControllerStub }
       ]
     });
-
     injector = getTestBed();
-    actionSheetService = injector.get(ActionSheetService);
+    service = injector.get(ActionSheetService);
     actionCtrl = injector.get(ActionSheetController);
   }));
 
-  test('should create the service', () => {
-    expect(actionSheetService).toBeDefined();
+  test('should create the service', (): void => {
+    expect(service).toBeDefined();
   });
 
-  test('should open action sheet with default options', (done: jest.DoneCallback) => {
+  test('should open action sheet with default options', (done: jest.DoneCallback): void => {
     const _mockActionSheetElement = mockActionSheetElement();
     let sheetOptions: any[];
-
-    actionCtrl.create = jest
-      .fn()
+    actionCtrl.create = jest.fn()
       .mockImplementation((...options: any[]): Promise<any> => {
         sheetOptions = options;
         return Promise.resolve(_mockActionSheetElement);
       });
-
     const createSpy: jest.SpyInstance = jest.spyOn(actionCtrl, 'create');
     const presentSpy: jest.SpyInstance = jest.spyOn(_mockActionSheetElement, 'present');
     const consoleSpy: jest.SpyInstance = jest.spyOn(console, 'log');
 
-    actionSheetService.openActionSheet('test', []);
+    service.openActionSheet('test', []);
 
     setTimeout(() => {
       sheetOptions[0].buttons[0].handler();
@@ -72,17 +67,13 @@ describe('ActionSheetService', () => {
 
   test('should open action sheet with additional buttons', (done: jest.DoneCallback) => {
     const _mockActionSheetElement = mockActionSheetElement();
-
-    actionCtrl.create = jest
-      .fn()
+    actionCtrl.create = jest.fn()
       .mockReturnValue(Promise.resolve(_mockActionSheetElement));
-
     const createSpy: jest.SpyInstance = jest.spyOn(actionCtrl, 'create');
     const presentSpy: jest.SpyInstance = jest.spyOn(_mockActionSheetElement, 'present');
-
     const _mockActionSheetButtons: ActionSheetButton[] = mockActionSheetButtons();
 
-    actionSheetService.openActionSheet('test', _mockActionSheetButtons, 'custom-class');
+    service.openActionSheet('test', _mockActionSheetButtons, 'custom-class');
 
     setTimeout(() => {
       expect(presentSpy).toHaveBeenCalled();
