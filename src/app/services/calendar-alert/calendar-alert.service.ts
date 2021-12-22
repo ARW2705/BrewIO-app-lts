@@ -2,7 +2,7 @@
 import { Injectable } from '@angular/core';
 
 /* Interface imports */
-import { Alert, BatchProcess, CalendarMetadata, CalendarProcess } from '../../shared/interfaces';
+import { Alert, BatchProcess } from '../../shared/interfaces';
 
 
 @Injectable({
@@ -10,12 +10,10 @@ import { Alert, BatchProcess, CalendarMetadata, CalendarProcess } from '../../sh
 })
 export class CalendarAlertService {
 
-  constructor() { }
-
   /**
    * Remove alerts for the current step
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   clearAlertsForCurrentStep(batchProcess: BatchProcess): void {
@@ -27,7 +25,7 @@ export class CalendarAlertService {
   /**
    * Get alerts associated with the current step
    *
-   * @params: none
+   * @param: none
    *
    * @return: Array of alerts
    */
@@ -40,8 +38,7 @@ export class CalendarAlertService {
   /**
    * Get alert for a particular step that is closest to the present datetime
    *
-   * @params: none
-   *
+   * @param: none
    * @return: alert that is closest to the current datetime
    */
   getClosestAlertByGroup(alerts: Alert[]): Alert {
