@@ -20,8 +20,8 @@ export class PreferencesService {
   /**
    * Get the preferred units system name
    *
-   * @params: none
-   * @params: none
+   * @param: none
+   * @return: none
    */
   getPreferredUnitSystemName(): string {
     return this.preferredUnitSystem;
@@ -30,7 +30,7 @@ export class PreferencesService {
   /**
    * Get selected units
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   getSelectedUnits(): SelectedUnits {
@@ -40,8 +40,7 @@ export class PreferencesService {
   /**
    * Check if density unit is either 'specific gravity', 'brix', or 'plato'
    *
-   * @params: unit - unit string to test
-   *
+   * @param: unit - unit string to test
    * @return: true if a valid unit
    */
   isValidDensityUnit(unit: string): boolean {
@@ -51,8 +50,7 @@ export class PreferencesService {
   /**
    * Check if temperature unit is either 'celsius' or 'fahrenheit'
    *
-   * @params: unit - unit string to test
-   *
+   * @param: unit - unit string to test
    * @return: true if a valid unit
    */
   isValidTemperatureUnit(unit: string): boolean {
@@ -62,8 +60,7 @@ export class PreferencesService {
   /**
    * Check if unit types are valid
    *
-   * @params: units - various unit strings to test
-   *
+   * @param: units - various unit strings to test
    * @return: true if all units are valid
    */
   isValidUnits(units: SelectedUnits): boolean {
@@ -79,11 +76,9 @@ export class PreferencesService {
   }
 
   /**
-   * Check if volume unit is either 'milliliter', 'liter', 'fluid ounce',
-   * or 'gallon'
+   * Check if volume unit is either 'milliliter', 'liter', 'fluid ounce', or 'gallon'
    *
-   * @params: unit - unit string to test
-   *
+   * @param: unit - unit string to test
    * @return: true if a valid unit
    */
   isValidVolumeUnit(unit: string): boolean {
@@ -93,8 +88,7 @@ export class PreferencesService {
   /**
    * Check if weight unit is either 'gram', 'kilogram', 'ounce', or 'pound'
    *
-   * @params: unit - unit string to test
-   *
+   * @param: unit - unit string to test
    * @return: true if a valid unit
    */
   isValidWeightUnit(unit: string): boolean {
@@ -104,8 +98,7 @@ export class PreferencesService {
   /**
    * Check if unit system is either 'metric', 'english standard', or 'other'
    *
-   * @params: system - system string to test
-   *
+   * @param: system - system string to test
    * @return: true if a valid unit
    */
   isValidSystem(system: string): boolean {
@@ -115,10 +108,9 @@ export class PreferencesService {
   /**
    * Set unit system
    *
-   * @params: preferredUnitSystem - unit system can be 'metric',
+   * @param: preferredUnitSystem - unit system can be 'metric',
    *          'english standard', or 'other'
-   * @params: units - the selected units
-   *
+   * @param: units - the selected units
    * @return: none
    */
   setUnits(preferredUnitSystem: string, units: SelectedUnits): void {

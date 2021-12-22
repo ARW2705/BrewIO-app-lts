@@ -15,9 +15,9 @@ import { PreferencesService } from './preferences.service';
 
 
 describe('PreferencesService', (): void => {
+  configureTestBed();
   let injector: TestBed;
   let preferenceService: PreferencesService;
-  configureTestBed();
 
   beforeAll(async((): void => {
     TestBed.configureTestingModule({
@@ -31,7 +31,7 @@ describe('PreferencesService', (): void => {
   });
 
   test('should create the service', (): void => {
-    expect(preferenceService).toBeDefined();
+    expect(preferenceService).toBeTruthy();
   });
 
   test('should get the current preferred unit system', (): void => {
@@ -57,38 +57,28 @@ describe('PreferencesService', (): void => {
 
   test('should check if units are valid', (): void => {
     let testCount: number = 0;
-
-    preferenceService.isValidSystem = jest
-      .fn()
+    preferenceService.isValidSystem = jest.fn()
       .mockImplementation((): boolean => {
         return testCount !== 1;
       });
-
-    preferenceService.isValidWeightUnit = jest
-      .fn()
+    preferenceService.isValidWeightUnit = jest.fn()
       .mockImplementation((): boolean => {
         return !(testCount === 2 || testCount === 3);
       });
-
-    preferenceService.isValidVolumeUnit = jest
-      .fn()
+    preferenceService.isValidVolumeUnit = jest.fn()
       .mockImplementation((): boolean => {
         return !(testCount === 4 || testCount === 5);
       });
-
-    preferenceService.isValidTemperatureUnit = jest
-      .fn()
+    preferenceService.isValidTemperatureUnit = jest.fn()
       .mockImplementation((): boolean => {
         return testCount !== 6;
       });
-
-    preferenceService.isValidDensityUnit = jest
-      .fn()
+    preferenceService.isValidDensityUnit = jest.fn()
       .mockImplementation((): boolean => {
         return testCount !== 7;
       });
-
     const _mockSelectedUnits: SelectedUnits = defaultEnglishUnits();
+
     for (; testCount < 8; testCount++) {
       expect(preferenceService.isValidUnits(_mockSelectedUnits)).toBe(testCount === 0);
     }
@@ -120,15 +110,8 @@ describe('PreferencesService', (): void => {
   test('should set the preferred unit system', (): void => {
     const _defaultEnglishUnits: SelectedUnits = defaultEnglishUnits();
     const _defaultMetricUnits: SelectedUnits = defaultMetricUnits();
-
-    preferenceService.isValidSystem = jest
-      .fn()
-      .mockReturnValue(true);
-
-    preferenceService.isValidUnits = jest
-      .fn()
-      .mockReturnValue(true);
-
+    preferenceService.isValidSystem = jest.fn().mockReturnValue(true);
+    preferenceService.isValidUnits = jest.fn().mockReturnValue(true);
     expect(preferenceService.preferredUnitSystem).toMatch('englishStandard');
     expect(preferenceService.units).toStrictEqual(_defaultEnglishUnits);
 
@@ -149,8 +132,8 @@ describe('PreferencesService', (): void => {
     expect(preferenceService.units).toStrictEqual(_defaultEnglishUnits);
     expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0]).toMatch('unit set error');
     expect(consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][1]).toMatch('invalid');
-
     _defaultMetricUnits.density.longName = 'invalid';
+
     preferenceService.setUnits('metric', _defaultMetricUnits);
 
     expect(preferenceService.preferredUnitSystem).toMatch('englishStandard');
