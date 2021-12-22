@@ -63,7 +63,7 @@ describe('CalendarInteractiveDisplayComponent', (): void => {
 
     fixture.detectChanges();
 
-    const buttons: NodeList = global.document.querySelectorAll('app-date-button');
+    const buttons: NodeList = fixture.nativeElement.querySelectorAll('app-date-button');
     expect(buttons.length).toEqual(42);
     const example: HTMLElement = <HTMLElement>buttons.item(0);
     expect(example['date']).toStrictEqual(_mockCalendarDate.mDate);
