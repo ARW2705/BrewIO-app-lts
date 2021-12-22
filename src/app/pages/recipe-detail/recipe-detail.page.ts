@@ -1,24 +1,18 @@
 /* Module imports */
 import { Component, ElementRef, OnDestroy, OnInit, QueryList, Renderer2, ViewChild, ViewChildren } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IonContent, IonItemSliding, IonList, ModalController } from '@ionic/angular';
-import { from, Subject } from 'rxjs';
+import { IonContent, IonItemSliding, IonList } from '@ionic/angular';
+import { Subject } from 'rxjs';
 import { finalize, takeUntil } from 'rxjs/operators';
 
 /* Interface imports */
 import { RecipeMaster, RecipeVariant } from '../../shared/interfaces';
 
-/* Type imports */
-import { CustomError } from '../../shared/types';
-
 /* Component imports */
-import { AccordionComponent } from '../../components/shared/public';
-
-/* Page imports */
-import { ConfirmationPage } from '../confirmation/confirmation.page';
+import { AccordionComponent, ConfirmationComponent } from '../../components/shared/public';
 
 /* Service imports */
-import { AnimationsService, ErrorReportingService, IdService, RecipeService, ToastService, UtilityService } from '../../services/services';
+import { AnimationsService, ErrorReportingService, IdService, ModalService, RecipeService, ToastService, UtilityService } from '../../services/services';
 
 
 @Component({
@@ -36,6 +30,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
   destroy$: Subject<boolean> = new Subject<boolean>();
   displayVariantList: RecipeVariant[] = null;
   noteIndex: number = -1;
+  oneSecond: number = 1000;
   recipeIndex: number = -1;
   recipeMaster: RecipeMaster = null;
   recipeMasterId: string = null;
@@ -46,7 +41,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
     public animationService: AnimationsService,
     public errorReporter: ErrorReportingService,
     public idService: IdService,
-    public modalCtrl: ModalController,
+    public modalService: ModalService,
     public recipeService: RecipeService,
     public renderer: Renderer2,
     public route: ActivatedRoute,
@@ -68,7 +63,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
           this.recipeMaster = recipeMaster;
           this.mapVariantList();
         },
-        (error: any): void => this.errorReporter.handleUnhandledError(error)
+        (error: Error): void => this.errorReporter.handleUnhandledError(error)
       );
   }
 
@@ -100,8 +95,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
   /**
    * Navigate to process page to start a new batch based on selected variant
    *
-   * @params: variant - recipe variant to be used as base for brew process
-   *
+   * @param: variant - recipe variant to be used as base for brew process
    * @return: none
    */
   navToBrewProcess(variant: RecipeVariant): void {
@@ -123,7 +117,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
         this.errorReporter.createErrorReport(
           'MissingError',
           message,
-          3,
+          this.errorReporter.moderateSeverity,
           message,
         )
       );
@@ -133,15 +127,14 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
   /**
    * Navigate to recipe form
    *
-   * @params: formType - which form type to open; either 'master' or 'variant'
-   * @params: [variant] - optional recipe variant to update
-   *
+   * @param: formType - which form type to open; either 'master' or 'variant'
+   * @param: [variant] - optional recipe variant to update
    * @return: none
    */
   navToRecipeForm(formType: string, variant?: RecipeVariant): void {
     const options: object = {
+      formType,
       docMethod: 'update',
-      formType: formType,
       masterData: this.recipeMaster
     };
 
@@ -162,7 +155,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
   /**
    * Navigate to the root recipe page
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   navToRoot(): void {
@@ -177,76 +170,25 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
   /**
    * Open confirmation modal prior to deletion
    *
-   * @params: index - index of recipe variant to delete
-   *
+   * @param: index - index of recipe master to delete
    * @return: none
    */
-  async confirmDelete(index: number): Promise<void> {
-    const modal: HTMLIonModalElement = await this.modalCtrl.create({
-      component: ConfirmationPage,
-      componentProps: {
+  confirmDelete(index: number): void {
+    this.modalService.openModal<boolean>(
+      ConfirmationComponent,
+      {
         message: `Confirm deletion of "${this.displayVariantList[index].variantName}"`,
         subMessage: 'This action cannot be reversed'
       }
-    });
-
-    from(modal.onDidDismiss())
-      .subscribe(
-        this.onConfirmDeleteModalSuccessDismiss(index),
-        this.onConfirmDeleteModalErrorDismiss()
-      );
-
-    return await modal.present();
-  }
-
-  /**
-   * Handle deletion confirmation modal dismiss error
-   *
-   * @params: none
-   *
-   * @return: callback function to handle erro
-   */
-  onConfirmDeleteModalErrorDismiss(): (error: string) => void {
-    return (error: string): void => {
-      this.errorReporter.setErrorReport(
-        this.errorReporter.createErrorReport(
-          'ModalError',
-          error,
-          3,
-          error
-        )
-      );
-    };
-  }
-
-  /**
-   * Handle deletion confirmation modal dismiss
-   *
-   * @params: index - index of recipe variant to delete
-   *
-   * @return: callback function to handle dimissal
-   */
-  onConfirmDeleteModalSuccessDismiss(index: number): (confirmation: object) => void {
-    return (confirmation: object): void => {
-      const confirmed: boolean = confirmation['data'];
-
-      if (confirmed) {
-        this.recipeService.removeRecipeVariantById(
-          this.idService.getId(this.recipeMaster),
-          this.idService.getId(this.displayVariantList[index])
-        )
-        .subscribe(
-          (): void => {
-            this.toastService.presentToast(
-              'Variant deleted!',
-              1500,
-              'middle'
-            );
-          },
-          (error: any): void => this.errorReporter.handleUnhandledError(error)
-        );
-      }
-    };
+    )
+    .subscribe(
+      (shouldDelete: boolean): void => {
+        if (shouldDelete) {
+          this.deleteVariant(index);
+        }
+      },
+      (error: Error): void => this.errorReporter.handleUnhandledError(error)
+    );
   }
 
   /***** End Modals *****/
@@ -257,7 +199,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
   /**
    * Toggle note display and button icon
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   expandNote(): void {
@@ -266,7 +208,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
       this.ionContent.scrollToPoint(
         0,
         this.getTotalOffsetTop(this.noteContainerScrollLandmark.container.nativeElement),
-        1000
+        this.oneSecond
       );
     }
   }
@@ -277,7 +219,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
    * @param: notesUpdate - the current notes array to apply
    * @return: none
    */
-  onNoteUpdate(notesUpdate: string[]): void {
+  noteUpdateEventHandler(notesUpdate: string[]): void {
     this.recipeService.updateRecipeMasterById(this.recipeMasterId, { notes: notesUpdate })
       .subscribe(
         (): void => {}, // no further actions required
@@ -291,9 +233,33 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
   /***** Recipe *****/
 
   /**
+   * Delete a Recipe Variant
+   *
+   * @param: index - index of recipe variant to delete
+   * @return: none
+   */
+  deleteVariant(index: number): void {
+    this.recipeService.removeRecipeVariantById(
+      this.idService.getId(this.recipeMaster),
+      this.idService.getId(this.displayVariantList[index])
+    )
+    .subscribe(
+      (): void => {
+        this.toastService.presentToast(
+          'Variant deleted!',
+          this.toastService.mediumDuration,
+          'middle',
+          'toast-bright'
+        );
+      },
+      (error: Error): void => this.errorReporter.handleUnhandledError(error)
+    );
+  }
+
+  /**
    * Select recipe variant to expand
    *
-   * @params: index - index for variant to expand, if index matches recipeIndex,
+   * @param: index - index for variant to expand, if index matches recipeIndex,
    * set recipeIndex to -1 instead
    *
    * @return: none
@@ -306,7 +272,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
       this.ionContent.scrollToPoint(
         0,
         this.getTotalOffsetTop(this.ingredientScrollLandmarks.toArray()[index]['el']),
-        1000
+        this.oneSecond
       );
     }
   }
@@ -315,14 +281,13 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
    * Get the height from offsetTop property from
    * a given element to the top of ion-content
    *
-   * @params: currentLevel - starting element
-   *
+   * @param: startLevel - starting element
    * @return: total offset top property to top of ion-content in pixels
    */
-  getTotalOffsetTop(currentLevel: Element): number {
+  getTotalOffsetTop(startLevel: Element): number {
+    let currentLevel = startLevel;
     try {
       let total: number = 0;
-
       while (currentLevel['offsetParent']['nodeName'] !== 'ION-CONTENT') {
         total += currentLevel['offsetTop'];
         currentLevel = currentLevel['offsetParent'];
@@ -338,7 +303,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
    * Map recipe variants to their own list;
    * Combine hops instances of the same type
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   mapVariantList(): void {
@@ -356,8 +321,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
   /**
    * Toggle isFavorite property of recipe
    *
-   * @params: variant - Recipe variant instance to modify
-   *
+   * @param: variant - Recipe variant instance to modify
    * @return: none
    */
   toggleFavorite(variant: RecipeVariant): void {
@@ -371,13 +335,13 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
         if (updatedRecipeVariant) {
           this.toastService.presentToast(
             `${updatedRecipeVariant.isFavorite ? 'Added to' : 'Removed from'} favorites`,
-            1500,
+            this.toastService.mediumDuration,
             'bottom',
             'toast-fav'
           );
         }
       },
-      (error: any): void => this.errorReporter.handleUnhandledError(error)
+      (error: Error): void => this.errorReporter.handleUnhandledError(error)
     );
   }
 
@@ -389,7 +353,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
   /**
    * Trigger horizontally sliding gesture hint animations
    *
-   * @params: none
+   * @param: none
    * @return: none
    */
   runSlidingHints() {
@@ -400,7 +364,6 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
     }
 
     this.toggleSlidingItemClass(true);
-
     const slideDistance: number = this.animationService.getEstimatedItemOptionWidth(
       this.slidingItemsListRef.nativeElement,
       this.recipeMaster.variants[0].isMaster ? 0 : 1,
@@ -415,7 +378,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
     .pipe(finalize((): void => this.toggleSlidingItemClass(false)))
     .subscribe(
       (): void => this.animationService.setHintShownFlag('sliding', 'recipeDetail'),
-      (error: any): void => this.errorReporter.handleUnhandledError(error)
+      (error: Error): void => this.errorReporter.handleUnhandledError(error)
     );
   }
 
@@ -423,9 +386,8 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
    * Toggle classes on IonItemSliding for hint animations;
    * This will show the IonOptions underneath the IonItem
    *
-   * @params: show - true if classes should be added prior to animation; false to remove classes
+   * @param: show - true if classes should be added prior to animation; false to remove classes
    *  after animations have completed
-   *
    * @return: none
    */
   toggleSlidingItemClass(show: boolean): void {

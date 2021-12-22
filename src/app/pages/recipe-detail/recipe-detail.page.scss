@@ -18,15 +18,18 @@
   }
 }
 
-#note-name {
-  /* Display */
-  padding: 0;
+#note-container {
+  ion-row {
+    /* Display */
+    width: 100%;
+    padding: 0;
 
-  /* Children */
-  button {
-    ion-icon {
-      /* Display */
-      padding-left: 10px;
+    /* Children */
+    button {
+      ion-icon {
+        /* Display */
+        padding-left: 10px;
+      }
     }
   }
 }
@@ -40,13 +43,13 @@
 
 #recipe-name {
   /* Text */
-  font-size: 2rem;
+  font-size: 2.5rem;
   text-align: center;
 }
 
 #style-name {
   /* Text */
-  font-size: 1.35rem;
+  font-size: 1.5rem;
   text-align: center;
 }
 
@@ -128,7 +131,11 @@
 }
 
 .recipe-summary-header {
-  ion-col {
+  /* Display */
+  width: 100%;
+
+  /* Children */
+  ion-row {
     span {
       /* Display */
       padding-left: 5px;

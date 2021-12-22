@@ -8,10 +8,9 @@ import { IonicModule } from '@ionic/angular';
 /* Component imports */
 import { IngredientListComponentModule } from '../../components/ingredient/public';
 import { NoteContainerComponentModule } from '../../components/note/public';
-import { AccordionComponentModule, HeaderComponentModule } from '../../components/shared/public';
+import { AccordionComponentModule, ConfirmationComponentModule, HeaderComponentModule } from '../../components/shared/public';
 
 /* Page imports */
-import { ConfirmationPageModule } from '../confirmation/confirmation.module';
 import { RecipeDetailPage } from './recipe-detail.page';
 
 /* Pipe imports */
@@ -20,7 +19,9 @@ import { RoundPipeModule, TruncatePipeModule, UnitConversionPipeModule } from '.
 
 @NgModule({
   imports: [
+    AccordionComponentModule,
     CommonModule,
+    ConfirmationComponentModule,
     FormsModule,
     IonicModule,
     RoundPipeModule,
@@ -28,8 +29,6 @@ import { RoundPipeModule, TruncatePipeModule, UnitConversionPipeModule } from '.
     UnitConversionPipeModule,
     NoteContainerComponentModule,
     HeaderComponentModule,
-    AccordionComponentModule,
-    ConfirmationPageModule,
     IngredientListComponentModule,
     RouterModule.forChild([{path: '', component: RecipeDetailPage}])
   ],

@@ -3,274 +3,149 @@
 </app-header>
 
 <ion-content [scrollEvents]="true">
-
-  <ion-grid id="variant-grid">
-
-    <ng-container *ngIf="recipeMaster">
-
-      <ion-row>
-
-        <ion-col id="recipe-name">
-          {{ recipeMaster.name | titlecase }}
-        </ion-col>
-
-      </ion-row>
-
-      <!-- Recipe master style name -->
-      <ion-row>
-
-        <ion-col id="style-name">
-          {{ recipeMaster.style.name }}
-        </ion-col>
-
-      </ion-row>
-
-      <!-- Open form to update recipe master button -->
-      <ion-row>
-
+  <ion-grid *ngIf="recipeMaster" id="variant-grid">
+    <ion-row  id="recipe-name"
+              class="ion-justify-content-center">
+      {{ recipeMaster.name | titlecase }}
+    </ion-row>
+    <ion-row  id="style-name"
+              class="ion-justify-content-center">
+      {{ recipeMaster.style.name }}
+    </ion-row>
+    <!-- Open form to update recipe master button -->
+    <ion-row>
+      <ion-button color="primary"
+                  (click)="navToRecipeForm('master')"
+                  class="form-button">
+        UPDATE SHARED VALUES
+      </ion-button>
+    </ion-row>
+    <!-- Open form to create new recipe for master -->
+    <ion-row>
+      <ion-button color="primary"
+                  (click)="navToRecipeForm('variant')"
+                  class="form-button">
+        ADD NEW VARIANT
+      </ion-button>
+    </ion-row>
+    <!-- Recipe master notes -->
+    <ion-row  *ngIf="recipeMaster"
+              id="note-container">
+      <ion-row id="note-name">
+        <!-- Toggle recipe master notes visible button -->
         <ion-button color="primary"
-                    (click)="navToRecipeForm('master')"
+                    (click)="expandNote()"
                     class="form-button">
-          UPDATE SHARED VALUES
+          {{ showNotes ? "HIDE" : "EXPAND" }} SHARED NOTES
         </ion-button>
-
       </ion-row>
-
-      <!-- Open form to create new recipe for master -->
       <ion-row>
-
-        <ion-button color="primary"
-                    (click)="navToRecipeForm('variant')"
-                    class="form-button">
-          ADD NEW VARIANT
-        </ion-button>
-
+        <app-accordion  [expanded]="showNotes"
+                        #noteContainerScrollLandmark>
+          <app-note-container (noteUpdateEvent)="noteUpdateEventHandler($event)"
+                              [isAddButtonDisabled]="false"
+                              noteType="master"
+                              [notes]="recipeMaster.notes">
+          </app-note-container>
+        </app-accordion>
       </ion-row>
-
-      <!-- Recipe master notes -->
-      <ion-row *ngIf="recipeMaster">
-
-        <ion-col  size="12"
-                  id="note-name">
-
-          <ion-row>
-
-            <!-- Toggle recipe master notes visible button -->
-            <ion-button color="primary"
-                        (click)="expandNote()"
-                        class="form-button">
-              {{ showNotes ? "HIDE" : "EXPAND" }} SHARED NOTES
-            </ion-button>
-
-          </ion-row>
-
-        </ion-col>
-
-        <ion-col  size="12"
-                  class="ion-no-padding">
-
-          <app-accordion  [expanded]="showNotes"
-                          #noteContainerScrollLandmark>
-
-            <app-note-container (noteUpdateEvent)="onNoteUpdate($event)"
-                                [isAddButtonDisabled]="false"
-                                noteType="master"
-                                [notes]="recipeMaster.notes">
-            </app-note-container>
-
-          </app-accordion>
-
-        </ion-col>
-
-      </ion-row>
-
-      <ion-row>
-
-        <ion-list #slidingItemsList
-                  id="variant-list">
-
-          <ng-container *ngFor="let variant of displayVariantList; index as i">
-
-            <!-- Recipe variant list -->
-            <ion-item-sliding class="recipe-item-sliding"
-                              #ingredientScrollLandmark>
-
-              <!-- Delete recipe variant button -->
-              <ion-item-options *ngIf="displayVariantList.length > 1"
-                                side="start">
-
-                <ion-item-option  color="danger"
-                                  (click)="confirmDelete(i)"
-                                  [disabled]="recipeMaster.variants.length < 2"
-                                  class="delete-button">
-
-                  <div class="sliding-button-container">
-
-                    <ion-icon name="trash"></ion-icon>
-
-                    <span>
-                      Delete
-                    </span>
-
-                  </div>
-
-                </ion-item-option>
-
-              </ion-item-options>
-
-              <!-- Toggle recipe ingredient list button -->
-              <ion-item button
-                        lines="none"
-                        (click)="expandRecipe(i)"
-                        class="ion-no-padding expand-button"
-                        data-sliding-item>
-
+    </ion-row>
+    <ion-row>
+      <ion-list #slidingItemsList
+                id="variant-list">
+        <ng-container *ngFor="let variant of displayVariantList; index as i">
+          <!-- Recipe variant list -->
+          <ion-item-sliding class="recipe-item-sliding"
+                            #ingredientScrollLandmark>
+            <!-- Delete recipe variant button -->
+            <ion-item-options *ngIf="displayVariantList.length > 1"
+                              side="start">
+              <ion-item-option  color="danger"
+                                (click)="confirmDelete(i)"
+                                [disabled]="recipeMaster.variants.length < 2"
+                                class="delete-button">
+                <div class="sliding-button-container">
+                  <ion-icon name="trash"></ion-icon>
+                  <span>Delete</span>
+                </div>
+              </ion-item-option>
+            </ion-item-options>
+            <!-- Toggle recipe ingredient list button -->
+            <ion-item button
+                      lines="none"
+                      (click)="expandRecipe(i)"
+                      class="ion-no-padding expand-button"
+                      data-sliding-item>
+              <!-- Recipe variant quick info -->
+              <ion-grid class="ion-no-padding">
+                <ion-row class="recipe-summary-header">
+                  <!-- Star icon if variant is the master -->
+                  <ion-icon *ngIf="variant.isMaster"
+                            name="star"
+                            color="primary">
+                  </ion-icon>
+                  <!-- Filled heart icon if variant is not the master, but is a favorite -->
+                  <ion-icon *ngIf="!variant.isMaster && variant.isFavorite"
+                            name="heart"
+                            color="danger">
+                  </ion-icon>
+                  <!-- Outlined heart icon if variant is not the master or a favorite -->
+                  <ion-icon *ngIf="!variant.isMaster && !variant.isFavorite"
+                            name="heart-outline"
+                            color="danger">
+                  </ion-icon>
+                  <span>{{ variant.variantName | titlecase }}</span>
+                </ion-row>
                 <!-- Recipe variant quick info -->
-                <ion-grid class="ion-no-padding">
-
-                  <ion-row class="recipe-summary-header">
-
-                    <ion-col>
-
-                      <!-- Star icon if variant is the master -->
-                      <ion-icon *ngIf="variant.isMaster"
-                                name="star"
-                                color="primary">
-                      </ion-icon>
-
-                      <!-- Filled heart icon if variant is not the master, but is a favorite -->
-                      <ion-icon *ngIf="!variant.isMaster && variant.isFavorite"
-                                name="heart"
-                                color="danger">
-                      </ion-icon>
-
-                      <!-- Outlined heart icon if variant is not the master or a favorite -->
-                      <ion-icon *ngIf="!variant.isMaster && !variant.isFavorite"
-                                name="heart-outline"
-                                color="danger">
-                      </ion-icon>
-
-                      <span>
-                        {{ variant.variantName | titlecase }}
-                      </span>
-
-                    </ion-col>
-
-                  </ion-row>
-
-                  <!-- Recipe variant quick info -->
-                  <ion-row>
-
-                    <ion-col>
-
-                      <p class="recipe-summary-subheader">
-
-                        <span>|</span>
-
-                        <span>
-                          {{ variant.batchVolume | unitConversion:'volumeLarge':true }}
-                        </span>
-
-                        <span>|</span>
-
-                        <span>
-                          {{ variant.ABV | truncate:1 }}% ABV
-                        </span>
-
-                        <span>|</span>
-
-                        <span>
-                          {{ variant.IBU | round }} IBU
-                        </span>
-
-                        <span>|</span>
-
-                        <span>
-                          {{ variant.SRM | round }} SRM
-                        </span>
-
-                        <span>|</span>
-
-                      </p>
-
-                    </ion-col>
-
-                  </ion-row>
-
-                </ion-grid>
-
-              </ion-item>
-
-              <ion-item-options side="end">
-
-                <!-- Toggle favorite if not the master -->
-                <ion-item-option  *ngIf="!variant.isMaster"
-                                  color="favorite"
-                                  (click)="toggleFavorite(variant)">
-
-                  <div class="sliding-button-container">
-
-                    <ion-icon name="heart"></ion-icon>
-
-                    <span>
-                      Fav
-                    </span>
-
-                  </div>
-
-                </ion-item-option>
-
-                <!-- Start a new brew session with this variant -->
-                <ion-item-option  color="secondary"
-                                  (click)="navToBrewProcess(variant)">
-
-                  <div class="sliding-button-container">
-
-                    <ion-icon name="beer"></ion-icon>
-
-                    <span>
-                      Brew
-                    </span>
-
-                  </div>
-
-                </ion-item-option>
-
-                <!-- Open recipe form to edit -->
-                <ion-item-option  color="tertiary"
-                                  (click)="navToRecipeForm('variant', variant)">
-
-                  <div class="sliding-button-container">
-
-                    <ion-icon name="construct-outline"></ion-icon>
-
-                    <span>
-                      Edit
-                    </span>
-
-                  </div>
-
-                </ion-item-option>
-
-              </ion-item-options>
-
-            </ion-item-sliding>
-
-            <!-- Ingredient list -->
-            <app-accordion [expanded]="recipeIndex === i">
-
-              <ingredient-list [recipeVariant]="variant"></ingredient-list>
-
-            </app-accordion>
-
-          </ng-container>
-
-        </ion-list>
-
-      </ion-row>
-
-    </ng-container>
-
+                <ion-row>
+                  <p class="recipe-summary-subheader">
+                    <span>|</span>
+                    <span>{{ variant.batchVolume | unitConversion:'volumeLarge':true }}</span>
+                    <span>|</span>
+                    <span>{{ variant.ABV | truncate:1 }}% ABV</span>
+                    <span>|</span>
+                    <span>{{ variant.IBU | round }} IBU</span>
+                    <span>|</span>
+                    <span>{{ variant.SRM | round }} SRM</span>
+                    <span>|</span>
+                  </p>
+                </ion-row>
+              </ion-grid>
+            </ion-item>
+            <ion-item-options side="end">
+              <!-- Toggle favorite if not the master -->
+              <ion-item-option  *ngIf="!variant.isMaster"
+                                color="favorite"
+                                (click)="toggleFavorite(variant)">
+                <div class="sliding-button-container">
+                  <ion-icon name="heart"></ion-icon>
+                  <span>Fav</span>
+                </div>
+              </ion-item-option>
+              <!-- Start a new brew session with this variant -->
+              <ion-item-option  color="secondary"
+                                (click)="navToBrewProcess(variant)">
+                <div class="sliding-button-container">
+                  <ion-icon name="beer"></ion-icon>
+                  <span>Brew</span>
+                </div>
+              </ion-item-option>
+              <!-- Open recipe form to edit -->
+              <ion-item-option  color="tertiary"
+                                (click)="navToRecipeForm('variant', variant)">
+                <div class="sliding-button-container">
+                  <ion-icon name="construct-outline"></ion-icon>
+                  <span>Edit</span>
+                </div>
+              </ion-item-option>
+            </ion-item-options>
+          </ion-item-sliding>
+          <!-- Ingredient list -->
+          <app-accordion [expanded]="recipeIndex === i">
+            <app-ingredient-list [recipeVariant]="variant"></app-ingredient-list>
+          </app-accordion>
+        </ng-container>
+      </ion-list>
+    </ion-row>
   </ion-grid>
-
 </ion-content>
