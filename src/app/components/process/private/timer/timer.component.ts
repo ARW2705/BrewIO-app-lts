@@ -74,15 +74,9 @@ export class TimerComponent implements OnInit {
     if (this.timerControlsContainer) {
       let animation: Animation;
       if (this.timer.show) {
-        animation = this.animationService.expand(
-          this.timerControlsContainer.nativeElement,
-          { direction: -20 }
-        );
+        animation = this.animationService.expand(this.timerControlsContainer.nativeElement);
       } else {
-        animation = this.animationService.collapse(
-          this.timerControlsContainer.nativeElement,
-          { direction: -20 }
-        );
+        animation = this.animationService.collapse(this.timerControlsContainer.nativeElement);
       }
       await animation.play();
     }

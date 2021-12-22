@@ -187,17 +187,17 @@ describe('TimerComponent', (): void => {
 
     fixture.detectChanges();
 
-    const header: HTMLElement = global.document.querySelector('app-process-header');
+    const header: HTMLElement = fixture.nativeElement.querySelector('app-process-header');
     expect(header['headerText']).toMatch(_mockTimer.timer.name);
     expect(header['isExpired']).toBe(false);
     expect(header['isPreview']).toBe(false);
-    const description: HTMLElement = global.document.querySelector('app-process-description');
+    const description: HTMLElement = fixture.nativeElement.querySelector('app-process-description');
     expect(description['description']).toMatch(_mockTimer.timer.description);
     expect(description['isDropDown']).toBe(true);
-    const circle: HTMLElement = global.document.querySelector('app-progress-circle');
+    const circle: HTMLElement = fixture.nativeElement.querySelector('app-progress-circle');
     expect(circle['settings']).toStrictEqual(_mockTimer.settings);
     expect(circle['showButton']).toBe(_mockTimer.timer.concurrent);
-    const controls: HTMLElement = global.document.querySelector('app-timer-controls');
+    const controls: HTMLElement = fixture.nativeElement.querySelector('app-timer-controls');
     expect(controls['processes']).toStrictEqual([_mockTimerProcess]);
     expect(controls['timers']).toStrictEqual([_mockTimer]);
   });
