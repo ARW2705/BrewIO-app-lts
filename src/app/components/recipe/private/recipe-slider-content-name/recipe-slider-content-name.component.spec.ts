@@ -39,8 +39,15 @@ describe('RecipeSliderContentNameComponent', (): void => {
 
   test('should create the component', (): void => {
     fixture.detectChanges();
-
     expect(component).toBeTruthy();
+  });
+
+  test('should render the template', (): void => {
+    fixture.detectChanges();
+
+    const labels: NodeList = fixture.nativeElement.querySelectorAll('ion-label');
+    expect((<Element>labels.item(0)).textContent.toLowerCase()).toMatch(_mockRecipeMasterActive.name.toLowerCase());
+    expect((<Element>labels.item(1)).textContent).toMatch(_mockRecipeMasterActive.style.name);
   });
 
 });
