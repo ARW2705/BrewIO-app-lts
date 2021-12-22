@@ -1,4 +1,5 @@
 /* Module imports */
+import { SimpleChange } from '@angular/core';
 import { TestBed, getTestBed, async } from '@angular/core/testing';
 import { BehaviorSubject } from 'rxjs';
 
@@ -14,7 +15,7 @@ import { UtilityService } from './utility.service';
 
 describe('UtilityService', () => {
   let injector: TestBed;
-  let utilService: UtilityService;
+  let service: UtilityService;
   configureTestBed();
 
   beforeAll(async((): void => {
@@ -27,19 +28,18 @@ describe('UtilityService', () => {
 
   beforeEach((): void => {
     injector = getTestBed();
-    utilService = injector.get(UtilityService);
+    service = injector.get(UtilityService);
   });
 
   test('should create the service', () => {
-    expect(utilService).toBeTruthy();
+    expect(service).toBeTruthy();
   });
-
 
   describe('Object Helpers', (): void => {
 
     test('should deep copy an object', (): void => {
       const _mockNestedObject: object = mockNestedObject();
-      const cloned: object = utilService.clone(_mockNestedObject);
+      const cloned: object = service.clone(_mockNestedObject);
       expect(cloned).not.toBe(_mockNestedObject);
       expect(cloned['a']).toBe(_mockNestedObject['a']);
       expect(cloned['b']['e']['f']).toBe(_mockNestedObject['b']['e']['f']);
@@ -48,11 +48,20 @@ describe('UtilityService', () => {
     });
 
     test('should compare object ids or compare the arguments themselves with no ids', (): void => {
-      expect(utilService.compareWith({_id: '1'}, {_id: '1'})).toBe(true);
-      expect(utilService.compareWith({_id: '1'}, {_id: '2'})).toBe(false);
-      expect(utilService.compareWith('a', 'a')).toBe(true);
-      expect(utilService.compareWith('a', 'b')).toBe(false);
-      expect(utilService.compareWith({_id: '1'}, null)).toBe(false);
+      expect(service.compareWith({_id: '1'}, {_id: '1'})).toBe(true);
+      expect(service.compareWith({_id: '1'}, {_id: '2'})).toBe(false);
+      expect(service.compareWith('a', 'a')).toBe(true);
+      expect(service.compareWith('a', 'b')).toBe(false);
+      expect(service.compareWith({_id: '1'}, null)).toBe(false);
+    });
+
+    test('shoudl check if object has property', (): void => {
+      const test: object = { a: 1, b: true, c: 'test' };
+
+      expect(service.hasProperty(test, 'a')).toBe(true);
+      expect(service.hasProperty(test, 'b')).toBe(true);
+      expect(service.hasProperty(test, 'c')).toBe(true);
+      expect(service.hasProperty(test, 'd')).toBe(false);
     });
 
   });
@@ -64,14 +73,14 @@ describe('UtilityService', () => {
       const sourceArray: number[] = [1, 2, 3, 4, 5];
       const _mockSubjectArray: BehaviorSubject<number>[] = mockSubjectArray<number>(sourceArray);
 
-      const converted: number[] = utilService.getArrayFromSubjects<number>(_mockSubjectArray);
+      const converted: number[] = service.getArrayFromSubjects<number>(_mockSubjectArray);
       expect(converted).toStrictEqual(sourceArray);
     });
 
     test('should map an array to an array of behavior subject', (): void => {
       const sourceArray: number[] = [1, 2, 3, 4, 5];
 
-      const converted: BehaviorSubject<number>[] = utilService.toSubjectArray(sourceArray);
+      const converted: BehaviorSubject<number>[] = service.toSubjectArray(sourceArray);
 
       converted.forEach((num$: BehaviorSubject<number>, index: number): void => {
         expect(num$.value).toEqual(index + 1);
@@ -84,24 +93,45 @@ describe('UtilityService', () => {
   describe('Formatting Helpers', (): void => {
 
     test('should round number to specified decimal places', (): void => {
-      expect(utilService.roundToDecimalPlace(Math.PI, 4)).toBe(3.1416);
-      expect(utilService.roundToDecimalPlace(Math.PI, 10)).toBe(3.1415926536);
-      expect(utilService.roundToDecimalPlace(Math.PI, 0)).toBe(3);
-      expect(utilService.roundToDecimalPlace(1.000, -2)).toBe(-1);
+      expect(service.roundToDecimalPlace(Math.PI, 4)).toBe(3.1416);
+      expect(service.roundToDecimalPlace(Math.PI, 10)).toBe(3.1415926536);
+      expect(service.roundToDecimalPlace(Math.PI, 0)).toBe(3);
+      expect(service.roundToDecimalPlace(1.000, -2)).toBe(-1);
     });
 
     test('should remove \'shared properties\'', (): void => {
       const _mockNestedObject: object = mockNestedObject();
-      _mockNestedObject[utilService.sharedProperties[0]] = {};
-      _mockNestedObject[utilService.staticLibraryProperties[0]] = {};
-      utilService.stripSharedProperties(_mockNestedObject);
-      expect(_mockNestedObject.hasOwnProperty(utilService.sharedProperties[0])).toBe(false);
-      expect(_mockNestedObject.hasOwnProperty(utilService.staticLibraryProperties[0])).toBe(true);
+      _mockNestedObject[service.sharedProperties[0]] = {};
+      _mockNestedObject[service.staticLibraryProperties[0]] = {};
+      service.stripSharedProperties(_mockNestedObject);
+      expect(_mockNestedObject.hasOwnProperty(service.sharedProperties[0])).toBe(false);
+      expect(_mockNestedObject.hasOwnProperty(service.staticLibraryProperties[0])).toBe(true);
     });
 
     test('should change string to title case', (): void => {
-      expect(utilService.toTitleCase('the quick brown fox jumps over the lazy dog'))
+      expect(service.toTitleCase('the quick brown fox jumps over the lazy dog'))
         .toMatch('The Quick Brown Fox Jumps Over The Lazy Dog');
+    });
+
+  });
+
+
+  describe('Lifecycle Helpers', (): void => {
+
+    test('should check if simple changes has new values', (): void => {
+      const change: SimpleChange = new SimpleChange(
+        { test: true, other: 1 },
+        { test: false, other: 1},
+        false
+      );
+      const nonChange: SimpleChange = new SimpleChange(
+        { test: true, other: 1 },
+        { test: true, other: 1 },
+        true
+      );
+
+      expect(service.hasChanges(change)).toBe(true);
+      expect(service.hasChanges(nonChange)).toBe(false);
     });
 
   });
