@@ -7,7 +7,7 @@ import * as moment from 'moment';
 import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
 
 /* Mock imports */
-import {  mockCalendarDate, mockCalendarProcess } from '../../../../../../test-config/mock-models';
+import { mockCalendarDate, mockCalendarProcess } from '../../../../../../test-config/mock-models';
 import { CalendarServiceStub, IdServiceStub } from '../../../../../../test-config/service-stubs';
 
 /* Interface imports*/
