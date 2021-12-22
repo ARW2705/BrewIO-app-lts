@@ -85,7 +85,7 @@ export class OtherIngredientsFormComponent implements AfterViewInit, OnDestroy, 
     this.otherIngredientsForm = this.formBuilder.group({
       description: [''  , [Validators.maxLength(DESCRIPTION_MAX_LENGTH), Validators.required]                                ],
       name       : [''  , [Validators.minLength(NAME_MIN_LENGTH), Validators.maxLength(NAME_MAX_LENGTH), Validators.required]],
-      quantity   : [null, [Validators.required, Validators.min(0)]                                                                              ],
+      quantity   : [null, [Validators.required, Validators.min(0)]                                                           ],
       type       : [''  , [Validators.maxLength(NAME_MAX_LENGTH), Validators.required]                                       ],
       units      : [''  , [Validators.maxLength(UNIT_NAME_MAX_LENGTH), Validators.required]                                  ]
     });
