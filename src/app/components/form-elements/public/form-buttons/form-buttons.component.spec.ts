@@ -61,7 +61,7 @@ describe('FormButtonsComponent', (): void => {
 
     fixture.detectChanges();
 
-    const buttons: NodeList = global.document.querySelectorAll('ion-button');
+    const buttons: NodeList = fixture.nativeElement.querySelectorAll('ion-button');
     const cancelButton: HTMLElement = <HTMLElement>buttons.item(0);
     expect(cancelButton.textContent).toMatch('Cancel');
     const submitButton: HTMLElement = <HTMLElement>buttons.item(1);
