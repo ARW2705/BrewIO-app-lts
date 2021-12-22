@@ -7,12 +7,12 @@ import { takeUntil } from 'rxjs/operators';
 /* Interface imports */
 import { User } from '../../shared/interfaces';
 
-/* Provider imports */
-import { ErrorReportingService, EventService, ToastService, UserService } from '../../services/services';
+/* Service imports */
+import { ErrorReportingService, EventService, UserService } from '../../services/services';
 
 
 @Component({
-  selector: 'page-home',
+  selector: 'app-page-home',
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss']
 })
@@ -33,20 +33,17 @@ export class HomePage implements OnInit, OnDestroy {
   constructor(
     public errorReporter: ErrorReportingService,
     public event: EventService,
-    public toastService: ToastService,
     public userService: UserService
   ) { }
 
   /***** Lifecycle Hooks *****/
 
-  ngOnInit() {
-    console.log('home page init');
+  ngOnInit(): void {
     this.registerEventListeners();
     this.listenForUserChanges();
   }
 
-  ngOnDestroy() {
-    console.log('home page destroy');
+  ngOnDestroy(): void {
     this.destroy$.next(true);
     this.destroy$.complete();
     this.event.unregister('scroll-in-sub-component');
@@ -103,7 +100,6 @@ export class HomePage implements OnInit, OnDestroy {
    * Scroll to a landmark on the parent page
    *
    * @params: idName - the name of the id landmark
-   *
    * @return: none
    */
   scrollToId(idName: string): void {
@@ -117,7 +113,6 @@ export class HomePage implements OnInit, OnDestroy {
    * Format welcome message
    *
    * @params: none
-   *
    * @return: welcome message string
    */
   setWelcomeMessage(): void {

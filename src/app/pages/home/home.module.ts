@@ -8,26 +8,21 @@ import { IonicModule } from '@ionic/angular';
 import { ActiveBatchListComponentModule } from '../../components/batch/public';
 import { InventoryComponentModule } from '../../components/inventory/public';
 import { AccordionComponentModule, HeaderComponentModule } from '../../components/shared/public';
-
-/* Page imports */
-import { ErrorReportPageModule } from '../error-report/error-report.module';
-import { LoginPageModule } from '../forms/login/login.module';
-import { SignupPageModule } from '../forms/signup/signup.module';
+import { LoginFormComponentModule } from '../../components/user/public/login-form/login-form.module';
+import { SignupFormComponentModule } from '../../components/user/public/signup-form/signup-form.module';
 import { HomePage } from './home.page';
-
 
 @NgModule({
   imports: [
-    CommonModule,
-    ErrorReportPageModule,
-    LoginPageModule,
-    SignupPageModule,
-    IonicModule,
-    RouterModule.forChild([ { path: '', component: HomePage } ]),
     AccordionComponentModule,
     ActiveBatchListComponentModule,
+    CommonModule,
+    HeaderComponentModule,
     InventoryComponentModule,
-    HeaderComponentModule
+    IonicModule,
+    LoginFormComponentModule,
+    RouterModule.forChild([ { path: '', component: HomePage } ]),
+    SignupFormComponentModule
   ],
   declarations: [
     HomePage

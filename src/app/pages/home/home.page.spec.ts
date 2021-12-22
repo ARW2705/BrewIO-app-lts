@@ -1,71 +1,41 @@
 /* Module imports */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { BehaviorSubject, of, throwError } from 'rxjs';
-import { IonicModule } from '@ionic/angular';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { of, throwError } from 'rxjs';
+import { IonContent, IonicModule } from '@ionic/angular';
 
 /* Test configuration imports */
 import { configureTestBed } from '../../../../test-config/configure-test-bed';
 
 /* Mock imports */
 import { mockUser } from '../../../../test-config/mock-models';
-import { ErrorReportingServiceStub, EventServiceStub, ToastServiceStub, UserServiceStub } from '../../../../test-config/service-stubs';
-import { AccordionComponentStub, ActiveBatchListComponentStub, InventoryComponentStub, HeaderComponentStub, LoginPageStub, SignupPageStub } from '../../../../test-config/component-stubs';
+import { ErrorReportingServiceStub, EventServiceStub, UserServiceStub } from '../../../../test-config/service-stubs';
+import { IonContentStub } from '../../../../test-config/ionic-stubs';
 
 /* Interface imports */
 import { User } from '../../shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService } from '../../services/error-reporting/error-reporting.service';
-import { EventService } from '../../services/event/event.service';
-import { ToastService } from '../../services/toast/toast.service';
-import { UserService } from '../../services/user/user.service';
-
-/* Component imports */
-import { AccordionComponent } from '../../components/components';
+import { ErrorReportingService, EventService, UserService } from '../../services/services'
 
 /* Page imports */
 import { HomePage } from './home.page';
 
-/* Modify accordion component */
-@Component({
-  selector: 'accordion',
-  template: '<div><ng-content></ng-content></div>',
-  providers: [
-    { provide: AccordionComponent, useClass: ModifiedAccordionStub }
-  ]
-})
-class ModifiedAccordionStub extends AccordionComponentStub {
-  constructor() {
-    super();
-  }
-}
-
 
 describe('HomePage', (): void => {
-  let fixture: ComponentFixture<HomePage>;
-  let homePage: HomePage;
-  let originalOnInit: any;
-  let originalOnDestroy: any;
-  let originalQuery: any;
   configureTestBed();
+  let fixture: ComponentFixture<HomePage>;
+  let page: HomePage;
+  let originalOnInit: () => void;
+  let originalOnDestroy: () => void;
 
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
-      declarations: [
-        HomePage,
-        ModifiedAccordionStub,
-        ActiveBatchListComponentStub,
-        InventoryComponentStub,
-        HeaderComponentStub,
-        LoginPageStub,
-        SignupPageStub
-      ],
-      imports: [ IonicModule ],
+      declarations: [ HomePage ],
+      imports: [ IonicModule.forRoot() ],
       providers: [
         { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: EventService, useClass: EventServiceStub },
-        { provide: ToastService, useClass: ToastServiceStub },
         { provide: UserService, useClass: UserServiceStub }
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
@@ -77,45 +47,27 @@ describe('HomePage', (): void => {
 
   beforeEach((): void => {
     fixture = TestBed.createComponent(HomePage);
-    homePage = fixture.componentInstance;
-    originalOnInit = homePage.ngOnInit;
-    originalOnDestroy = homePage.ngOnDestroy;
-    originalQuery = global.document.querySelector;
-    homePage.ngOnInit = jest
-      .fn();
-    homePage.ngOnDestroy = jest
-      .fn();
-    homePage.toastService.presentToast = jest
-      .fn();
-    homePage.toastService.presentErrorToast = jest
-      .fn();
-    homePage.errorReporter.handleUnhandledError = jest
-      .fn();
-  });
-
-  afterEach((): void => {
-    global.document.querySelector = originalQuery;
+    page = fixture.componentInstance;
+    originalOnInit = page.ngOnInit;
+    originalOnDestroy = page.ngOnDestroy;
+    page.ngOnInit = jest.fn();
+    page.ngOnDestroy = jest.fn();
+    page.errorReporter.handleUnhandledError = jest.fn();
   });
 
   test('should create the component', (): void => {
     fixture.detectChanges();
-
-    expect(homePage).toBeDefined();
+    expect(page).toBeDefined();
   });
 
   describe('Lifecycle', (): void => {
 
     test('should init the component', (): void => {
-      homePage.ngOnInit = originalOnInit;
-
-      homePage.registerEventListeners = jest
-        .fn();
-
-      homePage.listenForUserChanges = jest
-        .fn();
-
-      const registerSpy: jest.SpyInstance = jest.spyOn(homePage, 'registerEventListeners');
-      const listenSpy: jest.SpyInstance = jest.spyOn(homePage, 'listenForUserChanges');
+      page.ngOnInit = originalOnInit;
+      page.registerEventListeners = jest.fn();
+      page.listenForUserChanges = jest.fn();
+      const registerSpy: jest.SpyInstance = jest.spyOn(page, 'registerEventListeners');
+      const listenSpy: jest.SpyInstance = jest.spyOn(page, 'listenForUserChanges');
 
       fixture.detectChanges();
 
@@ -124,19 +76,15 @@ describe('HomePage', (): void => {
     });
 
     test('should handle destroying the component', (): void => {
-      homePage.ngOnDestroy = originalOnDestroy;
-
-      homePage.event.unregister = jest
-        .fn();
-
-      const nextSpy: jest.SpyInstance = jest.spyOn(homePage.destroy$, 'next');
-      const completeSpy: jest.SpyInstance = jest.spyOn(homePage.destroy$, 'complete');
-      const unregisterSpy: jest.SpyInstance = jest.spyOn(homePage.event, 'unregister');
+      page.ngOnDestroy = originalOnDestroy;
+      page.event.unregister = jest.fn();
+      const nextSpy: jest.SpyInstance = jest.spyOn(page.destroy$, 'next');
+      const completeSpy: jest.SpyInstance = jest.spyOn(page.destroy$, 'complete');
+      const unregisterSpy: jest.SpyInstance = jest.spyOn(page.event, 'unregister');
 
       fixture.detectChanges();
 
-      homePage.ngOnDestroy();
-
+      page.ngOnDestroy();
       expect(nextSpy).toHaveBeenCalledWith(true);
       expect(completeSpy).toHaveBeenCalled();
       expect(unregisterSpy).toHaveBeenCalledWith('scroll-in-sub-component');
@@ -145,262 +93,170 @@ describe('HomePage', (): void => {
   });
 
 
-  describe('Other', (): void => {
+  describe('Listeners', (): void => {
 
     test('should listen for user changes', (done: jest.DoneCallback): void => {
       const _mockUser: User = mockUser();
-      const _mockUser$: BehaviorSubject<User> = new BehaviorSubject<User>(_mockUser);
-
-      homePage.userService.getUser = jest
-        .fn()
-        .mockReturnValue(_mockUser$);
-
-      homePage.userService.isLoggedIn = jest
-        .fn()
+      page.userService.getUser = jest.fn()
+        .mockReturnValue(of(_mockUser));
+      page.userService.isLoggedIn = jest.fn()
         .mockReturnValue(true);
-
-      homePage.setWelcomeMessage = jest
-        .fn();
+      page.setWelcomeMessage = jest.fn();
+      const setSpy: jest.SpyInstance = jest.spyOn(page, 'setWelcomeMessage');
 
       fixture.detectChanges();
 
-      homePage.listenForUserChanges();
-
+      page.listenForUserChanges();
       setTimeout((): void => {
-        expect(homePage.user).toStrictEqual(_mockUser);
-        expect(homePage.isLoggedIn).toBe(true);
+        expect(page.user).toStrictEqual(_mockUser);
+        expect(page.isLoggedIn).toBe(true);
+        expect(setSpy).toHaveBeenCalled();
         done();
       }, 10);
     });
 
-    test('should handle error listening for user', (done: jest.DoneCallback): void => {
+    test('should handle error on user update', (done: jest.DoneCallback): void => {
       const _mockError: Error = new Error('test-error');
-
-      homePage.userService.getUser = jest
-        .fn()
+      page.userService.getUser = jest.fn()
         .mockReturnValue(throwError(_mockError));
-
-      // const toastSpy: jest.SpyInstance = jest.spyOn(homePage.toastService, 'presentErrorToast');
-
-      const errorSpy: jest.SpyInstance = jest.spyOn(homePage.errorReporter, 'handleUnhandledError');
+      const errorSpy: jest.SpyInstance = jest.spyOn(page.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
 
-      homePage.listenForUserChanges();
-
+      page.listenForUserChanges();
       setTimeout((): void => {
         expect(errorSpy).toHaveBeenCalledWith(_mockError);
-        // expect(toastSpy).toHaveBeenCalledWith('test-error');
         done();
       }, 10);
     });
 
     test('should register event listeners', (done: jest.DoneCallback): void => {
-      const _mockElement: HTMLElement = global.document.createElement('div');
-      Object.defineProperty(_mockElement, 'offsetTop', { writable: false, value: 50 });
-
-      global.document.querySelector = jest
-        .fn()
+      page.event.register = jest.fn()
+        .mockReturnValue(of({ subComponent: 'inventory', offset: 100 }));
+      const _mockElement: HTMLElement = document.createElement('div');
+      Object.defineProperty(_mockElement, 'offsetTop', { value: 50, writable: false });
+      document.querySelector = jest.fn()
         .mockReturnValue(_mockElement);
-
-      homePage.event.register = jest
-        .fn()
-        .mockReturnValue(of({
-          subComponent: 'inventory',
-          offset: 100
-        }));
+      const querySpy: jest.SpyInstance = jest.spyOn(document, 'querySelector');
 
       fixture.detectChanges();
 
-      homePage.ionContent.scrollToPoint = jest
-        .fn();
-
-      const scrollSpy: jest.SpyInstance = jest.spyOn(homePage.ionContent, 'scrollToPoint');
-
-      homePage.registerEventListeners();
-
+      const _stubIonContent: IonContent = ((new IonContentStub()) as unknown) as IonContent;
+      _stubIonContent.scrollToPoint = jest.fn();
+      const scrollSpy: jest.SpyInstance = jest.spyOn(_stubIonContent, 'scrollToPoint');
+      page.ionContent = _stubIonContent;
+      page.registerEventListeners();
       setTimeout((): void => {
-        expect(scrollSpy).toHaveBeenCalledWith(
-          0,
-          300,
-          1000
-        );
+        expect(querySpy).toHaveBeenCalledWith('#inventory-scroll-landmark');
+        expect(scrollSpy).toHaveBeenCalledWith(0, 50 + 100 + 150, page.oneSecond);
         done();
       }, 10);
-    });
-
-    test('should scroll to element at id', (): void => {
-      const _mockElement: HTMLElement = global.document.createElement('div');
-      Object.defineProperty(_mockElement, 'offsetTop', { writable: false, value: 50 });
-
-      global.document.querySelector = jest
-        .fn()
-        .mockReturnValue(_mockElement);
-
-      fixture.detectChanges();
-
-      homePage.ionContent.scrollToPoint = jest
-        .fn();
-
-      const scrollSpy: jest.SpyInstance = jest.spyOn(homePage.ionContent, 'scrollToPoint');
-      const querySpy: jest.SpyInstance = jest.spyOn(global.document, 'querySelector');
-
-      homePage.scrollToId('test-id');
-
-      expect(scrollSpy).toHaveBeenCalledWith(
-        0,
-        50,
-        1000
-      );
-      expect(querySpy).toHaveBeenCalledWith('#test-id');
-    });
-
-    test('should not scroll to null element', (): void => {
-      global.document.querySelector = jest
-        .fn()
-        .mockReturnValue(null);
-
-      fixture.detectChanges();
-
-      homePage.ionContent.scrollToPoint = jest
-        .fn();
-
-      const scrollSpy: jest.SpyInstance = jest.spyOn(homePage.ionContent, 'scrollToPoint');
-      const querySpy: jest.SpyInstance = jest.spyOn(global.document, 'querySelector');
-
-      homePage.scrollToId('test-id');
-
-      expect(querySpy).toHaveBeenCalledWith('#test-id');
-      expect(scrollSpy).not.toHaveBeenCalled();
-    });
-
-    test('should set the welcome message', (): void => {
-      const _mockUser: User = mockUser();
-      _mockUser.firstname = 'test-first-name';
-      _mockUser.username = 'test-user-name';
-
-      fixture.detectChanges();
-
-      expect(homePage.welcomeMessage.length).toEqual(0);
-
-      homePage.setWelcomeMessage();
-      expect(homePage.welcomeMessage).toMatch('Welcome to BrewIO');
-
-      homePage.user = _mockUser;
-      homePage.setWelcomeMessage();
-      expect(homePage.welcomeMessage).toMatch(`Welcome ${_mockUser.firstname} to BrewIO`);
-
-      delete homePage.user.firstname;
-      homePage.setWelcomeMessage();
-      expect(homePage.welcomeMessage).toMatch(`Welcome ${_mockUser.username} to BrewIO`);
-
-      delete homePage.user.username;
-      homePage.setWelcomeMessage();
-      expect(homePage.welcomeMessage).toMatch('Welcome to BrewIO');
-    });
-
-    test('should toggle showing active batches', (): void => {
-      homePage.scrollToId = jest
-        .fn();
-
-      const scrollSpy: jest.SpyInstance = jest.spyOn(homePage, 'scrollToId');
-
-      fixture.detectChanges();
-
-      homePage.toggleActiveBatches();
-
-      expect(homePage.showActiveBatches).toBe(true);
-      expect(homePage.firstActiveBatchesLoad).toBe(false);
-      expect(scrollSpy).toHaveBeenCalledWith('batch-scroll-landmark');
-
-      homePage.toggleActiveBatches();
-
-      expect(homePage.showActiveBatches).toBe(false);
-      expect(homePage.firstActiveBatchesLoad).toBe(false);
-      expect(scrollSpy).toHaveBeenCalledTimes(1);
-    });
-
-    test('should toggle showing inventory', (): void => {
-      homePage.scrollToId = jest
-        .fn();
-
-      const scrollSpy: jest.SpyInstance = jest.spyOn(homePage, 'scrollToId');
-
-      fixture.detectChanges();
-
-      homePage.toggleInventory();
-
-      expect(homePage.showInventory).toBe(true);
-      expect(homePage.firstInventoryLoad).toBe(false);
-      expect(scrollSpy).toHaveBeenCalledWith('inventory-scroll-landmark');
-
-      homePage.toggleInventory();
-
-      expect(homePage.showInventory).toBe(false);
-      expect(homePage.firstInventoryLoad).toBe(false);
-      expect(scrollSpy).toHaveBeenCalledTimes(1);
     });
 
   });
 
 
-  describe('Render Template', (): void => {
+  describe('Other Methods', (): void => {
 
-    test('should render the template with no user logged in and accordions expanded', (): void => {
-      homePage.setWelcomeMessage();
-      homePage.showActiveBatches = true;
-      homePage.firstActiveBatchesLoad = false;
-      homePage.showInventory = true;
-      homePage.firstInventoryLoad = false;
+    test('should scroll to given id', (): void => {
+      const _mockElement: HTMLElement = document.createElement('div');
+      Object.defineProperty(_mockElement, 'offsetTop', { value: 50, writable: false });
+      document.querySelector = jest.fn()
+        .mockReturnValue(_mockElement);
+      const querySpy: jest.SpyInstance = jest.spyOn(document, 'querySelector');
 
       fixture.detectChanges();
 
-      const welcomeElem: Element = fixture.nativeElement.querySelector('#welcome-message');
-      expect(welcomeElem.textContent).toMatch('Welcome to BrewIO');
-
-      const items: NodeList = fixture.nativeElement.querySelectorAll('ion-item');
-
-      const batchesItem: Element = <Element>items.item(0);
-      expect(batchesItem.children[0].textContent).toMatch('Hide Active Batches');
-
-      const activeBatchesElem: Element = fixture.nativeElement.querySelector('app-active-batch-list');
-      expect(activeBatchesElem.getAttribute('rootURL')).toMatch('tabs/home');
-
-      const inventoryItem: Element = <Element>items.item(1);
-      expect(inventoryItem.children[0].textContent).toMatch('Hide Inventory');
-
-      const inventoryElem: Element = fixture.nativeElement.querySelector('inventory');
-      expect(inventoryElem).toBeDefined();
+      const _stubIonContent: IonContent = ((new IonContentStub()) as unknown) as IonContent;
+      _stubIonContent.scrollToPoint = jest.fn();
+      const scrollSpy: jest.SpyInstance = jest.spyOn(_stubIonContent, 'scrollToPoint');
+      page.ionContent = _stubIonContent;
+      page.scrollToId('test-id');
+      expect(querySpy).toHaveBeenCalledWith('#test-id');
+      expect(scrollSpy).toHaveBeenCalledWith(0, 50, page.oneSecond);
     });
 
-    test('should render template with user logged in and accordions collapsed', (): void => {
+    test('should set welcome message with user', (): void => {
       const _mockUser: User = mockUser();
-
-      homePage.user = _mockUser;
-      homePage.setWelcomeMessage();
-      homePage.showActiveBatches = false;
-      homePage.firstActiveBatchesLoad = true;
-      homePage.showInventory = false;
-      homePage.firstInventoryLoad = true;
+      _mockUser.firstname = '';
+      page.user = _mockUser;
 
       fixture.detectChanges();
 
-      const welcomeElem: Element = fixture.nativeElement.querySelector('#welcome-message');
-      expect(welcomeElem.textContent).toMatch(`Welcome ${_mockUser.firstname} to BrewIO`);
+      page.setWelcomeMessage();
+      expect(page.welcomeMessage).toMatch(`Welcome ${_mockUser.username} to BrewIO`);
+      _mockUser.firstname = 'test-name';
 
-      const items: NodeList = fixture.nativeElement.querySelectorAll('ion-item');
+      fixture.detectChanges();
 
-      const batchesItem: Element = <Element>items.item(0);
-      expect(batchesItem.children[0].textContent).toMatch('Show Active Batches');
+      page.setWelcomeMessage();
+      expect(page.welcomeMessage).toMatch(`Welcome ${_mockUser.firstname} to BrewIO`);
+    });
 
-      const activeBatchesElem: Element = fixture.nativeElement.querySelector('active-batches');
-      expect(activeBatchesElem).toBeNull();
+    test('should set welcome message without a user', (): void => {
+      fixture.detectChanges();
 
-      const inventoryItem: Element = <Element>items.item(1);
-      expect(inventoryItem.children[0].textContent).toMatch('Show Inventory');
+      page.setWelcomeMessage();
+      expect(page.welcomeMessage).toMatch('Welcome to BrewIO');
+    });
 
-      const inventoryElem: Element = fixture.nativeElement.querySelector('inventory');
-      expect(inventoryElem).toBeNull();
+    test('should toggle show active batches', (): void => {
+      page.scrollToId = jest.fn();
+      const scrollSpy: jest.SpyInstance = jest.spyOn(page, 'scrollToId');
+      page.showActiveBatches = false;
+
+      fixture.detectChanges();
+
+      expect(page.firstActiveBatchesLoad).toBe(true);
+      page.toggleActiveBatches();
+      expect(scrollSpy).toHaveBeenCalledWith('batch-scroll-landmark');
+      expect(page.showActiveBatches).toBe(true);
+      expect(page.firstActiveBatchesLoad).toBe(false);
+      page.toggleActiveBatches();
+      expect(scrollSpy).toHaveBeenCalledTimes(1);
+      expect(page.showActiveBatches).toBe(false);
+    });
+
+    test('should toggle show inventory', (): void => {
+      page.scrollToId = jest.fn();
+      const scrollSpy: jest.SpyInstance = jest.spyOn(page, 'scrollToId');
+      page.showInventory = false;
+
+      fixture.detectChanges();
+
+      expect(page.firstInventoryLoad).toBe(true);
+      page.toggleInventory();
+      expect(scrollSpy).toHaveBeenCalledWith('inventory-scroll-landmark');
+      expect(page.showInventory).toBe(true);
+      expect(page.firstInventoryLoad).toBe(false);
+      page.toggleInventory();
+      expect(scrollSpy).toHaveBeenCalledTimes(1);
+      expect(page.showInventory).toBe(false);
+    });
+
+  });
+
+
+  describe('Template Render', (): void => {
+
+    test('should render the component', (): void => {
+      page.showActiveBatches = false;
+      page.showInventory = false;
+      page.welcomeMessage = 'Welcome to BrewIO';
+
+      fixture.detectChanges();
+
+      const mainImage: HTMLElement = fixture.nativeElement.querySelector('img');
+      expect(mainImage.getAttribute('alt')).toMatch('A glass of beer');
+      const welcomeMessage: HTMLElement = fixture.nativeElement.querySelector('h2');
+      expect(welcomeMessage.textContent).toMatch('Welcome to BrewIO');
+      const expandButtonLabels: NodeList = fixture.nativeElement.querySelectorAll('ion-label');
+      const batchButton: HTMLElement = <HTMLElement>expandButtonLabels.item(0);
+      expect(batchButton.textContent).toMatch('Show Active Batches');
+      const inventoryButton: HTMLElement = <HTMLElement>expandButtonLabels.item(1);
+      expect(inventoryButton.textContent).toMatch('Show Inventory');
+      const accordions: NodeList = fixture.nativeElement.querySelectorAll('app-accordion');
+      expect(accordions.length).toEqual(2);
     });
 
   });
