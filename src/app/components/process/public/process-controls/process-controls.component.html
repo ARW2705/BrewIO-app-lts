@@ -13,7 +13,7 @@
         </ion-icon>
       </ion-button>
     </ion-col>
-    <ng-container *ngIf="onCurrentStep && (!isCalendarStep || isCalendarInProgress)">
+    <ng-container *ngIf="isCurrentStep && (!isCalendarStep || isCalendarInProgress)">
       <!-- Show measurement form modal button if on current step and not choosing a calendar date -->
       <ion-col>
         <ion-button color="primary"
@@ -31,7 +31,7 @@
       </ion-col>
     </ng-container>
     <!-- Jump to current step - only if not on current step -->
-    <ion-col *ngIf="!onCurrentStep">
+    <ion-col *ngIf="!isCurrentStep">
       <ion-button color="primary"
                   (click)="goToActiveStep()"
                   class="nav-process-button">
@@ -39,7 +39,7 @@
       </ion-button>
     </ion-col>
     <!-- If on calendar step and has not already been started -->
-    <ion-col *ngIf="onCurrentStep && isCalendarStep && !isCalendarInProgress">
+    <ion-col *ngIf="isCurrentStep && isCalendarStep && !isCalendarInProgress">
       <ion-button color="primary"
                   (click)="startCalendar()"
                   class="nav-process-button">

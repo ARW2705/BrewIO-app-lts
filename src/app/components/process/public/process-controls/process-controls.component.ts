@@ -12,7 +12,7 @@ export class ProcessControlsComponent {
   @Input() atViewStart: boolean = false;
   @Input() isCalendarInProgress: boolean = false;
   @Input() isCalendarStep: boolean = false;
-  @Input() onCurrentStep: boolean = false;
+  @Input() isCurrentStep: boolean = false;
   @Output() changeStepEvent: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() completeStepEvent: EventEmitter<null> = new EventEmitter<null>();
   @Output() goToActiveStepEvent: EventEmitter<null> = new EventEmitter<null>();

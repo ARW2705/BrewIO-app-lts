@@ -103,7 +103,7 @@ describe('ProcessControlsComponent', (): void => {
 
   test('should render controls (at view start : on current step : not calendar step)', (): void => {
     component.atViewStart = true;
-    component.onCurrentStep = true;
+    component.isCurrentStep = true;
     component.isCalendarStep = false;
 
     fixture.detectChanges();
@@ -124,7 +124,7 @@ describe('ProcessControlsComponent', (): void => {
   test('should render controls (at view end : on current step : on calendar step)', (): void => {
     component.atViewStart = false;
     component.atViewEnd = true;
-    component.onCurrentStep = true;
+    component.isCurrentStep = true;
     component.isCalendarStep = true;
     component.isCalendarInProgress = false;
 
