@@ -38,12 +38,12 @@ describe('ProcessDescriptionComponent', (): void => {
 
   test('should create the component', (): void => {
     fixture.detectChanges();
-
     expect(component).toBeTruthy();
   });
 
   test('should set a default message if no description', (): void => {
     component.description = undefined;
+    
     fixture.detectChanges();
 
     component.ngOnChanges();
@@ -62,7 +62,7 @@ describe('ProcessDescriptionComponent', (): void => {
     component.ngOnChanges();
     const container: HTMLElement = fixture.debugElement.query(By.css('.drop-down')).nativeElement;
     expect(container.classList).toContain('drop-down');
-    const description: HTMLElement = global.document.querySelector('p');
+    const description: HTMLElement = fixture.nativeElement.querySelector('p');
     expect(description.textContent).toMatch(testDescription);
     expect(pipeSpy).toHaveBeenCalled();
   });
