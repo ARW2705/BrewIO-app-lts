@@ -33,7 +33,6 @@ describe('TimerButtonComponent', (): void => {
 
   test('should create the component', (): void => {
     fixture.detectChanges();
-
     expect(component).toBeTruthy();
   });
 
