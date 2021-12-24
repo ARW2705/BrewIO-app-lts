@@ -2,13 +2,13 @@
 import { ErrorHandler, Injectable, Injector } from '@angular/core';
 
 /* Constant imports */
-import { BUILTIN_ERROR_TYPES } from '../../shared/constants';
+import { BUILTIN_ERROR_TYPES } from '@shared/constants';
 
 /* Interface imports */
-import { ErrorReport } from '../../shared/interfaces';
+import { ErrorReport } from '@shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
+import { ErrorReportingService } from '@services/error-reporting/error-reporting.service';
 
 
 @Injectable({

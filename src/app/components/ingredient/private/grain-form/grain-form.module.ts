@@ -5,8 +5,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { FormInputComponentModule } from '../../../form-elements/public/form-input/form-input.module';
-import { FormSelectComponentModule } from '../../../form-elements/public/form-select/form-select.module';
+import { FormInputComponentModule } from '@components/form-elements/public/form-input/form-input.module';
+import { FormSelectComponentModule } from '@components/form-elements/public/form-select/form-select.module';
 import { GrainFormComponent } from './grain-form.component';
 
 

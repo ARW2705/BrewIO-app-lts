@@ -3,14 +3,14 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockAlertFuture, mockAlertPast, mockAlertPresent } from '../../../../../../test-config/mock-models';
-import { SortPipeStub } from '../../../../../../test-config/pipe-stubs';
+import { mockAlertFuture, mockAlertPast, mockAlertPresent } from '@test/mock-models';
+import { SortPipeStub } from '@test/pipe-stubs';
 
 /* Interface imports */
-import { Alert } from '../../../../shared/interfaces';
+import { Alert } from '@shared/interfaces';
 
 /* Component imports */
 import { ProcessCalendarAlertsComponent } from './process-calendar-alerts.component';

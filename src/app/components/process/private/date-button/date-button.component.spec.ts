@@ -4,10 +4,10 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import * as moment from 'moment';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { MomentPipeStub } from '../../../../../../test-config/pipe-stubs';
+import { MomentPipeStub } from '@test/pipe-stubs';
 
 /* Component imports */
 import { DateButtonComponent } from './date-button.component';

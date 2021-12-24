@@ -4,11 +4,11 @@ import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { FormSelectComponentModule } from '../../../form-elements/public';
-import { AccordionComponentModule, LoadingSpinnerComponentModule } from '../../../shared/public';
-import { InventoryItemComponentModule } from '../../private/inventory-item/inventory-item.module';
-import { InventorySliderComponentModule } from '../../private/inventory-slider/inventory-slider.module';
-import { InventoryFormComponentModule } from '../inventory-form/inventory-form.module';
+import { FormSelectComponentModule } from '@components/form-elements/public';
+import { InventoryItemComponentModule } from '@components/inventory/private/inventory-item/inventory-item.module';
+import { InventorySliderComponentModule } from '@components/inventory/private/inventory-slider/inventory-slider.module';
+import { InventoryFormComponentModule } from '@components/inventory/public/inventory-form/inventory-form.module';
+import { AccordionComponentModule, LoadingSpinnerComponentModule } from '@components/shared/public';
 import { InventoryComponent } from './inventory.component';
 
 

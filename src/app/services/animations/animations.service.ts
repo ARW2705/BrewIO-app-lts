@@ -4,11 +4,11 @@ import { Animation, AnimationController } from '@ionic/angular';
 import { forkJoin, Observable, Observer, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
-/* Servic eimports */
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
-
 /* Type imports */
-import { CustomError } from '../../shared/types';
+import { CustomError } from '@shared/types';
+
+/* Service imports */
+import { ErrorReportingService } from '@services/error-reporting/error-reporting.service';
 
 
 @Injectable({

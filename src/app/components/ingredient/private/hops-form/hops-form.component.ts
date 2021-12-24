@@ -5,10 +5,10 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 /* Interface imports */
-import { FormSelectOption, HopsSchedule, SelectedUnits } from '../../../../shared/interfaces';
+import { FormSelectOption, HopsSchedule, SelectedUnits } from '@shared/interfaces';
 
 /* Service imports */
-import { CalculationsService, FormValidationService, UtilityService } from '../../../../services/services';
+import { CalculationsService, FormValidationService, UtilityService } from '@services/public';
 
 
 @Component({

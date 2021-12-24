@@ -4,10 +4,10 @@ import { Platform } from '@ionic/angular';
 import { BackgroundMode } from '@ionic-native/background-mode/ngx';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { BackgroundModeStub, PlatformDevStub, PlatformCordovaStub } from '../../../../test-config/ionic-stubs';
+import { BackgroundModeStub, PlatformDevStub, PlatformCordovaStub } from '@test/ionic-stubs';
 
 /* Service imports */
 import { BackgroundModeService } from './background-mode.service';

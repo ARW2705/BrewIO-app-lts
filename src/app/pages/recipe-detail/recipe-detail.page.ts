@@ -6,13 +6,13 @@ import { Subject } from 'rxjs';
 import { finalize, takeUntil } from 'rxjs/operators';
 
 /* Interface imports */
-import { RecipeMaster, RecipeVariant } from '../../shared/interfaces';
+import { RecipeMaster, RecipeVariant } from '@shared/interfaces';
 
 /* Component imports */
-import { AccordionComponent, ConfirmationComponent } from '../../components/shared/public';
+import { AccordionComponent, ConfirmationComponent } from '@components/shared/public';
 
 /* Service imports */
-import { AnimationsService, ErrorReportingService, IdService, ModalService, RecipeService, ToastService, UtilityService } from '../../services/services';
+import { AnimationsService, ErrorReportingService, IdService, ModalService, RecipeService, ToastService, UtilityService } from '@services/public';
 
 
 @Component({

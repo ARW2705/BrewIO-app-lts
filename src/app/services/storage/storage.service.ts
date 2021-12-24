@@ -5,16 +5,16 @@ import { from, Observable, of, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
 /* Constant imports */
-import { MODERATE_SEVERITY } from '../../shared/constants';
+import { MODERATE_SEVERITY } from '@shared/constants';
 
 /* Interface imports */
-import { Batch, ErrorReport, InventoryItem, LibraryStorage, RecipeMaster, SelectedUnits, SyncMetadata, User } from '../../shared/interfaces';
+import { Batch, ErrorReport, InventoryItem, LibraryStorage, RecipeMaster, SelectedUnits, SyncMetadata, User } from '@shared/interfaces';
 
 /* Type imports */
-import { CustomError } from '../../shared/types';
+import { CustomError } from '@shared/types';
 
 /* Default imports */
-import { defaultEnglishUnits } from '../../shared/defaults';
+import { defaultEnglishUnits } from '@shared/defaults';
 
 
 @Injectable({

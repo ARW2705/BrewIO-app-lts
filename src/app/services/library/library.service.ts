@@ -5,21 +5,21 @@ import { forkJoin, Observable, of, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
 /* Constants imports */
-import { API_VERSION, BASE_URL } from '../../shared/constants';
+import { API_VERSION, BASE_URL } from '@shared/constants';
 
 /* Interface imports */
-import { Grains, Hops, LibraryStorage, Style, Yeast } from '../../shared/interfaces';
+import { Grains, Hops, LibraryStorage, Style, Yeast } from '@shared/interfaces';
 
 /* Type imports */
-import { CustomError } from '../../shared/types';
+import { CustomError } from '@shared/types';
 
 /* Type guard imports */
-import { GrainsGuardMetadata, HopsGuardMetadata, StyleGuardMetadata, YeastGuardMetadata } from '../../shared/type-guard-metadata';
+import { GrainsGuardMetadata, HopsGuardMetadata, StyleGuardMetadata, YeastGuardMetadata } from '@shared/type-guard-metadata';
 
 /* Service imports */
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
-import { StorageService } from '../storage/storage.service';
-import { TypeGuardService } from '../type-guard/type-guard.service';
+import { ErrorReportingService } from '@services/error-reporting/error-reporting.service';
+import { StorageService } from '@services/storage/storage.service';
+import { TypeGuardService } from '@services/type-guard/type-guard.service';
 
 
 @Injectable()

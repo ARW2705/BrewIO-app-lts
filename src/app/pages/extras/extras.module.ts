@@ -8,10 +8,10 @@ import { IonicModule } from '@ionic/angular';
 import { ExtrasPage } from './extras.page';
 
 /* Component imports */
-import { ActiveBatchListComponentModule } from '../../components/batch/public';
-import { InventoryComponentModule } from '../../components/inventory/public';
-import { AboutComponentModule, HeaderComponentModule, PreferencesComponentModule } from '../../components/shared/public';
-import { LoginSignupButtonComponentModule, UserComponentModule } from '../../components/user/public';
+import { ActiveBatchListComponentModule } from '@components/batch/public';
+import { InventoryComponentModule } from '@components/inventory/public';
+import { AboutComponentModule, HeaderComponentModule, PreferencesComponentModule } from '@components/shared/public';
+import { LoginSignupButtonComponentModule, UserComponentModule } from '@components/user/public';
 
 
 @NgModule({

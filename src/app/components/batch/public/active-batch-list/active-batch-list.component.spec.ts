@@ -5,17 +5,17 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockBatch, mockErrorReport } from '../../../../../../test-config/mock-models';
-import { AnimationsServiceStub, ErrorReportingServiceStub, IdServiceStub, ProcessServiceStub, ToastServiceStub, UtilityServiceStub } from '../../../../../../test-config/service-stubs';
+import { mockBatch, mockErrorReport } from '@test/mock-models';
+import { AnimationsServiceStub, ErrorReportingServiceStub, IdServiceStub, ProcessServiceStub, ToastServiceStub, UtilityServiceStub } from '@test/service-stubs';
 
 /* Interface imports */
-import { Batch, ErrorReport } from '../../../../shared/interfaces';
+import { Batch, ErrorReport } from '@shared/interfaces';
 
 /* Service imports */
-import { AnimationsService, ErrorReportingService, IdService, ProcessService, ToastService, UtilityService } from '../../../../services/services';
+import { AnimationsService, ErrorReportingService, IdService, ProcessService, ToastService, UtilityService } from '@services/public';
 
 /* Component imports */
 import { ActiveBatchListComponent } from './active-batch-list.component';

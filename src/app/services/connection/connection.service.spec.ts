@@ -5,10 +5,10 @@ import { Network } from '@ionic-native/network/ngx';
 import { of } from 'rxjs';
 
 /* Test configuration import */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { NetworkDevStub, NetworkCordovaStub, PlatformDevStub, PlatformCordovaStub } from '../../../../test-config/ionic-stubs';
+import { NetworkDevStub, NetworkCordovaStub, PlatformDevStub, PlatformCordovaStub } from '@test/ionic-stubs';
 
 /* Provider imports */
 import { ConnectionService } from './connection.service';

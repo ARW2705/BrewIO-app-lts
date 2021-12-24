@@ -4,14 +4,14 @@ import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 /* Pipe imports */
-import { UnitConversionPipeModule } from '../../../../pipes/pipes';
+import { UnitConversionPipeModule } from '@pipes/public';
 
 /* Component imports */
-import { AccordionComponentModule } from '../../../shared/public';
-import { ProcessDescriptionComponentModule } from '../process-description/process-description.module';
-import { ProcessHeaderComponentModule } from '../process-header/process-header.module';
-import { ProgressCircleComponentModule } from '../progress-circle/progress-circle.module';
-import { TimerControlsComponentModule } from '../timer-controls/timer-controls.module';
+import { ProcessDescriptionComponentModule } from '@components/process/private/process-description/process-description.module';
+import { ProcessHeaderComponentModule } from '@components/process/private/process-header/process-header.module';
+import { ProgressCircleComponentModule } from '@components/process/private/progress-circle/progress-circle.module';
+import { TimerControlsComponentModule } from '@components/process/private/timer-controls/timer-controls.module';
+import { AccordionComponentModule } from '@components/shared/public';
 import { TimerComponent } from './timer.component';
 
 @NgModule({

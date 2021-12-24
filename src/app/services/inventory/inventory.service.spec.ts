@@ -6,28 +6,28 @@ import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { BehaviorSubject, Observable, Subject, concat, forkJoin, of, throwError } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockAuthor, mockBatch, mockImage, mockImageRequestMetadata, mockInventoryItem, mockOptionalItemData, mockRecipeMasterActive, mockErrorResponse, mockStyles, mockSyncMetadata, mockSyncError, mockSyncResponse } from '../../../../test-config/mock-models';
-import { IdServiceStub, ConnectionServiceStub, ErrorReportingServiceStub, EventServiceStub, ImageServiceStub, LibraryServiceStub, HttpErrorServiceStub, ProcessServiceStub, RecipeServiceStub, StorageServiceStub, SyncServiceStub, ToastServiceStub, TypeGuardServiceStub, UserServiceStub, UtilityServiceStub } from '../../../../test-config/service-stubs';
-import { SplashScreenStub } from '../../../../test-config/ionic-stubs';
+import { mockAuthor, mockBatch, mockImage, mockImageRequestMetadata, mockInventoryItem, mockOptionalItemData, mockRecipeMasterActive, mockErrorResponse, mockStyles, mockSyncMetadata, mockSyncError, mockSyncResponse } from '@test/mock-models';
+import { IdServiceStub, ConnectionServiceStub, ErrorReportingServiceStub, EventServiceStub, ImageServiceStub, LibraryServiceStub, HttpErrorServiceStub, ProcessServiceStub, RecipeServiceStub, StorageServiceStub, SyncServiceStub, ToastServiceStub, TypeGuardServiceStub, UserServiceStub, UtilityServiceStub } from '@test/service-stubs';
+import { SplashScreenStub } from '@test/ionic-stubs';
 
 /* Constants imports */
-import { API_VERSION, BASE_URL } from '../../shared/constants';
+import { API_VERSION, BASE_URL } from '@shared/constants';
 
 /* Default imports */
-import { defaultImage } from '../../shared/defaults';
+import { defaultImage } from '@shared/defaults';
 
 /* Interface imports*/
-import { Author, Batch, Image, ImageRequestFormData, ImageRequestMetadata, InventoryItem, OptionalItemData, RecipeMaster, Style, SyncData, SyncRequests, SyncMetadata, SyncError, SyncResponse } from '../../shared/interfaces';
+import { Author, Batch, Image, ImageRequestFormData, ImageRequestMetadata, InventoryItem, OptionalItemData, RecipeMaster, Style, SyncData, SyncRequests, SyncMetadata, SyncError, SyncResponse } from '@shared/interfaces';
 
 /* Type imports */
-import { CustomError } from '../../shared/types';
+import { CustomError } from '@shared/types';
 
 /* Service imports */
+import { ConnectionService, ErrorReportingService, EventService, HttpErrorService, IdService, ImageService, LibraryService, ProcessService, RecipeService, StorageService, SyncService, ToastService, TypeGuardService, UserService, UtilityService } from '@services/public';
 import { InventoryService } from './inventory.service';
-import { ConnectionService, ErrorReportingService, EventService, HttpErrorService, IdService, ImageService, LibraryService, ProcessService, RecipeService, StorageService, SyncService, ToastService, TypeGuardService, UserService, UtilityService } from '../services';
 
 
 describe('InventoryService', (): void => {
@@ -1397,7 +1397,7 @@ describe('InventoryService', (): void => {
       expect(service.isSafeOptionalItemData(_mockOptionalItemData)).toBe(false);
       expect(service.isSafeOptionalItemData(_mockOptionalItemData)).toBe(true);
     });
-    
+
   });
 
 });

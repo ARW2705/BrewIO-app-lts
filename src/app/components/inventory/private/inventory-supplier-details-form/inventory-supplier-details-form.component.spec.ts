@@ -4,13 +4,13 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockImage } from '../../../../../../test-config/mock-models';
+import { mockImage } from '@test/mock-models';
 
 /* Interface imports */
-import { Image } from '../../../../shared/interfaces';
+import { Image } from '@shared/interfaces';
 
 /* Component imports */
 import { InventorySupplierDetailsFormComponent } from './inventory-supplier-details-form.component';

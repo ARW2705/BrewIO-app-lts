@@ -4,14 +4,14 @@ import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 /* Pipe imports */
-import { FormatTimePipeModule, UnitConversionPipeModule } from '../../../../pipes/pipes';
+import { FormatTimePipeModule, UnitConversionPipeModule } from '@pipes/public';
 
 /* Component imports */
-import { ProcessDescriptionComponentModule } from '../../private/process-description/process-description.module';
-import { ProcessHeaderComponentModule } from '../../private/process-header/process-header.module';
-import { ProcessPreviewContentComponentModule } from '../../private/process-preview-content/process-preview-content.module';
-import { TimerControlsComponentModule } from '../../private/timer-controls/timer-controls.module';
-import { TimerComponentModule } from '../../private/timer/timer.module';
+import { ProcessDescriptionComponentModule } from '@components/process/private/process-description/process-description.module';
+import { ProcessHeaderComponentModule } from '@components/process/private/process-header/process-header.module';
+import { ProcessPreviewContentComponentModule } from '@components/process/private/process-preview-content/process-preview-content.module';
+import { TimerControlsComponentModule } from '@components/process/private/timer-controls/timer-controls.module';
+import { TimerComponentModule } from '@components/process/private/timer/timer.module';
 import { ProcessTimerComponent } from './process-timer.component';
 
 

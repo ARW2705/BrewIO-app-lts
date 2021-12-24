@@ -4,22 +4,22 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { IonicModule, ModalController } from '@ionic/angular';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockGrains, mockGrainBill, mockHops, mockHopsSchedule, mockOtherIngredients, mockYeast, mockYeastBatch, mockEnglishUnits } from '../../../../../../test-config/mock-models';
-import { PreferencesServiceStub, UtilityServiceStub } from '../../../../../../test-config/service-stubs';
-import { GrainFormComponentStub, HeaderComponentStub } from '../../../../../../test-config/component-stubs';
-import { ModalControllerStub } from '../../../../../../test-config/ionic-stubs';
+import { mockGrains, mockGrainBill, mockHops, mockHopsSchedule, mockOtherIngredients, mockYeast, mockYeastBatch, mockEnglishUnits } from '@test/mock-models';
+import { PreferencesServiceStub, UtilityServiceStub } from '@test/service-stubs';
+import { GrainFormComponentStub, HeaderComponentStub } from '@test/component-stubs';
+import { ModalControllerStub } from '@test/ionic-stubs';
 
 /* Interface imports */
-import { FormSelectOption, Grains, GrainBill, Hops, HopsSchedule, OtherIngredients, Yeast, YeastBatch, SelectedUnits } from '../../../../shared/interfaces';
+import { FormSelectOption, Grains, GrainBill, Hops, HopsSchedule, OtherIngredients, Yeast, YeastBatch, SelectedUnits } from '@shared/interfaces';
 
 /* component imports */
-import { GrainFormComponent } from '../../private/grain-form/grain-form.component';
+import { GrainFormComponent } from '@components/ingredient/private/grain-form/grain-form.component';
 
 /* Service imports */
-import { PreferencesService, UtilityService } from '../../../../services/services';
+import { PreferencesService, UtilityService } from '@services/public';
 
 /* Page imports */
 import { IngredientFormComponent } from './ingredient-form.component';

@@ -7,23 +7,23 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockEnglishUnits, mockMetricUnits, mockUser } from '../../../../../test-config/mock-models';
-import { ErrorReportingServiceStub, PreferencesServiceStub, ToastServiceStub, UserServiceStub } from '../../../../../test-config/service-stubs';
+import { mockEnglishUnits, mockMetricUnits, mockUser } from '@test/mock-models';
+import { ErrorReportingServiceStub, PreferencesServiceStub, ToastServiceStub, UserServiceStub } from '@test/service-stubs';
 
 /* Default imports */
-import { defaultEnglishUnits, defaultMetricUnits } from '../../../shared/defaults';
+import { defaultEnglishUnits, defaultMetricUnits } from '@shared/defaults';
 
 /* Interface imports */
-import { SelectedUnits, Unit, User } from '../../../shared/interfaces';
+import { SelectedUnits, Unit, User } from '@shared/interfaces';
 
 /* Type impots */
-import { CustomError } from '../../../shared/types';
+import { CustomError } from '@shared/types';
 
 /* Service imports */
-import { ErrorReportingService, PreferencesService, ToastService, UserService } from '../../../services/services';
+import { ErrorReportingService, PreferencesService, ToastService, UserService } from '@services/public';
 
 /* Component imports */
 import { PreferencesComponent } from './preferences.component';

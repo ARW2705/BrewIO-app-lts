@@ -6,21 +6,21 @@ import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { forkJoin, of, throwError } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockAuthor, mockBatch, mockInventoryItem, mockImage, mockStyles } from '../../../../../../test-config/mock-models';
-import { ErrorReportingServiceStub, IdServiceStub, LibraryServiceStub, RecipeServiceStub } from '../../../../../../test-config/service-stubs';
-import { LoadingControllerStub, ModalControllerStub } from '../../../../../../test-config/ionic-stubs';
+import { mockAuthor, mockBatch, mockInventoryItem, mockImage, mockStyles } from '@test/mock-models';
+import { ErrorReportingServiceStub, IdServiceStub, LibraryServiceStub, RecipeServiceStub } from '@test/service-stubs';
+import { LoadingControllerStub, ModalControllerStub } from '@test/ionic-stubs';
 
 /* Default imports */
-import { defaultImage } from '../../../../shared/defaults';
+import { defaultImage } from '@shared/defaults';
 
 /* Interface imports */
-import { Author, Batch, Image, InventoryItem, Style } from '../../../../shared/interfaces';
+import { Author, Batch, Image, InventoryItem, Style } from '@shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService, IdService, LibraryService, RecipeService } from '../../../../services/services';
+import { ErrorReportingService, IdService, LibraryService, RecipeService } from '@services/public';
 
 /* Page imports */
 import { InventoryFormComponent } from './inventory-form.component';

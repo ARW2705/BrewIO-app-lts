@@ -3,13 +3,13 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockRecipeMasterActive } from '../../../../../../test-config/mock-models';
+import { mockRecipeMasterActive } from '@test/mock-models';
 
 /* Interface imports */
-import { RecipeMaster, RecipeVariant } from '../../../../shared/interfaces';
+import { RecipeMaster, RecipeVariant } from '@shared/interfaces';
 
 /* Component imports */
 import { RecipeSliderComponent } from './recipe-slider.component';

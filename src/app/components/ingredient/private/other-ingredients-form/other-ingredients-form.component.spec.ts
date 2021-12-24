@@ -4,14 +4,14 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockOtherIngredients } from '../../../../../../test-config/mock-models';
-import { FormInputComponentStub } from '../../../../../../test-config/component-stubs';
+import { mockOtherIngredients } from '@test/mock-models';
+import { FormInputComponentStub } from '@test/component-stubs';
 
 /* Interface imports */
-import { OtherIngredients } from '../../../../shared/interfaces';
+import { OtherIngredients } from '@shared/interfaces';
 
 /* Component imports */
 import { OtherIngredientsFormComponent } from './other-ingredients-form.component';

@@ -5,18 +5,18 @@ import { of, throwError } from 'rxjs';
 import { IonContent, IonicModule } from '@ionic/angular';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockUser } from '../../../../test-config/mock-models';
-import { ErrorReportingServiceStub, EventServiceStub, UserServiceStub } from '../../../../test-config/service-stubs';
-import { IonContentStub } from '../../../../test-config/ionic-stubs';
+import { mockUser } from '@test/mock-models';
+import { ErrorReportingServiceStub, EventServiceStub, UserServiceStub } from '@test/service-stubs';
+import { IonContentStub } from '@test/ionic-stubs';
 
 /* Interface imports */
-import { User } from '../../shared/interfaces';
+import { User } from '@shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService, EventService, UserService } from '../../services/services'
+import { ErrorReportingService, EventService, UserService } from '@services/public'
 
 /* Page imports */
 import { HomePage } from './home.page';

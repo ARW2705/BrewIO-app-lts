@@ -4,10 +4,10 @@ import { BehaviorSubject, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 /* Interface imports */
-import { Timer, TimerProcess } from '../../../../shared/interfaces';
+import { Timer, TimerProcess } from '@shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService, IdService, TimerService, ToastService, UtilityService } from '../../../../services/services';
+import { ErrorReportingService, IdService, TimerService, ToastService, UtilityService } from '@services/public';
 
 
 @Component({

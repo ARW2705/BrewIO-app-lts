@@ -4,10 +4,10 @@ import { FormControl, Validators } from '@angular/forms';
 import { ModalController } from '@ionic/angular';
 
 /* Constant imports */
-import { DESCRIPTION_MAX_LENGTH } from '../../../../shared/constants';
+import { DESCRIPTION_MAX_LENGTH } from '@shared/constants';
 
 /* Service imports */
-import { UtilityService } from '../../../../services/services';
+import { UtilityService } from '@services/public';
 
 
 @Component({

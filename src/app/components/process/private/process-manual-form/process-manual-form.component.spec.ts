@@ -4,13 +4,13 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockManualProcess } from '../../../../../../test-config/mock-models';
+import { mockManualProcess } from '@test/mock-models';
 
 /* Interface imports */
-import { ManualProcess } from '../../../../shared/interfaces';
+import { ManualProcess } from '@shared/interfaces';
 
 /* Component imports */
 import { ProcessManualFormComponent } from './process-manual-form.component';

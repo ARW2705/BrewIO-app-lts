@@ -4,7 +4,7 @@ import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { ProcessDescriptionComponentModule } from '../process-description/process-description.module';
+import { ProcessDescriptionComponentModule } from '@components/process/private/process-description/process-description.module';
 import { ProcessPreviewContentComponent } from './process-preview-content.component';
 
 @NgModule({

@@ -5,7 +5,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 /* Service imports */
-import { UserService } from '../../../../services/user/user.service';
+import { UserService } from '@services/user/user.service';
 
 
 @Component({

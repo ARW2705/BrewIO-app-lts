@@ -6,19 +6,19 @@ import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule } from '@angul
 import { of, throwError } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockUser } from '../../../../../../test-config/mock-models';
-import { ErrorReportingServiceStub, LoadingServiceStub, ToastServiceStub, UserServiceStub } from '../../../../../../test-config/service-stubs';
-import { HeaderComponentStub } from '../../../../../../test-config/component-stubs';
-import { ModalControllerStub } from '../../../../../../test-config/ionic-stubs';
+import { mockUser } from '@test/mock-models';
+import { ErrorReportingServiceStub, LoadingServiceStub, ToastServiceStub, UserServiceStub } from '@test/service-stubs';
+import { HeaderComponentStub } from '@test/component-stubs';
+import { ModalControllerStub } from '@test/ionic-stubs';
 
 /* Interface imports */
-import { User } from '../../../../shared/interfaces';
+import { User } from '@shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService, LoadingService, ToastService, UserService } from '../../../../services/services';
+import { ErrorReportingService, LoadingService, ToastService, UserService } from '@services/public';
 
 /* Page imports */
 import { LoginFormComponent } from './login-form.component';

@@ -5,8 +5,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { FormInputComponentModule } from '../../../form-elements/public/form-input/form-input.module';
-import { FormTextAreaComponentModule } from '../../../form-elements/public/form-text-area/form-text-area.module';
+import { FormInputComponentModule } from '@components/form-elements/public/form-input/form-input.module';
+import { FormTextAreaComponentModule } from '@components/form-elements/public/form-text-area/form-text-area.module';
 
 /* Page imports */
 import { ProcessManualFormComponent } from './process-manual-form.component';

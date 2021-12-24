@@ -3,10 +3,10 @@ import { TestBed, getTestBed, async } from '@angular/core/testing';
 import { LocalNotifications } from '@ionic-native/local-notifications/ngx';
 
 /* TestBed configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { LocalNotificationsStub } from '../../../../test-config/ionic-stubs';
+import { LocalNotificationsStub } from '@test/ionic-stubs';
 
 /* Service imports */
 import { LocalNotificationService } from './local-notification.service';

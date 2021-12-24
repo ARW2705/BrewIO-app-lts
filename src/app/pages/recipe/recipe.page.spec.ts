@@ -7,22 +7,22 @@ import { IonicModule } from '@ionic/angular';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockRecipeMasterActive, mockRecipeVariantComplete, mockUser } from '../../../../test-config/mock-models';
-import { AnimationsServiceStub, ErrorReportingServiceStub, IdServiceStub, ModalServiceStub, RecipeServiceStub, ToastServiceStub, UserServiceStub, UtilityServiceStub } from '../../../../test-config/service-stubs';
-import { RoundPipeStub, TruncatePipeStub, UnitConversionPipeStub } from '../../../../test-config/pipe-stubs';
-import { ActivatedRouteStub, IonContentStub } from '../../../../test-config/ionic-stubs';
+import { mockRecipeMasterActive, mockRecipeVariantComplete, mockUser } from '@test/mock-models';
+import { AnimationsServiceStub, ErrorReportingServiceStub, IdServiceStub, ModalServiceStub, RecipeServiceStub, ToastServiceStub, UserServiceStub, UtilityServiceStub } from '@test/service-stubs';
+import { RoundPipeStub, TruncatePipeStub, UnitConversionPipeStub } from '@test/pipe-stubs';
+import { ActivatedRouteStub, IonContentStub } from '@test/ionic-stubs';
 
 /* Interface imports */
-import { RecipeMaster, RecipeVariant, User } from '../../shared/interfaces';
+import { RecipeMaster, RecipeVariant, User } from '@shared/interfaces';
 
 /* Service imports */
-import { AnimationsService, ErrorReportingService, IdService, ModalService, RecipeService, ToastService, UserService, UtilityService } from '../../services/services';
+import { AnimationsService, ErrorReportingService, IdService, ModalService, RecipeService, ToastService, UserService, UtilityService } from '@services/public';
 
 /* Component imports */
-import { ConfirmationComponent } from '../../components/shared/public';
+import { ConfirmationComponent } from '@components/shared/public';
 
 /* Page imports */
 import { RecipePage } from './recipe.page';

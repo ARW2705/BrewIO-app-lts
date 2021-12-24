@@ -5,9 +5,9 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { FormInputComponentModule } from '../../../form-elements/public/form-input/form-input.module';
-import { FormSelectComponentModule } from '../../../form-elements/public/form-select/form-select.module';
-import { QuantityHelperComponentModule } from '../quantity-helper/quantity-helper.module';
+import { FormInputComponentModule } from '@components/form-elements/public/form-input/form-input.module';
+import { FormSelectComponentModule } from '@components/form-elements/public/form-select/form-select.module';
+import { QuantityHelperComponentModule } from '@components/inventory/private/quantity-helper/quantity-helper.module';
 import { InventoryStockDetailsFormComponent } from './inventory-stock-details-form.component';
 
 

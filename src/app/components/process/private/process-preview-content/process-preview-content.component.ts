@@ -2,10 +2,10 @@
 import { Component, Input, OnInit } from '@angular/core';
 
 /* Interface imports */
-import { CalendarProcess, ManualProcess, Process, TimerProcess } from '../../../../shared/interfaces';
+import { CalendarProcess, ManualProcess, Process, TimerProcess } from '@shared/interfaces';
 
 /* Service imports */
-import { TimerService } from '../../../../services/services';
+import { TimerService } from '@services/public';
 
 
 @Component({

@@ -5,7 +5,7 @@ import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
 
 /* Service imports */
-import { InventoryService, LibraryService, ProcessService, RecipeService, UserService } from './services/services';
+import { InventoryService, LibraryService, ProcessService, RecipeService, UserService } from '@services/public';
 
 
 @Component({

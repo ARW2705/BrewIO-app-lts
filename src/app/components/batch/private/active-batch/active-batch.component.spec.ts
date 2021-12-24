@@ -3,13 +3,13 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockBatch } from '../../../../../../test-config/mock-models';
+import { mockBatch } from '@test/mock-models';
 
 /* Interface imports */
-import { Batch } from '../../../../shared/interfaces';
+import { Batch } from '@shared/interfaces';
 
 /* Component imports */
 import { ActiveBatchComponent } from './active-batch.component';

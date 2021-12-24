@@ -7,21 +7,21 @@ import { BehaviorSubject, of, throwError } from 'rxjs';
 import { ModalController } from '@ionic/angular';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockImage, mockUser } from '../../../../../../test-config/mock-models';
-import { ErrorReportingServiceStub, ImageServiceStub, UserServiceStub, ToastServiceStub } from '../../../../../../test-config/service-stubs';
-import { ModalControllerStub, ModalStub } from '../../../../../../test-config/ionic-stubs';
+import { mockImage, mockUser } from '@test/mock-models';
+import { ErrorReportingServiceStub, ImageServiceStub, UserServiceStub, ToastServiceStub } from '@test/service-stubs';
+import { ModalControllerStub, ModalStub } from '@test/ionic-stubs';
 
 /* Default imports */
-import { defaultImage } from '../../../../shared/defaults';
+import { defaultImage } from '@shared/defaults';
 
 /* Interface imports */
-import { Image, User } from '../../../../shared/interfaces';
+import { Image, User } from '@shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService, ImageService, ToastService, UserService } from '../../../../services/services';
+import { ErrorReportingService, ImageService, ToastService, UserService } from '@services/public';
 
 /* Component imports */
 import { ProfileComponent } from './profile.component';

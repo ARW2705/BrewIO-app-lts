@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 /* Test bed configuration import */
-import { configureTestBed } from '../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Component imports */
 import { LoadingSpinnerComponent } from './loading-spinner.component';

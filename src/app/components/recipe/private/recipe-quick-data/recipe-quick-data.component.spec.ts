@@ -3,14 +3,14 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockEnglishUnits, mockRecipeVariantComplete, mockStyles } from '../../../../../../test-config/mock-models';
-import { TruncatePipeStub, UnitConversionPipeStub } from '../../../../../../test-config/pipe-stubs';
+import { mockEnglishUnits, mockRecipeVariantComplete, mockStyles } from '@test/mock-models';
+import { TruncatePipeStub, UnitConversionPipeStub } from '@test/pipe-stubs';
 
 /* Interface imports */
-import { RecipeVariant, SelectedUnits, Style } from '../../../../shared/interfaces';
+import { RecipeVariant, SelectedUnits, Style } from '@shared/interfaces';
 
 /* Component imoprts */
 import { RecipeQuickDataComponent } from './recipe-quick-data.component';

@@ -5,7 +5,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { FormInputComponentModule } from '../../../form-elements/public/form-input/form-input.module';
+import { FormInputComponentModule } from '@components/form-elements/public';
 import { OtherIngredientsFormComponent } from './other-ingredients-form.component';
 
 

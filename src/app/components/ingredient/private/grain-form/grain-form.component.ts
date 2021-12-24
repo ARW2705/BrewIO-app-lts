@@ -5,16 +5,16 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 /* Constant imports */
-import { FLOZ_TO_PINT } from '../../../../shared/constants';
+import { FLOZ_TO_PINT } from '@shared/constants';
 
 /* Interface imports */
-import { FormSelectOption, GrainBill, SelectedUnits } from '../../../../shared/interfaces';
+import { FormSelectOption, GrainBill, SelectedUnits } from '@shared/interfaces';
 
 /* Component imports */
-import { FormInputComponent } from '../../../form-elements/public';
+import { FormInputComponent } from '@components/form-elements/public';
 
 /* Service imports */
-import { CalculationsService, FormValidationService, UtilityService } from '../../../../services/services';
+import { CalculationsService, FormValidationService, UtilityService } from '@services/public';
 
 
 @Component({

@@ -5,18 +5,18 @@ import { ModalController } from '@ionic/angular';
 import { of, throwError } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockImage } from '../../../../../../test-config/mock-models';
-import { ErrorReportingServiceStub, ImageServiceStub, LoadingServiceStub } from '../../../../../../test-config/service-stubs';
-import { LoadingStub, ModalControllerStub } from '../../../../../../test-config/ionic-stubs';
+import { mockImage } from '@test/mock-models';
+import { ErrorReportingServiceStub, ImageServiceStub, LoadingServiceStub } from '@test/service-stubs';
+import { LoadingStub, ModalControllerStub } from '@test/ionic-stubs';
 
 /* Interface imports */
-import { Image } from '../../../../shared/interfaces';
+import { Image } from '@shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService, ImageService, LoadingService } from '../../../../services/services';
+import { ErrorReportingService, ImageService, LoadingService } from '@services/public';
 
 /* Component imports */
 import { ImageSelectionComponent } from './image-selection.component';

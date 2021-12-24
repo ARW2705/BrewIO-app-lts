@@ -4,10 +4,10 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { ModalControllerStub } from '../../../../../test-config/ionic-stubs';
+import { ModalControllerStub } from '@test/ionic-stubs';
 
 /* Page imports */
 import { ConfirmationComponent } from './confirmation.component';

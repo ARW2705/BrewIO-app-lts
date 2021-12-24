@@ -6,7 +6,15 @@
     "types": [
       "jest",
       "node"
-    ]
+    ],
+    "baseUrl": "./",
+    "paths": {
+      "@components/*": ["src/app/components/*"],
+      "@pipes/*": ["src/app/pipes/*"],
+      "@services/*": ["src/app/services/*"],
+      "@shared/*": ["src/app/shared/*"],
+      "@test/*": ["test-config/*"]
+    }
   },
   "files": [
     "src/polyfills.ts"

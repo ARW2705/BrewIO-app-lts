@@ -3,17 +3,17 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockProcessSchedule } from '../../../../../../test-config/mock-models';
-import { TimerServiceStub } from '../../../../../../test-config/service-stubs';
+import { mockProcessSchedule } from '@test/mock-models';
+import { TimerServiceStub } from '@test/service-stubs';
 
 /* Interface imports */
-import { CalendarProcess, ManualProcess, Process, TimerProcess } from '../../../../shared/interfaces';
+import { CalendarProcess, ManualProcess, Process, TimerProcess } from '@shared/interfaces';
 
 /* Service imports */
-import { TimerService } from '../../../../services/services';
+import { TimerService } from '@services/public';
 
 /* Component imports */
 import { ProcessPreviewContentComponent } from './process-preview-content.component';

@@ -3,7 +3,7 @@ import { Component, Input } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 
 /* Interface imports */
-import { ErrorReport } from '../../../../shared/interfaces';
+import { ErrorReport } from '@shared/interfaces';
 
 
 @Component({

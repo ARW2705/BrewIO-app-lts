@@ -3,7 +3,7 @@ import { Component, ElementRef, Input, OnChanges, ViewChild } from '@angular/cor
 import { Animation } from '@ionic/angular';
 
 /* Service imports */
-import { AnimationsService } from '../../../services/animations/animations.service';
+import { AnimationsService } from '@services/animations/animations.service';
 
 
 @Component({

@@ -4,17 +4,17 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { UtilityServiceStub } from '../../../../../../test-config/service-stubs';
-import { mockImage, mockStyles } from '../../../../../../test-config/mock-models';
+import { UtilityServiceStub } from '@test/service-stubs';
+import { mockImage, mockStyles } from '@test/mock-models';
 
 /* Interface imports */
-import { Image, Style } from '../../../../shared/interfaces';
+import { Image, Style } from '@shared/interfaces';
 
 /* Serivce imports */
-import { UtilityService } from '../../../../services/services';
+import { UtilityService } from '@services/public';
 
 /* Component imports */
 import { InventoryItemDetailsFormComponent } from './inventory-item-details-form.component';

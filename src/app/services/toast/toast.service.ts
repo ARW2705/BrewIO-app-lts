@@ -3,10 +3,10 @@ import { Injectable } from '@angular/core';
 import { ToastController } from '@ionic/angular';
 
 /* Interface imports */
-import { ToastButton } from '../../shared/interfaces';
+import { ToastButton } from '@shared/interfaces';
 
 /* Default imports */
-import { defaultDismissButton } from '../../shared/defaults';
+import { defaultDismissButton } from '@shared/defaults';
 
 
 @Injectable({

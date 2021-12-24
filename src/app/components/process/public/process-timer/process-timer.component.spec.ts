@@ -4,18 +4,18 @@ import { NO_ERRORS_SCHEMA, SimpleChange, SimpleChanges } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockConcurrentTimers, mockProcessSchedule, mockTimer } from '../../../../../../test-config/mock-models';
-import { TimerComponentStub } from '../../../../../../test-config/component-stubs';
-import { ErrorReportingServiceStub, IdServiceStub, TimerServiceStub, ToastServiceStub, UtilityServiceStub } from '../../../../../../test-config/service-stubs';
+import { mockConcurrentTimers, mockProcessSchedule, mockTimer } from '@test/mock-models';
+import { TimerComponentStub } from '@test/component-stubs';
+import { ErrorReportingServiceStub, IdServiceStub, TimerServiceStub, ToastServiceStub, UtilityServiceStub } from '@test/service-stubs';
 
 /* Interface imports */
-import { Process, TimerProcess, Timer } from '../../../../shared/interfaces';
+import { Process, TimerProcess, Timer } from '@shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService, IdService, TimerService, ToastService, UtilityService } from '../../../../services/services';
+import { ErrorReportingService, IdService, TimerService, ToastService, UtilityService } from '@services/public';
 
 /* Component imports */
 import { ProcessTimerComponent } from './process-timer.component';

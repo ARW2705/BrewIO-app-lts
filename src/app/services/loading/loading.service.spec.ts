@@ -3,10 +3,10 @@ import { TestBed, getTestBed, async } from '@angular/core/testing';
 import { LoadingController } from '@ionic/angular';
 
 /* Test bed configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { LoadingControllerStub, LoadingStub } from '../../../../test-config/ionic-stubs';
+import { LoadingControllerStub, LoadingStub } from '@test/ionic-stubs';
 
 /* Service imports */
 import { LoadingService } from './loading.service';

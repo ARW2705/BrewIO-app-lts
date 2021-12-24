@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { AccordionComponentModule } from '../../../shared/accordion/accordion.module';
+import { AccordionComponentModule } from '@components/shared/accordion/accordion.module';
 
 /* Page imports */
 import { ErrorReportComponent } from './error-report.component';

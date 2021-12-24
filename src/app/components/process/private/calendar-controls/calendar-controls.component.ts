@@ -2,6 +2,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import * as moment from 'moment';
 
+
 @Component({
   selector: 'app-calendar-controls',
   templateUrl: './calendar-controls.component.html',

@@ -3,13 +3,13 @@ import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from
 import { FormControl } from '@angular/forms';
 
 /* Constant imports */
-import { SELECT_OPTIONS } from '../../../../shared/constants';
+import { SELECT_OPTIONS } from '@shared/constants';
 
 /* Interface imports */
-import { FormChanges, FormSelectOption } from '../../../../shared/interfaces';
+import { FormChanges, FormSelectOption } from '@shared/interfaces';
 
 /* Service imports */
-import { FormAttributeService } from '../../../../services/services';
+import { FormAttributeService } from '@services/public';
 
 
 @Component({

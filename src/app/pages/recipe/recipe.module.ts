@@ -5,13 +5,13 @@ import { RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 
 /* Pipe imports */
-import { RoundPipeModule, TruncatePipeModule, UnitConversionPipeModule } from '../../pipes/pipes';
+import { RoundPipeModule, TruncatePipeModule, UnitConversionPipeModule } from '@pipes/public';
 
 /* Component imports */
-import { IngredientListComponentModule } from '../../components/ingredient/public';
-import { RecipeSliderComponentModule } from '../../components/recipe/public';
-import { AccordionComponentModule, ConfirmationComponentModule, HeaderComponentModule, LoadingSpinnerComponentModule } from '../../components/shared/public';
-import { LoginSignupButtonComponentModule } from '../../components/user/public';
+import { IngredientListComponentModule } from '@components/ingredient/public';
+import { RecipeSliderComponentModule } from '@components/recipe/public';
+import { AccordionComponentModule, ConfirmationComponentModule, HeaderComponentModule, LoadingSpinnerComponentModule } from '@components/shared/public';
+import { LoginSignupButtonComponentModule } from '@components/user/public';
 
 /* Page imports */
 import { RecipePage } from './recipe.page';

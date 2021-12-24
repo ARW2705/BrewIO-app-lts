@@ -3,14 +3,14 @@ import { TestBed, getTestBed, async } from '@angular/core/testing';
 import { HttpErrorResponse } from '@angular/common/http';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { ErrorReportingServiceStub } from '../../../../test-config/service-stubs';
+import { ErrorReportingServiceStub } from '@test/service-stubs';
 
 /* Provider imports */
+import { ErrorReportingService } from '@services/public';
 import { HttpErrorService } from './http-error.service';
-import { ErrorReportingService } from '../services';
 
 
 describe('HTTPErrorService', (): void => {

@@ -4,13 +4,13 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockTimerProcess } from '../../../../../../test-config/mock-models';
+import { mockTimerProcess } from '@test/mock-models';
 
 /* Interface imports */
-import { TimerProcess } from '../../../../shared/interfaces';
+import { TimerProcess } from '@shared/interfaces';
 
 /* Component imports */
 import { ProcessTimerFormComponent } from './process-timer-form.component';

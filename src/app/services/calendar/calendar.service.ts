@@ -3,12 +3,12 @@ import { Injectable } from '@angular/core';
 import * as moment from 'moment';
 
 /* Interface imports */
-import { Batch, BatchProcess, CalendarDate, CalendarInitialValues, CalendarMetadata } from '../../shared/interfaces';
+import { Batch, BatchProcess, CalendarDate, CalendarInitialValues, CalendarMetadata } from '@shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
-import { IdService } from '../id/id.service';
-import { ProcessService } from '../process/process.service';
+import { ErrorReportingService } from '@services/error-reporting/error-reporting.service';
+import { IdService } from '@services/id/id.service';
+import { ProcessService } from '@services/process/process.service';
 
 
 @Injectable({

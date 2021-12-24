@@ -5,10 +5,10 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 /* Interface imports */
-import { User } from '../../shared/interfaces';
+import { User } from '@shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService, EventService, UserService } from '../../services/services';
+import { ErrorReportingService, EventService, UserService } from '@services/public';
 
 
 @Component({

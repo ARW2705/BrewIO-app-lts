@@ -2,13 +2,13 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 
 /* Interface imports */
-import { RecipeMaster, RecipeVariant, Style } from '../../../../shared/interfaces';
+import { RecipeMaster, RecipeVariant, Style } from '@shared/interfaces';
 
 /* Component imports */
-import { GeneralFormComponent } from '../general-form/general-form.component';
+import { GeneralFormComponent } from '@components/recipe/private/general-form/general-form.component';
 
 /* Service imports */
-import { ErrorReportingService, LibraryService, ModalService } from '../../../../services/services';
+import { ErrorReportingService, LibraryService, ModalService } from '@services/public';
 
 
 @Component({

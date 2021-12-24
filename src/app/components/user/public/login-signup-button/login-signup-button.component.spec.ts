@@ -4,18 +4,18 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { of, throwError } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { ActionSheetServiceStub, ErrorReportingServiceStub, ModalServiceStub, UserServiceStub } from '../../../../../../test-config/service-stubs';
+import { ActionSheetServiceStub, ErrorReportingServiceStub, ModalServiceStub, UserServiceStub } from '@test/service-stubs';
 
 /* Services imports */
-import { ActionSheetService, ErrorReportingService, ModalService, UserService } from '../../../../services/services';
+import { ActionSheetService, ErrorReportingService, ModalService, UserService } from '@services/public';
 
 /* Component imports */
+import { LoginFormComponent } from '@components/user/public/login-form/login-form.component';
+import { SignupFormComponent } from '@components/user/public/signup-form/signup-form.component';
 import { LoginSignupButtonComponent } from './login-signup-button.component';
-import { LoginFormComponent } from '../login-form/login-form.component';
-import { SignupFormComponent } from '../signup-form/signup-form.component';
 
 
 describe('LoginSignupButtonComponent', (): void => {

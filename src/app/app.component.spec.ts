@@ -6,14 +6,14 @@ import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { RecipeServiceStub, InventoryServiceStub, LibraryServiceStub, ProcessServiceStub, UserServiceStub } from '../../test-config/service-stubs';
-import { DomStub, PlatformDevStub, StatusBarStub, SplashScreenStub, StorageStub } from '../../test-config/ionic-stubs';
+import { RecipeServiceStub, InventoryServiceStub, LibraryServiceStub, ProcessServiceStub, UserServiceStub } from '@test/service-stubs';
+import { DomStub, PlatformDevStub, StatusBarStub, SplashScreenStub, StorageStub } from '@test/ionic-stubs';
 
 /* Service imports */
-import { InventoryService, LibraryService, ProcessService, RecipeService, UserService } from './services/services';
+import { InventoryService, LibraryService, ProcessService, RecipeService, UserService } from '@services/public';
 
 /* Component imports */
 import { AppComponent } from './app.component';

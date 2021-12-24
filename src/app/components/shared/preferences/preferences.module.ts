@@ -5,8 +5,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { FormSelectComponentModule } from '../../form-elements/public/form-select/form-select.module';
-import { FormToggleComponentModule } from '../../form-elements/public/form-toggle/form-toggle.module';
+import { FormSelectComponentModule } from '@components/form-elements/public/form-select/form-select.module';
+import { FormToggleComponentModule } from '@components/form-elements/public/form-toggle/form-toggle.module';
 import { PreferencesComponent } from './preferences.component';
 
 

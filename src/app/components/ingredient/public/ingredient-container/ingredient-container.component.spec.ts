@@ -4,17 +4,17 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 
 /* Test config imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { ActionSheetServiceStub, ErrorReportingServiceStub, LibraryServiceStub, ModalServiceStub } from '../../../../../../test-config/service-stubs';
-import { mockGrainBill, mockGrains, mockHops, mockHopsSchedule, mockOtherIngredients, mockRecipeVariantComplete, mockYeast, mockYeastBatch } from '../../../../../../test-config/mock-models';
+import { ActionSheetServiceStub, ErrorReportingServiceStub, LibraryServiceStub, ModalServiceStub } from '@test/service-stubs';
+import { mockGrainBill, mockGrains, mockHops, mockHopsSchedule, mockOtherIngredients, mockRecipeVariantComplete, mockYeast, mockYeastBatch } from '@test/mock-models';
 
 /* Interface imports */
-import { GrainBill, Grains, Hops, HopsSchedule, OtherIngredients, RecipeVariant, Yeast, YeastBatch } from '../../../../shared/interfaces';
+import { GrainBill, Grains, Hops, HopsSchedule, OtherIngredients, RecipeVariant, Yeast, YeastBatch } from '@shared/interfaces';
 
 /* Service imports */
-import { ActionSheetService, ErrorReportingService, LibraryService, ModalService } from '../../../../services/services';
+import { ActionSheetService, ErrorReportingService, LibraryService, ModalService } from '@services/public';
 
 /* Component imports */
 import { IngredientContainerComponent } from './ingredient-container.component';

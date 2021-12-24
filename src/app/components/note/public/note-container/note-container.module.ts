@@ -4,8 +4,8 @@ import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { NoteListComponentModule } from '../../private/note-list/note-list.module';
-import { NoteFormComponentModule } from '../note-form/note-form.module';
+import { NoteListComponentModule } from '@components/note/private/note-list/note-list.module';
+import { NoteFormComponentModule } from '@components/note/public/note-form/note-form.module';
 import { NoteContainerComponent } from './note-container.component';
 
 

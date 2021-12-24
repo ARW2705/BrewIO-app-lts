@@ -5,23 +5,23 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { of, throwError } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { ErrorReportingServiceStub, ModalServiceStub, UtilityServiceStub } from '../../../../../../test-config/service-stubs';
+import { ErrorReportingServiceStub, ModalServiceStub, UtilityServiceStub } from '@test/service-stubs';
 
 /* Constant imports */
-import { PINT, STOCK_TYPES } from '../../../../shared/constants';
+import { PINT, STOCK_TYPES } from '@shared/constants';
 
 /* Interface imports */
-import { StockType } from '../../../../shared/interfaces';
+import { StockType } from '@shared/interfaces';
 
 /* Component imports */
-import { InventoryStockDetailsFormComponent } from './inventory-stock-details-form.component';
-import { QuantityHelperComponent } from '../quantity-helper/quantity-helper.component';
+import { InventoryStockDetailsFormComponent } from '@components/inventory/private/inventory-stock-details-form/inventory-stock-details-form.component';
+import { QuantityHelperComponent } from '@components/inventory/private/quantity-helper/quantity-helper.component';
 
 /* Service imports */
-import { ErrorReportingService, ModalService, UtilityService } from '../../../../services/services';
+import { ErrorReportingService, ModalService, UtilityService } from '@services/public';
 
 
 describe('InventoryStockDetailsFormComponent', (): void => {

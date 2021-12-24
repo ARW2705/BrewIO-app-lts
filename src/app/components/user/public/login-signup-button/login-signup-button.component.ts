@@ -2,11 +2,11 @@
 import { Component, Input } from '@angular/core';
 
 /* Component imports */
-import { LoginFormComponent } from '../login-form/login-form.component';
-import { SignupFormComponent } from '../signup-form/signup-form.component';
+import { LoginFormComponent } from '@components/user/public/login-form/login-form.component';
+import { SignupFormComponent } from '@components/user/public/signup-form/signup-form.component';
 
 /* Service Imports */
-import { ActionSheetService, ErrorReportingService, ModalService, UserService } from '../../../../services/services';
+import { ActionSheetService, ErrorReportingService, ModalService, UserService } from '@services/public';
 
 
 @Component({

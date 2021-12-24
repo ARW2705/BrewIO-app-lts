@@ -2,21 +2,20 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA, SimpleChange } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
-import { FormControl, ValidationErrors } from '@angular/forms';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule, ValidationErrors } from '@angular/forms';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockPreferencesSelectOptions } from '../../../../../../test-config/mock-models';
-import { FormAttributeServiceStub } from '../../../../../../test-config/service-stubs';
+import { mockPreferencesSelectOptions } from '@test/mock-models';
+import { FormAttributeServiceStub } from '@test/service-stubs';
 
 /* Interface imports */
-import { FormSelectChanges } from '../../../../shared/interfaces';
+import { FormSelectChanges } from '@shared/interfaces';
 
 /* Service imports */
-import { FormAttributeService } from '../../../../services/services';
+import { FormAttributeService } from '@services/public';
 
 /* Component imports */
 import { FormSelectComponent } from './form-select.component';

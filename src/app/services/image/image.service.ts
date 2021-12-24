@@ -8,25 +8,25 @@ import { forkJoin, from, Observable, of, throwError } from 'rxjs';
 import { catchError, defaultIfEmpty, map, mergeMap, tap } from 'rxjs/operators';
 
 /* Constant imports */
-import { API_VERSION, BASE_URL, IMAGE_FILE_EXTENSION, IMAGE_SIZE_LIMIT } from '../../shared/constants';
+import { API_VERSION, BASE_URL, IMAGE_FILE_EXTENSION, IMAGE_SIZE_LIMIT } from '@shared/constants';
 
 /* Default imports */
-import { defaultImage } from '../../shared/defaults';
+import { defaultImage } from '@shared/defaults';
 
 /* Interface imports */
-import { Image, ImageRequestFormData, ImageRequestMetadata } from '../../shared/interfaces';
+import { Image, ImageRequestFormData, ImageRequestMetadata } from '@shared/interfaces';
 
 /* Type guard imports */
-import { ImageGuardMetadata } from '../../shared/type-guard-metadata/image.guard';
+import { ImageGuardMetadata } from '@shared/type-guard-metadata/image.guard';
 
 /* Type imports */
-import { CustomError } from '../../shared/types';
+import { CustomError } from '@shared/types';
 
 /* Service imports */
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
-import { FileService } from '../file/file.service';
-import { IdService } from '../id/id.service';
-import { TypeGuardService } from '../type-guard/type-guard.service';
+import { ErrorReportingService } from '@services/error-reporting/error-reporting.service';
+import { FileService } from '@services/file/file.service';
+import { IdService } from '@services/id/id.service';
+import { TypeGuardService } from '@services/type-guard/type-guard.service';
 
 
 @Injectable({

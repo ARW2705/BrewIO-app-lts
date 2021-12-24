@@ -4,17 +4,17 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import * as moment from 'moment';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockCalendarDate, mockCalendarProcess } from '../../../../../../test-config/mock-models';
-import { CalendarServiceStub, IdServiceStub } from '../../../../../../test-config/service-stubs';
+import { mockCalendarDate, mockCalendarProcess } from '@test/mock-models';
+import { CalendarServiceStub, IdServiceStub } from '@test/service-stubs';
 
 /* Interface imports*/
-import { Alert, CalendarDate, CalendarMetadata, CalendarProcess, Process } from '../../../../shared/interfaces';
+import { Alert, CalendarDate, CalendarMetadata, CalendarProcess, Process } from '@shared/interfaces';
 
 /* Service imports */
-import { CalendarService, IdService } from '../../../../services/services';
+import { CalendarService, IdService } from '@services/public';
 
 /* Component imports */
 import { CalendarComponent } from './calendar.component';

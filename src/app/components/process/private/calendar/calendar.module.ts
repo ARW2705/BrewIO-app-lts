@@ -4,12 +4,12 @@ import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 /* Pipe imports */
-import { MomentPipeModule } from '../../../../pipes/pipes';
+import { MomentPipeModule } from '@pipes/public';
 
 /* Component imports */
-import { CalendarControlsComponentModule } from '../calendar-controls/calendar-controls.module';
-import { CalendarInteractiveDisplayComponentModule } from '../calendar-interactive-display/calendar-interactive-display.module';
-import { DateButtonComponentModule } from '../date-button/date-button.module';
+import { CalendarControlsComponentModule } from '@components/process/private/calendar-controls/calendar-controls.module';
+import { CalendarInteractiveDisplayComponentModule } from '@components/process/private/calendar-interactive-display/calendar-interactive-display.module';
+import { DateButtonComponentModule } from '@components/process/private/date-button/date-button.module';
 import { CalendarComponent } from './calendar.component';
 
 

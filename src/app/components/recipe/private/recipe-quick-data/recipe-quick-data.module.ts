@@ -4,7 +4,7 @@ import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 /* Pipe imports */
-import { TruncatePipeModule, UnitConversionPipeModule } from '../../../../pipes/pipes';
+import { TruncatePipeModule, UnitConversionPipeModule } from '@pipes/public';
 
 /* Component imports */
 import { RecipeQuickDataComponent } from './recipe-quick-data.component';

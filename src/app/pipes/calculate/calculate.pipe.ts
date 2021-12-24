@@ -2,10 +2,10 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 /* Interface imports */
-import { HopsSchedule, RecipeVariant } from '../../shared/interfaces';
+import { HopsSchedule, RecipeVariant } from '@shared/interfaces';
 
 /* Provider imports */
-import { CalculationsService } from '../../services/services';
+import { CalculationsService } from '@services/public';
 
 
 @Pipe({

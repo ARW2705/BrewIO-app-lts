@@ -3,17 +3,17 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockAlertPresent, mockCalendarMetadata, mockCalendarProcess } from '../../../../../../test-config/mock-models';
-import { CalendarAlertServiceStub, IdServiceStub } from '../../../../../../test-config/service-stubs';
+import { mockAlertPresent, mockCalendarMetadata, mockCalendarProcess } from '@test/mock-models';
+import { CalendarAlertServiceStub, IdServiceStub } from '@test/service-stubs';
 
 /* Interface imports */
-import { Alert, CalendarMetadata, CalendarProcess } from '../../../../shared/interfaces';
+import { Alert, CalendarMetadata, CalendarProcess } from '@shared/interfaces';
 
 /* Service imports */
-import { CalendarAlertService, IdService } from '../../../../services/services';
+import { CalendarAlertService, IdService } from '@services/public';
 
 /* Component imports */
 import { ProcessCalendarComponent } from './process-calendar.component';

@@ -4,17 +4,17 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { ModalControllerStub } from '../../../../../../test-config/ionic-stubs';
-import { UtilityServiceStub } from '../../../../../../test-config/service-stubs';
+import { ModalControllerStub } from '@test/ionic-stubs';
+import { UtilityServiceStub } from '@test/service-stubs';
 
 /* Constant imports */
-import { COMMON_CONTAINERS } from '../../../../shared/constants';
+import { COMMON_CONTAINERS } from '@shared/constants';
 
 /* Service imports */
-import { UtilityService } from '../../../../services/services';
+import { UtilityService } from '@services/public';
 
 /* Page imoprts */
 import { QuantityHelperComponent } from './quantity-helper.component';

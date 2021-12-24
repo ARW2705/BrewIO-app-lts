@@ -5,19 +5,19 @@ import { IonicModule, LoadingController, ModalController } from '@ionic/angular'
 import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockMetricUnits, mockBatch, mockEnglishUnits } from '../../../../../../test-config/mock-models';
-import { HeaderComponentStub } from '../../../../../../test-config/component-stubs';
-import { ModalControllerStub, LoadingControllerStub, LoadingStub } from '../../../../../../test-config/ionic-stubs';
-import { CalculationsServiceStub, PreferencesServiceStub, FormValidationServiceStub, UtilityServiceStub } from '../../../../../../test-config/service-stubs';
+import { mockMetricUnits, mockBatch, mockEnglishUnits } from '@test/mock-models';
+import { HeaderComponentStub } from '@test/component-stubs';
+import { ModalControllerStub, LoadingControllerStub, LoadingStub } from '@test/ionic-stubs';
+import { CalculationsServiceStub, PreferencesServiceStub, FormValidationServiceStub, UtilityServiceStub } from '@test/service-stubs';
 
 /* Interface imports */
-import { Batch, SelectedUnits } from '../../../../shared/interfaces';
+import { Batch, SelectedUnits } from '@shared/interfaces';
 
 /* Service imports */
-import { CalculationsService, FormValidationService, PreferencesService, UtilityService } from '../../../../services/services';
+import { CalculationsService, FormValidationService, PreferencesService, UtilityService } from '@services/public';
 
 /* Page imports */
 import { ProcessMeasurementsFormComponent } from './process-measurements-form.component';

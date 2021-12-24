@@ -4,18 +4,18 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, forkJoin, of, throwError } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockErrorResponse, mockInventoryItem, mockSyncMetadata } from '../../../../test-config/mock-models';
-import { ErrorReportingServiceStub, HttpErrorServiceStub, IdServiceStub, StorageServiceStub, TypeGuardServiceStub } from '../../../../test-config/service-stubs';
+import { mockErrorResponse, mockInventoryItem, mockSyncMetadata } from '@test/mock-models';
+import { ErrorReportingServiceStub, HttpErrorServiceStub, IdServiceStub, StorageServiceStub, TypeGuardServiceStub } from '@test/service-stubs';
 
 /* Interface imports */
-import { InventoryItem, SyncError, SyncMetadata, SyncResponse } from '../../shared/interfaces';
+import { InventoryItem, SyncError, SyncMetadata, SyncResponse } from '@shared/interfaces';
 
 /* Service imports */
+import { ErrorReportingService, HttpErrorService, IdService, StorageService, TypeGuardService } from '@services/public';
 import { SyncService } from './sync.service';
-import { ErrorReportingService, HttpErrorService, IdService, StorageService, TypeGuardService } from '../services';
 
 
 describe('SyncService', (): void => {

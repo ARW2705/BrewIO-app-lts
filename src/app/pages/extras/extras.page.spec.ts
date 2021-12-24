@@ -7,18 +7,18 @@ import { throwError } from 'rxjs';
 import { IonicModule } from '@ionic/angular';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockBatch, mockErrorReport, mockInventoryItem } from '../../../../test-config/mock-models';
-import { AnimationsServiceStub, ErrorReportingServiceStub, UtilityServiceStub } from '../../../../test-config/service-stubs';
-import { ActivatedRouteStub, AnimationStub } from '../../../../test-config/ionic-stubs';
+import { mockBatch, mockErrorReport, mockInventoryItem } from '@test/mock-models';
+import { AnimationsServiceStub, ErrorReportingServiceStub, UtilityServiceStub } from '@test/service-stubs';
+import { ActivatedRouteStub, AnimationStub } from '@test/ionic-stubs';
 
 /* Interface imports */
-import { Batch, ErrorReport, InventoryItem } from '../../shared/interfaces';
+import { Batch, ErrorReport, InventoryItem } from '@shared/interfaces';
 
 /* Provider imports */
-import { AnimationsService, ErrorReportingService, UtilityService } from '../../services/services';
+import { AnimationsService, ErrorReportingService, UtilityService } from '@services/public';
 
 /* Page imports */
 import { ExtrasPage } from './extras.page';

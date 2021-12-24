@@ -6,13 +6,13 @@ import { Observable, Subject } from 'rxjs';
 import { catchError, takeUntil, tap } from 'rxjs/operators';
 
 /* Interface imports */
-import { GrainBill, HopsSchedule, IngredientUpdateEvent, OtherIngredients, Process, ProcessUpdateEvent, RecipeMaster, RecipeVariant, SelectedUnits, Style, YeastBatch } from '../../../../shared/interfaces';
+import { GrainBill, HopsSchedule, IngredientUpdateEvent, OtherIngredients, Process, ProcessUpdateEvent, RecipeMaster, RecipeVariant, SelectedUnits, Style, YeastBatch } from '@shared/interfaces';
 
 /* Default imports */
-import { defaultRecipeMaster, defaultStyle } from '../../../../shared/defaults';
+import { defaultRecipeMaster, defaultStyle } from '@shared/defaults';
 
 /* Service imports */
-import { CalculationsService, ErrorReportingService, IdService, PreferencesService, ProcessService, RecipeService, ToastService, UtilityService } from '../../../../services/services';
+import { CalculationsService, ErrorReportingService, IdService, PreferencesService, ProcessService, RecipeService, ToastService, UtilityService } from '@services/public';
 
 
 @Component({

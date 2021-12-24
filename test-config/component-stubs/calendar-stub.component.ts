@@ -8,7 +8,7 @@ import { CalendarServiceStub, IdServiceStub } from '../service-stubs';
 import { CalendarDate, CalendarProcess } from '../../src/app/shared/interfaces';
 
 /* Service imports */
-import { CalendarService, IdService } from '../../src/app/services/services';
+import { CalendarService, IdService } from '../../src/app/services/public';
 
 /* Component imports */
 import { CalendarComponent } from '../../src/app/components/process/private/calendar/calendar.component';

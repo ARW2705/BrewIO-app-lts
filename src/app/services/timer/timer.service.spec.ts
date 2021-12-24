@@ -5,22 +5,22 @@ import { BehaviorSubject } from 'rxjs';
 import { skip } from 'rxjs/operators';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockBatch, mockErrorReport, mockProcessSchedule, mockTimer, mockConcurrentTimers, mockBatchTimer } from '../../../../test-config/mock-models';
-import { PlatformStub } from '../../../../test-config/ionic-stubs';
-import { BackgroundModeServiceStub, IdServiceStub, ErrorReportingServiceStub, LocalNotificationServiceStub, ProcessServiceStub, UtilityServiceStub } from '../../../../test-config/service-stubs';
+import { mockBatch, mockErrorReport, mockProcessSchedule, mockTimer, mockConcurrentTimers, mockBatchTimer } from '@test/mock-models';
+import { PlatformStub } from '@test/ionic-stubs';
+import { BackgroundModeServiceStub, IdServiceStub, ErrorReportingServiceStub, LocalNotificationServiceStub, ProcessServiceStub, UtilityServiceStub } from '@test/service-stubs';
 
 /* Interface imports */
-import { Batch, BatchTimer, ErrorReport, Process, Timer, TimerProcess } from '../../shared/interfaces';
+import { Batch, BatchTimer, ErrorReport, Process, Timer, TimerProcess } from '@shared/interfaces';
 
 /* Type imports */
-import { CustomError } from '../../shared/types';
+import { CustomError } from '@shared/types';
 
 /* Service imports */
+import { BackgroundModeService, ErrorReportingService, IdService, LocalNotificationService, ProcessService, UtilityService } from '@services/public';
 import { TimerService } from './timer.service';
-import { BackgroundModeService, ErrorReportingService, IdService, LocalNotificationService, ProcessService, UtilityService } from '../services';
 
 
 describe('TimerService', (): void => {

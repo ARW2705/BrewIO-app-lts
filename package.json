@@ -76,7 +76,7 @@
     "jest-preset-angular": "^8.3.2",
     "protractor": "~7.0.0",
     "ts-jest": "^26.4.4",
-    "ts-node": "~8.3.0",
+    "ts-node": "^10.4.0",
     "tslint": "~6.1.0",
     "typescript": "~3.9.5"
   },
@@ -103,27 +103,6 @@
     },
     "platforms": [
       "android"
-    ]
-  },
-  "jest": {
-    "preset": "jest-preset-angular",
-    "roots": [
-      "src"
-    ],
-    "setupFilesAfterEnv": [
-      "<rootDir>/test-config/setup-jest.ts"
-    ],
-    "transformIgnorePatterns": [
-      "node_modules/(?!@ngrx|@ionic-native|@ionic)"
-    ],
-    "coveragePathIgnorePatterns": [
-      "/node_modules/",
-      "/test-config/",
-      "/shared/",
-      ".html",
-      "public.ts",
-      "pipes.ts",
-      "services.ts"
     ]
   }
 }

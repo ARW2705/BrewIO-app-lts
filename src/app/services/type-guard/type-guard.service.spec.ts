@@ -2,13 +2,13 @@
 import { TestBed, getTestBed, async } from '@angular/core/testing';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockDocumentGuard } from '../../../../test-config/mock-models';
+import { mockDocumentGuard } from '@test/mock-models';
 
 /* Interface imports */
-import { DocumentGuard } from '../../shared/interfaces';
+import { DocumentGuard } from '@shared/interfaces';
 
 /* Service imports */
 import { TypeGuardService } from './type-guard.service';

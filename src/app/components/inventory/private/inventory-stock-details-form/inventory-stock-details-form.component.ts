@@ -3,16 +3,16 @@ import { Component, Input, OnInit } from '@angular/core';
 import { AbstractControl, FormControl } from '@angular/forms';
 
 /* Constant imports */
-import { PINT, STOCK_TYPES } from '../../../../shared/constants';
+import { PINT, STOCK_TYPES } from '@shared/constants';
 
 /* Interface imports */
-import { FormSelectOption, StockType } from '../../../../shared/interfaces';
+import { FormSelectOption, StockType } from '@shared/interfaces';
 
 /* Page imports */
-import { QuantityHelperComponent } from '../quantity-helper/quantity-helper.component';
+import { QuantityHelperComponent } from '@components/inventory/private/quantity-helper/quantity-helper.component';
 
 /* Service imports */
-import { ErrorReportingService, ModalService, UtilityService } from '../../../../services/services';
+import { ErrorReportingService, ModalService, UtilityService } from '@services/public';
 
 
 @Component({

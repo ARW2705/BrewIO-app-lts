@@ -2,21 +2,21 @@
 import { TestBed, getTestBed, async } from '@angular/core/testing';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockEnglishUnits, mockMetricUnits, mockGrainBill, mockHopsSchedule, mockYeastBatch, mockRecipeVariantComplete } from '../../../../test-config/mock-models';
-import { PreferencesServiceStub, UtilityServiceStub } from '../../../../test-config/service-stubs';
+import { mockEnglishUnits, mockMetricUnits, mockGrainBill, mockHopsSchedule, mockYeastBatch, mockRecipeVariantComplete } from '@test/mock-models';
+import { PreferencesServiceStub, UtilityServiceStub } from '@test/service-stubs';
 
 /* Constant imports */
-import { BRIX, PLATO, SPECIFIC_GRAVITY } from '../../shared/constants';
+import { BRIX, PLATO, SPECIFIC_GRAVITY } from '@shared/constants';
 
 /* Interace Imports */
-import { GrainBill, HopsSchedule, YeastBatch, RecipeVariant, SelectedUnits} from '../../shared/interfaces';
+import { GrainBill, HopsSchedule, YeastBatch, RecipeVariant, SelectedUnits} from '@shared/interfaces';
 
 /* Provider imports */
+import { PreferencesService, UtilityService } from '@services/public';
 import { CalculationsService } from './calculations.service';
-import { PreferencesService, UtilityService } from '../services';
 
 
 describe('CalculationsService', (): void => {

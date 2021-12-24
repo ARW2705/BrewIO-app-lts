@@ -2,20 +2,20 @@
 import { async, getTestBed, TestBed } from '@angular/core/testing';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockEnglishUnits, mockMetricUnits } from '../../../../test-config/mock-models';
-import { CalculationsServiceStub, PreferencesServiceStub } from '../../../../test-config/service-stubs';
+import { mockEnglishUnits, mockMetricUnits } from '@test/mock-models';
+import { CalculationsServiceStub, PreferencesServiceStub } from '@test/service-stubs';
 
 /* Constant imports */
-import { SPECIFIC_GRAVITY } from '../../shared/constants';
+import { SPECIFIC_GRAVITY } from '@shared/constants';
 
 /* Interface imports */
-import { SelectedUnits } from '../../shared/interfaces';
+import { SelectedUnits } from '@shared/interfaces';
 
 /* Service imports */
-import { CalculationsService, PreferencesService } from '../../services/services';
+import { CalculationsService, PreferencesService } from '@services/public';
 
 /* Pipe imports */
 import { UnitConversionPipe } from './unit-conversion.pipe';

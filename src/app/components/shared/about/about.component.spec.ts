@@ -3,10 +3,10 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Constant imports */
-import { API_VERSION, APP_VERSION } from '../../../shared/constants';
+import { API_VERSION, APP_VERSION } from '@shared/constants';
 
 /* Component imports */
 import { AboutComponent } from './about.component';

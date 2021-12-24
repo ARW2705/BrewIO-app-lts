@@ -2,7 +2,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 /* Interace imports */
-import { YeastBatch } from '../../../../shared/interfaces';
+import { YeastBatch } from '@shared/interfaces';
 
 
 @Component({

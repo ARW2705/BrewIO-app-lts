@@ -4,7 +4,7 @@ import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { LoginSignupButtonComponentModule } from '../../user/public/login-signup-button/login-signup-button.module';
+import { LoginSignupButtonComponentModule } from '@components/user/public/login-signup-button/login-signup-button.module';
 import { HeaderComponent } from './header.component';
 
 

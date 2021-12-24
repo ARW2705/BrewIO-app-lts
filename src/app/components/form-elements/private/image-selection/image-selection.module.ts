@@ -4,8 +4,9 @@ import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 /* Page imports */
-import { FormButtonsComponentModule } from '../../public/form-buttons/form-buttons.module';
+import { FormButtonsComponentModule } from '@components/form-elements/public/form-buttons/form-buttons.module';
 import { ImageSelectionComponent } from './image-selection.component';
+
 
 @NgModule({
   imports: [

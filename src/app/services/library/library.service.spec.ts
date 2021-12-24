@@ -6,21 +6,21 @@ import { Observable, forkJoin, of, throwError } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 
 /* Test bed configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockGrains, mockHops, mockYeast, mockStyles, mockErrorResponse } from '../../../../test-config/mock-models';
-import { ErrorReportingServiceStub, TypeGuardServiceStub, StorageServiceStub } from '../../../../test-config/service-stubs';
+import { mockGrains, mockHops, mockYeast, mockStyles, mockErrorResponse } from '@test/mock-models';
+import { ErrorReportingServiceStub, TypeGuardServiceStub, StorageServiceStub } from '@test/service-stubs';
 
 /* Constants imports */
-import { API_VERSION, BASE_URL } from '../../shared/constants';
+import { API_VERSION, BASE_URL } from '@shared/constants';
 
 /* Interface imports */
-import { Grains, Hops, Style, Yeast } from '../../shared/interfaces';
+import { Grains, Hops, Style, Yeast } from '@shared/interfaces';
 
 /* Service imports */
+import { ErrorReportingService, StorageService, TypeGuardService } from '@services/public';
 import { LibraryService } from './library.service';
-import { ErrorReportingService, StorageService, TypeGuardService } from '../services';
 
 
 describe('LibraryService', (): void => {

@@ -3,10 +3,10 @@ import { Component, Input, OnChanges, OnInit, SimpleChange, SimpleChanges } from
 import * as moment from 'moment';
 
 /* Interface imports */
-import { Alert, CalendarDate, CalendarMetadata, CalendarProcess } from '../../../../shared/interfaces';
+import { Alert, CalendarDate, CalendarMetadata, CalendarProcess } from '@shared/interfaces';
 
 /* Service imports */
-import { CalendarService, IdService } from '../../../../services/services';
+import { CalendarService, IdService } from '@services/public';
 
 
 @Component({

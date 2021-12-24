@@ -6,18 +6,18 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockUser } from '../../../../../../test-config/mock-models';
-import { UserServiceStub } from '../../../../../../test-config/service-stubs';
-import { ModalControllerStub } from '../../../../../../test-config/ionic-stubs';
+import { mockUser } from '@test/mock-models';
+import { UserServiceStub } from '@test/service-stubs';
+import { ModalControllerStub } from '@test/ionic-stubs';
 
 /* Interface imports */
-import { User } from '../../../../shared/interfaces';
+import { User } from '@shared/interfaces';
 
 /* Service imports */
-import { UserService } from '../../../../services/user/user.service';
+import { UserService } from '@services/user/user.service';
 
 /* Component imoprts */
 import { UserComponent } from './user.component';

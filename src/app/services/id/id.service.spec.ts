@@ -2,10 +2,10 @@
 import { TestBed, getTestBed, async } from '@angular/core/testing';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockObjectArray } from '../../../../test-config/mock-models';
+import { mockObjectArray } from '@test/mock-models';
 
 /* Service imports */
 import { IdService } from './id.service';
@@ -60,7 +60,7 @@ describe('IdService', (): void => {
     expect(foundIndex).toBe(2);
 
     const notFound: number = service.getIndexById('e', _mockObjectArray);
-    
+
     expect(notFound).toBe(-1);
   });
 

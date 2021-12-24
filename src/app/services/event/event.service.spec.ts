@@ -3,7 +3,7 @@ import { TestBed, getTestBed, async } from '@angular/core/testing';
 import { Subject } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Service imports */
 import { EventService } from './event.service';

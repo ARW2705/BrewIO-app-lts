@@ -5,20 +5,20 @@ import { ModalController } from '@ionic/angular';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockBatch, mockErrorReport, mockInventoryItem } from '../../../../../../test-config/mock-models';
-import { AccordionComponentStub } from '../../../../../../test-config/component-stubs';
-import { AnimationsServiceStub, ErrorReportingServiceStub, EventServiceStub, ImageServiceStub, InventoryServiceStub, ProcessServiceStub, ToastServiceStub } from '../../../../../../test-config/service-stubs';
-import { FormatStockPipeStub, RoundPipeStub, TruncatePipeStub } from '../../../../../../test-config/pipe-stubs';
-import { ModalControllerStub, ModalStub, QueryListStub, ViewContainerRefStub } from '../../../../../../test-config/ionic-stubs';
+import { mockBatch, mockErrorReport, mockInventoryItem } from '@test/mock-models';
+import { AccordionComponentStub } from '@test/component-stubs';
+import { AnimationsServiceStub, ErrorReportingServiceStub, EventServiceStub, ImageServiceStub, InventoryServiceStub, ProcessServiceStub, ToastServiceStub } from '@test/service-stubs';
+import { FormatStockPipeStub, RoundPipeStub, TruncatePipeStub } from '@test/pipe-stubs';
+import { ModalControllerStub, ModalStub, QueryListStub, ViewContainerRefStub } from '@test/ionic-stubs';
 
 /* Interface imports */
-import { Batch, ErrorReport, InventoryItem } from '../../../../shared/interfaces';
+import { Batch, ErrorReport, InventoryItem } from '@shared/interfaces';
 
 /* Service imports */
-import { AnimationsService, ErrorReportingService, EventService, ImageService, InventoryService, ProcessService, ToastService } from '../../../../services/services';
+import { AnimationsService, ErrorReportingService, EventService, ImageService, InventoryService, ProcessService, ToastService } from '@services/public';
 
 /* Component imports */
 import { InventoryComponent } from './inventory.component';

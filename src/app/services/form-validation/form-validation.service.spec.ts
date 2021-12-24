@@ -3,7 +3,7 @@ import { TestBed, getTestBed } from '@angular/core/testing';
 import { FormControl, FormGroup } from '@angular/forms';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Provider imports */
 import { FormValidationService } from './form-validation.service';

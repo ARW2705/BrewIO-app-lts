@@ -4,8 +4,8 @@ import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { RecipeSliderContentNameComponentModule } from '../recipe-slider-content-name/recipe-slider-content-name.module';
-import { RecipeSliderContentValuesComponentModule } from '../recipe-slider-content-values/recipe-slider-content-values.module';
+import { RecipeSliderContentNameComponentModule } from '@components/recipe/private/recipe-slider-content-name/recipe-slider-content-name.module';
+import { RecipeSliderContentValuesComponentModule } from '@components/recipe/private/recipe-slider-content-values/recipe-slider-content-values.module';
 import { RecipeSliderContentComponent } from './recipe-slider-content.component';
 
 

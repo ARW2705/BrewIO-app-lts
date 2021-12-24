@@ -2,10 +2,10 @@
 import { Injectable } from '@angular/core';
 
 /* Interface imports */
-import { SelectedUnits } from '../../shared/interfaces';
+import { SelectedUnits } from '@shared/interfaces';
 
 /* Default imports */
-import { defaultEnglishUnits } from '../../shared/defaults';
+import { defaultEnglishUnits } from '@shared/defaults';
 
 
 @Injectable({

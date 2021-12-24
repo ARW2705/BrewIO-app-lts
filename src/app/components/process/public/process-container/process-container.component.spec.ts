@@ -4,20 +4,20 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { of, throwError } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockCalendarProcess, mockProcessSchedule, mockRecipeVariantComplete } from '../../../../../../test-config/mock-models';
-import { ActionSheetServiceStub, ErrorReportingServiceStub, ModalServiceStub } from '../../../../../../test-config/service-stubs';
+import { mockCalendarProcess, mockProcessSchedule, mockRecipeVariantComplete } from '@test/mock-models';
+import { ActionSheetServiceStub, ErrorReportingServiceStub, ModalServiceStub } from '@test/service-stubs';
 
 /* Interface imports */
-import { CalendarProcess, Process, RecipeVariant } from '../../../../shared/interfaces';
+import { CalendarProcess, Process, RecipeVariant } from '@shared/interfaces';
 
 /* Service imports */
-import { ActionSheetService, ErrorReportingService, ModalService } from '../../../../services/services';
+import { ActionSheetService, ErrorReportingService, ModalService } from '@services/public';
 
 /* Component imports */
-import { ProcessFormComponent } from '../../private/process-form/process-form.component';
+import { ProcessFormComponent } from '@components/process/private/process-form/process-form.component';
 import { ProcessContainerComponent } from './process-container.component';
 
 

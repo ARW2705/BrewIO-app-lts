@@ -6,10 +6,10 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 /* Interface imports */
-import { Batch, BatchAnnotations, PrimaryValues, SelectedUnits } from '../../../../shared/interfaces';
+import { Batch, BatchAnnotations, PrimaryValues, SelectedUnits } from '@shared/interfaces';
 
 /* Service imports */
-import { CalculationsService, FormValidationService, PreferencesService, UtilityService } from '../../../../services/services';
+import { CalculationsService, FormValidationService, PreferencesService, UtilityService } from '@services/public';
 
 
 @Component({

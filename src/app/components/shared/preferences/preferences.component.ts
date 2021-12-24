@@ -5,19 +5,19 @@ import { Observable, of, Subject, throwError } from 'rxjs';
 import { catchError, mergeMap, take } from 'rxjs/operators';
 
 /* Constant imports */
-import { BRIX, PLATO, SPECIFIC_GRAVITY } from '../../../shared/constants';
+import { BRIX, PLATO, SPECIFIC_GRAVITY } from '@shared/constants';
 
 /* Interface imports */
-import { FormSelectOption, SelectedUnits, Unit, User } from '../../../shared/interfaces';
+import { FormSelectOption, SelectedUnits, Unit, User } from '@shared/interfaces';
 
 /* Type imports */
-import { CustomError } from '../../../shared/types';
+import { CustomError } from '@shared/types';
 
 /* Default imports */
-import { defaultEnglishUnits, defaultMetricUnits } from '../../../shared/defaults';
+import { defaultEnglishUnits, defaultMetricUnits } from '@shared/defaults';
 
 /* Service imports */
-import { ErrorReportingService, PreferencesService, ToastService, UserService } from '../../../services/services';
+import { ErrorReportingService, PreferencesService, ToastService, UserService } from '@services/public';
 
 
 @Component({

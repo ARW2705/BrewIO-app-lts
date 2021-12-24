@@ -4,14 +4,14 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { AnimationStub } from '../../../../../test-config/ionic-stubs';
-import { AnimationsServiceStub } from '../../../../../test-config/service-stubs';
+import { AnimationStub } from '@test/ionic-stubs';
+import { AnimationsServiceStub } from '@test/service-stubs';
 
 /* Service imports */
-import { AnimationsService } from '../../../services/services';
+import { AnimationsService } from '@services/public';
 
 /* Component imports */
 import { AccordionComponent } from './accordion.component';

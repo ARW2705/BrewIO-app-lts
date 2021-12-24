@@ -6,32 +6,32 @@ import { BehaviorSubject, forkJoin, Observable, of } from 'rxjs';
 import { catchError, defaultIfEmpty, map, mergeMap, tap } from 'rxjs/operators';
 
 /* Constants imports */
-import { API_VERSION, BASE_URL } from '../../shared/constants';
+import { API_VERSION, BASE_URL } from '@shared/constants';
 
 /* Default imports */
-import { defaultEnglishUnits, defaultImage } from '../../shared/defaults';
+import { defaultEnglishUnits, defaultImage } from '@shared/defaults';
 
 /* Type guard imports */
-import { UserGuardMetadata } from '../../shared/type-guard-metadata/user.guard';
+import { UserGuardMetadata } from '@shared/type-guard-metadata/user.guard';
 
 /* Type imports */
-import { CustomError } from '../../shared/types';
+import { CustomError } from '@shared/types';
 
 /* Interface imports */
-import { Image, ImageRequestFormData, ImageRequestMetadata, LoginCredentials, SelectedUnits, SyncMetadata, SyncResponse, User, UserResponse } from '../../shared/interfaces';
+import { Image, ImageRequestFormData, ImageRequestMetadata, LoginCredentials, SelectedUnits, SyncMetadata, SyncResponse, User, UserResponse } from '@shared/interfaces';
 
 /* Service imports */
-import { ConnectionService } from '../connection/connection.service';
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
-import { EventService } from '../event/event.service';
-import { HttpErrorService } from '../http-error/http-error.service';
-import { IdService } from '../id/id.service';
-import { ImageService } from '../image/image.service';
-import { PreferencesService } from '../preferences/preferences.service';
-import { StorageService } from '../storage/storage.service';
-import { SyncService } from '../sync/sync.service';
-import { ToastService } from '../toast/toast.service';
-import { TypeGuardService } from '../type-guard/type-guard.service';
+import { ConnectionService } from '@services/connection/connection.service';
+import { ErrorReportingService } from '@services/error-reporting/error-reporting.service';
+import { EventService } from '@services/event/event.service';
+import { HttpErrorService } from '@services/http-error/http-error.service';
+import { IdService } from '@services/id/id.service';
+import { ImageService } from '@services/image/image.service';
+import { PreferencesService } from '@services/preferences/preferences.service';
+import { StorageService } from '@services/storage/storage.service';
+import { SyncService } from '@services/sync/sync.service';
+import { ToastService } from '@services/toast/toast.service';
+import { TypeGuardService } from '@services/type-guard/type-guard.service';
 
 @Injectable({
   providedIn: 'root'

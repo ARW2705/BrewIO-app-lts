@@ -5,13 +5,13 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { IonicModule } from '@ionic/angular';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { EventServiceStub } from '../../../test-config/service-stubs';
+import { EventServiceStub } from '@test/service-stubs';
 
 /* Service imports */
-import { EventService } from '../services/services';
+import { EventService } from '@services/public';
 
 /* Component imports */
 import { TabsPage } from './tabs.page';

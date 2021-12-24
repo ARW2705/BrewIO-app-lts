@@ -2,10 +2,10 @@
 import { RatioPipe } from './ratio.pipe';
 
 /* Mock imports */
-import { mockGrainBill } from '../../../../test-config/mock-models';
+import { mockGrainBill } from '@test/mock-models';
 
 /* Interface imports */
-import { GrainBill } from '../../shared/interfaces';
+import { GrainBill } from '@shared/interfaces';
 
 
 describe('RatioPipe', (): void => {

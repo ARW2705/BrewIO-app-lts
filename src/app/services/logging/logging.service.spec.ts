@@ -5,21 +5,21 @@ import { EMPTY, of, throwError } from 'rxjs';
 import { delay } from 'rxjs/operators';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Interface impots */
-import { ErrorReport } from '../../shared/interfaces';
+import { ErrorReport } from '@shared/interfaces';
 
 /* Constant imports */
-import { API_VERSION, BASE_URL } from '../../shared/constants';
+import { API_VERSION, BASE_URL } from '@shared/constants';
 
 /* Mock imports */
-import { mockErrorReport, mockErrorResponse } from '../../../../test-config/mock-models';
-import { ConnectionServiceStub, StorageServiceStub } from '../../../../test-config/service-stubs';
+import { mockErrorReport, mockErrorResponse } from '@test/mock-models';
+import { ConnectionServiceStub, StorageServiceStub } from '@test/service-stubs';
 
 /* Service imports */
+import { ConnectionService, StorageService } from '@services/public';
 import { LoggingService } from './logging.service';
-import { ConnectionService, StorageService } from '../services';
 
 describe('LoggingService', (): void => {
   configureTestBed();

@@ -4,21 +4,21 @@ import { TestBed, getTestBed, async } from '@angular/core/testing';
 import { FormControl } from '@angular/forms';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockFormChanges, mockFormCommonAttributes } from '../../../../test-config/mock-models';
-import { ErrorReportingServiceStub } from '../../../../test-config/service-stubs';
+import { mockFormChanges, mockFormCommonAttributes } from '@test/mock-models';
+import { ErrorReportingServiceStub } from '@test/service-stubs';
 
 /* Interface imports */
-import { FormChanges, FormCommonAttributes, FormInputChanges, FormSelectChanges, FormTextAreaChanges } from '../../shared/interfaces';
+import { FormChanges, FormCommonAttributes, FormInputChanges, FormSelectChanges, FormTextAreaChanges } from '@shared/interfaces';
 
 /* Type imports */
-import { CustomError } from '../../shared/types';
+import { CustomError } from '@shared/types';
 
 /* Service imports */
+import { ErrorReportingService } from '@services/public';
 import { FormAttributeService } from './form-attribute.service';
-import { ErrorReportingService } from '../services';
 
 
 describe('FormAttributeService', (): void => {

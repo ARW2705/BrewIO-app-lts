@@ -6,27 +6,27 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { BehaviorSubject, Observable, Subject, of, throwError } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockImage, mockImageRequestMetadata, mockErrorResponse, mockLoginResponse, mockJWTSuccess, mockUser, mockUserUpdate, mockUserLogin, mockSyncMetadata, mockSyncResponse } from '../../../../test-config/mock-models';
-import { ConnectionServiceStub, ErrorReportingServiceStub, EventServiceStub, HttpErrorServiceStub, IdServiceStub, ImageServiceStub, PreferencesServiceStub, StorageServiceStub, SyncServiceStub, ToastServiceStub, TypeGuardServiceStub } from '../../../../test-config/service-stubs';
+import { mockImage, mockImageRequestMetadata, mockErrorResponse, mockLoginResponse, mockJWTSuccess, mockUser, mockUserUpdate, mockUserLogin, mockSyncMetadata, mockSyncResponse } from '@test/mock-models';
+import { ConnectionServiceStub, ErrorReportingServiceStub, EventServiceStub, HttpErrorServiceStub, IdServiceStub, ImageServiceStub, PreferencesServiceStub, StorageServiceStub, SyncServiceStub, ToastServiceStub, TypeGuardServiceStub } from '@test/service-stubs';
 
 /* Constants imports */
-import { API_VERSION, BASE_URL } from '../../shared/constants';
+import { API_VERSION, BASE_URL } from '@shared/constants';
 
 /* Default imports */
-import { defaultEnglishUnits, defaultImage } from '../../shared/defaults';
+import { defaultEnglishUnits, defaultImage } from '@shared/defaults';
 
 /* Interface imports */
-import { Image, ImageRequestFormData, ImageRequestMetadata, LoginCredentials, SelectedUnits, SyncResponse, User, UserResponse } from '../../shared/interfaces';
+import { Image, ImageRequestFormData, ImageRequestMetadata, LoginCredentials, SelectedUnits, SyncResponse, User, UserResponse } from '@shared/interfaces';
 
 /* Type imports */
-import { CustomError } from '../../shared/types';
+import { CustomError } from '@shared/types';
 
 /* Service imports */
+import { ConnectionService, ErrorReportingService, EventService, HttpErrorService, IdService, ImageService, PreferencesService, StorageService, SyncService, ToastService, TypeGuardService } from '@services/public';
 import { UserService } from './user.service';
-import { ConnectionService, ErrorReportingService, EventService, HttpErrorService, IdService, ImageService, PreferencesService, StorageService, SyncService, ToastService, TypeGuardService } from '../services';
 
 
 describe('UserService', (): void => {

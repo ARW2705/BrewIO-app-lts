@@ -4,7 +4,7 @@ import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { YeastBatchItemComponentModule } from '../yeast-batch-item/yeast-batch-item.module';
+import { YeastBatchItemComponentModule } from '@components/ingredient/private/yeast-batch-item/yeast-batch-item.module';
 import { YeastBatchComponent } from './yeast-batch.component';
 
 

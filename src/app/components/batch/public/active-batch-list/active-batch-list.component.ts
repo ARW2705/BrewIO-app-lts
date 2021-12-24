@@ -5,13 +5,13 @@ import { BehaviorSubject, Subject } from 'rxjs';
 import { finalize, takeUntil } from 'rxjs/operators';
 
 /* Interface imports */
-import { Batch } from '../../../../shared/interfaces';
+import { Batch } from '@shared/interfaces';
 
 /* Type imports */
-import { CustomError } from '../../../../shared/types';
+import { CustomError } from '@shared/types';
 
 /* Service imports */
-import { AnimationsService, ErrorReportingService, IdService, ProcessService, UtilityService } from '../../../../services/services';
+import { AnimationsService, ErrorReportingService, IdService, ProcessService, UtilityService } from '@services/public';
 
 
 @Component({

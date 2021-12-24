@@ -1,20 +1,19 @@
 /* Module imports */
 import { CUSTOM_ELEMENTS_SCHEMA, SimpleChange } from '@angular/core';
-import { ValidationErrors } from '@angular/forms';
+import { FormControl, ValidationErrors } from '@angular/forms';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
-import { FormControl } from '@angular/forms';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { FormAttributeServiceStub } from '../../../../../../test-config/service-stubs';
+import { FormAttributeServiceStub } from '@test/service-stubs';
 
 /* Interface imports */
-import { FormInputChanges } from '../../../../shared/interfaces';
+import { FormInputChanges } from '@shared/interfaces';
 
 /* Service imports */
-import { FormAttributeService } from '../../../../services/services';
+import { FormAttributeService } from '@services/public';
 
 /* Component imports */
 import { FormInputComponent } from './form-input.component';

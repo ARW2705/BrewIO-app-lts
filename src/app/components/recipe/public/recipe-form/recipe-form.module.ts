@@ -6,14 +6,13 @@ import { RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { IngredientContainerComponentModule } from '../../../ingredient/public';
-import { NoteContainerComponentModule } from '../../../note/public';
-import { ProcessContainerComponentModule } from '../../../process/public';
-import { HeaderComponentModule } from '../../../shared/public';
-import { GeneralFormButtonComponentModule } from '../../private/general-form-button/general-form-button.module';
-import { RecipeQuickDataComponentModule } from '../../private/recipe-quick-data/recipe-quick-data.module';
+import { IngredientContainerComponentModule } from '@components/ingredient/public';
+import { NoteContainerComponentModule } from '@components/note/public';
+import { ProcessContainerComponentModule } from '@components/process/public';
+import { GeneralFormButtonComponentModule } from '@components/recipe/private/general-form-button/general-form-button.module';
+import { RecipeQuickDataComponentModule } from '@components/recipe/private/recipe-quick-data/recipe-quick-data.module';
+import { HeaderComponentModule } from '@components/shared/public';
 import { RecipeFormComponent } from './recipe-form.component';
-
 
 @NgModule({
   imports: [

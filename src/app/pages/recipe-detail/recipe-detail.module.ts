@@ -5,16 +5,17 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 
+/* Pipe imports */
+import { RoundPipeModule, TruncatePipeModule, UnitConversionPipeModule } from '@pipes/public';
+
 /* Component imports */
-import { IngredientListComponentModule } from '../../components/ingredient/public';
-import { NoteContainerComponentModule } from '../../components/note/public';
-import { AccordionComponentModule, ConfirmationComponentModule, HeaderComponentModule } from '../../components/shared/public';
+import { IngredientListComponentModule } from '@components/ingredient/public';
+import { NoteContainerComponentModule } from '@components/note/public';
+import { AccordionComponentModule, ConfirmationComponentModule, HeaderComponentModule } from '@components/shared/public';
 
 /* Page imports */
 import { RecipeDetailPage } from './recipe-detail.page';
 
-/* Pipe imports */
-import { RoundPipeModule, TruncatePipeModule, UnitConversionPipeModule } from '../../pipes/pipes';
 
 
 @NgModule({

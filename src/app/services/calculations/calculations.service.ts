@@ -2,14 +2,14 @@
 import { Injectable } from '@angular/core';
 
 /* Constants imports */
-import { ABV_FACTORS, BIGNESS_BASE, BIGNESS_FACTOR, BOIL_TIME_EXP, BOIL_TIME_FACTOR, BRIX, ENGLISH_TEMPERATURE, FL_TO_ML, G_TO_OZ, GAL_TO_L, IBU_FACTOR, KG_TO_LB, L_TO_GAL, LARGE_ENGLISH_VOLUME, LARGE_ENGLISH_WEIGHT, LB_TO_KG, ML_TO_FL, OZ_TO_G, PLATO, PLATO_TO_SG, SG_TO_PLATO, SMALL_ENGLISH_VOLUME, SMALL_ENGLISH_WEIGHT, SPECIFIC_GRAVITY, SRM_EXP, SRM_FACTOR } from '../../shared/constants';
+import { ABV_FACTORS, BIGNESS_BASE, BIGNESS_FACTOR, BOIL_TIME_EXP, BOIL_TIME_FACTOR, BRIX, ENGLISH_TEMPERATURE, FL_TO_ML, G_TO_OZ, GAL_TO_L, IBU_FACTOR, KG_TO_LB, L_TO_GAL, LARGE_ENGLISH_VOLUME, LARGE_ENGLISH_WEIGHT, LB_TO_KG, ML_TO_FL, OZ_TO_G, PLATO, PLATO_TO_SG, SG_TO_PLATO, SMALL_ENGLISH_VOLUME, SMALL_ENGLISH_WEIGHT, SPECIFIC_GRAVITY, SRM_EXP, SRM_FACTOR } from '@shared/constants';
 
 /* Interface imports */
-import { GrainBill, Grains, Hops, HopsSchedule, RecipeVariant, SelectedUnits, YeastBatch } from '../../shared/interfaces';
+import { GrainBill, Grains, Hops, HopsSchedule, RecipeVariant, SelectedUnits, YeastBatch } from '@shared/interfaces';
 
 /* Provider imports */
-import { PreferencesService } from '../preferences/preferences.service';
-import { UtilityService } from '../utility/utility.service';
+import { PreferencesService } from '@services/preferences/preferences.service';
+import { UtilityService } from '@services/utility/utility.service';
 
 
 @Injectable({

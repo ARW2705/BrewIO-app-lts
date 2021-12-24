@@ -3,13 +3,13 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { forkJoin } from 'rxjs';
 
 /* Interface imports */
-import { GrainBill, Grains, Hops, HopsSchedule, IngredientUpdateEvent, OtherIngredients, RecipeVariant, Yeast, YeastBatch } from '../../../../shared/interfaces';
+import { GrainBill, Grains, Hops, HopsSchedule, IngredientUpdateEvent, OtherIngredients, RecipeVariant, Yeast, YeastBatch } from '@shared/interfaces';
 
 /* Component imports */
-import { IngredientFormComponent } from '../ingredient-form/ingredient-form.component';
+import { IngredientFormComponent } from '@components/ingredient/public/ingredient-form/ingredient-form.component';
 
 /* Service imports */
-import { ActionSheetService, ErrorReportingService, LibraryService, ModalService } from '../../../../services/services';
+import { ActionSheetService, ErrorReportingService, LibraryService, ModalService } from '@services/public';
 
 
 @Component({

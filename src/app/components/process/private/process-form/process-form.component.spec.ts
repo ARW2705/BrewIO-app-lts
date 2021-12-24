@@ -4,22 +4,22 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockCalendarProcess, mockManualProcess, mockTimerProcess } from '../../../../../../test-config/mock-models';
-import { HeaderComponentStub, ProcessCalendarFormComponentStub } from '../../../../../../test-config/component-stubs';
-import { ModalControllerStub } from '../../../../../../test-config/ionic-stubs';
-import { UtilityServiceStub } from '../../../../../../test-config/service-stubs';
+import { mockCalendarProcess, mockManualProcess, mockTimerProcess } from '@test/mock-models';
+import { HeaderComponentStub, ProcessCalendarFormComponentStub } from '@test/component-stubs';
+import { ModalControllerStub } from '@test/ionic-stubs';
+import { UtilityServiceStub } from '@test/service-stubs';
 
 /* Interface imports */
-import { CalendarProcess, ManualProcess, TimerProcess } from '../../../../shared/interfaces';
+import { CalendarProcess, ManualProcess, TimerProcess } from '@shared/interfaces';
 
 /* Service imports */
-import { UtilityService } from '../../../../services/services';
+import { UtilityService } from '@services/public';
 
 /* Component imports */
-import { ProcessCalendarFormComponent } from '../process-calendar-form/process-calendar-form.component';
+import { ProcessCalendarFormComponent } from '@components/process/private/process-calendar-form/process-calendar-form.component';
 import { ProcessFormComponent } from './process-form.component';
 
 

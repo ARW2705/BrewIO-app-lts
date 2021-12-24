@@ -6,27 +6,27 @@ import { BehaviorSubject, Observable, Subject, forkJoin, of, throwError } from '
 import { catchError } from 'rxjs/operators';
 
 /* TestBed configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockAlert, mockBatch, mockCalendarMetadata, mockEnglishUnits, mockGeneratedBatch, mockHopsSchedule, mockMetricUnits, mockSyncError, mockSyncMetadata, mockSyncResponse, mockRecipeMasterActive, mockPrimaryValues, mockProcessSchedule, mockErrorResponse, mockUser } from '../../../../test-config/mock-models';
-import { CalculationsServiceStub, IdServiceStub, ConnectionServiceStub, ErrorReportingServiceStub, EventServiceStub, HttpErrorServiceStub, LibraryServiceStub, RecipeServiceStub, StorageServiceStub, SyncServiceStub, ToastServiceStub, UserServiceStub, TypeGuardServiceStub, UtilityServiceStub } from '../../../../test-config/service-stubs';
+import { mockAlert, mockBatch, mockCalendarMetadata, mockEnglishUnits, mockGeneratedBatch, mockHopsSchedule, mockMetricUnits, mockSyncError, mockSyncMetadata, mockSyncResponse, mockRecipeMasterActive, mockPrimaryValues, mockProcessSchedule, mockErrorResponse, mockUser } from '@test/mock-models';
+import { CalculationsServiceStub, IdServiceStub, ConnectionServiceStub, ErrorReportingServiceStub, EventServiceStub, HttpErrorServiceStub, LibraryServiceStub, RecipeServiceStub, StorageServiceStub, SyncServiceStub, ToastServiceStub, UserServiceStub, TypeGuardServiceStub, UtilityServiceStub } from '@test/service-stubs';
 
 /* Constants imports */
-import { API_VERSION, BASE_URL } from '../../shared/constants';
+import { API_VERSION, BASE_URL } from '@shared/constants';
 
 /* Interface imports */
-import { Alert, Batch, BatchAnnotations, BatchContext, BatchProcess, CalendarMetadata, CalendarProcess, HopsSchedule, PrimaryValues, Process, RecipeMaster, SelectedUnits, SyncData, SyncError, SyncRequests, SyncResponse, TimerProcess, User } from '../../shared/interfaces';
+import { Alert, Batch, BatchAnnotations, BatchContext, BatchProcess, CalendarMetadata, CalendarProcess, HopsSchedule, PrimaryValues, Process, RecipeMaster, SelectedUnits, SyncData, SyncError, SyncRequests, SyncResponse, TimerProcess, User } from '@shared/interfaces';
 
 /* Type imports */
-import { CustomError } from '../../shared/types';
+import { CustomError } from '@shared/types';
 
 /* Type guard imports */
-import { AlertGuardMetadata, BatchGuardMetadata, BatchContextGuardMetadata, BatchAnnotationsGuardMetadata, BatchProcessGuardMetadata, PrimaryValuesGuardMetadata } from '../../shared/type-guard-metadata';
+import { AlertGuardMetadata, BatchGuardMetadata, BatchContextGuardMetadata, BatchAnnotationsGuardMetadata, BatchProcessGuardMetadata, PrimaryValuesGuardMetadata } from '@shared/type-guard-metadata';
 
 /* Service imports */
+import { CalculationsService, ConnectionService, ErrorReportingService, EventService, HttpErrorService, IdService, LibraryService, RecipeService, StorageService, SyncService, ToastService, TypeGuardService, UserService, UtilityService } from '@services/public';
 import { ProcessService } from './process.service';
-import { CalculationsService, ConnectionService, ErrorReportingService, EventService, HttpErrorService, IdService, LibraryService, RecipeService, StorageService, SyncService, ToastService, TypeGuardService, UserService, UtilityService } from '../services';
 
 
 describe('ProcessService', (): void => {

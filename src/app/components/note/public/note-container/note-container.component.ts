@@ -2,10 +2,10 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 /* Component imports */
-import { NoteFormComponent } from '../note-form/note-form.component';
+import { NoteFormComponent } from '@components/note/public/note-form/note-form.component';
 
 /* Service imports */
-import { ErrorReportingService, ModalService } from '../../../../services/services';
+import { ErrorReportingService, ModalService } from '@services/public';
 
 
 @Component({

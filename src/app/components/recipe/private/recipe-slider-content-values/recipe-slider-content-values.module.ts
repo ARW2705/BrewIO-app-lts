@@ -4,7 +4,7 @@ import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 /* Pipe imports */
-import { RoundPipeModule, TruncatePipeModule, UnitConversionPipeModule } from '../../../../pipes/pipes';
+import { RoundPipeModule, TruncatePipeModule, UnitConversionPipeModule } from '@pipes/public';
 
 /* Component imports */
 import { RecipeSliderContentValuesComponent } from './recipe-slider-content-values.component';

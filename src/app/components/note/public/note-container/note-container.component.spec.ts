@@ -4,16 +4,16 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { of, throwError } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { ErrorReportingServiceStub, ModalServiceStub } from '../../../../../../test-config/service-stubs';
+import { ErrorReportingServiceStub, ModalServiceStub } from '@test/service-stubs';
 
 /* Service imports */
-import { ErrorReportingService, ModalService } from '../../../../services/services';
+import { ErrorReportingService, ModalService } from '@services/public';
 
 /* Component imports */
-import { NoteFormComponent } from '../note-form/note-form.component';
+import { NoteFormComponent } from '@components/note/public/note-form/note-form.component';
 import { NoteContainerComponent } from './note-container.component';
 
 

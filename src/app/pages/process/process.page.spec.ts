@@ -6,24 +6,24 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { ActivatedRoute } from '@angular/router';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockBatch, mockAlert, mockCalendarProcess, mockCalendarMetadata, mockTimerProcess } from '../../../../test-config/mock-models';
-import { CalendarAlertServiceStub, CalendarServiceStub, ErrorReportingServiceStub, EventServiceStub, IdServiceStub, ModalServiceStub,  ProcessServiceStub, TimerServiceStub, ToastServiceStub, UserServiceStub } from '../../../../test-config/service-stubs';
-import { ActivatedRouteStub } from '../../../../test-config/ionic-stubs';
+import { mockBatch, mockAlert, mockCalendarProcess, mockCalendarMetadata, mockTimerProcess } from '@test/mock-models';
+import { CalendarAlertServiceStub, CalendarServiceStub, ErrorReportingServiceStub, EventServiceStub, IdServiceStub, ModalServiceStub,  ProcessServiceStub, TimerServiceStub, ToastServiceStub, UserServiceStub } from '@test/service-stubs';
+import { ActivatedRouteStub } from '@test/ionic-stubs';
 
 /* Type imports */
-import { CustomError } from '../../shared/types';
+import { CustomError } from '@shared/types';
 
 /* Interface imports */
-import { Alert, Batch, CalendarMetadata, CalendarProcess, Process, TimerProcess } from '../../shared/interfaces';
+import { Alert, Batch, CalendarMetadata, CalendarProcess, Process, TimerProcess } from '@shared/interfaces';
 
 /* Service imports */
-import { CalendarAlertService, CalendarService, ErrorReportingService, EventService, IdService, ModalService, ProcessService, TimerService, ToastService, UserService } from '../../services/services';
+import { CalendarAlertService, CalendarService, ErrorReportingService, EventService, IdService, ModalService, ProcessService, TimerService, ToastService, UserService } from '@services/public';
 
 /* Component imports */
-import { ProcessCalendarComponent, ProcessMeasurementsFormComponent } from '../../components/process/public';
+import { ProcessCalendarComponent, ProcessMeasurementsFormComponent } from '@components/process/public';
 
 /* Page imports */
 import { ProcessPage } from './process.page';

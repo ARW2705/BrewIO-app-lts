@@ -5,10 +5,10 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 /* Constant imports */
-import { DESCRIPTION_MAX_LENGTH, NAME_MAX_LENGTH, NAME_MIN_LENGTH } from '../../../../shared/constants';
+import { DESCRIPTION_MAX_LENGTH, NAME_MAX_LENGTH, NAME_MIN_LENGTH } from '@shared/constants';
 
 /* Interface imports */
-import { CalendarProcess } from '../../../../shared/interfaces';
+import { CalendarProcess } from '@shared/interfaces';
 
 
 @Component({

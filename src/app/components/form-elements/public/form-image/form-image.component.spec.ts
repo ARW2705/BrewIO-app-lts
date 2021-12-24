@@ -4,21 +4,21 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { of, throwError } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockImage } from '../../../../../../test-config/mock-models';
-import { ErrorReportingServiceStub, ImageServiceStub, ModalServiceStub } from '../../../../../../test-config/service-stubs';
-import { HeaderComponentStub } from '../../../../../../test-config/component-stubs';
+import { mockImage } from '@test/mock-models';
+import { ErrorReportingServiceStub, ImageServiceStub, ModalServiceStub } from '@test/service-stubs';
+import { HeaderComponentStub } from '@test/component-stubs';
 
 /* Constant imports */
-import { MISSING_IMAGE_URL } from '../../../../shared/constants';
+import { MISSING_IMAGE_URL } from '@shared/constants';
 
 /* Interface imports */
-import { Image } from '../../../../shared/interfaces';
+import { Image } from '@shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService, ImageService, ModalService } from '../../../../services/services';
+import { ErrorReportingService, ImageService, ModalService } from '@services/public';
 
 /* Page imports */
 import { FormImageComponent } from './form-image.component';

@@ -4,22 +4,22 @@ import { AnimationController } from '@ionic/angular';
 import { Observable, of, throwError } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockErrorReport } from '../../../../test-config/mock-models';
-import { AnimationControllerStub, AnimationStub, Renderer2Stub } from '../../../../test-config/ionic-stubs';
-import { ErrorReportingServiceStub } from '../../../../test-config/service-stubs';
+import { mockErrorReport } from '@test/mock-models';
+import { AnimationControllerStub, AnimationStub, Renderer2Stub } from '@test/ionic-stubs';
+import { ErrorReportingServiceStub } from '@test/service-stubs';
 
 /* Interface imports */
-import { ErrorReport } from '../../shared/interfaces';
+import { ErrorReport } from '@shared/interfaces';
 
 /* Type imports */
-import { CustomError } from '../../shared/types';
+import { CustomError } from '@shared/types';
 
 /* Service imports */
+import { ErrorReportingService } from '@services/error-reporting/error-reporting.service';
 import { AnimationsService } from './animations.service';
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
 
 
 describe('AnimationsService', (): void => {

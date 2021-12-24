@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { IonTabs } from '@ionic/angular';
 
 /* Service imports */
-import { EventService } from '../services/event/event.service';
+import { EventService } from '@services/event/event.service';
 
 
 @Component({

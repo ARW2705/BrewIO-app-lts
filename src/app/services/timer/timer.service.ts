@@ -4,18 +4,18 @@ import { Platform } from '@ionic/angular';
 import { BehaviorSubject } from 'rxjs';
 
 /* Interface imports */
-import { Batch, BatchTimer, Process, ProgressCircleSettings, Timer, TimerProcess } from '../../shared/interfaces';
+import { Batch, BatchTimer, Process, ProgressCircleSettings, Timer, TimerProcess } from '@shared/interfaces';
 
 /* Type imports */
-import { CustomError } from '../../shared/types';
+import { CustomError } from '@shared/types';
 
 /* Service imports */
-import { BackgroundModeService } from '../background-mode/background-mode.service';
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
-import { IdService } from '../id/id.service';
-import { LocalNotificationService } from '../local-notification/local-notification.service';
-import { ProcessService } from '../process/process.service';
-import { UtilityService } from '../utility/utility.service';
+import { BackgroundModeService } from '@services/background-mode/background-mode.service';
+import { ErrorReportingService } from '@services/error-reporting/error-reporting.service';
+import { IdService } from '@services/id/id.service';
+import { LocalNotificationService } from '@services/local-notification/local-notification.service';
+import { ProcessService } from '@services/process/process.service';
+import { UtilityService } from '@services/utility/utility.service';
 
 
 @Injectable({

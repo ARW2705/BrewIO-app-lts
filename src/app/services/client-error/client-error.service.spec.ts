@@ -2,17 +2,17 @@
 import { TestBed, async, getTestBed } from '@angular/core/testing';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { ErrorReportingServiceStub } from '../../../../test-config/service-stubs';
+import { ErrorReportingServiceStub } from '@test/service-stubs';
 
 /* Type imports */
-import { CustomError } from '../../shared/types';
+import { CustomError } from '@shared/types';
 
 /* Service imports */
+import { ErrorReportingService } from '@services/public';
 import { ClientErrorService } from './client-error.service';
-import { ErrorReportingService } from '../services';
 
 
 describe('ClientErrorService', () => {

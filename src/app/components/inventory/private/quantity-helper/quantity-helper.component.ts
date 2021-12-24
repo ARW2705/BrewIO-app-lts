@@ -3,13 +3,13 @@ import { Component, HostListener, Input, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 
 /* Constants imports */
-import { CL_TO_FLOZ, COMMON_CONTAINERS, FLOZ_TO_PINT } from '../../../../shared/constants';
+import { CL_TO_FLOZ, COMMON_CONTAINERS, FLOZ_TO_PINT } from '@shared/constants';
 
 /* Interface imports */
-import { Container } from '../../../../shared/interfaces';
+import { Container } from '@shared/interfaces';
 
 /* Service imports */
-import { UtilityService } from '../../../../services/services';
+import { UtilityService } from '@services/public';
 
 
 @Component({

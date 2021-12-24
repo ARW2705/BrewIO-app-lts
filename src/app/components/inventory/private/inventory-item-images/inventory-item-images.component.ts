@@ -2,10 +2,10 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 /* Constant imports */
-import { MISSING_IMAGE_URL } from '../../../../shared/constants';
+import { MISSING_IMAGE_URL } from '@shared/constants';
 
 /* Interface imports */
-import { InventoryItem } from '../../../../shared/interfaces';
+import { InventoryItem } from '@shared/interfaces';
 
 
 @Component({

@@ -2,7 +2,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 /* Interface imports */
-import { Alert } from '../../../../shared/interfaces';
+import { Alert } from '@shared/interfaces';
 
 
 @Component({

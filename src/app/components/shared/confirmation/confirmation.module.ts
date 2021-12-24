@@ -4,7 +4,7 @@ import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imporst */
-import { FormButtonsComponentModule } from '../../form-elements/public';
+import { FormButtonsComponentModule } from '@components/form-elements/public';
 import { ConfirmationComponent } from './confirmation.component';
 
 

@@ -3,10 +3,10 @@ import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Constant imports */
-import { FORM_ERROR_MESSAGES } from '../../../../shared/constants';
+import { FORM_ERROR_MESSAGES } from '@shared/constants';
 
 /* Component imports */
 import { FormErrorComponent } from './form-error.component';

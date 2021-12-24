@@ -5,15 +5,15 @@ import { IonicModule, ModalController } from '@ionic/angular';
 import { FormsModule, FormControl, ReactiveFormsModule } from '@angular/forms';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { HeaderComponentStub } from '../../../../../../test-config/component-stubs';
-import { ModalControllerStub } from '../../../../../../test-config/ionic-stubs';
-import { UtilityServiceStub } from '../../../../../../test-config/service-stubs';
+import { HeaderComponentStub } from '@test/component-stubs';
+import { ModalControllerStub } from '@test/ionic-stubs';
+import { UtilityServiceStub } from '@test/service-stubs';
 
 /* Service imports */
-import { UtilityService } from '../../../../services/services';
+import { UtilityService } from '@services/public';
 
 /* Page imports */
 import { NoteFormComponent } from './note-form.component';

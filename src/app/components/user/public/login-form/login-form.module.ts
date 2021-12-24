@@ -5,7 +5,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { FormButtonsComponentModule, FormCheckboxComponentModule, FormInputComponentModule } from '../../../form-elements/public';
+import { FormButtonsComponentModule, FormCheckboxComponentModule, FormInputComponentModule } from '@components/form-elements/public';
 
 /* Page imports */
 import { LoginFormComponent } from './login-form.component';

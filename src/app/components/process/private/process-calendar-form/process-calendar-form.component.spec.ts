@@ -4,13 +4,13 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockCalendarProcess } from '../../../../../../test-config/mock-models';
+import { mockCalendarProcess } from '@test/mock-models';
 
 /* Interface imports */
-import { CalendarProcess } from '../../../../shared/interfaces';
+import { CalendarProcess } from '@shared/interfaces';
 
 /* Component imports */
 import { ProcessCalendarFormComponent } from './process-calendar-form.component';

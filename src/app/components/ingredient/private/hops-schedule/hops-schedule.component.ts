@@ -2,10 +2,10 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output } from '@angular/core';
 
 /* Interface imports */
-import { HopsSchedule, RecipeVariant } from '../../../../shared/interfaces';
+import { HopsSchedule, RecipeVariant } from '@shared/interfaces';
 
 /* Service imports */
-import { CalculationsService } from '../../../../services/services';
+import { CalculationsService } from '@services/public';
 
 
 @Component({

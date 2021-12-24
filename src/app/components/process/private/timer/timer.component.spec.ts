@@ -4,18 +4,18 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockConcurrentTimers, mockProcessSchedule, mockTimer } from '../../../../../../test-config/mock-models';
-import { AnimationsServiceStub } from '../../../../../../test-config/service-stubs';
-import { AnimationStub } from '../../../../../../test-config/ionic-stubs';
+import { mockConcurrentTimers, mockProcessSchedule, mockTimer } from '@test/mock-models';
+import { AnimationsServiceStub } from '@test/service-stubs';
+import { AnimationStub } from '@test/ionic-stubs';
 
 /* Interface imports */
-import { Timer, TimerProcess } from '../../../../shared/interfaces';
+import { Timer, TimerProcess } from '@shared/interfaces';
 
 /* Service imports */
-import { AnimationsService } from '../../../../services/animations/animations.service';
+import { AnimationsService } from '@services/animations/animations.service';
 
 /* Component imoprts */
 import { TimerComponent } from './timer.component';
@@ -144,12 +144,12 @@ describe('TimerComponent', (): void => {
     component.toggleTimerControls();
     expect(component.timer.show).toBe(true);
     expect(setSpy).toHaveBeenCalled();
-    expect(expandSpy).toHaveBeenCalledWith(timerElem, { direction: -20 });
+    expect(expandSpy).toHaveBeenCalledWith(timerElem);
     expect(expandPlaySpy).toHaveBeenCalled();
     component.toggleTimerControls();
     expect(component.timer.show).toBe(false);
     expect(setSpy).toHaveBeenCalledTimes(2);
-    expect(collapseSpy).toHaveBeenCalledWith(timerElem, { direction: -20 });
+    expect(collapseSpy).toHaveBeenCalledWith(timerElem);
     expect(collapsePlaySpy).toHaveBeenCalled();
   });
 

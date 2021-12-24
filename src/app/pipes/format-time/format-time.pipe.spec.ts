@@ -2,10 +2,10 @@
 import { FormatTimePipe } from './format-time.pipe';
 
 /* Mock imports */
-import { TimerServiceStub } from '../../../../test-config/service-stubs';
+import { TimerServiceStub } from '@test/service-stubs';
 
 /* Serivce imports */
-import { TimerService } from '../../services/services';
+import { TimerService } from '@services/public';
 
 
 describe('FormatTimePipe', (): void => {

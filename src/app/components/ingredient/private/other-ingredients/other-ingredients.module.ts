@@ -4,7 +4,7 @@ import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { OtherIngredientsItemComponentModule } from '../other-ingredients-item/other-ingredients-item.module';
+import { OtherIngredientsItemComponentModule } from '@components/ingredient/private/other-ingredients-item/other-ingredients-item.module';
 import { OtherIngredientsComponent } from './other-ingredients.component';
 
 

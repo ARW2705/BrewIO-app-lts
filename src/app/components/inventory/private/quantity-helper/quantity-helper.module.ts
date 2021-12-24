@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { HeaderComponentModule } from '../../../shared/public';
+import { HeaderComponentModule } from '@components/shared/public';
 import { QuantityHelperComponent } from './quantity-helper.component';
 
 

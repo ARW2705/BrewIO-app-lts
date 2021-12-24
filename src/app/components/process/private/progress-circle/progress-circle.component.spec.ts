@@ -2,13 +2,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockProgressCircle } from '../../../../../../test-config/mock-models';
+import { mockProgressCircle } from '@test/mock-models';
 
 /* Interface imports */
-import { ProgressCircleSettings } from '../../../../shared/interfaces';
+import { ProgressCircleSettings } from '@shared/interfaces';
 
 /* Component imports */
 import { ProgressCircleComponent } from './progress-circle.component';

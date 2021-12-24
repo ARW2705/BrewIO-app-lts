@@ -5,14 +5,14 @@ import { Observable, of } from 'rxjs';
 import { catchError, mergeMap } from 'rxjs/operators';
 
 /* Constant imports */
-import { API_VERSION, BASE_URL } from '../../shared/constants';
+import { API_VERSION, BASE_URL } from '@shared/constants';
 
 /* Interface imports */
-import { ErrorReport } from '../../shared/interfaces';
+import { ErrorReport } from '@shared/interfaces';
 
 /* Service imports */
-import { ConnectionService } from '../connection/connection.service';
-import { StorageService } from '../storage/storage.service';
+import { ConnectionService } from '@services/connection/connection.service';
+import { StorageService } from '@services/storage/storage.service';
 
 
 @Injectable({

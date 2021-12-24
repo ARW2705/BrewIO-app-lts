@@ -2,16 +2,16 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 /* Constant imports */
-import { MISSING_IMAGE_URL } from '../../../../shared/constants';
+import { MISSING_IMAGE_URL } from '@shared/constants';
 
 /* Interface imports */
-import { Image } from '../../../../shared/interfaces';
+import { Image } from '@shared/interfaces';
 
 /* Component imports */
-import { ImageSelectionComponent } from '../../private/image-selection/image-selection.component';
+import { ImageSelectionComponent } from '@components/form-elements/private/image-selection/image-selection.component';
 
 /* Service imports */
-import { ErrorReportingService, ImageService, ModalService } from '../../../../services/services';
+import { ErrorReportingService, ImageService, ModalService } from '@services/public';
 
 
 @Component({
@@ -46,6 +46,7 @@ export class FormImageComponent {
     if (!this.imageService.hasDefaultImage(this.image)) {
       Object.assign(options, { image: this.image });
     }
+
     return options;
   }
 

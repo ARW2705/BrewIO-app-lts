@@ -4,10 +4,10 @@ import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 /* Pipe imports */
-import { SortPipeModule } from '../../../../pipes/pipes';
+import { SortPipeModule } from '@pipes/public';
 
 /* Component imports */
-import { ProcessDescriptionComponentModule } from '../process-description/process-description.module';
+import { ProcessDescriptionComponentModule } from '@components/process/private/process-description/process-description.module';
 import { ProcessCalendarAlertsComponent } from './process-calendar-alerts.component';
 
 

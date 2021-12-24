@@ -4,7 +4,7 @@ import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { DateButtonComponentModule } from '../date-button/date-button.module';
+import { DateButtonComponentModule } from '@components/process/private/date-button/date-button.module';
 import { CalendarInteractiveDisplayComponent } from './calendar-interactive-display.component';
 
 

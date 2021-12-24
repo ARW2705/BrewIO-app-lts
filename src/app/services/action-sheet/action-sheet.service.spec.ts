@@ -3,14 +3,14 @@ import { TestBed, getTestBed, async } from '@angular/core/testing';
 import { ActionSheetController } from '@ionic/angular';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockActionSheetButtons , mockActionSheetElement } from '../../../../test-config/mock-models';
-import { ActionSheetControllerStub } from '../../../../test-config/ionic-stubs';
+import { mockActionSheetButtons , mockActionSheetElement } from '@test/mock-models';
+import { ActionSheetControllerStub } from '@test/ionic-stubs';
 
 /* Interface imports */
-import { ActionSheetButton } from '../../shared/interfaces';
+import { ActionSheetButton } from '@shared/interfaces';
 
 /* Service imports */
 import { ActionSheetService } from './action-sheet.service';

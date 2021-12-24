@@ -9,7 +9,7 @@ import { IdServiceStub } from '../service-stubs';
 import { Alert, CalendarProcess } from '../../src/app/shared/interfaces';
 
 /* Service imports */
-import { IdService } from '../../src/app/services/services';
+import { IdService } from '../../src/app/services/public';
 
 /* Component imports */
 import { ProcessCalendarComponent } from '../../src/app/components/process/public/process-calendar/process-calendar.component';

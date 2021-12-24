@@ -5,9 +5,9 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { FormInputComponentModule } from '../../../form-elements/public/form-input/form-input.module';
-import { FormTextAreaComponentModule } from '../../../form-elements/public/form-text-area/form-text-area.module';
-import { FormToggleComponentModule } from '../../../form-elements/public/form-toggle/form-toggle.module';
+import { FormInputComponentModule } from '@components/form-elements/public/form-input/form-input.module';
+import { FormTextAreaComponentModule } from '@components/form-elements/public/form-text-area/form-text-area.module';
+import { FormToggleComponentModule } from '@components/form-elements/public/form-toggle/form-toggle.module';
 
 /* Page imports */
 import { ProcessTimerFormComponent } from './process-timer-form.component';

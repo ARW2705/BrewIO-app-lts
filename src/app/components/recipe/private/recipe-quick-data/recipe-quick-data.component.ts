@@ -2,7 +2,7 @@
 import { Component, Input } from '@angular/core';
 
 /* Interface imports */
-import { RecipeVariant, Style } from '../../../../shared/interfaces';
+import { RecipeVariant, Style } from '@shared/interfaces';
 
 
 @Component({

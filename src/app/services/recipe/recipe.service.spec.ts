@@ -5,30 +5,30 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable, Subject, forkJoin, of, throwError } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockAuthor, mockOtherIngredients, mockGrainBill, mockHopsSchedule, mockImage, mockImageRequestMetadata, mockRecipeMasterActive, mockRecipeMasterInactive, mockRecipeVariantComplete, mockRecipeVariantIncomplete, mockErrorResponse, mockProcessSchedule, mockStyles, mockUser, mockSyncError, mockSyncMetadata, mockSyncResponse, mockYeastBatch } from '../../../../test-config/mock-models';
-import { IdServiceStub, ConnectionServiceStub, ErrorReportingServiceStub, EventServiceStub, HttpErrorServiceStub, ImageServiceStub, LibraryServiceStub, StorageServiceStub, SyncServiceStub, ToastServiceStub, TypeGuardServiceStub, UserServiceStub, UtilityServiceStub } from '../../../../test-config/service-stubs';
+import { mockAuthor, mockOtherIngredients, mockGrainBill, mockHopsSchedule, mockImage, mockImageRequestMetadata, mockRecipeMasterActive, mockRecipeMasterInactive, mockRecipeVariantComplete, mockRecipeVariantIncomplete, mockErrorResponse, mockProcessSchedule, mockStyles, mockUser, mockSyncError, mockSyncMetadata, mockSyncResponse, mockYeastBatch } from '@test/mock-models';
+import { IdServiceStub, ConnectionServiceStub, ErrorReportingServiceStub, EventServiceStub, HttpErrorServiceStub, ImageServiceStub, LibraryServiceStub, StorageServiceStub, SyncServiceStub, ToastServiceStub, TypeGuardServiceStub, UserServiceStub, UtilityServiceStub } from '@test/service-stubs';
 
 /* Constants imports */
-import { API_VERSION, BASE_URL } from '../../shared/constants';
+import { API_VERSION, BASE_URL } from '@shared/constants';
 
 /* Interface imports */
-import { Author, GrainBill, HopsSchedule, Image, ImageRequestMetadata, OtherIngredients, Process, RecipeMaster, RecipeVariant, Style, SyncData, SyncError, SyncRequests, SyncResponse, User, YeastBatch, } from '../../shared/interfaces';
+import { Author, GrainBill, HopsSchedule, Image, ImageRequestMetadata, OtherIngredients, Process, RecipeMaster, RecipeVariant, Style, SyncData, SyncError, SyncRequests, SyncResponse, User, YeastBatch, } from '@shared/interfaces';
 
 /* Type guard imports */
-import { ProcessGuardMetadata, CalendarProcessGuardMetadata, ManualProcessGuardMetadata, TimerProcessGuardMetadata, GrainBillGuardMetadata, GrainsGuardMetadata, HopsScheduleGuardMetadata, HopsGuardMetadata, YeastBatchGuardMetadata, YeastGuardMetadata, OtherIngredientsGuardMetadata } from '../../shared/type-guard-metadata';
+import { ProcessGuardMetadata, CalendarProcessGuardMetadata, ManualProcessGuardMetadata, TimerProcessGuardMetadata, GrainBillGuardMetadata, GrainsGuardMetadata, HopsScheduleGuardMetadata, HopsGuardMetadata, YeastBatchGuardMetadata, YeastGuardMetadata, OtherIngredientsGuardMetadata } from '@shared/type-guard-metadata';
 
 /* Type imports */
-import { CustomError } from '../../shared/types';
+import { CustomError } from '@shared/types';
 
 /* Default imports */
-import { defaultImage } from '../../shared/defaults';
+import { defaultImage } from '@shared/defaults';
 
 /* Service imports */
+import { ConnectionService, ErrorReportingService, EventService, HttpErrorService, IdService, ImageService, LibraryService, StorageService, SyncService, ToastService, TypeGuardService, UserService, UtilityService } from '@services/public';
 import { RecipeService } from './recipe.service';
-import { ConnectionService, ErrorReportingService, EventService, HttpErrorService, IdService, ImageService, LibraryService, StorageService, SyncService, ToastService, TypeGuardService, UserService, UtilityService } from '../services';
 
 
 describe('RecipeService', (): void => {

@@ -4,10 +4,10 @@ import { Platform } from '@ionic/angular';
 import { Device } from '@ionic-native/device/ngx';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { DeviceStub, PlatformDevStub, PlatformCordovaStub } from '../../../../test-config/ionic-stubs';
+import { DeviceStub, PlatformDevStub, PlatformCordovaStub } from '@test/ionic-stubs';
 
 /* Service imports */
 import { DeviceService } from './device.service';

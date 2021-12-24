@@ -3,10 +3,10 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormControl } from '@angular/forms';
 
 /* Interface imports */
-import { FormSelectOption, Image } from '../../../../shared/interfaces';
+import { FormSelectOption, Image } from '@shared/interfaces';
 
 /* Service imports */
-import { UtilityService } from '../../../../services/services';
+import { UtilityService } from '@services/public';
 
 
 @Component({

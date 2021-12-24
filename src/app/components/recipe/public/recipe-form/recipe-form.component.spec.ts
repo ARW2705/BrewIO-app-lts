@@ -7,23 +7,23 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { Observable, of, throwError } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockYeastBatch, mockHopsSchedule, mockIngredientUpdateEvent, mockProcessSchedule, mockProcessUpdateEvent, mockGrainBill, mockRecipeMasterActive, mockRecipeVariantComplete, mockEnglishUnits, mockMetricUnits, mockGrains, mockHops, mockYeast, mockStyles } from '../../../../../../test-config/mock-models';
-import { ActionSheetServiceStub, CalculationsServiceStub, IdServiceStub, ErrorReportingServiceStub, LibraryServiceStub, PreferencesServiceStub, ProcessServiceStub, RecipeServiceStub, ToastServiceStub, UtilityServiceStub } from '../../../../../../test-config/service-stubs';
-import { HeaderComponentStub, GrainBillComponentStub, HopsScheduleComponentStub, OtherIngredientsComponentStub, ProcessListComponentStub, RecipeQuickDataComponentStub, YeastBatchComponentStub, NoteListComponentStub } from '../../../../../../test-config/component-stubs';
-import { ActivatedRouteStub, IonContentStub, ModalControllerStub, ModalStub } from '../../../../../../test-config/ionic-stubs';
-import { TruncatePipeStub } from '../../../../../../test-config/pipe-stubs';
+import { mockYeastBatch, mockHopsSchedule, mockIngredientUpdateEvent, mockProcessSchedule, mockProcessUpdateEvent, mockGrainBill, mockRecipeMasterActive, mockRecipeVariantComplete, mockEnglishUnits, mockMetricUnits, mockGrains, mockHops, mockYeast, mockStyles } from '@test/mock-models';
+import { ActionSheetServiceStub, CalculationsServiceStub, IdServiceStub, ErrorReportingServiceStub, LibraryServiceStub, PreferencesServiceStub, ProcessServiceStub, RecipeServiceStub, ToastServiceStub, UtilityServiceStub } from '@test/service-stubs';
+import { HeaderComponentStub, GrainBillComponentStub, HopsScheduleComponentStub, OtherIngredientsComponentStub, ProcessListComponentStub, RecipeQuickDataComponentStub, YeastBatchComponentStub, NoteListComponentStub } from '@test/component-stubs';
+import { ActivatedRouteStub, IonContentStub, ModalControllerStub, ModalStub } from '@test/ionic-stubs';
+import { TruncatePipeStub } from '@test/pipe-stubs';
 
 /* Default imports */
-import { defaultRecipeMaster } from '../../../../shared/defaults';
+import { defaultRecipeMaster } from '@shared/defaults';
 
 /* Interface imports */
-import { Grains, GrainBill, Hops, HopsSchedule, IngredientUpdateEvent, Process, ProcessUpdateEvent, RecipeMaster, RecipeVariant, SelectedUnits, TimerProcess, Yeast, YeastBatch, Style } from '../../../../shared/interfaces';
+import { Grains, GrainBill, Hops, HopsSchedule, IngredientUpdateEvent, Process, ProcessUpdateEvent, RecipeMaster, RecipeVariant, SelectedUnits, TimerProcess, Yeast, YeastBatch, Style } from '@shared/interfaces';
 
 /* Service imports */
-import { ActionSheetService, CalculationsService, IdService, ErrorReportingService, LibraryService, PreferencesService, ProcessService, RecipeService, ToastService, UtilityService } from '../../../../services/services';
+import { ActionSheetService, CalculationsService, IdService, ErrorReportingService, LibraryService, PreferencesService, ProcessService, RecipeService, ToastService, UtilityService } from '@services/public';
 
 /* Page imports */
 import { RecipeFormComponent } from './recipe-form.component';

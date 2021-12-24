@@ -5,12 +5,12 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { FormButtonsComponentModule } from '../../../form-elements/public';
-import { DeleteButtonComponentModule, HeaderComponentModule } from '../../../shared/public';
-import { GrainFormComponentModule } from '../../private/grain-form/grain-form.module';
-import { HopsFormComponentModule } from '../../private/hops-form/hops-form.module';
-import { OtherIngredientsFormComponentModule } from '../../private/other-ingredients-form/other-ingredients-form.module';
-import { YeastFormComponentModule } from '../../private/yeast-form/yeast-form.module';
+import { FormButtonsComponentModule } from '@components/form-elements/public';
+import { DeleteButtonComponentModule, HeaderComponentModule } from '@components/shared/public';
+import { GrainFormComponentModule } from '@components/ingredient/private/grain-form/grain-form.module';
+import { HopsFormComponentModule } from '@components/ingredient/private/hops-form/hops-form.module';
+import { OtherIngredientsFormComponentModule } from '@components/ingredient/private/other-ingredients-form/other-ingredients-form.module';
+import { YeastFormComponentModule } from '@components/ingredient/private/yeast-form/yeast-form.module';
 
 /* Page imports */
 import { IngredientFormComponent } from './ingredient-form.component';

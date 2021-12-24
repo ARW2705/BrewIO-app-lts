@@ -4,21 +4,21 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockGrains, mockGrainBill, mockEnglishUnits } from '../../../../../../test-config/mock-models';
-import { CalculationsServiceStub, UtilityServiceStub } from '../../../../../../test-config/service-stubs';
-import { FormInputComponentStub } from '../../../../../../test-config/component-stubs';
+import { mockGrains, mockGrainBill, mockEnglishUnits } from '@test/mock-models';
+import { CalculationsServiceStub, UtilityServiceStub } from '@test/service-stubs';
+import { FormInputComponentStub } from '@test/component-stubs';
 
 /* Interface imports */
-import { FormSelectOption, GrainBill, Grains, SelectedUnits } from '../../../../shared/interfaces';
+import { FormSelectOption, GrainBill, Grains, SelectedUnits } from '@shared/interfaces';
 
 /* Service imports */
-import { CalculationsService, UtilityService } from '../../../../services/services';
+import { CalculationsService, UtilityService } from '@services/public';
 
 /* Component imports */
-import { FormInputComponent } from '../../../form-elements/public';
+import { FormInputComponent } from '@components/form-elements/public';
 import { GrainFormComponent } from './grain-form.component';
 
 

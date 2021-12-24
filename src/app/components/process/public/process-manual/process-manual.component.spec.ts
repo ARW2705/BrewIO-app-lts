@@ -3,13 +3,13 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockProcessSchedule } from '../../../../../../test-config/mock-models';
+import { mockProcessSchedule } from '@test/mock-models';
 
 /* Interface imports */
-import { ManualProcess, Process } from '../../../../shared/interfaces';
+import { ManualProcess, Process } from '@shared/interfaces';
 
 /* Component imports */
 import { ProcessManualComponent } from './process-manual.component';

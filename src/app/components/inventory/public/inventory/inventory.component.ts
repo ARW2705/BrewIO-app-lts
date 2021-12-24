@@ -5,20 +5,18 @@ import { from, Subject } from 'rxjs';
 import { finalize, take, takeUntil } from 'rxjs/operators';
 
 /* Interface imports */
-import { Batch, ErrorReport, FormSelectOption, Image, InventoryItem } from '../../../../shared/interfaces';
+import { Batch, ErrorReport, FormSelectOption, Image, InventoryItem } from '@shared/interfaces';
 
 /* Default imports */
-import { defaultImage } from '../../../../shared/defaults';
+import { defaultImage } from '@shared/defaults';
 
 /* Component imports */
-import { AccordionComponent } from '../../../shared/public';
-
-/* Page imports */
-import { QuantityHelperComponent } from '../../private/quantity-helper/quantity-helper.component';
-import { InventoryFormComponent } from '../inventory-form/inventory-form.component';
+import { QuantityHelperComponent } from '@components/inventory/private/quantity-helper/quantity-helper.component';
+import { InventoryFormComponent } from '@components/inventory/public/inventory-form/inventory-form.component';
+import { AccordionComponent } from '@components/shared/public';
 
 /* Service imports */
-import { AnimationsService, ErrorReportingService, EventService, ImageService, InventoryService, ProcessService, ToastService } from '../../../../services/services';
+import { AnimationsService, ErrorReportingService, EventService, ImageService, InventoryService, ProcessService, ToastService } from '@services/public';
 
 
 @Component({

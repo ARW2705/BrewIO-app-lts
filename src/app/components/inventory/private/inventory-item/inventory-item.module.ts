@@ -4,9 +4,9 @@ import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { InventoryItemDescriptionComponentModule } from '../inventory-item-description/inventory-item-description.module';
-import { InventoryItemImagesComponentModule } from '../inventory-item-images/inventory-item-images.module';
-import { InventoryItemValuesComponentModule } from '../inventory-item-values/inventory-item-values.module';
+import { InventoryItemDescriptionComponentModule } from '@components/inventory/private/inventory-item-description/inventory-item-description.module';
+import { InventoryItemImagesComponentModule } from '@components/inventory/private/inventory-item-images/inventory-item-images.module';
+import { InventoryItemValuesComponentModule } from '@components/inventory/private/inventory-item-values/inventory-item-values.module';
 import { InventoryItemComponent } from './inventory-item.component';
 
 

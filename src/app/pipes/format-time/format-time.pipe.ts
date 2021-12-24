@@ -2,7 +2,7 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 /* Service imports */
-import { TimerService } from '../../services/services';
+import { TimerService } from '@services/public';
 
 
 @Pipe({

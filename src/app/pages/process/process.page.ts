@@ -6,16 +6,16 @@ import { BehaviorSubject, Observable, of, Subject, throwError } from 'rxjs';
 import { catchError, mergeMap, takeUntil } from 'rxjs/operators';
 
 /* Interface imports */
-import { Alert, Batch, BatchProcess, PrimaryValues, Process, TimerProcess } from '../../shared/interfaces';
+import { Alert, Batch, BatchProcess, PrimaryValues, Process, TimerProcess } from '@shared/interfaces';
 
 /* Type imports */
-import { CustomError } from '../../shared/types';
+import { CustomError } from '@shared/types';
 
 /* Component imports */
-import { ProcessCalendarComponent, ProcessMeasurementsFormComponent } from '../../components/process/public';
+import { ProcessCalendarComponent, ProcessMeasurementsFormComponent } from '@components/process/public';
 
 /* Service imports */
-import { CalendarAlertService, CalendarService, ErrorReportingService, EventService, IdService, ModalService, ProcessService, TimerService, ToastService, UserService } from '../../services/services';
+import { CalendarAlertService, CalendarService, ErrorReportingService, EventService, IdService, ModalService, ProcessService, TimerService, ToastService, UserService } from '@services/public';
 
 
 @Component({

@@ -7,25 +7,25 @@ import { ImageResizer } from '@ionic-native/image-resizer/ngx';
 import { Observable, of, throwError } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockImage, mockImageRequestFormData, mockEntry, mockFileMetadata  } from '../../../../test-config/mock-models';
-import { CameraStub, CropStub, ImageResizerStub } from '../../../../test-config/ionic-stubs';
-import { IdServiceStub, ErrorReportingServiceStub, FileServiceStub, TypeGuardServiceStub } from '../../../../test-config/service-stubs';
+import { mockImage, mockImageRequestFormData, mockEntry, mockFileMetadata  } from '@test/mock-models';
+import { CameraStub, CropStub, ImageResizerStub } from '@test/ionic-stubs';
+import { IdServiceStub, ErrorReportingServiceStub, FileServiceStub, TypeGuardServiceStub } from '@test/service-stubs';
 
 /* Default imports */
-import { defaultImage } from '../../shared/defaults';
+import { defaultImage } from '@shared/defaults';
 
 /* Interface imports */
-import { Image, ImageRequestFormData, ImageRequestMetadata } from '../../shared/interfaces';
+import { Image, ImageRequestFormData, ImageRequestMetadata } from '@shared/interfaces';
 
 /* Type imports */
-import { CustomError } from '../../shared/types';
+import { CustomError } from '@shared/types';
 
 /* Service imports */
+import { IdService, ErrorReportingService, FileService, TypeGuardService } from '@services/public';
 import { ImageService } from './image.service';
-import { IdService, ErrorReportingService, FileService, TypeGuardService } from '../services';
 
 
 describe('ImageService', (): void => {
@@ -437,7 +437,7 @@ describe('ImageService', (): void => {
       const _defaultImage: Image = defaultImage();
       expect(_mockImage.url).toMatch(_defaultImage.url);
     });
-    
+
   });
 
 });

@@ -4,10 +4,10 @@ import { By } from '@angular/platform-browser';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { UnitConversionPipeStub } from '../../../../../../test-config/pipe-stubs';
+import { UnitConversionPipeStub } from '@test/pipe-stubs';
 
 /* Component imports */
 import { ProcessDescriptionComponent } from './process-description.component';
@@ -43,7 +43,7 @@ describe('ProcessDescriptionComponent', (): void => {
 
   test('should set a default message if no description', (): void => {
     component.description = undefined;
-    
+
     fixture.detectChanges();
 
     component.ngOnChanges();

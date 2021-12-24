@@ -2,7 +2,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 /* Interface imports */
-import { GrainBill } from '../../../../shared/interfaces';
+import { GrainBill } from '@shared/interfaces';
 
 
 @Component({

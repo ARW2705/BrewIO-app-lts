@@ -4,7 +4,7 @@ import { Platform } from '@ionic/angular';
 import { Device } from '@ionic-native/device/ngx';
 
 /* Interface imports */
-import { DeviceInfo } from '../../shared/interfaces';
+import { DeviceInfo } from '@shared/interfaces';
 
 
 @Injectable({

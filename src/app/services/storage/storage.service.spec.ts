@@ -3,20 +3,20 @@ import { TestBed, getTestBed, async } from '@angular/core/testing';
 import { Storage } from '@ionic/storage';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockBatch, mockErrorReport, mockInventoryItem, mockLibraryStorage, mockRecipeMasterActive, mockSyncMetadata, mockUser } from '../../../../test-config/mock-models';
-import { StorageStub } from '../../../../test-config/ionic-stubs';
+import { mockBatch, mockErrorReport, mockInventoryItem, mockLibraryStorage, mockRecipeMasterActive, mockSyncMetadata, mockUser } from '@test/mock-models';
+import { StorageStub } from '@test/ionic-stubs';
 
 /* Interface imports */
-import { Batch, ErrorReport, LibraryStorage, InventoryItem, RecipeMaster, SelectedUnits, SyncMetadata, User } from '../../shared/interfaces';
+import { Batch, ErrorReport, LibraryStorage, InventoryItem, RecipeMaster, SelectedUnits, SyncMetadata, User } from '@shared/interfaces';
 
 /* Type imports */
-import { CustomError } from '../../shared/types';
+import { CustomError } from '@shared/types';
 
 /* Default imports */
-import { defaultEnglishUnits } from '../../shared/defaults';
+import { defaultEnglishUnits } from '@shared/defaults';
 
 /* Service imports */
 import { StorageService } from './storage.service';

@@ -6,17 +6,17 @@ import { ModalController } from '@ionic/angular';
 import { BehaviorSubject } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockUser } from '../../../../../test-config/mock-models';
-import { UserServiceStub } from '../../../../../test-config/service-stubs';
+import { mockUser } from '@test/mock-models';
+import { UserServiceStub } from '@test/service-stubs';
 
 /* Interface imports */
-import { User } from '../../../shared/interfaces';
+import { User } from '@shared/interfaces';
 
 /* Service Imports */
-import { UserService } from '../../../services/services';
+import { UserService } from '@services/public';
 
 /* Component imports */
 import { HeaderComponent } from './header.component';

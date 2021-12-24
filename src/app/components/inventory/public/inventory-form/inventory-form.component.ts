@@ -6,16 +6,16 @@ import { forkJoin, Observable, of } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
 /* Contants imports */
-import { DESCRIPTION_MAX_LENGTH, NAME_MAX_LENGTH, NAME_MIN_LENGTH, URL_MAX_LENGTH } from '../../../../shared/constants';
+import { DESCRIPTION_MAX_LENGTH, NAME_MAX_LENGTH, NAME_MIN_LENGTH, URL_MAX_LENGTH } from '@shared/constants';
 
 /* Default imports */
-import { defaultImage } from '../../../../shared/defaults';
+import { defaultImage } from '@shared/defaults';
 
 /* Interface imports */
-import { Author, Batch, FormSelectOption, Image, InventoryItem, Style } from '../../../../shared/interfaces';
+import { Author, Batch, FormSelectOption, Image, InventoryItem, Style } from '@shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService, IdService, LibraryService, RecipeService } from '../../../../services/services';
+import { ErrorReportingService, IdService, LibraryService, RecipeService } from '@services/public';
 
 
 @Component({

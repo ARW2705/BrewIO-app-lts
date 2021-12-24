@@ -3,16 +3,16 @@ import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 
 /* Interface imports */
-import { FormSelectOption, GrainBill, HopsSchedule, Ingredient, OtherIngredients, SelectedUnits, YeastBatch } from '../../../../shared/interfaces';
+import { FormSelectOption, GrainBill, HopsSchedule, Ingredient, OtherIngredients, SelectedUnits, YeastBatch } from '@shared/interfaces';
 
 /* Component imports */
-import { GrainFormComponent } from '../../private/grain-form/grain-form.component';
-import { HopsFormComponent } from '../../private/hops-form/hops-form.component';
-import { OtherIngredientsFormComponent } from '../../private/other-ingredients-form/other-ingredients-form.component';
-import { YeastFormComponent } from '../../private/yeast-form/yeast-form.component';
+import { GrainFormComponent } from '@components/ingredient/private/grain-form/grain-form.component';
+import { HopsFormComponent } from '@components/ingredient/private/hops-form/hops-form.component';
+import { OtherIngredientsFormComponent } from '@components/ingredient/private/other-ingredients-form/other-ingredients-form.component';
+import { YeastFormComponent } from '@components/ingredient/private/yeast-form/yeast-form.component';
 
 /* Service imports */
-import { PreferencesService, UtilityService } from '../../../../services/services';
+import { PreferencesService, UtilityService } from '@services/public';
 
 
 @Component({

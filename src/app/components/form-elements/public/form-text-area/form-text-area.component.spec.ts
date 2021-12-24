@@ -4,16 +4,16 @@ import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { FormControl, ValidationErrors} from '@angular/forms';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { FormAttributeServiceStub } from '../../../../../../test-config/service-stubs';
+import { FormAttributeServiceStub } from '@test/service-stubs';
 
 /* Interface imports */
-import { FormTextAreaChanges } from '../../../../shared/interfaces';
+import { FormTextAreaChanges } from '@shared/interfaces';
 
 /* Service imports */
-import { FormAttributeService } from '../../../../services/services';
+import { FormAttributeService } from '@services/public';
 
 /* Component imports */
 import { FormTextAreaComponent } from './form-text-area.component';

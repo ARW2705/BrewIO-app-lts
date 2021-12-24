@@ -4,15 +4,15 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { ModalControllerStub } from '../../../../../../test-config/ionic-stubs';
-import { AccordionComponentStub } from '../../../../../../test-config/component-stubs';
-import { mockErrorReport } from '../../../../../../test-config/mock-models';
+import { ModalControllerStub } from '@test/ionic-stubs';
+import { AccordionComponentStub } from '@test/component-stubs';
+import { mockErrorReport } from '@test/mock-models';
 
 /* Interface imports */
-import { ErrorReport } from '../../../../shared/interfaces';
+import { ErrorReport } from '@shared/interfaces';
 
 /* component imports */
 import { ErrorReportComponent } from './error-report.component';

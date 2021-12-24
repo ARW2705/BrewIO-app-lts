@@ -4,7 +4,7 @@ import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 /* Pipe imports */
-import { RatioPipeModule, UnitConversionPipeModule } from '../../../../pipes/pipes';
+import { RatioPipeModule, UnitConversionPipeModule } from '@pipes/public';
 
 /* Component imports */
 import { GrainBillItemComponent } from './grain-bill-item.component';

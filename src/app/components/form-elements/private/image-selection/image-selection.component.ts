@@ -4,10 +4,10 @@ import { ModalController } from '@ionic/angular';
 import { finalize } from 'rxjs/operators';
 
 /* Interface imports */
-import { Image } from '../../../../shared/interfaces';
+import { Image } from '@shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService, ImageService, LoadingService } from '../../../../services/services';
+import { ErrorReportingService, ImageService, LoadingService } from '@services/public';
 
 
 @Component({

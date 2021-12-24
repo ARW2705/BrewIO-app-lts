@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 
 /* Interface imports */
-import { GrainBill, HopsSchedule, OtherIngredients, YeastBatch } from '../../../../shared/interfaces';
+import { GrainBill, HopsSchedule, OtherIngredients, YeastBatch } from '@shared/interfaces';
 
 
 @Component({

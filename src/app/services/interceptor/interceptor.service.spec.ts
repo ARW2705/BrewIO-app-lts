@@ -5,22 +5,22 @@ import { HTTP_INTERCEPTORS, HttpHandler, HttpErrorResponse } from '@angular/comm
 import { BehaviorSubject, throwError } from 'rxjs';
 
 /* Constant imports */
-import { API_VERSION, BASE_URL } from '../../shared/constants';
+import { API_VERSION, BASE_URL } from '@shared/constants';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockErrorReport, mockErrorResponse, mockUser, mockHttpErrorHandler } from '../../../../test-config/mock-models';
-import { HttpStub } from '../../../../test-config/ionic-stubs';
-import { ErrorReportingServiceStub, HttpErrorServiceStub, UserServiceStub } from '../../../../test-config/service-stubs';
+import { mockErrorReport, mockErrorResponse, mockUser, mockHttpErrorHandler } from '@test/mock-models';
+import { HttpStub } from '@test/ionic-stubs';
+import { ErrorReportingServiceStub, HttpErrorServiceStub, UserServiceStub } from '@test/service-stubs';
 
 /* Interface imports */
-import { ErrorReport, User } from '../../shared/interfaces';
+import { ErrorReport, User } from '@shared/interfaces';
 
 /* Service imports */
+import { ErrorReportingService, HttpErrorService, UserService } from '@services/public';
 import { AuthorizeInterceptor, ErrorInterceptor } from './interceptor.service';
-import { ErrorReportingService, HttpErrorService, UserService } from '../services';
 
 
 describe('InterceptorService', (): void => {

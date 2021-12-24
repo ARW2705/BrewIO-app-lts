@@ -3,14 +3,14 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 /* Configure test bed import */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockGrainBill } from '../../../../../../test-config/mock-models';
-import { RatioPipeStub, UnitConversionPipeStub } from '../../../../../../test-config/pipe-stubs';
+import { mockGrainBill } from '@test/mock-models';
+import { RatioPipeStub, UnitConversionPipeStub } from '@test/pipe-stubs';
 
 /* Interface imports */
-import { GrainBill } from '../../../../shared/interfaces';
+import { GrainBill } from '@shared/interfaces';
 
 /* Component imports */
 import { GrainBillItemComponent } from './grain-bill-item.component';

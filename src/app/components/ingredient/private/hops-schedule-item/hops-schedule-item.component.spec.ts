@@ -3,14 +3,14 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockHopsSchedule, mockRecipeVariantComplete } from '../../../../../../test-config/mock-models';
-import { UnitConversionPipeStub } from '../../../../../../test-config/pipe-stubs';
+import { mockHopsSchedule, mockRecipeVariantComplete } from '@test/mock-models';
+import { UnitConversionPipeStub } from '@test/pipe-stubs';
 
 /* Interface imports */
-import { HopsSchedule, RecipeVariant } from '../../../../shared/interfaces';
+import { HopsSchedule, RecipeVariant } from '@shared/interfaces';
 
 /* Component imports */
 import { HopsScheduleItemComponent } from './hops-schedule-item.component';

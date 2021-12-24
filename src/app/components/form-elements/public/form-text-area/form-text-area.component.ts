@@ -3,10 +3,10 @@ import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from
 import { FormControl } from '@angular/forms';
 
 /* Interface imports */
-import { FormChanges } from '../../../../shared/interfaces';
+import { FormChanges } from '@shared/interfaces';
 
 /* Service imports */
-import { FormAttributeService } from '../../../../services/services';
+import { FormAttributeService } from '@services/public';
 
 
 @Component({

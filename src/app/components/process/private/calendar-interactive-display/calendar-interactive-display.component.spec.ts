@@ -3,13 +3,13 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockCalendarDate } from '../../../../../../test-config/mock-models';
+import { mockCalendarDate } from '@test/mock-models';
 
 /* Interface imports*/
-import { CalendarDate } from '../../../../shared/interfaces';
+import { CalendarDate } from '@shared/interfaces';
 
 /* Component imports */
 import { CalendarInteractiveDisplayComponent } from './calendar-interactive-display.component';

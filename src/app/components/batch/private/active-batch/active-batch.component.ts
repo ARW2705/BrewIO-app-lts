@@ -2,7 +2,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 /* Interface imports */
-import { Batch } from '../../../../shared/interfaces';
+import { Batch } from '@shared/interfaces';
 
 
 @Component({

@@ -1,10 +1,5 @@
 {
   "extends": "tslint:recommended",
-  "linterOptions": {
-    "exclude": [
-      "**/*.spec*"
-    ]
-  },
   "rules": {
     "align": {
       "options": [

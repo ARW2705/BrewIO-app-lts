@@ -4,7 +4,7 @@ import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { RecipeSliderContentComponentModule } from '../../private/recipe-slider-content/recipe-slider-content.module';
+import { RecipeSliderContentComponentModule } from '@components/recipe/private/recipe-slider-content/recipe-slider-content.module';
 import { RecipeSliderComponent } from './recipe-slider.component';
 
 

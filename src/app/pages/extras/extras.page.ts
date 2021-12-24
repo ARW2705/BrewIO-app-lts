@@ -5,10 +5,10 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 /* Interface imports */
-import { Batch, InventoryItem } from '../../shared/interfaces';
+import { Batch, InventoryItem } from '@shared/interfaces';
 
 /* Animation imports */
-import { AnimationsService, ErrorReportingService, UtilityService } from '../../services/services';
+import { AnimationsService, ErrorReportingService, UtilityService } from '@services/public';
 
 
 @Component({

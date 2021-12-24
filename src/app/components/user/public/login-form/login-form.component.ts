@@ -5,10 +5,10 @@ import { ModalController } from '@ionic/angular';
 import { finalize } from 'rxjs/operators';
 
 /* Interface imports */
-import { User } from '../../../../shared/interfaces';
+import { User } from '@shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService, LoadingService, ToastService, UserService } from '../../../../services/services';
+import { ErrorReportingService, LoadingService, ToastService, UserService } from '@services/public';
 
 
 @Component({

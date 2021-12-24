@@ -5,13 +5,13 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 /* Default imports */
-import { defaultImage } from '../../../../shared/defaults';
+import { defaultImage } from '@shared/defaults';
 
 /* Interface imports */
-import { Image, User } from '../../../../shared/interfaces';
+import { Image, User } from '@shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService, ImageService, ToastService, UserService } from '../../../../services/services';
+import { ErrorReportingService, ImageService, ToastService, UserService } from '@services/public';
 
 
 @Component({

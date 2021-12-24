@@ -3,14 +3,14 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockGrainBill, mockHopsSchedule, mockOtherIngredients, mockYeastBatch } from '../../../../../../test-config/mock-models';
-import { UnitConversionPipeStub } from '../../../../../../test-config/pipe-stubs';
+import { mockGrainBill, mockHopsSchedule, mockOtherIngredients, mockYeastBatch } from '@test/mock-models';
+import { UnitConversionPipeStub } from '@test/pipe-stubs';
 
 /* Interface imports */
-import { GrainBill, HopsSchedule, OtherIngredients, YeastBatch } from '../../../../shared/interfaces';
+import { GrainBill, HopsSchedule, OtherIngredients, YeastBatch } from '@shared/interfaces';
 
 /* Component imports */
 import { IngredientListItemComponent } from './ingredient-list-item.component';

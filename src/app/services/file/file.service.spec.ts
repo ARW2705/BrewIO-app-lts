@@ -6,16 +6,16 @@ import { WebView } from '@ionic-native/ionic-webview/ngx';
 import { Observable, of, throwError } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockArrayBuffer, mockIFile, mockFileError, mockFileReader, mockFileMetadata, mockEntry, mockFileEntry } from '../../../../test-config/mock-models';
-import { FileStub, FilePathStub, WebViewStub } from '../../../../test-config/ionic-stubs';
-import { ErrorReportingServiceStub } from '../../../../test-config/service-stubs';
+import { mockArrayBuffer, mockIFile, mockFileError, mockFileReader, mockFileMetadata, mockEntry, mockFileEntry } from '@test/mock-models';
+import { FileStub, FilePathStub, WebViewStub } from '@test/ionic-stubs';
+import { ErrorReportingServiceStub } from '@test/service-stubs';
 
 /* Service imports */
+import { ErrorReportingService } from '@services/public';
 import { FileService } from './file.service';
-import { ErrorReportingService } from '../services';
 
 
 describe('FileService', (): void => {

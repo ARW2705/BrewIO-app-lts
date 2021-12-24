@@ -4,7 +4,7 @@ import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 /* Pipe imports */
-import { UnitConversionPipeModule } from '../../../../pipes/pipes';
+import { UnitConversionPipeModule } from '@pipes/public';
 
 /* Component imports */
 import { HopsScheduleItemComponent } from './hops-schedule-item.component';

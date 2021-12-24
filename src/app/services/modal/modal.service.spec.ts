@@ -5,15 +5,15 @@ import { OverlayEventDetail } from '@ionic/core';
 import { Observable, of, throwError } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { ErrorReportingServiceStub } from '../../../../test-config/service-stubs';
-import { ModalControllerStub, ModalStub } from '../../../../test-config/ionic-stubs';
+import { ErrorReportingServiceStub } from '@test/service-stubs';
+import { ModalControllerStub, ModalStub } from '@test/ionic-stubs';
 
 /* Service imports */
+import { ErrorReportingService } from '@services/error-reporting/error-reporting.service';
 import { ModalService } from './modal.service';
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
 
 
 describe('ModalService', (): void => {

@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 
 /* Interface imports */
-import { EventSubscriber } from '../../shared/interfaces';
+import { EventSubscriber } from '@shared/interfaces';
 
 
 @Injectable({

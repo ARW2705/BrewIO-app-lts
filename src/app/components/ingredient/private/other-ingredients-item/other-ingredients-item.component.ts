@@ -2,7 +2,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 /* Interface imports */
-import { OtherIngredients } from '../../../../shared/interfaces';
+import { OtherIngredients } from '@shared/interfaces';
 
 
 @Component({

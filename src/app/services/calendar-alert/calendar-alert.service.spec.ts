@@ -2,13 +2,13 @@
 import { async, getTestBed, TestBed } from '@angular/core/testing';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockAlert, mockBatch } from '../../../../test-config/mock-models';
+import { mockAlert, mockBatch } from '@test/mock-models';
 
 /* Interface imports */
-import { Alert, Batch } from '../../shared/interfaces';
+import { Alert, Batch } from '@shared/interfaces';
 
 /* Service imports */
 import { CalendarAlertService } from './calendar-alert.service';

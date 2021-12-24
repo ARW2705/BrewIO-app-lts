@@ -3,14 +3,14 @@ import { TestBed, getTestBed, async } from '@angular/core/testing';
 import { ToastController } from '@ionic/angular';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockToastButtons, mockToastElement } from '../../../../test-config/mock-models';
-import { ToastControllerStub } from '../../../../test-config/ionic-stubs';
+import { mockToastButtons, mockToastElement } from '@test/mock-models';
+import { ToastControllerStub } from '@test/ionic-stubs';
 
 /* Interface imports */
-import { ToastButton } from '../../shared/interfaces';
+import { ToastButton } from '@shared/interfaces';
 
 /* Service imports */
 import { ToastService } from './toast.service';

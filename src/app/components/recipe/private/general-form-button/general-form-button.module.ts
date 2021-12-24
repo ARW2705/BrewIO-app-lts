@@ -4,10 +4,10 @@ import { NgModule } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 /* Pipe imports */
-import { TruncatePipeModule } from '../../../../pipes/pipes';
+import { TruncatePipeModule } from '@pipes/public';
 
 /* Component imports */
-import { GeneralFormComponentModule } from '../general-form/general-form.module';
+import { GeneralFormComponentModule } from '@components/recipe/private/general-form/general-form.module';
 import { GeneralFormButtonComponent } from './general-form-button.component';
 
 

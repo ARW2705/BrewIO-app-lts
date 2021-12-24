@@ -4,20 +4,20 @@ import * as moment from 'moment';
 import { of, throwError } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { ErrorReportingServiceStub, IdServiceStub, ProcessServiceStub } from '../../../../test-config/service-stubs';
-import { mockBatch, mockCalendarDate, mockCalendarInitialValues, mockCalendarMetadata } from '../../../../test-config/mock-models';
+import { ErrorReportingServiceStub, IdServiceStub, ProcessServiceStub } from '@test/service-stubs';
+import { mockBatch, mockCalendarDate, mockCalendarInitialValues, mockCalendarMetadata } from '@test/mock-models';
 
 /* Interface imports */
-import { Batch, CalendarDate, CalendarInitialValues, CalendarMetadata } from '../../shared/interfaces';
+import { Batch, CalendarDate, CalendarInitialValues, CalendarMetadata } from '@shared/interfaces';
 
 /* Service imports */
+import { ErrorReportingService } from '@services/error-reporting/error-reporting.service';
+import { IdService } from '@services/id/id.service';
+import { ProcessService } from '@services/process/process.service';
 import { CalendarService } from './calendar.service';
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
-import { IdService } from '../id/id.service';
-import { ProcessService } from '../process/process.service';
 
 
 describe('CalendarService', (): void => {

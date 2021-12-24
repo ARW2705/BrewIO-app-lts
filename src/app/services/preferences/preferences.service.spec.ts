@@ -2,13 +2,13 @@
 import { TestBed, getTestBed, async } from '@angular/core/testing';
 
 /* TestBed configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Default imports */
-import { defaultEnglishUnits, defaultMetricUnits } from '../../shared/defaults';
+import { defaultEnglishUnits, defaultMetricUnits } from '@shared/defaults';
 
 /* Interface imports */
-import { SelectedUnits } from '../../shared/interfaces';
+import { SelectedUnits } from '@shared/interfaces';
 
 /* Service imports */
 import { PreferencesService } from './preferences.service';

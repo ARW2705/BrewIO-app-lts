@@ -2,13 +2,13 @@
 import { Component, EventEmitter, Input, OnChanges, Output, ViewChild } from '@angular/core';
 
 /* Interface imports */
-import { Alert, CalendarMetadata, CalendarProcess } from '../../../../shared/interfaces';
+import { Alert, CalendarMetadata, CalendarProcess } from '@shared/interfaces';
 
 /* Component imports */
-import { CalendarComponent } from '../../private/calendar/calendar.component';
+import { CalendarComponent } from '@components/process/private/calendar/calendar.component';
 
 /* Service imports */
-import { CalendarAlertService, IdService } from '../../../../services/services';
+import { CalendarAlertService, IdService } from '@services/public';
 
 
 @Component({

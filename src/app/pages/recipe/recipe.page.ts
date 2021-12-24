@@ -6,14 +6,14 @@ import { BehaviorSubject, Subject } from 'rxjs';
 import { finalize, map, takeUntil } from 'rxjs/operators';
 
 /* Interface imports */
-import { RecipeMaster, RecipeVariant } from '../../shared/interfaces';
+import { RecipeMaster, RecipeVariant } from '@shared/interfaces';
 
 /* Component imports */
-import { RecipeSliderComponent } from '../../components/recipe/public';
-import { ConfirmationComponent } from '../../components/shared/public';
+import { RecipeSliderComponent } from '@components/recipe/public';
+import { ConfirmationComponent } from '@components/shared/public';
 
 /* Service imports */
-import { AnimationsService, ErrorReportingService, IdService, ModalService, RecipeService, ToastService, UserService, UtilityService } from '../../services/services';
+import { AnimationsService, ErrorReportingService, IdService, ModalService, RecipeService, ToastService, UserService, UtilityService } from '@services/public';
 
 
 @Component({

@@ -6,7 +6,7 @@ import { FormControl } from '@angular/forms';
 import { FormAttributeServiceStub } from '../service-stubs';
 
 /* Service imports */
-import { FormAttributeService } from '../../src/app/services/services';
+import { FormAttributeService } from '../../src/app/services/public';
 
 /* Component imports */
 import { FormInputComponent } from '../../src/app/components/form-elements/public/form-input/form-input.component';

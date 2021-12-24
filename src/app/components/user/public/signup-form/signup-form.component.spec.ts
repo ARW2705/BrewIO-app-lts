@@ -6,21 +6,21 @@ import { AbstractControl, FormBuilder, FormControl, FormGroup, ReactiveFormsModu
 import { of, throwError } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockImage, mockValidator } from '../../../../../../test-config/mock-models';
-import { ErrorReportingServiceStub, FormValidationServiceStub, ImageServiceStub, ToastServiceStub, UserServiceStub } from '../../../../../../test-config/service-stubs';
-import { LoadingControllerStub, ModalControllerStub } from '../../../../../../test-config/ionic-stubs';
+import { mockImage, mockValidator } from '@test/mock-models';
+import { ErrorReportingServiceStub, FormValidationServiceStub, ImageServiceStub, ToastServiceStub, UserServiceStub } from '@test/service-stubs';
+import { LoadingControllerStub, ModalControllerStub } from '@test/ionic-stubs';
 
 /* Default imports */
-import { defaultImage } from '../../../../shared/defaults';
+import { defaultImage } from '@shared/defaults';
 
 /* Interface imports */
-import { Image } from '../../../../shared/interfaces';
+import { Image } from '@shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService, FormValidationService, ImageService, ToastService, UserService } from '../../../../services/services';
+import { ErrorReportingService, FormValidationService, ImageService, ToastService, UserService } from '@services/public';
 
 /* Page imports */
 import { SignupFormComponent } from './signup-form.component';

@@ -5,33 +5,33 @@ import { BehaviorSubject, concat, Observable, of, throwError } from 'rxjs';
 import { catchError, finalize, map, mergeMap, take, tap } from 'rxjs/operators';
 
 /* Constants imports */
-import { API_VERSION, BASE_URL } from '../../shared/constants';
+import { API_VERSION, BASE_URL } from '@shared/constants';
 
 /* Interface imports */
-import { Alert, Batch, BatchAnnotations, BatchContext, BatchProcess, CalendarMetadata, CalendarProcess, HopsSchedule, PrimaryValues, Process, RecipeMaster, RecipeVariant, SelectedUnits, SyncData, SyncError, SyncMetadata, SyncRequests, SyncResponse, TimerProcess, User } from '../../shared/interfaces';
+import { Alert, Batch, BatchAnnotations, BatchContext, BatchProcess, CalendarMetadata, CalendarProcess, HopsSchedule, PrimaryValues, Process, RecipeMaster, RecipeVariant, SelectedUnits, SyncData, SyncError, SyncMetadata, SyncRequests, SyncResponse, TimerProcess, User } from '@shared/interfaces';
 
 /* Type guard imports */
-import { AlertGuardMetadata, BatchAnnotationsGuardMetadata, BatchContextGuardMetadata, BatchGuardMetadata, BatchProcessGuardMetadata, PrimaryValuesGuardMetadata } from '../../shared/type-guard-metadata';
+import { AlertGuardMetadata, BatchAnnotationsGuardMetadata, BatchContextGuardMetadata, BatchGuardMetadata, BatchProcessGuardMetadata, PrimaryValuesGuardMetadata } from '@shared/type-guard-metadata';
 
 /* Type imports */
-import { CustomError } from '../../shared/types';
+import { CustomError } from '@shared/types';
 
 /* Service imports */
-import { CalculationsService } from '../calculations/calculations.service';
-import { ConnectionService } from '../connection/connection.service';
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
-import { EventService } from '../event/event.service';
-import { HttpErrorService } from '../http-error/http-error.service';
-import { IdService } from '../id/id.service';
-import { LibraryService } from '../library/library.service';
-import { PreferencesService } from '../preferences/preferences.service';
-import { RecipeService } from '../recipe/recipe.service';
-import { StorageService } from '../storage/storage.service';
-import { SyncService } from '../sync/sync.service';
-import { ToastService } from '../toast/toast.service';
-import { TypeGuardService } from '../type-guard/type-guard.service';
-import { UserService } from '../user/user.service';
-import { UtilityService } from '../utility/utility.service';
+import { CalculationsService } from '@services/calculations/calculations.service';
+import { ConnectionService } from '@services/connection/connection.service';
+import { ErrorReportingService } from '@services/error-reporting/error-reporting.service';
+import { EventService } from '@services/event/event.service';
+import { HttpErrorService } from '@services/http-error/http-error.service';
+import { IdService } from '@services/id/id.service';
+import { LibraryService } from '@services/library/library.service';
+import { PreferencesService } from '@services/preferences/preferences.service';
+import { RecipeService } from '@services/recipe/recipe.service';
+import { StorageService } from '@services/storage/storage.service';
+import { SyncService } from '@services/sync/sync.service';
+import { ToastService } from '@services/toast/toast.service';
+import { TypeGuardService } from '@services/type-guard/type-guard.service';
+import { UserService } from '@services/user/user.service';
+import { UtilityService } from '@services/utility/utility.service';
 
 @Injectable({
   providedIn: 'root'

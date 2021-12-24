@@ -4,18 +4,18 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockYeast, mockYeastBatch, mockEnglishUnits } from '../../../../../../test-config/mock-models';
-import { UtilityServiceStub } from '../../../../../../test-config/service-stubs';
-import { FormInputComponentStub } from '../../../../../../test-config/component-stubs';
+import { mockYeast, mockYeastBatch, mockEnglishUnits } from '@test/mock-models';
+import { UtilityServiceStub } from '@test/service-stubs';
+import { FormInputComponentStub } from '@test/component-stubs';
 
 /* Interface imports */
-import { FormSelectOption, YeastBatch, Yeast, SelectedUnits } from '../../../../shared/interfaces';
+import { FormSelectOption, YeastBatch, Yeast, SelectedUnits } from '@shared/interfaces';
 
 /* Service imports */
-import { UtilityService } from '../../../../services/services';
+import { UtilityService } from '@services/public';
 
 /* Component imports */
 import { YeastFormComponent } from './yeast-form.component';

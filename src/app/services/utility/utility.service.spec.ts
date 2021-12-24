@@ -4,10 +4,10 @@ import { TestBed, getTestBed, async } from '@angular/core/testing';
 import { BehaviorSubject } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockNestedObject, mockSubjectArray } from '../../../../test-config/mock-models';
+import { mockNestedObject, mockSubjectArray } from '@test/mock-models';
 
 /* Service imports */
 import { UtilityService } from './utility.service';

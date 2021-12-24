@@ -2,7 +2,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 /* Interface imports */
-import { HopsSchedule } from '../../../../shared/interfaces';
+import { HopsSchedule } from '@shared/interfaces';
 
 
 @Component({

@@ -5,16 +5,16 @@ import { ModalController } from '@ionic/angular';
 import { finalize } from 'rxjs/operators';
 
 /* Constant imports */
-import { NAME_MAX_LENGTH, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, USERNAME_MAX_LENGTH, USERNAME_MIN_LENGTH } from '../../../../shared/constants';
+import { NAME_MAX_LENGTH, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, USERNAME_MAX_LENGTH, USERNAME_MIN_LENGTH } from '@shared/constants';
 
 /* Default imports */
-import { defaultImage } from '../../../../shared/defaults';
+import { defaultImage } from '@shared/defaults';
 
 /* Interface imports */
-import { Image, User } from '../../../../shared/interfaces';
+import { Image, User } from '@shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService, FormValidationService, LoadingService, ToastService, UserService } from '../../../../services/services';
+import { ErrorReportingService, FormValidationService, LoadingService, ToastService, UserService } from '@services/public';
 
 
 @Component({

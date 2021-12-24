@@ -3,7 +3,7 @@ import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 
 /* Service imports */
-import { ErrorReportingService, RecipeService, ToastService } from '../../src/app/services/services';
+import { ErrorReportingService, RecipeService, ToastService } from '../../src/app/services/public';
 
 /* Component imports */
 import { NoteListComponent } from '../../src/app/components/note/private/note-list/note-list.component';

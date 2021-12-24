@@ -2,13 +2,13 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 /* Constant imports */
-import { SPECIFIC_GRAVITY } from '../../shared/constants';
+import { SPECIFIC_GRAVITY } from '@shared/constants';
 
 /* Interface imports */
-import { SelectedUnits } from '../../shared/interfaces';
+import { SelectedUnits } from '@shared/interfaces';
 
 /* Service imports */
-import { CalculationsService, PreferencesService } from '../../services/services';
+import { CalculationsService, PreferencesService } from '@services/public';
 
 
 @Pipe({

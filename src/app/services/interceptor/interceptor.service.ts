@@ -5,9 +5,9 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 /* Service imports */
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
-import { HttpErrorService } from '../http-error/http-error.service';
-import { UserService } from '../user/user.service';
+import { ErrorReportingService } from '@services/error-reporting/error-reporting.service';
+import { HttpErrorService } from '@services/http-error/http-error.service';
+import { UserService } from '@services/user/user.service';
 
 
 @Injectable({

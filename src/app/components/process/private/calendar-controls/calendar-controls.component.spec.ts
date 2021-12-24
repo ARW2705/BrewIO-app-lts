@@ -3,14 +3,14 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 /* Configure test imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockCalendarDate } from '../../../../../../test-config/mock-models';
-import { MomentPipeStub } from '../../../../../../test-config/pipe-stubs';
+import { mockCalendarDate } from '@test/mock-models';
+import { MomentPipeStub } from '@test/pipe-stubs';
 
 /* Interface imports */
-import { CalendarDate } from '../../../../shared/interfaces';
+import { CalendarDate } from '@shared/interfaces';
 
 /* Component imports */
 import { CalendarControlsComponent } from './calendar-controls.component';

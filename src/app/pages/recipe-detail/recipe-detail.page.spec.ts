@@ -7,22 +7,22 @@ import { IonicModule } from '@ionic/angular';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockRecipeMasterActive, mockRecipeVariantComplete } from '../../../../test-config/mock-models';
-import { AnimationsServiceStub, ErrorReportingServiceStub, IdServiceStub, ModalServiceStub, RecipeServiceStub, ToastServiceStub, UtilityServiceStub } from '../../../../test-config/service-stubs';
-import { RoundPipeStub, TruncatePipeStub, UnitConversionPipeStub } from '../../../../test-config/pipe-stubs';
-import { ActivatedRouteStub, IonContentStub } from '../../../../test-config/ionic-stubs';
+import { mockRecipeMasterActive, mockRecipeVariantComplete } from '@test/mock-models';
+import { AnimationsServiceStub, ErrorReportingServiceStub, IdServiceStub, ModalServiceStub, RecipeServiceStub, ToastServiceStub, UtilityServiceStub } from '@test/service-stubs';
+import { RoundPipeStub, TruncatePipeStub, UnitConversionPipeStub } from '@test/pipe-stubs';
+import { ActivatedRouteStub, IonContentStub } from '@test/ionic-stubs';
 
 /* Interface imports */
-import { HopsSchedule, RecipeMaster, RecipeVariant } from '../../shared/interfaces';
+import { HopsSchedule, RecipeMaster, RecipeVariant } from '@shared/interfaces';
 
 /* Service imports */
-import { AnimationsService, ErrorReportingService, IdService, ModalService, RecipeService, ToastService, UtilityService } from '../../services/services';
+import { AnimationsService, ErrorReportingService, IdService, ModalService, RecipeService, ToastService, UtilityService } from '@services/public';
 
 /* Component imports */
-import { ConfirmationComponent } from '../../components/shared/confirmation/confirmation.component';
+import { ConfirmationComponent } from '@components/shared/confirmation/confirmation.component';
 
 /* Page imports */
 import { RecipeDetailPage } from './recipe-detail.page';

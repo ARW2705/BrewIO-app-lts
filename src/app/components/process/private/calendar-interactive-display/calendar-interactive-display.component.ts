@@ -2,7 +2,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 /* Interface imports */
-import { CalendarDate } from '../../../../shared/interfaces';
+import { CalendarDate } from '@shared/interfaces';
 
 
 @Component({

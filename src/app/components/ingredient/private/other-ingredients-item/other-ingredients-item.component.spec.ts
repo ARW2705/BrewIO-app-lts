@@ -3,13 +3,13 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockOtherIngredients } from '../../../../../../test-config/mock-models';
+import { mockOtherIngredients } from '@test/mock-models';
 
 /* Interface imports */
-import { OtherIngredients } from '../../../../shared/interfaces';
+import { OtherIngredients } from '@shared/interfaces';
 
 /* Component imports */
 import { OtherIngredientsItemComponent } from './other-ingredients-item.component';

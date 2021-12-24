@@ -5,7 +5,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { FormImageComponentModule, FormInputComponentModule } from '../../../form-elements/public';
+import { FormImageComponentModule, FormInputComponentModule } from '@components/form-elements/public';
 import { ProfileComponent } from './profile.component';
 
 

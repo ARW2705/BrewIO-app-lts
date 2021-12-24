@@ -8,8 +8,8 @@ import { IonicModule } from '@ionic/angular';
 import { GeneralFormComponent } from './general-form.component';
 
 /* Component imports */
-import { FormButtonsComponentModule, FormImageComponentModule, FormInputComponentModule, FormSelectComponentModule, FormToggleComponentModule } from '../../../form-elements/public';
-import { HeaderComponentModule } from '../../../shared/public';
+import { FormButtonsComponentModule, FormImageComponentModule, FormInputComponentModule, FormSelectComponentModule, FormToggleComponentModule } from '@components/form-elements/public';
+import { HeaderComponentModule } from '@components/shared/public';
 
 
 @NgModule({

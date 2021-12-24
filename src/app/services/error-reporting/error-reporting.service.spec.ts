@@ -5,25 +5,25 @@ import { ModalController } from '@ionic/angular';
 import { RouterTestingModule } from '@angular/router/testing';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Interface imports */
-import { DeviceInfo, ErrorReport } from '../../shared/interfaces';
+import { DeviceInfo, ErrorReport } from '@shared/interfaces';
 
 /* Type imports */
-import { CustomError } from '../../shared/types';
+import { CustomError } from '@shared/types';
 
 /* Mock imports */
-import { mockDeviceInfo, mockErrorReport, mockErrorResponse } from '../../../../test-config/mock-models';
-import { DeviceServiceStub, LoggingServiceStub, ToastServiceStub } from '../../../../test-config/service-stubs';
-import { DateStub, ModalControllerStub, ModalStub } from '../../../../test-config/ionic-stubs';
+import { mockDeviceInfo, mockErrorReport, mockErrorResponse } from '@test/mock-models';
+import { DeviceServiceStub, LoggingServiceStub, ToastServiceStub } from '@test/service-stubs';
+import { DateStub, ModalControllerStub, ModalStub } from '@test/ionic-stubs';
 
 /* Component imports */
-import { ErrorReportComponent } from '../../components/system/public';
+import { ErrorReportComponent } from '@components/system/public';
 
 /* Service imports */
+import { DeviceService, LoggingService, ToastService } from '@services/public';
 import { ErrorReportingService } from './error-reporting.service';
-import { DeviceService, LoggingService, ToastService } from '../services';
 
 
 describe('ErrorReportingService', () => {

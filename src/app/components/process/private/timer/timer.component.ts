@@ -3,10 +3,10 @@ import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { Animation } from '@ionic/angular';
 
 /* Interface imports */
-import { Timer, TimerProcess } from '../../../../shared/interfaces';
+import { Timer, TimerProcess } from '@shared/interfaces';
 
 /* Service imports */
-import { AnimationsService } from '../../../../services/animations/animations.service';
+import { AnimationsService } from '@services/animations/animations.service';
 
 
 @Component({

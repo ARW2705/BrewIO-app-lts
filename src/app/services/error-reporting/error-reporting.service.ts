@@ -7,21 +7,21 @@ import { from, Observable, of, throwError } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
 /* Constant imports */
-import { FATAL_SEVERITY, HIGH_SEVERITY, LOW_SEVERITY, MODERATE_SEVERITY } from '../../shared/constants';
+import { FATAL_SEVERITY, HIGH_SEVERITY, LOW_SEVERITY, MODERATE_SEVERITY } from '@shared/constants';
 
 /* Interface imports */
-import { ErrorReport } from '../../shared/interfaces';
+import { ErrorReport } from '@shared/interfaces';
 
 /* Type imports */
-import { CustomError } from '../../shared/types';
+import { CustomError } from '@shared/types';
 
 /* Component imports */
-import { ErrorReportComponent } from '../../components/system/public/error-report/error-report.component';
+import { ErrorReportComponent } from '@components/system/public/error-report/error-report.component';
 
 /* Service imports */
-import { DeviceService } from '../device/device.service';
-import { LoggingService } from '../logging/logging.service';
-import { ToastService } from '../toast/toast.service';
+import { DeviceService } from '@services/device/device.service';
+import { LoggingService } from '@services/logging/logging.service';
+import { ToastService } from '@services/toast/toast.service';
 
 
 @Injectable({

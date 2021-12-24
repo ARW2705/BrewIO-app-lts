@@ -4,17 +4,17 @@ import { NO_ERRORS_SCHEMA, SimpleChange, SimpleChanges } from '@angular/core';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockConcurrentTimers, mockProcessSchedule, mockTimer } from '../../../../../../test-config/mock-models';
-import { IdServiceStub, TimerServiceStub } from '../../../../../../test-config/service-stubs';
+import { mockConcurrentTimers, mockProcessSchedule, mockTimer } from '@test/mock-models';
+import { IdServiceStub, TimerServiceStub } from '@test/service-stubs';
 
 /* Interface imports */
-import { Process, TimerProcess, Timer } from '../../../../shared/interfaces';
+import { Process, TimerProcess, Timer } from '@shared/interfaces';
 
 /* Service imports */
-import { IdService, TimerService } from '../../../../services/services';
+import { IdService, TimerService } from '@services/public';
 
 /* Component imports */
 import { TimerControlsComponent } from './timer-controls.component';

@@ -1,11 +1,11 @@
 /* Mock imports */
-import { mockInventoryItem } from '../../../../test-config/mock-models';
+import { mockInventoryItem } from '@test/mock-models';
 
 /* Constant imports */
-import { STOCK_TYPES } from '../../shared/constants';
+import { STOCK_TYPES } from '@shared/constants';
 
 /* Interface imports */
-import { InventoryItem, StockType } from '../../shared/interfaces';
+import { InventoryItem, StockType } from '@shared/interfaces';
 
 /* Pipe imports */
 import { FormatStockPipe } from './format-stock.pipe';

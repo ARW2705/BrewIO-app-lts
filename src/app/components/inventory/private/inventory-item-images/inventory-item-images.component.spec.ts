@@ -3,16 +3,16 @@ import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockInventoryItem } from '../../../../../../test-config/mock-models';
+import { mockInventoryItem } from '@test/mock-models';
 
 /* Constant imports */
-import { MISSING_IMAGE_URL } from '../../../../shared/constants';
+import { MISSING_IMAGE_URL } from '@shared/constants';
 
 /* Interface imports */
-import { InventoryItem } from '../../../../shared/interfaces';
+import { InventoryItem } from '@shared/interfaces';
 
 /* Component imports */
 import { InventoryItemImagesComponent } from './inventory-item-images.component';

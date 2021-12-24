@@ -2,7 +2,7 @@
 import { Component, Input, OnChanges } from '@angular/core';
 
 /* Constant imports */
-import { FORM_ERROR_MESSAGES } from '../../../../shared/constants';
+import { FORM_ERROR_MESSAGES } from '@shared/constants';
 
 
 @Component({

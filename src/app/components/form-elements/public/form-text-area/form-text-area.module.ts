@@ -5,7 +5,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 /* Component imports */
-import { FormErrorComponentModule } from '../../private/form-error/form-error.module';
+import { FormErrorComponentModule } from '@components/form-elements/private/form-error/form-error.module';
 import { FormTextAreaComponent } from './form-text-area.component';
 
 

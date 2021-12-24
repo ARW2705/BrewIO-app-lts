@@ -2,7 +2,7 @@
 import { Component, Input } from '@angular/core';
 
 /* Interface imports */
-import { ManualProcess } from '../../../../shared/interfaces';
+import { ManualProcess } from '@shared/interfaces';
 
 
 @Component({

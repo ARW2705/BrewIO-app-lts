@@ -3,15 +3,15 @@ import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 
 /* Interface imports */
-import { Process } from '../../../../shared/interfaces';
+import { Process } from '@shared/interfaces';
 
 /* Component imports */
-import { ProcessCalendarFormComponent } from '../process-calendar-form/process-calendar-form.component';
-import { ProcessManualFormComponent } from '../process-manual-form/process-manual-form.component';
-import { ProcessTimerFormComponent } from '../process-timer-form/process-timer-form.component';
+import { ProcessCalendarFormComponent } from '@components/process/private/process-calendar-form/process-calendar-form.component';
+import { ProcessManualFormComponent } from '@components/process/private/process-manual-form/process-manual-form.component';
+import { ProcessTimerFormComponent } from '@components/process/private/process-timer-form/process-timer-form.component';
 
 /* Service imports */
-import { UtilityService } from '../../../../services/services';
+import { UtilityService } from '@services/public';
 
 
 @Component({

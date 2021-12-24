@@ -4,13 +4,13 @@ import { By } from '@angular/platform-browser';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockYeastBatch } from '../../../../../../test-config/mock-models';
+import { mockYeastBatch } from '@test/mock-models';
 
 /* Interface imports */
-import { YeastBatch } from '../../../../shared/interfaces';
+import { YeastBatch } from '@shared/interfaces';
 
 /* Component imports */
 import { YeastBatchItemComponent } from './yeast-batch-item.component';

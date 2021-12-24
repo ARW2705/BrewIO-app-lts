@@ -4,22 +4,22 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { of, throwError } from 'rxjs';
 
 /* Test Configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { ErrorReportingServiceStub, LibraryServiceStub, ModalServiceStub } from '../../../../../../test-config/service-stubs';
-import { TruncatePipeStub } from '../../../../../../test-config/pipe-stubs';
-import { mockRecipeMasterActive, mockStyles } from '../../../../../../test-config/mock-models';
+import { ErrorReportingServiceStub, LibraryServiceStub, ModalServiceStub } from '@test/service-stubs';
+import { TruncatePipeStub } from '@test/pipe-stubs';
+import { mockRecipeMasterActive, mockStyles } from '@test/mock-models';
 
 /* Interface imports */
-import { RecipeMaster, Style } from '../../../../shared/interfaces';
+import { RecipeMaster, Style } from '@shared/interfaces';
 
 /* Service imports */
-import { ErrorReportingService, LibraryService, ModalService } from '../../../../services/services';
+import { ErrorReportingService, LibraryService, ModalService } from '@services/public';
 
 /* Component imports */
+import { GeneralFormComponent } from '@components/recipe/private/general-form/general-form.component';
 import { GeneralFormButtonComponent } from './general-form-button.component';
-import { GeneralFormComponent } from '../general-form/general-form.component';
 
 
 describe('GeneralFormButtonComponent', () => {

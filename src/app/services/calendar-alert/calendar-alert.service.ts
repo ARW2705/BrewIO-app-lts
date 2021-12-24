@@ -2,7 +2,7 @@
 import { Injectable } from '@angular/core';
 
 /* Interface imports */
-import { Alert, BatchProcess } from '../../shared/interfaces';
+import { Alert, BatchProcess } from '@shared/interfaces';
 
 
 @Injectable({

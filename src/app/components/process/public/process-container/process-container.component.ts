@@ -2,13 +2,13 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 /* Interface imports */
-import { CalendarProcess, ManualProcess, Process, ProcessUpdateEvent, RecipeVariant, TimerProcess } from '../../../../shared/interfaces';
+import { CalendarProcess, ManualProcess, Process, ProcessUpdateEvent, RecipeVariant, TimerProcess } from '@shared/interfaces';
 
 /* Component imports */
-import { ProcessFormComponent } from '../../private/process-form/process-form.component';
+import { ProcessFormComponent } from '@components/process/private/process-form/process-form.component';
 
 /* Service imports */
-import { ActionSheetService, ErrorReportingService, ModalService } from '../../../../services/services';
+import { ActionSheetService, ErrorReportingService, ModalService } from '@services/public';
 
 
 @Component({

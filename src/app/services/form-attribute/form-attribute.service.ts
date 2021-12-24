@@ -3,13 +3,13 @@ import { Injectable, SimpleChanges } from '@angular/core';
 import { FormControl } from '@angular/forms';
 
 /* Interface imports */
-import { FormChanges, FormCommonAttributes, FormInputChanges, FormSelectChanges, FormTextAreaChanges } from '../../shared/interfaces';
+import { FormChanges, FormCommonAttributes, FormInputChanges, FormSelectChanges, FormTextAreaChanges } from '@shared/interfaces';
 
 /* Type imports */
-import { CustomError } from '../../shared/types';
+import { CustomError } from '@shared/types';
 
 /* Service imports */
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
+import { ErrorReportingService } from '@services/error-reporting/error-reporting.service';
 
 
 @Injectable({

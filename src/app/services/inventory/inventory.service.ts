@@ -6,36 +6,36 @@ import { BehaviorSubject, combineLatest, concat, forkJoin, Observable, of, throw
 import { catchError, defaultIfEmpty, finalize, map, mergeMap, take, tap } from 'rxjs/operators';
 
 /* Constant imports */
-import { API_VERSION, BASE_URL, OPTIONAL_INVENTORY_DATA_KEYS, SRM_HEX_CHART } from '../../shared/constants';
+import { API_VERSION, BASE_URL, OPTIONAL_INVENTORY_DATA_KEYS, SRM_HEX_CHART } from '@shared/constants';
 
 /* Default imports */
-import { defaultImage } from '../../shared/defaults';
+import { defaultImage } from '@shared/defaults';
 
 /* Interface imports*/
-import { Author, Batch, BatchContext, Image, ImageRequestFormData, ImageRequestMetadata, InventoryItem, PrimaryValues, RecipeMaster, Style, SyncData, SyncError, SyncMetadata, SyncRequests, SyncResponse } from '../../shared/interfaces';
+import { Author, Batch, BatchContext, Image, ImageRequestFormData, ImageRequestMetadata, InventoryItem, PrimaryValues, RecipeMaster, Style, SyncData, SyncError, SyncMetadata, SyncRequests, SyncResponse } from '@shared/interfaces';
 
 /* Type Guards */
-import { InventoryItemGuardMetadata, OptionalItemDataGuardMetadata } from '../../shared/type-guard-metadata';
+import { InventoryItemGuardMetadata, OptionalItemDataGuardMetadata } from '@shared/type-guard-metadata';
 
 /* Type imports */
-import { CustomError } from '../../shared/types';
+import { CustomError } from '@shared/types';
 
 /* Service imports */
-import { ConnectionService } from '../connection/connection.service';
-import { ErrorReportingService } from '../error-reporting/error-reporting.service';
-import { EventService } from '../event/event.service';
-import { HttpErrorService } from '../http-error/http-error.service';
-import { IdService } from '../id/id.service';
-import { ImageService } from '../image/image.service';
-import { LibraryService } from '../library/library.service';
-import { ProcessService } from '../process/process.service';
-import { RecipeService } from '../recipe/recipe.service';
-import { StorageService } from '../storage/storage.service';
-import { SyncService } from '../sync/sync.service';
-import { ToastService } from '../toast/toast.service';
-import { TypeGuardService } from '../type-guard/type-guard.service';
-import { UserService } from '../user/user.service';
-import { UtilityService } from '../utility/utility.service';
+import { ConnectionService } from '@services/connection/connection.service';
+import { ErrorReportingService } from '@services/error-reporting/error-reporting.service';
+import { EventService } from '@services/event/event.service';
+import { HttpErrorService } from '@services/http-error/http-error.service';
+import { IdService } from '@services/id/id.service';
+import { ImageService } from '@services/image/image.service';
+import { LibraryService } from '@services/library/library.service';
+import { ProcessService } from '@services/process/process.service';
+import { RecipeService } from '@services/recipe/recipe.service';
+import { StorageService } from '@services/storage/storage.service';
+import { SyncService } from '@services/sync/sync.service';
+import { ToastService } from '@services/toast/toast.service';
+import { TypeGuardService } from '@services/type-guard/type-guard.service';
+import { UserService } from '@services/user/user.service';
+import { UtilityService } from '@services/utility/utility.service';
 
 
 @Injectable({

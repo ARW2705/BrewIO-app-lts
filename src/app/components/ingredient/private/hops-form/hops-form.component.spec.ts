@@ -4,18 +4,18 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 /* Test configuration imports */
-import { configureTestBed } from '../../../../../../test-config/configure-test-bed';
+import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
-import { mockHops, mockHopsSchedule, mockEnglishUnits } from '../../../../../../test-config/mock-models';
-import { CalculationsServiceStub, UtilityServiceStub } from '../../../../../../test-config/service-stubs';
-import { FormInputComponentStub } from '../../../../../../test-config/component-stubs';
+import { mockHops, mockHopsSchedule, mockEnglishUnits } from '@test/mock-models';
+import { CalculationsServiceStub, UtilityServiceStub } from '@test/service-stubs';
+import { FormInputComponentStub } from '@test/component-stubs';
 
 /* Interface imports */
-import { FormSelectOption, HopsSchedule, Hops, SelectedUnits } from '../../../../shared/interfaces';
+import { FormSelectOption, HopsSchedule, Hops, SelectedUnits } from '@shared/interfaces';
 
 /* Service imports */
-import { CalculationsService, UtilityService } from '../../../../services/services';
+import { CalculationsService, UtilityService } from '@services/public';
 
 /* Component imports */
 import { HopsFormComponent } from './hops-form.component';
