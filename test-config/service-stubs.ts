@@ -13,6 +13,11 @@ export { FormAttributeServiceStub } from './service-stubs/form-attribute-stub.se
 export { IdServiceStub } from './service-stubs/id-stub.service';
 export { ImageServiceStub } from './service-stubs/image-stub.service';
 export { InventoryServiceStub } from './service-stubs/inventory-stub.service';
+export { InventoryHttpServiceStub } from './service-stubs/inventory-http-stub.service';
+export { InventoryImageServiceStub } from './service-stubs/inventory-image-stub.service';
+export { InventoryStateServiceStub } from './service-stubs/inventory-state-stub.service';
+export { InventorySyncServiceStub } from './service-stubs/inventory-sync-stub.service';
+export { InventoryTypeGuardServiceStub } from './service-stubs/inventory-type-guard-stub.service';
 export { LibraryServiceStub } from './service-stubs/library-stub.service';
 export { LoadingServiceStub } from './service-stubs/loading-stub.service';
 export { LocalNotificationServiceStub } from './service-stubs/local-notification-stub.service';
