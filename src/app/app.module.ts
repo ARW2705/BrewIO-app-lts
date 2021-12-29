@@ -62,7 +62,13 @@ import {
   TypeGuardService,
   UserService,
   UtilityService
-} from './services/services';
+} from './services/public';
+
+import { InventoryHttpService } from '@services/inventory/http/inventory-http.service';
+import { InventoryImageService } from '@services/inventory/image/inventory-image.service';
+import { InventoryStateService } from '@services/inventory/state/inventory-state.service';
+import { InventorySyncService } from '@services/inventory/sync/inventory-sync.service';
+import { InventoryTypeGuardService } from '@services/inventory/type-guard/inventory-type-guard.service';
 
 
 @NgModule({
@@ -117,7 +123,12 @@ import {
     IdService,
     ImageResizer,
     ImageService,
+    InventoryHttpService,
+    InventoryImageService,
     InventoryService,
+    InventoryStateService,
+    InventorySyncService,
+    InventoryTypeGuardService,
     LibraryService,
     LocalNotifications,
     LocalNotificationService,
