@@ -4,6 +4,9 @@ import { Injectable } from '@angular/core';
 import { forkJoin, Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
+/* Constant imports */
+import { MODERATE_SEVERITY } from '@shared/constants';
+
 /* Interface imports */
 import { SyncData, SyncError, SyncMetadata, SyncResponse } from '@shared/interfaces';
 
@@ -107,7 +110,7 @@ export class SyncService {
       this.addDeleteSyncFlag(metadata);
     } else {
       const message: string = `Unknown sync flag method: ${metadata.method}`;
-      throw new CustomError('SyncError', message, this.errorReporter.moderateSeverity, message);
+      throw new CustomError('SyncError', message, MODERATE_SEVERITY, message);
     }
     this.updateStorage();
   }
@@ -153,6 +156,25 @@ export class SyncService {
         return syncFlag.docType !== docType;
       });
     this.updateStorage();
+  }
+
+  /**
+   * Convert a server request method name to its sync method counterpart
+   *
+   * @param: requestMethod - the request method to convert
+   * @return: the converted sync method name
+   */
+  convertRequestMethodToSyncMethod(requestMethod: string): string {
+    if (requestMethod === 'post') {
+      return 'create';
+    } else if (requestMethod === 'patch') {
+      return 'update';
+    } else if (requestMethod === 'delete') {
+      return requestMethod;
+    } else {
+      const message: string = `Unknown request method: ${requestMethod}`;
+      throw new CustomError('SyncError', message, MODERATE_SEVERITY, message);
+    }
   }
 
   /**
@@ -243,6 +265,7 @@ export class SyncService {
     return forkJoin(this.getRequestsWithErrorResolvingHandlers<T>(requests))
       .pipe(
         map((responses: (T | SyncData<T> | HttpErrorResponse)[]): SyncResponse<T> => {
+          console.log('sync response', responses);
           this.clearSyncFlagByType(docType);
           const errors: (HttpErrorResponse | Error)[] = [];
           const successes: T[] = [];
