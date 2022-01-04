@@ -48,6 +48,7 @@ export class ActiveBatchListComponent implements OnInit, OnChanges, OnDestroy, A
       .subscribe(
         (activeBatchesList$: BehaviorSubject<Batch>[]): void => {
           this.activeBatchesList = this.utilService.getArrayFromSubjects<Batch>(activeBatchesList$);
+          console.log('abl', this.activeBatchesList);
         },
         (error: any): void => this.errorReporter.handleUnhandledError(error)
       );

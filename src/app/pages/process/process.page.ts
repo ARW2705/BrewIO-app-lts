@@ -80,10 +80,10 @@ export class ProcessPage implements OnInit, OnDestroy {
    * @return: none
    */
   advanceBatch(nextIndex: number): void {
+    this.selectedBatch.process.currentStep = nextIndex;
     this.processService.updateBatch(this.selectedBatch)
       .subscribe(
         (): void => {
-          this.selectedBatch.process.currentStep = nextIndex;
           this.viewStepIndex = nextIndex;
           this.updateView();
         },
@@ -114,7 +114,7 @@ export class ProcessPage implements OnInit, OnDestroy {
    * @return: none
    */
   continueBatch(batchId: string): void {
-    this.selectedBatch$ = this.processService.getBatchById(batchId);
+    this.selectedBatch$ = this.processService.getBatchSubjectById(batchId);
     if (this.selectedBatch$) {
       this.listenForBatchChanges(true);
     } else {
@@ -168,7 +168,7 @@ export class ProcessPage implements OnInit, OnDestroy {
     this.processService.startNewBatch(configData.requestedUserId, configData.recipeMasterId, configData.recipeVariantId)
       .pipe(
         mergeMap((newBatch: Batch): Observable<null> => {
-          this.selectedBatch$ = this.processService.getBatchById(this.idService.getId(newBatch));
+          this.selectedBatch$ = this.processService.getBatchSubjectById(this.idService.getId(newBatch));
           return this.selectedBatch$ ? of(null) : throwError(this.getMissingError('start'));
         }),
         catchError(this.errorReporter.handleGenericCatchError())

@@ -269,6 +269,7 @@ export class InventoryComponent implements OnInit, OnChanges, OnDestroy, AfterVi
             this.imageService.setInitialURL(item.optionalItemData.supplierLabelImage);
           });
           this.resetDisplayList();
+          console.log('inventory page should have updated with count', inventoryList.length);
         },
         (error: any): void => this.errorReporter.handleUnhandledError(error)
       );

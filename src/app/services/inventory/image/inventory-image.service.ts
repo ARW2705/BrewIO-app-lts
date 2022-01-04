@@ -51,6 +51,7 @@ export class InventoryImageService {
     const imageRequests: ImageRequestFormData[] = [];
     let imageName: string = 'itemLabelImage';
     let image: Image = item.optionalItemData[imageName];
+    console.log('compose image upload request', item);
     if (image && image.hasPending) {
       imageRequests.push({ image: item.optionalItemData[imageName], name: imageName });
     }

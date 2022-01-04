@@ -116,6 +116,7 @@ export class InventoryStateService {
    * @return: none
    */
   registerEvents(): void {
+    console.log('register inventory events');
     this.eventService.register('init-inventory')
       .pipe(mergeMap((): Observable<null> => this.initInventory()))
       .subscribe((): void => console.log('inventory init complete'));

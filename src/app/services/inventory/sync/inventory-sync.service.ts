@@ -2,12 +2,13 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 
 /* Interface imports*/
 import { Batch, InventoryItem, SyncData, SyncError, SyncMetadata, SyncRequests, SyncResponse } from '@shared/interfaces';
 
 /* Service imports */
+import { ErrorReportingService } from '@services/error-reporting/error-reporting.service';
 import { IdService } from '@services/id/id.service';
 import { InventoryHttpService } from '@services/inventory/http/inventory-http.service';
 import { InventoryTypeGuardService } from '@services/inventory/type-guard/inventory-type-guard.service';
@@ -25,6 +26,7 @@ export class InventorySyncService {
   syncErrors: SyncError[] = [];
 
   constructor(
+    public errorReporter: ErrorReportingService,
     public idService: IdService,
     public inventoryHttpService: InventoryHttpService,
     public inventoryTypeGuardService: InventoryTypeGuardService,
@@ -110,11 +112,10 @@ export class InventorySyncService {
           item.optionalItemData.batchId !== undefined
           && this.idService.hasDefaultIdType(item.optionalItemData.batchId)
         ) {
-          const batch$: BehaviorSubject<Batch> = this.processService
-            .getBatchById(item.optionalItemData.batchId);
+          const batch: Batch = this.processService.getBatchById(item.optionalItemData.batchId);
 
-          if (batch$ !== undefined && !this.idService.hasDefaultIdType(batch$.value._id)) {
-            item.optionalItemData.batchId = batch$.value._id;
+          if (batch !== undefined && !this.idService.hasDefaultIdType(batch._id)) {
+            item.optionalItemData.batchId = batch._id;
           }
         }
 
@@ -193,7 +194,8 @@ export class InventorySyncService {
             );
           }
           return null;
-        })
+        }),
+        catchError(this.errorReporter.handleGenericCatchError())
       );
   }
 
@@ -207,11 +209,9 @@ export class InventorySyncService {
     const requests: (Observable<HttpErrorResponse | InventoryItem>)[] = inventoryList.map(
       (item: InventoryItem): Observable<HttpErrorResponse | InventoryItem> => {
         const payload: InventoryItem = this.utilService.clone(item);
-        const batch$: BehaviorSubject<Batch> = this.processService.getBatchById(
-          item.optionalItemData.batchId
-        );
-        if (batch$) {
-          payload['optionalItemData']['batchId'] = this.idService.getId(batch$.value);
+        const batch: Batch = this.processService.getBatchById(item.optionalItemData.batchId);
+        if (batch) {
+          payload['optionalItemData']['batchId'] = this.idService.getId(batch);
         }
 
         payload['forSync'] = true;
@@ -227,7 +227,8 @@ export class InventorySyncService {
             <(InventoryItem | SyncData<InventoryItem>)[]>responses.successes,
             inventoryList
           );
-        })
+        }),
+        catchError(this.errorReporter.handleGenericCatchError())
       );
   }
 }
