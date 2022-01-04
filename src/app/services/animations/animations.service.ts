@@ -74,7 +74,7 @@ export class AnimationsService {
       .addElement(element)
       .duration(duration)
       .easing('ease-in')
-      .fromTo('maxHeight', 0, '100vh')
+      .fromTo('maxHeight', 0, '5000px') // TODO: figure out a better estimation
       .fromTo('opacity', 0, 1);
   }
 
