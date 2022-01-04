@@ -2,7 +2,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { forkJoin, Observable, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError, defaultIfEmpty, map } from 'rxjs/operators';
 
 /* Constant imports */
 import { MODERATE_SEVERITY } from '@shared/constants';
@@ -264,6 +264,7 @@ export class SyncService {
     console.log(`performing ${requests.length} ${docType} sync requests`);
     return forkJoin(this.getRequestsWithErrorResolvingHandlers<T>(requests))
       .pipe(
+        defaultIfEmpty([]),
         map((responses: (T | SyncData<T> | HttpErrorResponse)[]): SyncResponse<T> => {
           console.log('sync response', responses);
           this.clearSyncFlagByType(docType);
