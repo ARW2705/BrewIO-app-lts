@@ -69,6 +69,11 @@ import { InventoryImageService } from '@services/inventory/image/inventory-image
 import { InventoryStateService } from '@services/inventory/state/inventory-state.service';
 import { InventorySyncService } from '@services/inventory/sync/inventory-sync.service';
 import { InventoryTypeGuardService } from '@services/inventory/type-guard/inventory-type-guard.service';
+import { ProcessComponentHelperService } from '@services/process/component-helper/process-component-helper.service';
+import { ProcessHttpService } from '@services/process/http/process-http.service';
+import { ProcessStateService } from '@services/process/state/process-state.service';
+import { ProcessSyncService } from '@services/process/sync/process-sync.service';
+import { ProcessTypeGuardService } from '@services/process/type-guard/process-type-guard.service';
 
 
 @NgModule({
@@ -135,7 +140,12 @@ import { InventoryTypeGuardService } from '@services/inventory/type-guard/invent
     LoggingService,
     ModalService,
     PreferencesService,
+    ProcessComponentHelperService,
+    ProcessHttpService,
     ProcessService,
+    ProcessStateService,
+    ProcessSyncService,
+    ProcessTypeGuardService,
     RecipeService,
     StatusBar,
     SplashScreen,
