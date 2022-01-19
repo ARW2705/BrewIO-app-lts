@@ -392,7 +392,7 @@ export class RecipeFormComponent implements OnInit, OnDestroy {
    * @return: observable of updated recipe master
    */
   submitRecipeMasterPatch(): Observable<RecipeMaster> {
-    return this.recipeService.updateRecipeMasterById(
+    return this.recipeService.updateRecipeInList(
       this.idService.getId(this.master),
       this.constructPayload()
     );
@@ -405,7 +405,7 @@ export class RecipeFormComponent implements OnInit, OnDestroy {
    * @return: observable of updated recipe variant
    */
   submitRecipeVariantPatch(): Observable<RecipeVariant> {
-    return this.recipeService.updateRecipeVariantById(
+    return this.recipeService.updateVariantOfRecipeInList(
       this.idService.getId(this.master),
       this.idService.getId(this.variant),
       this.constructPayload()
@@ -419,7 +419,7 @@ export class RecipeFormComponent implements OnInit, OnDestroy {
    * @return: observable of new recipe master
    */
   submitRecipeMasterPost(): Observable<RecipeMaster> {
-    return this.recipeService.createRecipeMaster(this.constructPayload());
+    return this.recipeService.createNewRecipe(this.constructPayload());
   }
 
   /**
@@ -429,7 +429,7 @@ export class RecipeFormComponent implements OnInit, OnDestroy {
    * @return: observable of new recipe variant
    */
   submitRecipeVariantPost(): Observable<RecipeVariant> {
-    return this.recipeService.createRecipeVariant(
+    return this.recipeService.addVariantToRecipeInList(
       this.idService.getId(this.master),
       <RecipeVariant>this.constructPayload()
     );

@@ -591,11 +591,11 @@ describe('RecipeFormComponent', (): void => {
       component.variant = _mockRecipeVariantComplete;
       component.constructPayload = jest.fn()
         .mockReturnValue({});
-      component.recipeService.updateRecipeMasterById = jest.fn()
+      component.recipeService.updateRecipeInList = jest.fn()
         .mockReturnValue(of(null));
       component.idService.getId = jest.fn()
         .mockReturnValue(_mockRecipeMasterActive._id);
-      const updateSpy: jest.SpyInstance = jest.spyOn(component.recipeService, 'updateRecipeMasterById');
+      const updateSpy: jest.SpyInstance = jest.spyOn(component.recipeService, 'updateRecipeInList');
 
       fixture.detectChanges();
 
@@ -610,12 +610,12 @@ describe('RecipeFormComponent', (): void => {
       component.variant = _mockRecipeVariantComplete;
       component.constructPayload = jest.fn()
         .mockReturnValue({});
-      component.recipeService.updateRecipeVariantById = jest.fn()
+      component.recipeService.updateVariantOfRecipeInList = jest.fn()
         .mockReturnValue(of(null));
       component.idService.getId = jest.fn()
         .mockReturnValueOnce(_mockRecipeMasterActive._id)
         .mockReturnValueOnce(_mockRecipeVariantComplete._id);
-      const updateSpy: jest.SpyInstance = jest.spyOn(component.recipeService, 'updateRecipeVariantById');
+      const updateSpy: jest.SpyInstance = jest.spyOn(component.recipeService, 'updateVariantOfRecipeInList');
 
       fixture.detectChanges();
 
@@ -630,9 +630,9 @@ describe('RecipeFormComponent', (): void => {
     test('should submit a recipe master post', (): void => {
       component.constructPayload = jest.fn()
         .mockReturnValue({});
-      component.recipeService.createRecipeMaster = jest.fn()
+      component.recipeService.createNewRecipe = jest.fn()
         .mockReturnValue(of(null));
-      const updateSpy: jest.SpyInstance = jest.spyOn(component.recipeService, 'createRecipeMaster');
+      const updateSpy: jest.SpyInstance = jest.spyOn(component.recipeService, 'createNewRecipe');
 
       fixture.detectChanges();
 
@@ -645,11 +645,11 @@ describe('RecipeFormComponent', (): void => {
       component.master = _mockRecipeMasterActive;
       component.constructPayload = jest.fn()
         .mockReturnValue({});
-      component.recipeService.createRecipeVariant = jest.fn()
+      component.recipeService.addVariantToRecipeInList = jest.fn()
         .mockReturnValue(of(null));
       component.idService.getId = jest.fn()
         .mockReturnValue(_mockRecipeMasterActive._id);
-      const updateSpy: jest.SpyInstance = jest.spyOn(component.recipeService, 'createRecipeVariant');
+      const updateSpy: jest.SpyInstance = jest.spyOn(component.recipeService, 'addVariantToRecipeInList');
 
       fixture.detectChanges();
 
