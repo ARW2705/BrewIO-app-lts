@@ -2,6 +2,11 @@
 import { Injectable, SimpleChange } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
+/* Service imports */
+import { ConnectionService } from '@services/connection/connection.service';
+import { IdService } from '@services/id/id.service';
+import { UserService } from '@services/user/user.service';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -18,6 +23,12 @@ export class UtilityService {
     'createdAt',
     'updatedAt'
   ];
+
+  constructor(
+    public connectionService: ConnectionService,
+    public idService: IdService,
+    public userService: UserService
+  ) { }
 
   /***** Object Helpers *****/
 
@@ -93,7 +104,7 @@ export class UtilityService {
    * @param: subArr - an array of behavior subjects of an object
    * @return: new array of the current values of each behavior subject
    */
-  getArrayFromSubjects<T>(subArr: BehaviorSubject<T>[]): T[] {
+  getArrayFromBehaviorSubjects<T>(subArr: BehaviorSubject<T>[]): T[] {
     return subArr.map((sub: BehaviorSubject<T>): T => sub.value);
   }
 
@@ -103,7 +114,7 @@ export class UtilityService {
    * @param: array - array to convert
    * @return: array of behavior subjects
    */
-  toSubjectArray<T>(array: T[]): BehaviorSubject<T>[] {
+  toBehaviorSubjectArray<T>(array: T[]): BehaviorSubject<T>[] {
     return array.map((item: T): BehaviorSubject<T> => new BehaviorSubject<T>(item));
   }
 
@@ -184,5 +195,20 @@ export class UtilityService {
   }
 
   /***** End Lifecycle Helpers *****/
+
+  /**
+   * Check if able to send a recipe http request
+   *
+   * @param: [ids] - optional array of ids to check
+   * @return: true if ids are valid, device is connected to network, and user logged in
+   */
+  canSendRequest(ids?: string[]): boolean {
+    let idsOk: boolean = !ids;
+    if (ids && ids.length) {
+      idsOk = ids.every((id: string): boolean => id && !this.idService.hasDefaultIdType(id));
+    }
+
+    return this.connectionService.isConnected() && this.userService.isLoggedIn() && idsOk;
+  }
 
 }

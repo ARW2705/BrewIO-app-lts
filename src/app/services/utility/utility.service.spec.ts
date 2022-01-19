@@ -8,8 +8,10 @@ import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
 import { mockNestedObject, mockSubjectArray } from '@test/mock-models';
+import { ConnectionServiceStub, IdServiceStub, UserServiceStub } from '@test/service-stubs';
 
 /* Service imports */
+import { ConnectionService, IdService, UserService } from '@services/public';
 import { UtilityService } from './utility.service';
 
 
@@ -21,7 +23,10 @@ describe('UtilityService', () => {
   beforeAll(async((): void => {
     TestBed.configureTestingModule({
       providers: [
-        UtilityService
+        UtilityService,
+        { provide: ConnectionService, useClass: ConnectionServiceStub },
+        { provide: IdService, useClass: IdServiceStub },
+        { provide: UserService, useClass: UserServiceStub }
       ]
     });
   }));
@@ -73,14 +78,14 @@ describe('UtilityService', () => {
       const sourceArray: number[] = [1, 2, 3, 4, 5];
       const _mockSubjectArray: BehaviorSubject<number>[] = mockSubjectArray<number>(sourceArray);
 
-      const converted: number[] = service.getArrayFromSubjects<number>(_mockSubjectArray);
+      const converted: number[] = service.getArrayFromBehaviorSubjects<number>(_mockSubjectArray);
       expect(converted).toStrictEqual(sourceArray);
     });
 
     test('should map an array to an array of behavior subject', (): void => {
       const sourceArray: number[] = [1, 2, 3, 4, 5];
 
-      const converted: BehaviorSubject<number>[] = service.toSubjectArray(sourceArray);
+      const converted: BehaviorSubject<number>[] = service.toBehaviorSubjectArray(sourceArray);
 
       converted.forEach((num$: BehaviorSubject<number>, index: number): void => {
         expect(num$.value).toEqual(index + 1);
@@ -132,6 +137,23 @@ describe('UtilityService', () => {
 
       expect(service.hasChanges(change)).toBe(true);
       expect(service.hasChanges(nonChange)).toBe(false);
+    });
+
+  });
+
+  describe('Request helper', (): void => {
+
+    test('should check if a request can be sent', (): void => {
+      service.connectionService.isConnected = jest.fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+      service.userService.isLoggedIn = jest.fn()
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+      service.idService.hasDefaultIdType = jest.fn().mockReturnValue(false);
+
+      expect(service.canSendRequest(['1a2b3c4d5e', '6f7g8h9i10j'])).toBe(true);
+      expect(service.canSendRequest()).toBe(false);
     });
 
   });
