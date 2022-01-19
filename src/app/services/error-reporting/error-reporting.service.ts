@@ -204,8 +204,10 @@ export class ErrorReportingService {
     resolvedValue?: T
   ): (error: Error | HttpErrorResponse) => Observable<T | never> {
     return (error: Error | HttpErrorResponse): Observable<null | never> => {
-      if (shouldResolveError) {
+      if (shouldResolveError && resolvedValue) {
         return of(resolvedValue as any);
+      } else if (shouldResolveError) {
+        return of(error as any);
       } else if (error && error instanceof HttpErrorResponse) {
         this.setErrorReport(this.getCustomReportFromHttpError(error));
       } else if (error && error instanceof Error) {

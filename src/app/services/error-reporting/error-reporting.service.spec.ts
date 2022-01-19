@@ -338,6 +338,22 @@ describe('ErrorReportingService', () => {
         );
     });
 
+    test('should get a generic catch error handler that resolves an error with an observable of the error', (done: jest.DoneCallback): void => {
+      const _mockError: Error = new Error('test-error');
+
+      service.handleResolvableCatchError<object>(true)(_mockError)
+        .subscribe(
+          (resolved: object): void => {
+            expect(resolved).toStrictEqual(_mockError);
+            done();
+          },
+          (error: any): void => {
+            console.log(`Error in 'should get a generic catch error handler that resolves an error with an observable of the error'`, error);
+            expect(true).toBe(false);
+          }
+        );
+    });
+
     test('should get a generic catch error handler that handles error as an error', (done: jest.DoneCallback): void => {
       const _mockError: Error = new Error('test-error');
       const _mockErrorReport: ErrorReport = mockErrorReport();
