@@ -81,7 +81,7 @@ describe('ActiveBatchListComponent', (): void => {
       ]);
       component.processService.getBatchList = jest.fn()
         .mockReturnValue(list$);
-      component.utilService.getArrayFromSubjects = jest.fn()
+      component.utilService.getArrayFromBehaviorSubjects = jest.fn()
         .mockReturnValue([_mockBatch, _mockBatch]);
 
       fixture.detectChanges();
@@ -221,7 +221,7 @@ describe('ActiveBatchListComponent', (): void => {
       _mockBatch2.cid = _mockBatch1 + 'test';
       component.processService.getBatchList = jest.fn()
         .mockReturnValue(of(null));
-      component.utilService.getArrayFromSubjects = jest.fn()
+      component.utilService.getArrayFromBehaviorSubjects = jest.fn()
         .mockReturnValue([_mockBatch1, _mockBatch2]);
 
       fixture.detectChanges();
