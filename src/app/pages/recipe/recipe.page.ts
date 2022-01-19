@@ -103,7 +103,7 @@ export class RecipePage implements OnInit, OnDestroy {
    * @return: none
    */
   listenForRecipes(): void {
-    this.recipeService.getMasterList()
+    this.recipeService.getRecipeList()
       .pipe(
         takeUntil(this.destroy$),
         map((masterList: BehaviorSubject<RecipeMaster>[]): RecipeMaster[] => {
@@ -260,7 +260,7 @@ export class RecipePage implements OnInit, OnDestroy {
    * @return: none
    */
   deleteRecipe(index: number): void {
-    this.recipeService.removeRecipeMasterById(this.idService.getId(this.recipeList[index]))
+    this.recipeService.removeRecipeFromList(this.idService.getId(this.recipeList[index]))
       .subscribe(
         (): void => {
           this.toastService.presentToast(

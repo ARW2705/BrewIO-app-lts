@@ -230,7 +230,7 @@ describe('RecipePage', (): void => {
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
       const _mockRecipeMasterActive$: BehaviorSubject<RecipeMaster> = new BehaviorSubject<RecipeMaster>(_mockRecipeMasterActive);
       const _mockMasterList$: BehaviorSubject<BehaviorSubject<RecipeMaster>[]> = new BehaviorSubject<BehaviorSubject<RecipeMaster>[]>([_mockRecipeMasterActive$]);
-      page.recipeService.getMasterList = jest.fn()
+      page.recipeService.getRecipeList = jest.fn()
         .mockReturnValue(_mockMasterList$);
       page.mapMasterRecipes = jest.fn();
 
@@ -245,7 +245,7 @@ describe('RecipePage', (): void => {
 
     test('should get error listening for recipe changes', (done: jest.DoneCallback): void => {
       const _mockError: Error = new Error('test-error');
-      page.recipeService.getMasterList = jest.fn()
+      page.recipeService.getRecipeList = jest.fn()
         .mockReturnValue(throwError(_mockError));
       page.mapMasterRecipes = jest.fn();
       const errorSpy: jest.SpyInstance = jest.spyOn(page.errorReporter, 'handleUnhandledError');
@@ -461,7 +461,7 @@ describe('RecipePage', (): void => {
       page.recipeList = [ _mockRecipeMasterActive ];
       page.variantList = _mockRecipeMasterActive.variants;
       const toastSpy: jest.SpyInstance = jest.spyOn(page.toastService, 'presentToast');
-      page.recipeService.removeRecipeMasterById = jest.fn()
+      page.recipeService.removeRecipeFromList = jest.fn()
         .mockReturnValue(of(true));
       page.idService.getId = jest.fn()
         .mockReturnValue('');
@@ -485,7 +485,7 @@ describe('RecipePage', (): void => {
       const _mockError: Error = new Error('test-error');
       page.recipeList = [ _mockRecipeMasterActive ];
       page.variantList = _mockRecipeMasterActive.variants;
-      page.recipeService.removeRecipeMasterById = jest.fn()
+      page.recipeService.removeRecipeFromList = jest.fn()
         .mockReturnValue(throwError(_mockError));
       page.idService.getId = jest.fn()
         .mockReturnValue('');
