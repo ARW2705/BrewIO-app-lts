@@ -13,7 +13,6 @@ import { Batch, BatchAnnotations, BatchContext, BatchProcess, Process, RecipeMas
 import { CustomError } from '@shared/types';
 
 /* Service imports */
-import { ConnectionService } from '@services/connection/connection.service';
 import { ErrorReportingService } from '@services/error-reporting/error-reporting.service';
 import { EventService } from '@services/event/event.service';
 import { IdService } from '@services/id/id.service';
@@ -22,7 +21,6 @@ import { ProcessSyncService } from '@services/process/sync/process-sync.service'
 import { ProcessTypeGuardService } from '@services/process/type-guard/process-type-guard.service';
 import { RecipeService } from '@services/recipe/recipe.service';
 import { StorageService } from '@services/storage/storage.service';
-import { UserService } from '@services/user/user.service';
 import { UtilityService } from '@services/utility/utility.service';
 
 
@@ -34,7 +32,6 @@ export class ProcessStateService {
   archiveBatchList$: BehaviorSubject<BehaviorSubject<Batch>[]> = new BehaviorSubject<BehaviorSubject<Batch>[]>([]);
 
   constructor(
-    public connectionService: ConnectionService,
     public errorReporter: ErrorReportingService,
     public event: EventService,
     public idService: IdService,
@@ -43,7 +40,6 @@ export class ProcessStateService {
     public processTypeGuardService: ProcessTypeGuardService,
     public recipeService: RecipeService,
     public storageService: StorageService,
-    public userService: UserService,
     public utilService: UtilityService
   ) {
     this.registerEvents();
@@ -58,7 +54,7 @@ export class ProcessStateService {
    * @return: observable success requires no additional actions, using for error handling
    */
   initFromServer(): Observable<null> {
-    if (this.canSendRequest()) {
+    if (this.utilService.canSendRequest()) {
       return this.syncOnConnection(true)
         .pipe(
           mergeMap((): Observable<{ activeBatches: Batch[], archiveBatches: Batch[] }> => {
@@ -114,7 +110,10 @@ export class ProcessStateService {
         finalize((): void => this.event.emit('init-inventory')),
         mergeMap((): Observable<null> =>  this.initFromServer())
       )
-      .subscribe((): void => console.log('batch init complete'));
+      .subscribe(
+        (): void => console.log('batch init complete'),
+        (error: Error): void => this.errorReporter.handleUnhandledError(error)
+      );
   }
 
   /**
@@ -205,11 +204,12 @@ export class ProcessStateService {
    */
   sendBackgroundRequest(requestMethod: string, requestBody: Batch): void {
     const requestId: string = this.idService.getId(requestBody);
-    let ids: string[] = [];
+    const ids: string[] = [];
     if (requestMethod === 'patch' || requestMethod === 'delete') {
-      ids = [requestId];
+      ids.push(requestId);
     }
-    if (this.canSendRequest(ids)) {
+
+    if (this.utilService.canSendRequest(ids)) {
       this.processTypeGuardService.checkTypeSafety(requestBody);
       this.processHttpService.requestInBackground(requestMethod, requestBody)
         .subscribe(
@@ -269,21 +269,6 @@ export class ProcessStateService {
     archiveList$.next(archiveList);
     this.updateBatchStorage(false);
     return this.removeBatchFromList(true, batchId);
-  }
-
-  /**
-   * Check if able to send an http request
-   *
-   * @param: [ids] - optional array of ids to check
-   * @return: true if ids are valid, device is connected to network, and user logged in
-   */
-  canSendRequest(ids?: string[]): boolean {
-    let idsOk: boolean = !ids;
-    if (ids && ids.length) {
-      idsOk = ids.every((id: string): boolean => id && !this.idService.hasDefaultIdType(id));
-    }
-
-    return this.connectionService.isConnected() && this.userService.isLoggedIn() && idsOk;
   }
 
   /**
@@ -383,7 +368,7 @@ export class ProcessStateService {
    * @return: Observable of new batch
    */
   generateBatchFromRecipe(userId: string, masterId: string, variantId: string): Observable<Batch> {
-    const recipeMaster$: BehaviorSubject<RecipeMaster> = this.recipeService.getRecipeMasterById(
+    const recipeMaster$: BehaviorSubject<RecipeMaster> = this.recipeService.getRecipeSubjectById(
       masterId
     );
     if (!recipeMaster$) {
@@ -527,7 +512,7 @@ export class ProcessStateService {
    * @return: none
    */
   mapBatchArrayToSubjectArray(isActive: boolean, batchList: Batch[]): void {
-    this.getBatchList(isActive).next(this.utilService.toSubjectArray<Batch>(batchList));
+    this.getBatchList(isActive).next(this.utilService.toBehaviorSubjectArray<Batch>(batchList));
   }
 
   /**
@@ -540,7 +525,7 @@ export class ProcessStateService {
   removeBatchFromList(isActive: boolean, batchId: string): Observable<Batch> {
     const batchList$: BehaviorSubject<BehaviorSubject<Batch>[]> = this.getBatchList(isActive);
     const batchSubjectList: BehaviorSubject<Batch>[] = batchList$.value;
-    const batchList: Batch[] = this.utilService.getArrayFromSubjects(batchSubjectList);
+    const batchList: Batch[] = this.utilService.getArrayFromBehaviorSubjects(batchSubjectList);
     const indexToRemove: number = this.idService.getIndexById(batchId, batchList);
     if (indexToRemove === -1) {
       return of(null); // nothing to do if batch no longer exists
