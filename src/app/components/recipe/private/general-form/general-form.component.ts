@@ -33,9 +33,9 @@ export class GeneralFormComponent implements OnInit {
     { label: 'Brew in a Bag', value: 'biab'     },
     { label: 'All Grain'    , value: 'allgrain' }
   ];
-  compareWithFn: (o1: any, o2: any) => boolean;
   readonly controlsToConvertUnits: string[] = ['batchVolume', 'boilVolume', 'mashVolume'];
   readonly defaultImage: Image = defaultImage();
+  compareWithFn: (o1: any, o2: any) => boolean;
   generalForm: FormGroup = null;
   labelImage: Image = this.defaultImage;
   onBackClick: () => void;
