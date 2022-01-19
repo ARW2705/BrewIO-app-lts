@@ -10,7 +10,7 @@ import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
 import { mockAuthor, mockBatch, mockImage, mockImageRequestMetadata, mockInventoryItem, mockOptionalItemData, mockRecipeMasterActive, mockErrorResponse, mockStyles, mockSyncMetadata, mockSyncError, mockSyncResponse } from '@test/mock-models';
-import { ConnectionServiceStub, ErrorReportingServiceStub, EventServiceStub, IdServiceStub, InventoryHttpServiceStub, InventoryImageServiceStub, InventorySyncServiceStub, InventoryTypeGuardServiceStub, LibraryServiceStub, RecipeServiceStub, StorageServiceStub, UserServiceStub } from '@test/service-stubs';
+import { ErrorReportingServiceStub, EventServiceStub, IdServiceStub, InventoryHttpServiceStub, InventoryImageServiceStub, InventorySyncServiceStub, InventoryTypeGuardServiceStub, LibraryServiceStub, RecipeServiceStub, StorageServiceStub, UtilityServiceStub } from '@test/service-stubs';
 import { SplashScreenStub } from '@test/ionic-stubs';
 
 /* Constants imports */
@@ -30,7 +30,7 @@ import { InventoryHttpService } from '@services/inventory/http/inventory-http.se
 import { InventoryImageService } from '@services/inventory/image/inventory-image.service';
 import { InventorySyncService } from '@services/inventory/sync/inventory-sync.service';
 import { InventoryTypeGuardService } from '@services/inventory/type-guard/inventory-type-guard.service';
-import { ConnectionService, ErrorReportingService, EventService, IdService, LibraryService, RecipeService, StorageService, UserService } from '@services/public';
+import { ErrorReportingService, EventService, IdService, LibraryService, RecipeService, StorageService, UtilityService } from '@services/public';
 import { InventoryStateService } from './inventory-state.service';
 
 
@@ -43,7 +43,6 @@ describe('InventoryStateService', (): void => {
     TestBed.configureTestingModule({
       providers: [
         InventoryStateService,
-        { provide: ConnectionService, useClass: ConnectionServiceStub },
         { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: EventService, useClass: EventServiceStub },
         { provide: IdService, useClass: IdServiceStub },
@@ -55,7 +54,7 @@ describe('InventoryStateService', (): void => {
         { provide: RecipeService, useClass: RecipeServiceStub },
         { provide: SplashScreen, useClass: SplashScreenStub },
         { provide: StorageService, useClass: StorageServiceStub },
-        { provide: UserService, useClass: UserServiceStub }
+        { provide: UtilityService, useClass: UtilityServiceStub }
       ]
     });
   }));
@@ -80,7 +79,7 @@ describe('InventoryStateService', (): void => {
 
     test('should initialize inventory from server', (done: jest.DoneCallback): void => {
       service.registerEvents = jest.fn();
-      service.canSendRequest = jest.fn().mockReturnValue(true);
+      service.utilService.canSendRequest = jest.fn().mockReturnValue(true);
       service.syncOnConnection = jest.fn().mockReturnValue(of(null));
       const _mockInventoryItem: InventoryItem = mockInventoryItem();
       const mockInventoryList: InventoryItem[] = [ _mockInventoryItem, _mockInventoryItem ];
@@ -105,7 +104,7 @@ describe('InventoryStateService', (): void => {
 
     test('should not initialize inventory from server if request cannot be sent', (done: jest.DoneCallback): void => {
       service.registerEvents = jest.fn();
-      service.canSendRequest = jest.fn().mockReturnValue(false);
+      service.utilService.canSendRequest = jest.fn().mockReturnValue(false);
       const syncSpy: jest.SpyInstance = jest.spyOn(service, 'syncOnConnection');
 
       service.initFromServer()
@@ -318,7 +317,7 @@ describe('InventoryStateService', (): void => {
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
       const _mockStyle: Style = mockStyles()[0];
       service.recipeService.getPublicAuthorByRecipeId = jest.fn().mockReturnValue(of(_mockAuthor));
-      service.recipeService.getRecipeMasterById = jest.fn().mockReturnValue(of(_mockRecipeMasterActive));
+      service.recipeService.getRecipeSubjectById = jest.fn().mockReturnValue(of(_mockRecipeMasterActive));
       service.libraryService.getStyleById = jest.fn().mockReturnValue(of(_mockStyle));
       service.createItem = jest.fn().mockReturnValue(of(true));
       const createSpy: jest.SpyInstance = jest.spyOn(service, 'createItem');
@@ -639,7 +638,7 @@ describe('InventoryStateService', (): void => {
     test('should send a post background request', (done: jest.DoneCallback): void => {
       const _mockInventoryItem: InventoryItem = mockInventoryItem();
       const getSpy: jest.SpyInstance = jest.spyOn(service.idService, 'getId');
-      service.canSendRequest = jest.fn().mockReturnValue(true);
+      service.utilService.canSendRequest = jest.fn().mockReturnValue(true);
       service.inventoryHttpService.requestInBackground = jest.fn()
         .mockReturnValue(of(_mockInventoryItem));
       service.handleBackgroundUpdateResponse = jest.fn();
@@ -656,8 +655,8 @@ describe('InventoryStateService', (): void => {
 
     test('should send a patch background request', (done: jest.DoneCallback): void => {
       const _mockInventoryItem: InventoryItem = mockInventoryItem();
-      service.canSendRequest = jest.fn().mockReturnValue(true);
-      const canSpy: jest.SpyInstance = jest.spyOn(service, 'canSendRequest');
+      service.utilService.canSendRequest = jest.fn().mockReturnValue(true);
+      const canSpy: jest.SpyInstance = jest.spyOn(service.utilService, 'canSendRequest');
       service.inventoryHttpService.requestInBackground = jest.fn()
         .mockReturnValue(of(_mockInventoryItem));
       service.handleBackgroundUpdateResponse = jest.fn();
@@ -674,8 +673,8 @@ describe('InventoryStateService', (): void => {
 
     test('should send a patch background request', (done: jest.DoneCallback): void => {
       const _mockInventoryItem: InventoryItem = mockInventoryItem();
-      service.canSendRequest = jest.fn().mockReturnValue(true);
-      const canSpy: jest.SpyInstance = jest.spyOn(service, 'canSendRequest');
+      service.utilService.canSendRequest = jest.fn().mockReturnValue(true);
+      const canSpy: jest.SpyInstance = jest.spyOn(service.utilService, 'canSendRequest');
       service.inventoryHttpService.requestInBackground = jest.fn()
         .mockReturnValue(of(_mockInventoryItem));
       service.handleBackgroundUpdateResponse = jest.fn();
@@ -693,7 +692,7 @@ describe('InventoryStateService', (): void => {
     test('should handle error on background request error', (done: jest.DoneCallback): void => {
       const _mockInventoryItem: InventoryItem = mockInventoryItem();
       const getSpy: jest.SpyInstance = jest.spyOn(service.idService, 'getId');
-      service.canSendRequest = jest.fn().mockReturnValue(true);
+      service.utilService.canSendRequest = jest.fn().mockReturnValue(true);
       const _mockError: Error = new Error('test-error');
       service.inventoryHttpService.requestInBackground = jest.fn()
         .mockReturnValue(throwError(_mockError));
@@ -713,7 +712,7 @@ describe('InventoryStateService', (): void => {
 
     test('should set a sync flag when a background request cannot be sent', (): void => {
       const _mockInventoryItem: InventoryItem = mockInventoryItem();
-      service.canSendRequest = jest.fn().mockReturnValue(false);
+      service.utilService.canSendRequest = jest.fn().mockReturnValue(false);
       service.inventorySyncService.addSyncFlag = jest.fn();
       const addSpy: jest.SpyInstance = jest.spyOn(service.inventorySyncService, 'addSyncFlag');
       service.inventorySyncService.convertRequestMethodToSyncMethod = jest.fn().mockReturnValue('create');
@@ -726,19 +725,6 @@ describe('InventoryStateService', (): void => {
 
 
   describe('Helper Methods', (): void => {
-
-    test('should check if a request can be sent', (): void => {
-      service.connectionService.isConnected = jest.fn()
-        .mockReturnValueOnce(true)
-        .mockReturnValueOnce(false);
-      service.userService.isLoggedIn = jest.fn()
-        .mockReturnValueOnce(true)
-        .mockReturnValueOnce(false);
-      service.idService.hasDefaultIdType = jest.fn().mockReturnValue(false);
-
-      expect(service.canSendRequest(['1a2b3c4d5e', '6f7g8h9i10j'])).toBe(true);
-      expect(service.canSendRequest()).toBe(false);
-    });
 
     test('should get a missing item custom error', (): void => {
       const errorWithAdditional: CustomError = <CustomError>service.getMissingError('update', 'test-id');

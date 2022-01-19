@@ -17,7 +17,6 @@ import { Author, Batch, BatchContext, Image, InventoryItem, PrimaryValues, Recip
 import { CustomError } from '@shared/types';
 
 /* Service imports */
-import { ConnectionService } from '@services/connection/connection.service';
 import { ErrorReportingService } from '@services/error-reporting/error-reporting.service';
 import { EventService } from '@services/event/event.service';
 import { IdService } from '@services/id/id.service';
@@ -28,7 +27,7 @@ import { InventoryTypeGuardService } from '@services/inventory/type-guard/invent
 import { LibraryService } from '@services/library/library.service';
 import { RecipeService } from '@services/recipe/recipe.service';
 import { StorageService } from '@services/storage/storage.service';
-import { UserService } from '@services/user/user.service';
+import { UtilityService } from '@services/utility/utility.service';
 
 
 @Injectable({
@@ -38,7 +37,6 @@ export class InventoryStateService {
   inventory$: BehaviorSubject<InventoryItem[]> = new BehaviorSubject<InventoryItem[]>([]);
 
   constructor(
-    public connectionService: ConnectionService,
     public errorReporter: ErrorReportingService,
     public eventService: EventService,
     public idService: IdService,
@@ -50,7 +48,7 @@ export class InventoryStateService {
     public recipeService: RecipeService,
     public splashScreen: SplashScreen,
     public storageService: StorageService,
-    public userService: UserService
+    public utilService: UtilityService
   ) {
     this.registerEvents();
   }
@@ -64,7 +62,7 @@ export class InventoryStateService {
    * @return: observable of null on initialization complete
    */
   initFromServer(): Observable<null> {
-    if (this.canSendRequest()) {
+    if (this.utilService.canSendRequest()) {
       return this.syncOnConnection(true)
         .pipe(
           mergeMap((): Observable<InventoryItem[]> => this.inventoryHttpService.getInventoryFromServer()),
@@ -209,7 +207,7 @@ export class InventoryStateService {
   createItemFromBatch(batch: Batch, newItemValues: object): Observable<null> {
     return combineLatest(
       this.recipeService.getPublicAuthorByRecipeId(batch.recipeMasterId),
-      this.recipeService.getRecipeMasterById(batch.recipeMasterId) || of(undefined),
+      this.recipeService.getRecipeSubjectById(batch.recipeMasterId) || of(undefined),
       this.libraryService.getStyleById(batch.annotations.styleId)
     )
     .pipe(
@@ -412,7 +410,7 @@ export class InventoryStateService {
     const updateIndex: number = this.getItemIndexById(itemResponse.cid);
     if (!isDeletion && updateIndex === -1) {
       throw this.getMissingError('update', this.idService.getId(itemResponse));
-    } else {
+    } else if (!isDeletion) {
       this.inventoryTypeGuardService.checkTypeSafety(itemResponse);
       list[updateIndex] = itemResponse;
     }
@@ -432,7 +430,7 @@ export class InventoryStateService {
     if (requestMethod === 'patch' || requestMethod === 'delete') {
       ids.push(this.idService.getId(requestBody));
     }
-    if (this.canSendRequest(ids)) {
+    if (this.utilService.canSendRequest(ids)) {
       this.inventoryHttpService.requestInBackground(requestMethod, requestBody)
         .subscribe(
           (item: InventoryItem): void => {
@@ -452,21 +450,6 @@ export class InventoryStateService {
 
 
   /***** Helper Methods *****/
-
-  /**
-   * Check if able to send an http request
-   *
-   * @param: [ids] - optional array of ids to check
-   * @return: true if ids are valid, device is connected to network, and user logged in
-   */
-  canSendRequest(ids?: string[]): boolean {
-    let idsOk: boolean = !ids;
-    if (ids && ids.length) {
-      idsOk = ids.every((id: string): boolean => id && !this.idService.hasDefaultIdType(id));
-    }
-
-    return this.connectionService.isConnected() && this.userService.isLoggedIn() && idsOk;
-  }
 
   /**
    * Get a custom inventory error
