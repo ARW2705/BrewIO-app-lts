@@ -96,7 +96,7 @@ describe('RecipeDetailPage', (): void => {
       const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
       const _mockRecipeMasterActive$: BehaviorSubject<RecipeMaster> = new BehaviorSubject<RecipeMaster>(_mockRecipeMasterActive);
       page.ngOnInit = originalOnInit;
-      page.recipeService.getRecipeMasterById = jest.fn()
+      page.recipeService.getRecipeSubjectById = jest.fn()
         .mockReturnValue(_mockRecipeMasterActive$);
       page.mapVariantList = jest.fn();
       const mapSpy: jest.SpyInstance = jest.spyOn(page, 'mapVariantList');
@@ -113,10 +113,10 @@ describe('RecipeDetailPage', (): void => {
     test('should handle error on init', (): void => {
       const _mockError: Error = new Error('test-error');
       page.ngOnInit = originalOnInit;
-      page.recipeService.getRecipeMasterById = jest.fn()
+      page.recipeService.getRecipeSubjectById = jest.fn()
         .mockReturnValue(throwError(_mockError));
       page.navToRoot.bind = jest.fn()
-        .mockImplementation((page: RecipeDetailPage): () => void => page.navToRoot);
+        .mockImplementation((detailPage: RecipeDetailPage): () => void => detailPage.navToRoot);
       const errorSpy: jest.SpyInstance = jest.spyOn(page.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
@@ -392,9 +392,9 @@ describe('RecipeDetailPage', (): void => {
 
     test('should handle note update event', (done: jest.DoneCallback): void => {
       page.recipeMasterId = 'test-id'
-      page.recipeService.updateRecipeMasterById = jest.fn()
+      page.recipeService.updateRecipeInList = jest.fn()
         .mockReturnValue(of(null));
-      const updateSpy: jest.SpyInstance = jest.spyOn(page.recipeService, 'updateRecipeMasterById');
+      const updateSpy: jest.SpyInstance = jest.spyOn(page.recipeService, 'updateRecipeInList');
       const _mockNotes: string[] = [ 'note1', 'note2', 'note3' ];
 
       fixture.detectChanges();
@@ -406,7 +406,7 @@ describe('RecipeDetailPage', (): void => {
 
     test('should handle error on note update event', (done: jest.DoneCallback): void => {
       const _mockError: Error = new Error('test-error');
-      page.recipeService.updateRecipeMasterById = jest.fn()
+      page.recipeService.updateRecipeInList = jest.fn()
         .mockReturnValue(throwError(_mockError));
       const errorSpy: jest.SpyInstance = jest.spyOn(page.errorReporter, 'handleUnhandledError');
 
@@ -431,7 +431,7 @@ describe('RecipeDetailPage', (): void => {
       page.idService.getId = jest.fn()
         .mockReturnValue('test-id');
       const idSpy: jest.SpyInstance = jest.spyOn(page.idService, 'getId');
-      page.recipeService.removeRecipeVariantById = jest.fn()
+      page.recipeService.removeVariantFromRecipeInList = jest.fn()
         .mockReturnValue(of(null));
       const toastSpy: jest.SpyInstance = jest.spyOn(page.toastService, 'presentToast');
 
@@ -456,7 +456,7 @@ describe('RecipeDetailPage', (): void => {
       page.recipeMaster = _mockRecipeMasterActive;
       page.displayVariantList = _mockRecipeMasterActive.variants;
       const _mockError: Error = new Error('test-error');
-      page.recipeService.removeRecipeVariantById = jest.fn()
+      page.recipeService.removeVariantFromRecipeInList = jest.fn()
         .mockReturnValue(throwError(_mockError));
       page.idService.getId = jest.fn()
         .mockReturnValue('test-id');
@@ -537,12 +537,12 @@ describe('RecipeDetailPage', (): void => {
       const _mockRecipeVariant: RecipeVariant = _mockRecipeMasterActive.variants[1];
       _mockRecipeVariant.isFavorite = true;
       page.recipeMaster = _mockRecipeMasterActive;
-      page.recipeService.updateRecipeVariantById = jest.fn()
+      page.recipeService.updateVariantOfRecipeInList = jest.fn()
         .mockReturnValue(of(_mockRecipeVariant));
       page.idService.getId = jest.fn()
         .mockReturnValueOnce(_mockRecipeMasterActive._id)
         .mockReturnValueOnce(_mockRecipeVariant._id);
-      const updateSpy: jest.SpyInstance = jest.spyOn(page.recipeService, 'updateRecipeVariantById');
+      const updateSpy: jest.SpyInstance = jest.spyOn(page.recipeService, 'updateVariantOfRecipeInList');
       const toastSpy: jest.SpyInstance = jest.spyOn(page.toastService, 'presentToast');
 
       fixture.detectChanges();
@@ -570,12 +570,12 @@ describe('RecipeDetailPage', (): void => {
       _mockRecipeVariant.isFavorite = true;
       const _mockError: Error = new Error('test-error');
       page.recipeMaster = _mockRecipeMasterActive;
-      page.recipeService.updateRecipeVariantById = jest.fn()
+      page.recipeService.updateVariantOfRecipeInList = jest.fn()
         .mockReturnValue(throwError(_mockError));
       page.idService.getId = jest.fn()
         .mockReturnValueOnce(_mockRecipeMasterActive._id)
         .mockReturnValueOnce(_mockRecipeVariant._id);
-      const updateSpy: jest.SpyInstance = jest.spyOn(page.recipeService, 'updateRecipeVariantById');
+      const updateSpy: jest.SpyInstance = jest.spyOn(page.recipeService, 'updateVariantOfRecipeInList');
       const errorSpy: jest.SpyInstance = jest.spyOn(page.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();

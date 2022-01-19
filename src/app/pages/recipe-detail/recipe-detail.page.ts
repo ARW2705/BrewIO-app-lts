@@ -56,7 +56,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
 
   ngOnInit() {
     console.log('details page init');
-    this.recipeService.getRecipeMasterById(this.recipeMasterId)
+    this.recipeService.getRecipeSubjectById(this.recipeMasterId)
       .pipe(takeUntil(this.destroy$))
       .subscribe(
         (recipeMaster: RecipeMaster): void => {
@@ -220,7 +220,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
    * @return: none
    */
   noteUpdateEventHandler(notesUpdate: string[]): void {
-    this.recipeService.updateRecipeMasterById(this.recipeMasterId, { notes: notesUpdate })
+    this.recipeService.updateRecipeInList(this.recipeMasterId, { notes: notesUpdate })
       .subscribe(
         (): void => {}, // no further actions required
         (error: Error): void => this.errorReporter.handleUnhandledError(error)
@@ -239,7 +239,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
    * @return: none
    */
   deleteVariant(index: number): void {
-    this.recipeService.removeRecipeVariantById(
+    this.recipeService.removeVariantFromRecipeInList(
       this.idService.getId(this.recipeMaster),
       this.idService.getId(this.displayVariantList[index])
     )
@@ -325,7 +325,7 @@ export class RecipeDetailPage implements OnInit, OnDestroy {
    * @return: none
    */
   toggleFavorite(variant: RecipeVariant): void {
-    this.recipeService.updateRecipeVariantById(
+    this.recipeService.updateVariantOfRecipeInList(
       this.idService.getId(this.recipeMaster),
       this.idService.getId(variant),
       { isFavorite: !variant.isFavorite }
