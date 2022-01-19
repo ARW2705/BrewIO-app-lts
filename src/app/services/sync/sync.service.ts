@@ -5,7 +5,7 @@ import { forkJoin, Observable, of } from 'rxjs';
 import { catchError, defaultIfEmpty, map } from 'rxjs/operators';
 
 /* Constant imports */
-import { MODERATE_SEVERITY } from '@shared/constants';
+import { HIGH_SEVERITY } from '@shared/constants';
 
 /* Interface imports */
 import { SyncData, SyncError, SyncMetadata, SyncResponse } from '@shared/interfaces';
@@ -110,7 +110,7 @@ export class SyncService {
       this.addDeleteSyncFlag(metadata);
     } else {
       const message: string = `Unknown sync flag method: ${metadata.method}`;
-      throw new CustomError('SyncError', message, MODERATE_SEVERITY, message);
+      throw new CustomError('SyncError', message, HIGH_SEVERITY, message);
     }
     this.updateStorage();
   }
@@ -173,7 +173,7 @@ export class SyncService {
       return requestMethod;
     } else {
       const message: string = `Unknown request method: ${requestMethod}`;
-      throw new CustomError('SyncError', message, MODERATE_SEVERITY, message);
+      throw new CustomError('SyncError', message, HIGH_SEVERITY, message);
     }
   }
 

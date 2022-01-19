@@ -10,8 +10,14 @@ import { configureTestBed } from '@test/configure-test-bed';
 import { mockErrorResponse, mockInventoryItem, mockSyncMetadata } from '@test/mock-models';
 import { ErrorReportingServiceStub, HttpErrorServiceStub, IdServiceStub, StorageServiceStub, TypeGuardServiceStub } from '@test/service-stubs';
 
+/* Constant imports */
+import { HIGH_SEVERITY } from '@shared/constants';
+
 /* Interface imports */
 import { InventoryItem, SyncError, SyncMetadata, SyncResponse } from '@shared/interfaces';
+
+/* Type imports */
+import { CustomError } from '@shared/types';
 
 /* Service imports */
 import { ErrorReportingService, HttpErrorService, IdService, StorageService, TypeGuardService } from '@services/public';
@@ -157,6 +163,22 @@ describe('SyncService', (): void => {
 
     expect(service.syncFlags.length).toEqual(3);
     expect(service.syncFlags.find((flag: SyncMetadata): boolean => flag.docType === 'clearType')).toBeUndefined();
+  });
+
+  test('should convert request method to sync method', (): void => {
+    expect(service.convertRequestMethodToSyncMethod('post')).toMatch('create');
+    expect(service.convertRequestMethodToSyncMethod('patch')).toMatch('update');
+    expect(service.convertRequestMethodToSyncMethod('delete')).toMatch('delete');
+    const errMsg: string = 'Unknown request method: invalid';
+    const _expectedError: CustomError = new CustomError(
+      'SyncError',
+      errMsg,
+      HIGH_SEVERITY,
+      errMsg
+    );
+    expect((): void => {
+      expect(service.convertRequestMethodToSyncMethod('invalid'));
+    }).toThrowError(_expectedError);
   });
 
   test('should construct sync error', (): void => {
