@@ -7,7 +7,7 @@ import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
 import { mockBatch, mockInventoryItem, mockSyncError, mockSyncMetadata, mockSyncResponse } from '@test/mock-models';
-import { IdServiceStub, InventoryHttpServiceStub, InventoryTypeGuardServiceStub, ProcessServiceStub, SyncServiceStub, UserServiceStub, UtilityServiceStub } from '@test/service-stubs';
+import { ErrorReportingServiceStub, IdServiceStub, InventoryHttpServiceStub, InventoryTypeGuardServiceStub, ProcessServiceStub, SyncServiceStub, UserServiceStub, UtilityServiceStub } from '@test/service-stubs';
 
 /* Interface imports*/
 import { Batch, InventoryItem, SyncData, SyncError, SyncMetadata, SyncRequests, SyncResponse } from '@shared/interfaces';
@@ -15,7 +15,7 @@ import { Batch, InventoryItem, SyncData, SyncError, SyncMetadata, SyncRequests, 
 /* Service imports */
 import { InventoryHttpService } from '@services/inventory/http/inventory-http.service';
 import { InventoryTypeGuardService } from '@services/inventory/type-guard/inventory-type-guard.service';
-import { IdService, ProcessService, SyncService, UserService, UtilityService } from '@services/public';
+import { ErrorReportingService, IdService, ProcessService, SyncService, UserService, UtilityService } from '@services/public';
 import { InventorySyncService } from './inventory-sync.service';
 
 
@@ -28,6 +28,7 @@ describe('InventorySyncService', (): void => {
     TestBed.configureTestingModule({
       providers: [
         InventorySyncService,
+        { provide: ErrorReportingService, useClass: ErrorReportingServiceStub },
         { provide: IdService, useClass: IdServiceStub },
         { provide: InventoryHttpService, useClass: InventoryHttpServiceStub },
         { provide: InventoryTypeGuardService, useClass: InventoryTypeGuardServiceStub },
@@ -109,7 +110,7 @@ describe('InventorySyncService', (): void => {
       _mockInventoryItemDefaultId,
       _mockInventoryItemServerId
     ];
-    const _mockBatch$: BehaviorSubject<Batch> = new BehaviorSubject<Batch>(mockBatch());
+    const _mockBatch: Batch = mockBatch();
     const syncFlags: SyncMetadata[] = [
       mockSyncMetadata('delete', _mockInventoryItem.cid, 'inventory'),
       mockSyncMetadata('update', _mockInventoryItemDefaultId.cid, 'inventory'),
@@ -120,7 +121,7 @@ describe('InventorySyncService', (): void => {
       .mockReturnValueOnce(of(_mockInventoryItem))
       .mockReturnValueOnce(of(_mockInventoryItemDefaultId))
       .mockReturnValueOnce(of(_mockInventoryItemServerId));
-    service.processService.getBatchById = jest.fn().mockReturnValue(_mockBatch$);
+    service.processService.getBatchById = jest.fn().mockReturnValue(_mockBatch);
     service.idService.hasDefaultIdType = jest.fn()
       .mockReturnValueOnce(true)
       .mockReturnValueOnce(false)
@@ -229,6 +230,7 @@ describe('InventorySyncService', (): void => {
       .mockReturnValue({ syncRequests: [], syncErrors: [ preError ] });
     service.syncService.sync = jest.fn().mockReturnValue(of(_mockSyncResponse));
     service.processSyncSuccess = jest.fn().mockReturnValue([]);
+    service.errorReporter.handleGenericCatchError = jest.fn();
     const processSpy: jest.SpyInstance = jest.spyOn(service, 'processSyncSuccess');
 
     service.syncOnConnection(false, [])
@@ -255,6 +257,7 @@ describe('InventorySyncService', (): void => {
       .mockReturnValue({ syncRequests: [], syncErrors: [] });
     service.syncService.sync = jest.fn().mockReturnValue(of(_mockSyncResponse));
     service.processSyncSuccess = jest.fn();
+    service.errorReporter.handleGenericCatchError = jest.fn();
     const processSpy: jest.SpyInstance = jest.spyOn(service, 'processSyncSuccess');
 
     service.syncOnConnection(true, [])
@@ -300,6 +303,7 @@ describe('InventorySyncService', (): void => {
     service.syncService.sync = jest.fn().mockReturnValue(of(_mockSyncResponse));
     service.processSyncSuccess = jest.fn().mockReturnValue([_mockInventoryItem]);
     service.idService.getId = jest.fn().mockReturnValue(_mockInventoryItem._id);
+    service.errorReporter.handleGenericCatchError = jest.fn();
     const processSpy: jest.SpyInstance = jest.spyOn(service, 'processSyncSuccess');
 
     service.syncOnSignup([_mockInventoryItem])
