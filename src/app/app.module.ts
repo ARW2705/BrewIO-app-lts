@@ -74,6 +74,11 @@ import { ProcessHttpService } from '@services/process/http/process-http.service'
 import { ProcessStateService } from '@services/process/state/process-state.service';
 import { ProcessSyncService } from '@services/process/sync/process-sync.service';
 import { ProcessTypeGuardService } from '@services/process/type-guard/process-type-guard.service';
+import { RecipeHttpService } from '@services/recipe/http/recipe-http.service';
+import { RecipeImageService } from '@services/recipe/image/recipe-image.service';
+import { RecipeStateService } from '@services/recipe/state/recipe-state.service';
+import { RecipeSyncService } from '@services/recipe/sync/recipe-sync.service';
+import { RecipeTypeGuardService } from '@services/recipe/type-guard/recipe-type-guard.service';
 
 
 @NgModule({
@@ -146,7 +151,12 @@ import { ProcessTypeGuardService } from '@services/process/type-guard/process-ty
     ProcessStateService,
     ProcessSyncService,
     ProcessTypeGuardService,
+    RecipeHttpService,
+    RecipeImageService,
     RecipeService,
+    RecipeStateService,
+    RecipeSyncService,
+    RecipeTypeGuardService,
     StatusBar,
     SplashScreen,
     StorageService,
