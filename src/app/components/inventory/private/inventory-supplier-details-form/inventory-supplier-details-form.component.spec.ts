@@ -8,9 +8,13 @@ import { configureTestBed } from '@test/configure-test-bed';
 
 /* Mock imports */
 import { mockImage } from '@test/mock-models';
+import { UtilityServiceStub } from '@test/service-stubs';
 
 /* Interface imports */
 import { Image } from '@shared/interfaces';
+
+/* Service imports */
+import { UtilityService } from '@services/public';
 
 /* Component imports */
 import { InventorySupplierDetailsFormComponent } from './inventory-supplier-details-form.component';
@@ -26,6 +30,7 @@ describe('InventorySupplierDetailsFormComponent', (): void => {
     TestBed.configureTestingModule({
       declarations: [ InventorySupplierDetailsFormComponent ],
       imports: [ ReactiveFormsModule ],
+      providers: [ { provide: UtilityService, useClass: UtilityServiceStub }],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
     });
     await TestBed.compileComponents();
