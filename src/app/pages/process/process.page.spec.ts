@@ -179,7 +179,7 @@ describe('ProcessPage', (): void => {
     test('should continue batch', (): void => {
       const _mockBatch: Batch = mockBatch();
       const _mockBatch$: BehaviorSubject<Batch> = new BehaviorSubject<Batch>(_mockBatch);
-      page.processService.getBatchById = jest.fn()
+      page.processService.getBatchSubjectById = jest.fn()
         .mockReturnValueOnce(undefined)
         .mockReturnValueOnce(_mockBatch$);
       page.listenForBatchChanges = jest.fn();
@@ -276,7 +276,7 @@ describe('ProcessPage', (): void => {
       page.idService.getId = jest.fn()
         .mockReturnValue('test-id');
       const _mockBatch$: BehaviorSubject<Batch> = new BehaviorSubject<Batch>(_mockBatch);
-      page.processService.getBatchById = jest.fn()
+      page.processService.getBatchSubjectById = jest.fn()
         .mockReturnValue(_mockBatch$);
       page.listenForBatchChanges = jest.fn();
       const listenSpy: jest.SpyInstance = jest.spyOn(page, 'listenForBatchChanges');
@@ -324,7 +324,7 @@ describe('ProcessPage', (): void => {
         .mockReturnValue(_mockError);
       page.processService.startNewBatch = jest.fn()
         .mockReturnValue(of(null));
-      page.processService.getBatchById = jest.fn()
+      page.processService.getBatchSubjectById = jest.fn()
         .mockReturnValue(undefined);
       page.errorReporter.handleGenericCatchError = jest.fn()
         .mockImplementation((): (error: Error) => Observable<never> => {
