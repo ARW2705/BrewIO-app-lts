@@ -1,7 +1,7 @@
 /* Module imports */
 import { HttpErrorResponse } from '@angular/common/http';
 import { async, getTestBed, TestBed } from '@angular/core/testing';
-import { BehaviorSubject, forkJoin, Observable, of } from 'rxjs';
+import { BehaviorSubject, forkJoin, Observable, of, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
 /* TestBed configuration imports */
@@ -111,7 +111,7 @@ describe('ProcessSyncService', (): void => {
       ]);
     service.userService.getUser = jest.fn()
       .mockReturnValue(new BehaviorSubject<User>(_mockUser));
-    service.recipeService.getRecipeMasterById = jest.fn()
+    service.recipeService.getRecipeSubjectById = jest.fn()
       .mockReturnValue(new BehaviorSubject<RecipeMaster>(_mockRecipeMasterActive));
     service.processHttpService.configureBackgroundRequest = jest.fn()
       .mockReturnValueOnce(of(_mockBatchOffline))
@@ -164,7 +164,7 @@ describe('ProcessSyncService', (): void => {
         mockSyncMetadata('update', _mockBatch.cid, 'batch'),
         mockSyncMetadata('invalid', _mockBatch.cid, 'batch'),
       ]);
-    service.recipeService.getRecipeMasterById = jest.fn()
+    service.recipeService.getRecipeSubjectById = jest.fn()
       .mockReturnValueOnce(undefined)
       .mockReturnValueOnce(_mockRecipeMasterActive$)
       .mockReturnValueOnce(_mockRecipeMasterActive$);
@@ -307,12 +307,13 @@ describe('ProcessSyncService', (): void => {
     const _mockRecipeMasterActive$: BehaviorSubject<RecipeMaster> = new BehaviorSubject<RecipeMaster>(_mockRecipeMasterActive);
     const _mockUser: User = mockUser();
     const _mockUser$: BehaviorSubject<User> = new BehaviorSubject<User>(_mockUser);
-    service.recipeService.getRecipeMasterById = jest.fn().mockReturnValue(_mockRecipeMasterActive$);
+    service.recipeService.getRecipeSubjectById = jest.fn().mockReturnValue(_mockRecipeMasterActive$);
     service.userService.getUser = jest.fn().mockReturnValue(_mockUser$);
     service.processHttpService.configureBackgroundRequest = jest.fn().mockReturnValue(of(_mockBatch));
     service.syncService.sync = jest.fn().mockReturnValue(of(_mockSyncResponse));
     service.processSyncSuccess = jest.fn().mockReturnValue(_mockBatchList);
     service.idService.isMissingServerId = jest.fn().mockReturnValue(false);
+    service.errorReporter.handleGenericCatchError = jest.fn();
     const processSpy: jest.SpyInstance = jest.spyOn(service, 'processSyncSuccess');
 
     service.syncOnSignup(_mockBatchList)
@@ -329,18 +330,60 @@ describe('ProcessSyncService', (): void => {
       );
   });
 
-  test('should handle sync error on syncing on signup', (done: jest.DoneCallback): void => {
+  test('should handle sync error on syncing on signup with missing user', (done: jest.DoneCallback): void => {
+    const _mockBatch: Batch = mockBatch();
+    const _mockBatch$: BehaviorSubject<Batch> = new BehaviorSubject<Batch>(_mockBatch);
+    const _mockBatchList: BehaviorSubject<Batch>[] = [_mockBatch$, _mockBatch$];
+    const _mockSyncResponse: SyncResponse<Batch> = mockSyncResponse<Batch>();
+
+    service.userService.getUser = jest.fn().mockReturnValue(undefined);
+    service.errorReporter.handleGenericCatchError = jest.fn()
+      .mockReturnValue((err: any) => throwError(err));
+    service.syncService.sync = jest.fn()
+      .mockImplementation(
+        (type: string, requests: Observable<HttpErrorResponse | Batch>[]): Observable<SyncResponse<HttpErrorResponse | Batch>> => {
+          const testableRequests: Observable<any>[] = requests
+            .map((obs: Observable<any>): Observable<any> => {
+              return obs.pipe(catchError((error: any): any => of(error)));
+            });
+          return forkJoin(testableRequests)
+            .pipe(map((expected: any[]): SyncResponse<HttpErrorResponse | Batch> => {
+              expect(expected[0].message).toMatch('User server id not found');
+              return _mockSyncResponse;
+            }));
+        }
+      );
+    service.idService.isMissingServerId = jest.fn().mockReturnValue(false);
+
+    service.syncOnSignup(_mockBatchList)
+      .subscribe(
+        (): void => {
+          done();
+        },
+        (error: any): void => {
+          console.log('Error in: should handle sync error on syncing on signup', error);
+          expect(true).toBe(false);
+        }
+      );
+  });
+
+  test('should handle sync error on syncing on signup with recipe and background request errors', (done: jest.DoneCallback): void => {
     const _mockBatch: Batch = mockBatch();
     const _mockBatch$: BehaviorSubject<Batch> = new BehaviorSubject<Batch>(_mockBatch);
     const _mockBatchList: BehaviorSubject<Batch>[] = [_mockBatch$, _mockBatch$];
     const _mockRecipeMasterActive: RecipeMaster = mockRecipeMasterActive();
     const _mockRecipeMasterActive$: BehaviorSubject<RecipeMaster> = new BehaviorSubject<RecipeMaster>(_mockRecipeMasterActive);
     const _mockSyncResponse: SyncResponse<Batch> = mockSyncResponse<Batch>();
+    const _mockUser: User = mockUser();
+    const _mockUser$: BehaviorSubject<User> = new BehaviorSubject<User>(_mockUser);
+    const _mockError: Error = new Error('test-error');
 
-    service.recipeService.getRecipeMasterById = jest.fn()
+    service.recipeService.getRecipeSubjectById = jest.fn()
       .mockReturnValueOnce(undefined)
       .mockReturnValueOnce(_mockRecipeMasterActive$);
-    service.userService.getUser = jest.fn().mockReturnValue(undefined);
+    service.userService.getUser = jest.fn().mockReturnValue(_mockUser$);
+    service.errorReporter.handleGenericCatchError = jest.fn()
+      .mockReturnValue((err: any) => throwError(err));
     service.syncService.sync = jest.fn()
       .mockImplementation(
         (type: string, requests: Observable<HttpErrorResponse | Batch>[]): Observable<SyncResponse<HttpErrorResponse | Batch>> => {
@@ -351,12 +394,14 @@ describe('ProcessSyncService', (): void => {
           return forkJoin(testableRequests)
             .pipe(map((expected: any[]): SyncResponse<HttpErrorResponse | Batch> => {
               expect(expected[0].message).toMatch(`Recipe with id ${_mockBatch.recipeMasterId} not found`);
-              expect(expected[1].message).toMatch('User server id not found');
+              expect(expected[1]).toStrictEqual(_mockError);
               return _mockSyncResponse;
             }));
         }
       );
     service.idService.isMissingServerId = jest.fn().mockReturnValue(false);
+    service.processHttpService.configureBackgroundRequest = jest.fn()
+      .mockReturnValue(throwError(_mockError));
 
     service.syncOnSignup(_mockBatchList)
       .subscribe(
