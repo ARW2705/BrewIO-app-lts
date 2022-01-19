@@ -75,15 +75,14 @@ export class InventoryHttpService {
       return this.http.delete<InventoryItem>(route);
     }
 
-    const formData: FormData = new FormData();
-    formData.append('inventoryItem', JSON.stringify(item));
     return this.inventoryImageService.getImageRequest(item)
       .pipe(
         mergeMap((imageData: ImageRequestMetadata[]): Observable<InventoryItem> => {
+          const formData: FormData = new FormData();
+          formData.append('inventoryItem', JSON.stringify(item));
           imageData.forEach((imageDatum: ImageRequestMetadata): void => {
             formData.append(imageDatum.name, imageDatum.blob, imageDatum.filename);
           });
-
           if (requestMethod === 'post') {
             return this.http.post<InventoryItem>(route, formData);
           } else if (requestMethod === 'patch') {
