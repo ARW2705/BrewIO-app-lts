@@ -118,7 +118,7 @@ export class ProcessSyncService {
 
         if (this.idService.hasDefaultIdType(batch.recipeMasterId)) {
           // TODO: extract to own method(?)
-          const recipe$: BehaviorSubject<RecipeMaster> = this.recipeService.getRecipeMasterById(
+          const recipe$: BehaviorSubject<RecipeMaster> = this.recipeService.getRecipeSubjectById(
             batch.recipeMasterId
           );
 
@@ -212,6 +212,7 @@ export class ProcessSyncService {
               batchList
             );
           }
+
           return null;
         }),
         catchError(this.errorReporter.handleGenericCatchError())
@@ -226,38 +227,36 @@ export class ProcessSyncService {
    */
   syncOnSignup(batchList: BehaviorSubject<Batch>[]): Observable<BehaviorSubject<Batch>[]> {
     const requests: Observable<HttpErrorResponse | Batch>[] = [];
-    // TODO: extract to own method(?)
-    batchList.forEach((batch$: BehaviorSubject<Batch>): void => {
-      const batch: Batch = batch$.value;
-      const recipe$: BehaviorSubject<RecipeMaster> = this.recipeService.getRecipeMasterById(
-        batch.recipeMasterId
+    const user$: BehaviorSubject<User> = this.userService.getUser();
+    if (!user$ || !user$.value._id) {
+      const message: string = 'User server id not found';
+      requests.push(
+        throwError(new CustomError('SyncError', message, HIGH_SEVERITY, message))
       );
-
-      if (!recipe$ || this.idService.isMissingServerId(recipe$.value._id)) {
-        const message: string = `Recipe with id ${batch.recipeMasterId} not found`;
-        requests.push(
-          throwError(new CustomError('SyncError', message, HIGH_SEVERITY, message))
-        );
-        return;
-      }
-
-      const user$: BehaviorSubject<User> = this.userService.getUser();
-      if (!user$ || !user$.value._id) {
-        const message: string = 'User server id not found';
-        requests.push(
-          throwError(new CustomError('SyncError', message, HIGH_SEVERITY, message))
-        );
-        return;
-      }
+    } else {
       const user: User = user$.value;
+      // TODO: extract to own method(?)
+      batchList.forEach((batch$: BehaviorSubject<Batch>): void => {
+        const batch: Batch = batch$.value;
+        const recipe$: BehaviorSubject<RecipeMaster> = this.recipeService.getRecipeSubjectById(
+          batch.recipeMasterId
+        );
 
-      const payload: Batch = batch;
-      payload.owner = user._id;
-      payload['recipeMasterId'] = recipe$.value._id;
-      payload['forSync'] = true;
+        if (!recipe$ || this.idService.isMissingServerId(recipe$.value._id)) {
+          const message: string = `Recipe with id ${batch.recipeMasterId} not found`;
+          requests.push(
+            throwError(new CustomError('SyncError', message, HIGH_SEVERITY, message))
+          );
+          return;
+        }
 
-      requests.push(this.processHttpService.configureBackgroundRequest('post', false, payload));
-    });
+        const payload: Batch = batch;
+        payload.owner = user._id;
+        payload['recipeMasterId'] = recipe$.value._id;
+        payload['forSync'] = true;
+        requests.push(this.processHttpService.configureBackgroundRequest('post', false, payload));
+      });
+    }
 
     return this.syncService.sync<Batch | HttpErrorResponse>('batch', requests)
       .pipe(
@@ -267,7 +266,8 @@ export class ProcessSyncService {
             <(Batch | SyncData<Batch>)[]>responses.successes,
             batchList
           );
-        })
+        }),
+        catchError(this.errorReporter.handleGenericCatchError())
       );
   }
 }
