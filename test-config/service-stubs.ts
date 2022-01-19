@@ -32,6 +32,11 @@ export { ProcessSyncServiceStub } from './service-stubs/process-sync-stub.servic
 export { ProcessTypeGuardServiceStub } from './service-stubs/process-type-guard-stub.service';
 export { ProcessServiceStub } from './service-stubs/process-stub.service';
 export { RecipeServiceStub } from './service-stubs/recipe-stub.service';
+export { RecipeHttpServiceStub } from './service-stubs/recipe-http-stub.service';
+export { RecipeImageServiceStub } from './service-stubs/recipe-image-stub.service';
+export { RecipeStateServiceStub } from './service-stubs/recipe-state-stub.service';
+export { RecipeSyncServiceStub } from './service-stubs/recipe-sync-stub.service';
+export { RecipeTypeGuardServiceStub } from './service-stubs/recipe-type-guard-stub.service';
 export { StorageServiceStub } from './service-stubs/storage-stub.service';
 export { SyncServiceStub } from './service-stubs/sync-stub.service';
 export { ToastServiceStub } from './service-stubs/toast-stub.service';
