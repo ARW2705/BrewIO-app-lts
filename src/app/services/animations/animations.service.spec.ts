@@ -162,7 +162,7 @@ describe('AnimationsService', (): void => {
       expect(addSpy).toHaveBeenCalledWith(mockElem);
       expect(durationSpy).toHaveBeenCalledWith(250);
       expect(easingSpy).toHaveBeenCalledWith('ease-in');
-      expect(fromSpy).toHaveBeenNthCalledWith(1, 'maxHeight', 0, '100vh');
+      expect(fromSpy).toHaveBeenNthCalledWith(1, 'maxHeight', 0, '5000px');
       expect(fromSpy).toHaveBeenNthCalledWith(2, 'opacity', 0, 1);
     });
 
@@ -184,7 +184,7 @@ describe('AnimationsService', (): void => {
       expect(addSpy).toHaveBeenCalledWith(mockElem);
       expect(durationSpy).toHaveBeenCalledWith(500);
       expect(easingSpy).toHaveBeenCalledWith('ease-in');
-      expect(fromSpy).toHaveBeenNthCalledWith(1, 'maxHeight', 0, '100vh');
+      expect(fromSpy).toHaveBeenNthCalledWith(1, 'maxHeight', 0, '5000px');
       expect(fromSpy).toHaveBeenNthCalledWith(2, 'opacity', 0, 1);
 
       service.expand(mockElem, { duration: 100 });
