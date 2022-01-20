@@ -111,7 +111,10 @@ export class ProcessStateService {
         mergeMap((): Observable<null> =>  this.initFromServer())
       )
       .subscribe(
-        (): void => console.log('batch init complete'),
+        (): void => {
+          this.event.emit('init-inventory');
+          console.log('batch init complete');
+        },
         (error: Error): void => this.errorReporter.handleUnhandledError(error)
       );
   }

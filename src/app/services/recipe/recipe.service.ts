@@ -309,7 +309,10 @@ export class RecipeService {
         mergeMap((): Observable<null> => this.recipeStateService.initRecipeList())
       )
       .subscribe(
-        (): void => console.log('recipe init complete'),
+        (): void => {
+          this.event.emit('init-batches');
+          console.log('recipe init complete');
+        },
         (error: Error): void => { console.log('TEST', error); this.errorReporter.handleUnhandledError(error); }
       );
     this.event.register('clear-data')
