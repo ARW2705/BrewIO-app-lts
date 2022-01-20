@@ -115,7 +115,7 @@ export class RecipePage implements OnInit, OnDestroy {
       .subscribe(
         (masterList: RecipeMaster[]): void => {
           this.recipeList = masterList;
-          this.mapMasterRecipes();
+          this.mapRecipes();
         },
         (error: Error): void => this.errorReporter.handleUnhandledError(error)
       );
@@ -300,21 +300,20 @@ export class RecipePage implements OnInit, OnDestroy {
    * @param: none
    * @return: none
    */
-  mapMasterRecipes(): void {
+  mapRecipes(): void {
     try {
-      this.variantList = this.recipeList
-        .map((master: RecipeMaster): RecipeVariant => {
-          const selected: RecipeVariant = this.utilService.clone(
-              master.variants.find((variant: RecipeVariant): boolean => {
-                return this.idService.hasId(variant, master.master);
-              })
-            );
+      this.variantList = this.recipeList.map((master: RecipeMaster): RecipeVariant => {
+        const selected: RecipeVariant = this.utilService.clone(
+            master.variants.find((variant: RecipeVariant): boolean => {
+              return this.idService.hasId(variant, master.master);
+            })
+          );
 
-          selected.hops = this.recipeService.getCombinedHopsSchedule(selected.hops);
-          return selected;
-          }
-        )
-        .filter((variant: RecipeVariant): boolean => variant !== undefined);
+        selected.hops = this.recipeService.getCombinedHopsSchedule(selected.hops);
+        return selected;
+        }
+      )
+      .filter((variant: RecipeVariant): boolean => variant !== undefined);
     } catch (error) {
       console.log('Error generating variant list', error);
       this.toastService.presentErrorToast('Error generating recipe list');

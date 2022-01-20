@@ -232,7 +232,7 @@ describe('RecipePage', (): void => {
       const _mockMasterList$: BehaviorSubject<BehaviorSubject<RecipeMaster>[]> = new BehaviorSubject<BehaviorSubject<RecipeMaster>[]>([_mockRecipeMasterActive$]);
       page.recipeService.getRecipeList = jest.fn()
         .mockReturnValue(_mockMasterList$);
-      page.mapMasterRecipes = jest.fn();
+      page.mapRecipes = jest.fn();
 
       fixture.detectChanges();
 
@@ -247,7 +247,7 @@ describe('RecipePage', (): void => {
       const _mockError: Error = new Error('test-error');
       page.recipeService.getRecipeList = jest.fn()
         .mockReturnValue(throwError(_mockError));
-      page.mapMasterRecipes = jest.fn();
+      page.mapRecipes = jest.fn();
       const errorSpy: jest.SpyInstance = jest.spyOn(page.errorReporter, 'handleUnhandledError');
 
       fixture.detectChanges();
@@ -532,7 +532,7 @@ describe('RecipePage', (): void => {
         .mockImplementation((recipe: any): any => _mockRecipeMasterActive.variants[0]);
       page.idService.hasId = jest.fn()
         .mockReturnValue(true);
-      page.mapMasterRecipes();
+      page.mapRecipes();
 
       fixture.detectChanges();
 
@@ -543,7 +543,7 @@ describe('RecipePage', (): void => {
       page.recipeList.map = jest.fn()
         .mockImplementation(() => { throw new Error('tets-error'); });
       const toastSpy: jest.SpyInstance = jest.spyOn(page.toastService, 'presentErrorToast');
-      page.mapMasterRecipes();
+      page.mapRecipes();
 
       fixture.detectChanges();
 
