@@ -1,6 +1,8 @@
 /* Module imports */
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { FormControl } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 /* Interface imports */
 import { FormChanges } from '@shared/interfaces';
@@ -14,7 +16,7 @@ import { FormAttributeService } from '@services/public';
   templateUrl: './form-input.component.html',
   styleUrls: ['./form-input.component.scss'],
 })
-export class FormInputComponent implements OnChanges {
+export class FormInputComponent implements OnChanges, OnDestroy, OnInit {
   @Input() control: FormControl = null;
   @Input() controlName: string = null;
   @Input() formName: string = null;
@@ -28,16 +30,28 @@ export class FormInputComponent implements OnChanges {
   @Input() type: string = null;
   @Output() ionBlurEvent: EventEmitter<CustomEvent> = new EventEmitter<CustomEvent>();
   @Output() ionChangeEvent: EventEmitter<CustomEvent> = new EventEmitter<CustomEvent>();
+  destroy$: Subject<boolean> = new Subject<boolean>();
   controlErrors: object = null;
   showError: boolean = false;
 
   constructor(public formAttributeService: FormAttributeService) {}
+
+  ngOnInit(): void {
+    this.control.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((): void => this.checkForErrors());
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     this.assignFormChanges(
       this.formAttributeService.handleFormChange('input', this.control, changes)
     );
     this.checkForErrors();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next(true);
+    this.destroy$.complete();
   }
 
   /**

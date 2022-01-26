@@ -1,7 +1,7 @@
 /* Module imports */
-import { CUSTOM_ELEMENTS_SCHEMA, SimpleChange } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, SimpleChange, SimpleChanges } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormControl, ValidationErrors } from '@angular/forms';
-import { TestBed, ComponentFixture } from '@angular/core/testing';
 
 /* Test configuration imports */
 import { configureTestBed } from '@test/configure-test-bed';
@@ -23,7 +23,9 @@ describe('FormInputComponent', (): void => {
   configureTestBed();
   let fixture: ComponentFixture<FormInputComponent>;
   let component: FormInputComponent;
-  let originalOnChanges: any;
+  let originalOnChanges: (changes: SimpleChanges) => void;
+  let originalOnDestroy: () => void;
+  let originalOnInit: () => void;
 
   beforeAll((done: any): Promise<void> => (async (): Promise<void> => {
     TestBed.configureTestingModule({
@@ -41,7 +43,10 @@ describe('FormInputComponent', (): void => {
     component = fixture.componentInstance;
     originalOnChanges = component.ngOnChanges;
     component.ngOnChanges = jest.fn();
-    component.ngOnChanges = originalOnChanges;
+    originalOnDestroy = component.ngOnDestroy;
+    component.ngOnDestroy = jest.fn();
+    originalOnInit = component.ngOnInit;
+    component.ngOnInit = jest.fn();
     component.control = new FormControl();
     component.controlName = 'control';
     component.formName = 'form';
@@ -58,6 +63,22 @@ describe('FormInputComponent', (): void => {
     fixture.detectChanges();
 
     expect(component).toBeDefined();
+  });
+
+  test('should init the component', (done: jest.DoneCallback): void => {
+    component.ngOnInit = originalOnInit;
+    component.checkForErrors = jest.fn();
+    const checkSpy: jest.SpyInstance = jest.spyOn(component, 'checkForErrors');
+    const control: FormControl = new FormControl();
+    component.control = control;
+
+    fixture.detectChanges();
+
+    component.control.updateValueAndValidity();
+    setTimeout((): void => {
+      expect(checkSpy).toHaveBeenCalled();
+      done();
+    }, 10);
   });
 
   test('should handle component changes', (): void => {
@@ -113,6 +134,20 @@ describe('FormInputComponent', (): void => {
     expect(component.shouldRequire).toBe(shouldRequire);
     expect(component.shouldSpellcheck).toBe(shouldSpellcheck);
     expect(component.type).toMatch(type);
+  });
+
+  test('should destroy the component', (): void => {
+    component.ngOnDestroy = originalOnDestroy;
+    component.destroy$.next = jest.fn();
+    component.destroy$.complete = jest.fn();
+    const nextSpy: jest.SpyInstance = jest.spyOn(component.destroy$, 'next');
+    const completeSpy: jest.SpyInstance = jest.spyOn(component.destroy$, 'complete');
+
+    fixture.detectChanges();
+
+    component.ngOnDestroy();
+    expect(nextSpy).toHaveBeenCalled();
+    expect(completeSpy).toHaveBeenCalled();
   });
 
   test('should check for errors', (): void => {
