@@ -43,8 +43,8 @@
       <ion-row>
         <app-note-container (noteUpdateEvent)="handleNoteUpdateEvent($event)"
                             [isAddButtonDisabled]="!isGeneralFormComplete"
-                            [noteType]="formType"
-                            [notes]="formType === 'master'? master.notes : variant.notes">
+                            [noteType]="formType === 'master' ? 'recipe' : 'variant'"
+                            [notes]="formType === 'master' ? master.notes : variant.notes">
         </app-note-container>
       </ion-row>
 

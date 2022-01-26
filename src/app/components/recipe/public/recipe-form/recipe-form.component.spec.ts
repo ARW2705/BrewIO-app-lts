@@ -381,6 +381,7 @@ describe('RecipeFormComponent', (): void => {
       fixture.detectChanges();
 
       component.initCreateVariantForm(_mockRecipeMasterActive);
+      expect(component.variant.isMaster).toBe(false);
       expect(component.submitSuccessMessage).toMatch('New Variant Created');
       expect(component.isGeneralFormComplete).toBe(false);
       expect(component.title).toMatch('Add Variant');
@@ -917,7 +918,7 @@ describe('RecipeFormComponent', (): void => {
       expect(processElem['variant']).toStrictEqual(_mockRecipeVariantComplete);
       const noteElem: Element = fixture.nativeElement.querySelector('app-note-container');
       expect(noteElem['isAddButtonDisabled']).toBe(true);
-      expect(noteElem['noteType']).toMatch('master');
+      expect(noteElem['noteType']).toMatch('recipe');
       expect(noteElem['notes']).toStrictEqual(_mockRecipeMasterActive.notes);
       const saveButton: Element = fixture.nativeElement.querySelector('ion-button');
       expect(saveButton.textContent).toMatch('SAVE');
@@ -949,7 +950,7 @@ describe('RecipeFormComponent', (): void => {
       expect(processElem).toBeNull();
       const noteElem: Element = fixture.nativeElement.querySelector('app-note-container');
       expect(noteElem['isAddButtonDisabled']).toBe(false);
-      expect(noteElem['noteType']).toMatch('master');
+      expect(noteElem['noteType']).toMatch('recipe');
       expect(noteElem['notes']).toStrictEqual(_mockRecipeMasterActive.notes);
       const saveButton: Element = fixture.nativeElement.querySelector('ion-button');
       expect(saveButton.textContent).toMatch('SAVE');

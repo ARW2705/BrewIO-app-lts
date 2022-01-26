@@ -283,9 +283,11 @@ export class RecipeFormComponent implements OnInit, OnDestroy {
     this.isGeneralFormComplete = false;
     this.title = 'Add Variant';
     this.master = recipeMaster;
-    this.variant = this.utilService.clone(
+    const newVariant: RecipeVariant = this.utilService.clone(
       recipeMaster.variants.find((variant: RecipeVariant): boolean => variant.isMaster)
     );
+    newVariant.isMaster = false;
+    this.variant = newVariant;
     this.variant.notes = [];
     this.utilService.stripSharedProperties(this.variant);
     this.variant.variantName = '';
