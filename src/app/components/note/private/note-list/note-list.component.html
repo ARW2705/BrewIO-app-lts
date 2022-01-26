@@ -29,5 +29,5 @@
 </ion-list>
 <div  *ngIf="!notes || !notes.length"
       class="list-empty-message">
-  Note List Empty
+  {{ noteType | titlecase }} Note List Empty
 </div>
