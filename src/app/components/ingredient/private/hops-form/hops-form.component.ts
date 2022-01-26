@@ -1,6 +1,6 @@
 /* Module imports */
 import { AfterViewInit, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -25,6 +25,7 @@ export class HopsFormComponent implements AfterViewInit, OnDestroy, OnInit {
   destroy$: Subject<boolean> = new Subject<boolean>();
   compareWithFn: (o1: any, o2: any) => boolean;
   hopsForm: FormGroup;
+  isDryHop: boolean = false;
   quantityRoundToPlaces: number = 2;
   requiresConversionLarge: boolean = false;
   requiresConversionSmall: boolean = false;
@@ -128,12 +129,15 @@ export class HopsFormComponent implements AfterViewInit, OnDestroy, OnInit {
    * @return: none
    */
   onDryHopChange(dryHop: CustomEvent): void {
+    const durationControl: AbstractControl = this.hopsForm.get('duration');
     if (dryHop.detail.checked) {
-      this.hopsForm.get('duration').clearValidators();
+      durationControl.clearValidators();
+      this.isDryHop = true;
     } else {
-      this.hopsForm.get('duration').setValidators(
+      durationControl.setValidators(
         [ Validators.required, Validators.min(0), Validators.max(this.boilTime) ]
       );
+      this.isDryHop = false;
     }
     this.hopsForm.get('duration').updateValueAndValidity();
   }

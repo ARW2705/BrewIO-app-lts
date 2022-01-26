@@ -238,8 +238,10 @@ describe('HopsFormComponent', () => {
       expect(component.hopsForm.controls.duration).not.toBeNull();
       component.onDryHopChange(mockEventTrue);
       expect(component.hopsForm.controls.duration.validator).toBeNull();
+      expect(component.isDryHop).toBe(true);
       component.onDryHopChange(mockEventFalse);
       expect(component.hopsForm.controls.duration).not.toBeNull();
+      expect(component.isDryHop).toBe(false);
     });
 
   });
