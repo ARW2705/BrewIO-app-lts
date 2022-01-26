@@ -120,13 +120,13 @@ export class ExtrasPage implements OnInit, OnDestroy {
     this.title = this.utilService.toTitleCase(this.extras[index].title);
     this.onBackClick = this.viewPageRoot.bind(this, index);
     try {
-      if (!passThrough) {
-        const animation = this.animationService.slideIn(
-          this.getContainer(index),
-          { duration: this.animationDuration }
-        );
-        await animation.play();
+      // TODO: fix animation somehow overwriting opacity even though afterstyles should reset it
+      let duration: number = this.animationDuration;
+      if (passThrough) { // this is a stopgap to make animation less noticable
+        duration = 0;
       }
+      const animation = this.animationService.slideIn( this.getContainer(index), { duration });
+      await animation.play();
     } catch (error) {
       console.log('display extras error', error);
     }
