@@ -265,22 +265,19 @@ describe('ExtrasPage', (): void => {
       const _stubAnimation: AnimationStub = new AnimationStub();
       const _mockElement: HTMLElement = global.document.createElement('div');
       page.viewPageRoot.bind = jest.fn()
-        .mockImplementation((page: ExtrasPage): () => void => {
-          return page.viewPageRoot;
+        .mockImplementation((extrasPage: ExtrasPage): () => void => {
+          return extrasPage.viewPageRoot;
         });
-      page.animationService.slideIn = jest.fn()
-        .mockReturnValue(_stubAnimation);
-      page.getContainer = jest.fn()
-        .mockReturnValue(_mockElement);
-      page.utilService.toTitleCase = jest.fn()
-        .mockReturnValue('Active Batches');
-      const playSpy: jest.SpyInstance = jest.spyOn(_stubAnimation, 'play');
+      page.animationService.slideIn = jest.fn().mockReturnValue(_stubAnimation);
+      page.getContainer = jest.fn().mockReturnValue(_mockElement);
+      page.utilService.toTitleCase = jest.fn().mockReturnValue('Active Batches');
+      const slideSpy: jest.SpyInstance = jest.spyOn(page.animationService, 'slideIn');
 
       fixture.detectChanges();
 
       page.displayComponent(0, true);
       setTimeout((): void => {
-        expect(playSpy).not.toHaveBeenCalled();
+        expect(slideSpy).toHaveBeenCalledWith(_mockElement, { duration: 0});
         expect(page.onBackClick).toStrictEqual(page.viewPageRoot);
         expect(page.title).toMatch('Active Batches');
         done();

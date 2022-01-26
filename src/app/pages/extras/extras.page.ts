@@ -125,7 +125,7 @@ export class ExtrasPage implements OnInit, OnDestroy {
       if (passThrough) { // this is a stopgap to make animation less noticable
         duration = 0;
       }
-      const animation = this.animationService.slideIn( this.getContainer(index), { duration });
+      const animation = this.animationService.slideIn(this.getContainer(index), { duration });
       await animation.play();
     } catch (error) {
       console.log('display extras error', error);

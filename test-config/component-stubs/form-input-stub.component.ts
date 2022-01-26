@@ -1,6 +1,7 @@
 /* Module imports */
-import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output } from '@angular/core';
 import { FormControl } from '@angular/forms';
+import { Subject } from 'rxjs';
 
 /* Mock imports */
 import { FormAttributeServiceStub } from '../service-stubs';
@@ -19,7 +20,7 @@ import { FormInputComponent } from '../../src/app/components/form-elements/publi
     { provide: FormAttributeService, useClass: FormAttributeServiceStub }
   ]
 })
-export class FormInputComponentStub implements OnChanges {
+export class FormInputComponentStub implements OnChanges, OnDestroy, OnInit {
   @Input() control: FormControl = null;
   @Input() controlName: string = null;
   @Input() formName: string = null;
@@ -33,12 +34,15 @@ export class FormInputComponentStub implements OnChanges {
   @Input() type: string;
   @Output() ionBlurEvent: EventEmitter<CustomEvent> = new EventEmitter<CustomEvent>();
   @Output() ionChangeEvent: EventEmitter<CustomEvent> = new EventEmitter<CustomEvent>();
+  destroy$: Subject<boolean> = new Subject<boolean>();
   controlErrors: object = null;
   showError: boolean = false;
   formAttributeService: FormAttributeService;
 
   // constructor(public formAttributeService: FormAttributeService) {}
+  ngOnInit(): void {}
   ngOnChanges(...options: any): void {}
+  ngOnDestroy(): void {}
   assignFormChanges(...options: any): any {}
   checkForErrors(): void {}
   onInputBlur(...options: any): any {}
